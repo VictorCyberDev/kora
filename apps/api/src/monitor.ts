@@ -37,14 +37,22 @@ function classify(error: unknown): {
   )
     return {
       reason: "health check timed out",
-      category: "timeout",
+      category: "TIMEOUT",
       timedOut: true,
     };
-  const msg =
-    error instanceof Error ? error.message : "unknown health check error";
+  const msg = error instanceof Error ? error.message : "unknown health check error";
   if (/ENOTFOUND|EAI_AGAIN|dns/i.test(msg))
-    return { reason: msg, category: "dns", timedOut: false };
-  return { reason: msg, category: "network", timedOut: false };
+    return { reason: msg, category: "DNS_FAILURE", timedOut: false };
+  if (/ECONNREFUSED|connection refused/i.test(msg))
+    return { reason: msg, category: "CONNECTION_REFUSED", timedOut: false };
+  if (/certificate|tls|ssl/i.test(msg))
+    return { reason: msg, category: "TLS_FAILURE", timedOut: false };
+  return { reason: msg, category: "UNKNOWN", timedOut: false };
+}
+function httpFailureCategory(status: number): TelemetryObservation["failureCategory"] {
+  if (status >= 500) return "HTTP_5XX";
+  if (status >= 400) return "HTTP_4XX";
+  return "INVALID_RESPONSE";
 }
 export class HealthMonitor {
   private state: EngineState = initialState();
@@ -55,6 +63,8 @@ export class HealthMonitor {
     private readonly store: KoraStore,
     private readonly logger: FastifyBaseLogger,
     private readonly serviceId: string,
+    private readonly resourceId: string | null = null,
+    private readonly providerStatus: string | null = null,
   ) {}
   async checkOnce() {
     const started = performance.now();
@@ -71,10 +81,10 @@ export class HealthMonitor {
         httpStatus: response.status,
         latencyMs: performance.now() - started,
         timedOut: false,
-        failureReason: response.ok
-          ? null
-          : `health endpoint returned ${response.status}`,
-        failureCategory: response.ok ? null : "http",
+        failureReason: response.ok ? null : `health endpoint returned ${response.status}`,
+        failureCategory: response.ok ? null : httpFailureCategory(response.status),
+        resourceId: this.resourceId,
+        providerStatus: this.providerStatus,
       };
     } catch (error) {
       const c = classify(error);
@@ -88,6 +98,8 @@ export class HealthMonitor {
         timedOut: c.timedOut,
         failureReason: c.reason,
         failureCategory: c.category,
+        resourceId: this.resourceId,
+        providerStatus: this.providerStatus,
       };
     }
     await this.store.recordObservation(observation);
@@ -98,10 +110,12 @@ export class HealthMonitor {
         this.state.activeIncident?.id,
         {
           observationId: observation.id,
+          resourceId: observation.resourceId ?? null,
           httpStatus: observation.httpStatus,
           latencyMs: observation.latencyMs,
           timedOut: observation.timedOut,
           failureReason: observation.failureReason,
+          failureCategory: observation.failureCategory,
         },
       ),
     );
@@ -117,11 +131,12 @@ export class HealthMonitor {
           event("IncidentCreated", this.serviceId, effect.incident.id, {
             severity: effect.incident.severity,
             deduplicationKey: effect.incident.deduplicationKey,
+            resourceId: this.resourceId,
             triggerObservationIds: effect.incident.evidence.map((x) => x.id),
           }),
         );
         this.logger.warn(
-          { incidentId: effect.incident.id, serviceId: this.serviceId },
+          { incidentId: effect.incident.id, serviceId: this.serviceId, resourceId: this.resourceId },
           "incident created",
         );
       }
@@ -135,6 +150,7 @@ export class HealthMonitor {
         await this.store.recordEvent(
           event("IncidentUpdated", this.serviceId, effect.incident.id, {
             observationId: observation.id,
+            resourceId: this.resourceId,
           }),
         );
       }
@@ -142,14 +158,13 @@ export class HealthMonitor {
         await this.store.resolveIncident(effect.incident);
         await this.store.recordEvent(
           event("RecoveryVerified", this.serviceId, effect.incident.id, {
-            recoveryObservationIds: effect.incident.recoveryEvidence.map(
-              (x) => x.id,
-            ),
+            recoveryObservationIds: effect.incident.recoveryEvidence.map((x) => x.id),
+            resourceId: this.resourceId,
             resolvedAt: effect.incident.resolvedAt,
           }),
         );
         this.logger.info(
-          { incidentId: effect.incident.id, serviceId: this.serviceId },
+          { incidentId: effect.incident.id, serviceId: this.serviceId, resourceId: this.resourceId },
           "recovery verified",
         );
       }
@@ -157,6 +172,7 @@ export class HealthMonitor {
     this.logger.info(
       {
         serviceId: this.serviceId,
+        resourceId: this.resourceId,
         healthy: observation.healthy,
         httpStatus: observation.httpStatus,
         latencyMs: Math.round(observation.latencyMs),
