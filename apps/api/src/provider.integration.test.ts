@@ -78,6 +78,7 @@ suite("provider-aware PostgreSQL vertical slice", () => {
   it("proves incident, evidence, timeline and verified recovery with real PostgreSQL", async () => {
     if (!store || !sql) throw new Error("DATABASE_URL required");
     const service = (await store.listServices())[0]!;
+    const serviceId = String(service.id);
     const resourceId = String((service.resource as { id: string }).id);
     const statuses = [200, 503, 503, 503, 503, 200, 200, 200];
     let index = 0;
@@ -91,7 +92,7 @@ suite("provider-aware PostgreSQL vertical slice", () => {
       config,
       store,
       logger,
-      String(service.id),
+      serviceId,
       resourceId,
     );
     for (let n = 0; n < statuses.length; n++) await monitor.checkOnce();
@@ -104,7 +105,7 @@ suite("provider-aware PostgreSQL vertical slice", () => {
       providerResourceId: "vm-test-123",
     });
     const observations =
-      await sql`SELECT * FROM telemetry_observations WHERE service_id=${service.id} ORDER BY observed_at`;
+      await sql`SELECT * FROM telemetry_observations WHERE service_id=${serviceId} ORDER BY observed_at`;
     expect(observations).toHaveLength(8);
     expect(
       observations.every((row) => String(row.resource_id) === resourceId),
