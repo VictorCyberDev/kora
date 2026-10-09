@@ -13,7 +13,7 @@ function event(
   eventType: DomainEvent["eventType"],
   serviceId: string,
   correlationId: string | undefined,
-  payload: Record<string, unknown>,
+  payload: DomainEvent["payload"],
 ): DomainEvent {
   return {
     eventId: crypto.randomUUID(),
