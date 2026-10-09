@@ -17,12 +17,12 @@ export function buildDemoService(
   const config = demoConfigSchema.parse(input);
   const app = Fastify({ logger: config.NODE_ENV !== "test" });
   let failing = false;
-  app.get("/health", async (_request, reply) =>
+  app.get("/health", (_request, reply) =>
     failing
       ? reply.code(503).send({ status: "unhealthy" })
       : { status: "healthy" },
   );
-  const control = async (
+  const control = (
     next: boolean,
     reply: { code(n: number): { send(body: unknown): unknown } },
   ) => {
@@ -31,7 +31,7 @@ export function buildDemoService(
     failing = next;
     return { failureInjected: failing };
   };
-  app.post("/dev/failure", async (_request, reply) => control(true, reply));
-  app.post("/dev/recover", async (_request, reply) => control(false, reply));
+  app.post("/dev/failure", (_request, reply) => control(true, reply));
+  app.post("/dev/recover", (_request, reply) => control(false, reply));
   return app;
 }
