@@ -27,7 +27,7 @@ await store.recordEvent({
 const app = buildApi(store, config.NODE_ENV, config.LOG_LEVEL);
 const monitor = new HealthMonitor(config, store, app.log, String(service.id));
 app.addHook("onClose", async () => {
-  monitor.stop();
+  await monitor.stop();
   await sql.end();
 });
 await app.listen({ host: config.API_HOST, port: config.API_PORT });
