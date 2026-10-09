@@ -31,20 +31,21 @@ describe("monitor event loop", () => {
   it("records RecoveryVerified only after the configured recovery threshold", async () => {
     const events: DomainEvent[] = [];
     const store = {
-      recordObservation: async () => undefined,
-      recordEvent: async (e: DomainEvent) => {
+      recordObservation: () => Promise.resolve(undefined),
+      recordEvent: (e: DomainEvent) => {
         events.push(e);
+        return Promise.resolve(undefined);
       },
-      createIncident: async () => undefined,
-      appendEvidence: async () => undefined,
-      resolveIncident: async () => undefined,
+      createIncident: () => Promise.resolve(undefined),
+      appendEvidence: () => Promise.resolve(undefined),
+      resolveIncident: () => Promise.resolve(undefined),
     } as unknown as KoraStore;
     const responses = [503, 503, 503, 200, 200, 200];
     let index = 0;
     vi.stubGlobal(
       "fetch",
-      vi.fn(
-        async () => new Response("", { status: responses[index++] ?? 200 }),
+      vi.fn(() =>
+        Promise.resolve(new Response("", { status: responses[index++] ?? 200 })),
       ),
     );
     const monitor = new HealthMonitor(config, store, logger, serviceId);
