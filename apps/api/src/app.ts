@@ -1,11 +1,16 @@
 import Fastify from 'fastify';
-import { z } from 'zod';
+import { z, ZodError } from 'zod';
 import { KoraStore } from './store.js';
 
 const idParams=z.object({id:z.string().uuid()});
 export function buildApi(store:KoraStore,nodeEnv='development',logLevel='info') {
   const app=Fastify({logger:nodeEnv==='test'?false:{level:logLevel},genReqId:req=>String(req.headers['x-request-id'] ?? crypto.randomUUID()),disableRequestLogging:false});
-  app.setErrorHandler((error,request,reply)=>{ request.log.error({err:error},'request failed'); const status=(error as {statusCode?:number}).statusCode ?? 500; void reply.code(status>=500?500:status).send({error:status>=500?'internal_server_error':'bad_request',requestId:request.id}); });
+  app.setErrorHandler((error,request,reply)=>{
+    request.log.error({err:error},'request failed');
+    if(error instanceof ZodError) { void reply.code(400).send({error:'invalid_request',requestId:request.id}); return; }
+    const status=(error as {statusCode?:number}).statusCode ?? 500;
+    void reply.code(status>=500?500:status).send({error:status>=500?'internal_server_error':'bad_request',requestId:request.id});
+  });
   app.get('/health',async()=>({status:'ok'}));
   app.get('/services',async()=>({data:await store.listServices()}));
   app.get('/services/:id',async(req,reply)=>{const {id}=idParams.parse(req.params);const item=await store.getService(id);return item?{data:item}:reply.code(404).send({error:'not_found',requestId:req.id});});
