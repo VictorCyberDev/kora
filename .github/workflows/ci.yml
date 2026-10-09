@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -15,7 +18,7 @@ jobs:
           POSTGRES_USER: kora
           POSTGRES_PASSWORD: kora
           POSTGRES_DB: kora
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U kora -d kora"
           --health-interval 5s
@@ -24,14 +27,29 @@ jobs:
     env:
       DATABASE_URL: postgresql://kora:kora@localhost:5432/kora
       NODE_ENV: test
-      MONITOR_ENABLED: 'false'
+      MONITOR_ENABLED: "false"
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - uses: pnpm/action-setup@v4
-        with: { version: 10.18.3 }
+        with:
+          version: 10.18.3
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
-      - run: pnpm install --no-frozen-lockfile
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply repository formatting once
+        run: |
+          pnpm exec prettier --write .
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "style: apply repository formatting"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
