@@ -3,7 +3,7 @@ import { z } from "zod";
 export const EVENT_SCHEMA_VERSION = 1 as const;
 const id = z.string().uuid();
 const isoTime = z.string().datetime({ offset: true });
-const basePayload = z.record(z.string(), z.unknown());
+const basePayload = z.record(z.string(), z.json());
 
 export const eventTypes = [
   "ServiceRegistered",
