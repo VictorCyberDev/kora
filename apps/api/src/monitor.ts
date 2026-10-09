@@ -8,7 +8,7 @@ function event(eventType: DomainEvent['eventType'], serviceId:string, correlatio
   return { eventId:crypto.randomUUID(), eventType, schemaVersion:EVENT_SCHEMA_VERSION, occurredAt:new Date().toISOString(), source:'kora-api', serviceId, ...(correlationId ? { correlationId } : {}), payload };
 }
 function classify(error: unknown): { reason:string; category:TelemetryObservation['failureCategory']; timedOut:boolean } {
-  if (error instanceof DOMException && error.name==='AbortError') return {reason:'health check timed out',category:'timeout',timedOut:true};
+  if (error instanceof DOMException && (error.name==='AbortError'||error.name==='TimeoutError')) return {reason:'health check timed out',category:'timeout',timedOut:true};
   const msg=error instanceof Error ? error.message : 'unknown health check error';
   if (/ENOTFOUND|EAI_AGAIN|dns/i.test(msg)) return {reason:msg,category:'dns',timedOut:false};
   return {reason:msg,category:'network',timedOut:false};
