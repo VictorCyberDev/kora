@@ -35,8 +35,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Print canonical vertical-test formatting
-        run: |
-          pnpm exec prettier --write apps/api/src/store.integration.test.ts
-          cat apps/api/src/store.integration.test.ts
-          exit 1
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm db:migrate
+      - run: pnpm -r test
