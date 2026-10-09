@@ -1,16 +1,18 @@
 import postgres from "postgres";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfig } from "../config.js";
 const config = loadConfig();
 const sql = postgres(config.DATABASE_URL, { max: 1 });
-const migration = await readFile(
-  fileURLToPath(new URL("./migrations/001_initial.sql", import.meta.url)),
-  "utf8",
-);
+const migrationsDir = fileURLToPath(new URL("./migrations/", import.meta.url));
 try {
-  await sql.unsafe(migration);
-  console.log("Applied 001_initial.sql");
+  const files = (await readdir(migrationsDir)).filter((name) => /^\d+_.*\.sql$/.test(name)).sort();
+  for (const file of files) {
+    const migration = await readFile(join(dirname(join(migrationsDir, file)), file), "utf8");
+    await sql.unsafe(migration);
+    console.log(`Applied ${file}`);
+  }
 } finally {
   await sql.end();
 }
