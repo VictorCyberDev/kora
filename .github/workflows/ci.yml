@@ -15,8 +15,7 @@ jobs:
           POSTGRES_USER: kora
           POSTGRES_PASSWORD: kora
           POSTGRES_DB: kora
-        ports:
-          - 5432:5432
+        ports: ['5432:5432']
         options: >-
           --health-cmd "pg_isready -U kora -d kora"
           --health-interval 5s
@@ -29,16 +28,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10.18.3
+        with: { version: 10.18.3 }
       - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
+        with: { node-version: 22, cache: pnpm }
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
       - run: pnpm build
       - run: pnpm db:migrate
+      - run: pnpm -r test
