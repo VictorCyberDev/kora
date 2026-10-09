@@ -3,19 +3,19 @@ import { buildApi } from "./app.js";
 import type { KoraStore } from "./store.js";
 const known = crypto.randomUUID();
 const store = {
-  listServices: async () => [],
-  getService: async (id: string) => (id === known ? { id } : null),
-  listIncidents: async () => [],
-  getIncident: async (id: string) => (id === known ? { id } : null),
-  getIncidentEvents: async () => [],
-  getIncidentEvidence: async () => [],
+  listServices: () => Promise.resolve([]),
+  getService: (id: string) => Promise.resolve(id === known ? { id } : null),
+  listIncidents: () => Promise.resolve([]),
+  getIncident: (id: string) => Promise.resolve(id === known ? { id } : null),
+  getIncidentEvents: () => Promise.resolve([]),
+  getIncidentEvidence: () => Promise.resolve([]),
 } as unknown as KoraStore;
 describe("API contracts", () => {
   it("returns an incident through API", async () => {
     const app = buildApi(store, "test");
     const r = await app.inject(`/incidents/${known}`);
     expect(r.statusCode).toBe(200);
-    expect(r.json().data.id).toBe(known);
+    expect(r.json<{ data: { id: string } }>().data.id).toBe(known);
     await app.close();
   });
   it("returns 404 for unknown incident", async () => {
@@ -28,7 +28,7 @@ describe("API contracts", () => {
     const app = buildApi(store, "test");
     const r = await app.inject("/incidents/not-a-uuid");
     expect(r.statusCode).toBe(400);
-    expect(r.json().error).toBe("invalid_request");
+    expect(r.json<{ error: string }>().error).toBe("invalid_request");
     await app.close();
   });
 });
