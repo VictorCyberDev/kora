@@ -45,7 +45,9 @@ describe("monitor event loop", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() =>
-        Promise.resolve(new Response("", { status: responses[index++] ?? 200 })),
+        Promise.resolve(
+          new Response("", { status: responses[index++] ?? 200 }),
+        ),
       ),
     );
     const monitor = new HealthMonitor(config, store, logger, serviceId);
