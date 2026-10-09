@@ -22,11 +22,7 @@ export type ProviderCapability =
   | "SCALING";
 
 export type TopologyRelationship =
-  | "HOSTS"
-  | "RUNS"
-  | "EXPOSES"
-  | "DEPENDS_ON"
-  | "MONITORS";
+  "HOSTS" | "RUNS" | "EXPOSES" | "DEPENDS_ON" | "MONITORS";
 
 export interface ProviderResourceIdentity {
   provider: string;

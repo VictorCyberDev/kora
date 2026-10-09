@@ -32,9 +32,7 @@ export const configSchema = z
     MONITOR_RECOVERY_THRESHOLD: z.coerce.number().int().min(1).default(3),
     RUMPTY_WORKSPACE: z.string().min(1).optional(),
     RUMPTY_REGION: z.string().min(1).optional(),
-    RUMPTY_RESOURCE_TYPE: z
-      .enum(["virtual_machine", "deployment"])
-      .optional(),
+    RUMPTY_RESOURCE_TYPE: z.enum(["virtual_machine", "deployment"]).optional(),
     RUMPTY_RESOURCE_ID: z.string().min(1).optional(),
     RUMPTY_RESOURCE_NAME: z.string().min(1).optional(),
     KORA_ENVIRONMENT: z.string().min(1).default("development"),

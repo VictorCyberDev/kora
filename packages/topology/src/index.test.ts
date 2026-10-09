@@ -31,14 +31,31 @@ describe("cloud topology", () => {
     const topology: SystemTopology = {
       components: [
         { id: "provider", name: "RumptyCloud", kind: "provider" },
-        { id: "vm", name: "VM", kind: "compute", providerResourceKey: providerResourceKey(identity) },
+        {
+          id: "vm",
+          name: "VM",
+          kind: "compute",
+          providerResourceKey: providerResourceKey(identity),
+        },
         { id: "service", name: "demo", kind: "service" },
         { id: "health", name: "/health", kind: "health_endpoint" },
       ],
       dependencies: [
-        { fromComponentId: "provider", toComponentId: "vm", relationship: "HOSTS" },
-        { fromComponentId: "vm", toComponentId: "service", relationship: "RUNS" },
-        { fromComponentId: "service", toComponentId: "health", relationship: "EXPOSES" },
+        {
+          fromComponentId: "provider",
+          toComponentId: "vm",
+          relationship: "HOSTS",
+        },
+        {
+          fromComponentId: "vm",
+          toComponentId: "service",
+          relationship: "RUNS",
+        },
+        {
+          fromComponentId: "service",
+          toComponentId: "health",
+          relationship: "EXPOSES",
+        },
       ],
     };
     expect(topology.dependencies.map((x) => x.relationship)).toEqual([

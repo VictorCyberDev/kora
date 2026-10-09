@@ -20,7 +20,10 @@ describe("RumptyCloud provider contract", () => {
   it("uses stable provider resource identity rather than display name", () => {
     const provider = new RumptyCloudProvider();
     const first = provider.normalizeResource(resource);
-    const renamed = provider.normalizeResource({ ...resource, displayName: "renamed" });
+    const renamed = provider.normalizeResource({
+      ...resource,
+      displayName: "renamed",
+    });
     expect(first.providerResourceId).toBe(renamed.providerResourceId);
     expect(first.providerAccount).toBe(renamed.providerAccount);
   });
@@ -46,7 +49,10 @@ describe("RumptyCloud provider contract", () => {
 
   it("rejects malformed resource identity", () => {
     expect(() =>
-      new RumptyCloudProvider().normalizeResource({ ...resource, resourceId: "" }),
+      new RumptyCloudProvider().normalizeResource({
+        ...resource,
+        resourceId: "",
+      }),
     ).toThrow();
   });
 
@@ -59,7 +65,9 @@ describe("RumptyCloud provider contract", () => {
   });
 
   it("normalizes authentication failures without provider response details", () => {
-    const error = normalizeProviderError(new Error("401 token=rmp_live_secret"));
+    const error = normalizeProviderError(
+      new Error("401 token=rmp_live_secret"),
+    );
     expect(error.code).toBe("AUTHENTICATION_FAILED");
     expect(error.message).not.toContain("rmp_live_secret");
     expect(error.retryable).toBe(false);

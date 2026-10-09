@@ -25,7 +25,8 @@ export interface ProviderResource {
 }
 
 const SAFE_METADATA_KEYS = new Set(["publicUrl", "healthPath"]);
-const SECRET_PATTERN = /token|secret|password|credential|api[_-]?key|authorization/i;
+const SECRET_PATTERN =
+  /token|secret|password|credential|api[_-]?key|authorization/i;
 
 const rumptyResourceSchema = z.object({
   workspace: z.string().min(1),

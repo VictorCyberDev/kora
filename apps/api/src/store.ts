@@ -56,7 +56,8 @@ export class KoraStore {
     kind: "ongoing" | "recovery",
     count: number,
   ) {
-    await this.sql`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${incidentId},${o.id},${kind},${count}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
+    await this
+      .sql`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${incidentId},${o.id},${kind},${count}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
   }
   async resolveIncident(i: IncidentSnapshot) {
     await this.sql.begin(async (tx) => {
@@ -81,7 +82,9 @@ export class KoraStore {
       ORDER BY s.created_at`;
   }
   async getService(id: string) {
-    return (await this.sql`
+    return (
+      (
+        await this.sql`
       SELECT s.id,s.name,s.health_url,s.created_at,
         CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object(
           'id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,
@@ -91,7 +94,9 @@ export class KoraStore {
       FROM services s
       LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON'
       LEFT JOIN provider_resources r ON r.id=b.resource_id
-      WHERE s.id=${id}`)[0] ?? null;
+      WHERE s.id=${id}`
+      )[0] ?? null
+    );
   }
   async listIncidents() {
     return this.sql`
@@ -108,7 +113,9 @@ export class KoraStore {
       ORDER BY i.started_at DESC`;
   }
   async getIncident(id: string) {
-    return (await this.sql`
+    return (
+      (
+        await this.sql`
       SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,
         s.name AS service_name,
         CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object(
@@ -119,10 +126,13 @@ export class KoraStore {
       FROM incidents i JOIN services s ON s.id=i.service_id
       LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON'
       LEFT JOIN provider_resources r ON r.id=b.resource_id
-      WHERE i.id=${id}`)[0] ?? null;
+      WHERE i.id=${id}`
+      )[0] ?? null
+    );
   }
   async getIncidentEvents(id: string) {
-    return this.sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at,event_id`;
+    return this
+      .sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at,event_id`;
   }
   async getIncidentEvidence(id: string) {
     return this.sql`
