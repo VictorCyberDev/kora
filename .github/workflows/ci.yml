@@ -15,8 +15,7 @@ jobs:
           POSTGRES_USER: kora
           POSTGRES_PASSWORD: kora
           POSTGRES_DB: kora
-        ports:
-          - 5432:5432
+        ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U kora -d kora"
           --health-interval 5s
@@ -25,7 +24,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://kora:kora@localhost:5432/kora
       NODE_ENV: test
-      MONITOR_ENABLED: 'false'
+      MONITOR_ENABLED: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -35,10 +34,17 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install --no-frozen-lockfile
+      - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
-      - run: pnpm test
       - run: pnpm build
+      - name: Verify package runtime exports
+        run: |
+          test -f packages/event-schema/dist/src/index.js
+          test -f services/incident-engine/dist/src/index.js
+          test -f packages/topology/dist/index.js
+          pnpm --filter @kora/api exec node -e "Promise.all([import('@kora/event-schema'), import('@kora/incident-engine')])"
+          pnpm --filter @kora/topology exec node -e "import('@kora/topology')"
       - run: pnpm db:migrate
+      - run: pnpm -r test
