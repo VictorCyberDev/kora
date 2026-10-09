@@ -49,6 +49,7 @@ function classify(error: unknown): {
 export class HealthMonitor {
   private state: EngineState = initialState();
   private timer: NodeJS.Timeout | undefined;
+  private inFlight: Promise<void> | undefined;
   constructor(
     private readonly config: KoraConfig,
     private readonly store: KoraStore,
@@ -164,19 +165,26 @@ export class HealthMonitor {
     );
     return observation;
   }
+  private runScheduledCheck() {
+    if (this.inFlight) return;
+    this.inFlight = this.checkOnce()
+      .then(() => undefined)
+      .catch((err) => this.logger.error({ err }, "monitor iteration failed"))
+      .finally(() => {
+        this.inFlight = undefined;
+      });
+  }
   start() {
     if (this.timer) return;
-    const run = () =>
-      void this.checkOnce().catch((err) =>
-        this.logger.error({ err }, "monitor iteration failed"),
-      );
-    void this.checkOnce().catch((err) =>
-      this.logger.error({ err }, "monitor iteration failed"),
+    this.runScheduledCheck();
+    this.timer = setInterval(
+      () => this.runScheduledCheck(),
+      this.config.MONITOR_INTERVAL_MS,
     );
-    this.timer = setInterval(run, this.config.MONITOR_INTERVAL_MS);
   }
-  stop() {
+  async stop() {
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
+    await this.inFlight;
   }
 }
