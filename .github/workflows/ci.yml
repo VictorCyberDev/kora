@@ -39,5 +39,12 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
+      - name: Verify package runtime exports
+        run: |
+          test -f packages/event-schema/dist/src/index.js
+          test -f services/incident-engine/dist/src/index.js
+          test -f packages/topology/dist/index.js
+          pnpm --filter @kora/api exec node -e "Promise.all([import('@kora/event-schema'), import('@kora/incident-engine')])"
+          pnpm --filter @kora/topology exec node -e "import('@kora/topology')"
       - run: pnpm db:migrate
       - run: pnpm -r test
