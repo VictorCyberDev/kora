@@ -14,7 +14,6 @@
   "dependencies": {
     "@kora/event-schema": "workspace:*",
     "@kora/incident-engine": "workspace:*",
-    "@kora/topology": "workspace:*",
     "fastify": "^5.6.1",
     "postgres": "^3.4.7",
     "zod": "^4.1.12"
