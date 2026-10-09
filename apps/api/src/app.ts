@@ -26,7 +26,7 @@ export function buildApi(
       requestId: request.id,
     });
   });
-  app.get("/health", async () => ({ status: "ok" }));
+  app.get("/health", () => ({ status: "ok" }));
   app.get("/services", async () => ({ data: await store.listServices() }));
   app.get("/services/:id", async (req, reply) => {
     const { id } = idParams.parse(req.params);
