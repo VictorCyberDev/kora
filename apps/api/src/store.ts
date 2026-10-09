@@ -1,85 +1,21 @@
 import postgres from "postgres";
 import { parseDomainEvent, type DomainEvent } from "@kora/event-schema";
-import type {
-  IncidentSnapshot,
-  TelemetryObservation,
-} from "@kora/incident-engine";
-
+import type { IncidentSnapshot, TelemetryObservation } from "@kora/incident-engine";
+import type { ProviderResource } from "@kora/cloud-provider";
 export class KoraStore {
   constructor(private readonly sql: postgres.Sql) {}
-  async ensureService(name: string, healthUrl: string) {
-    const rows = await this
-      .sql`INSERT INTO services (id,name,health_url) VALUES (${crypto.randomUUID()},${name},${healthUrl}) ON CONFLICT(name) DO UPDATE SET health_url=EXCLUDED.health_url RETURNING id,name,health_url,created_at`;
-    return rows[0]!;
-  }
-  async recordObservation(o: TelemetryObservation) {
-    await this
-      .sql`INSERT INTO telemetry_observations(id,service_id,observed_at,healthy,http_status,latency_ms,timed_out,failure_reason,failure_category) VALUES(${o.id},${o.serviceId},${o.observedAt},${o.healthy},${o.httpStatus},${Math.round(o.latencyMs)},${o.timedOut},${o.failureReason},${o.failureCategory}) ON CONFLICT(id) DO NOTHING`;
-  }
-  async recordEvent(event: DomainEvent) {
-    const e = parseDomainEvent(event);
-    await this
-      .sql`INSERT INTO domain_events(event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload) VALUES(${e.eventId},${e.eventType},${e.schemaVersion},${e.occurredAt},${e.source},${e.serviceId ?? null},${e.correlationId ?? null},${this.sql.json(e.payload)}) ON CONFLICT(event_id) DO NOTHING`;
-  }
-  async createIncident(i: IncidentSnapshot) {
-    await this.sql.begin(async (tx) => {
-      await tx`INSERT INTO incidents(id,service_id,deduplication_key,state,severity,started_at,resolved_at) VALUES(${i.id},${i.serviceId},${i.deduplicationKey},${i.state},${i.severity},${i.startedAt},${i.resolvedAt})`;
-      for (let n = 0; n < i.evidence.length; n++) {
-        const o = i.evidence[n]!;
-        await tx`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${i.id},${o.id},'trigger',${n + 1}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
-      }
-    });
-  }
-  async appendEvidence(
-    incidentId: string,
-    o: TelemetryObservation,
-    kind: "ongoing" | "recovery",
-    count: number,
-  ) {
-    await this
-      .sql`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${incidentId},${o.id},${kind},${count}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
-  }
-  async resolveIncident(i: IncidentSnapshot) {
-    await this
-      .sql`UPDATE incidents SET state='RESOLVED',resolved_at=${i.resolvedAt},updated_at=now() WHERE id=${i.id}`;
-    for (let n = 0; n < i.recoveryEvidence.length; n++)
-      await this.appendEvidence(
-        i.id,
-        i.recoveryEvidence[n]!,
-        "recovery",
-        n + 1,
-      );
-  }
-  async listServices() {
-    return this
-      .sql`SELECT id,name,health_url,created_at FROM services ORDER BY created_at`;
-  }
-  async getService(id: string) {
-    return (
-      (
-        await this
-          .sql`SELECT id,name,health_url,created_at FROM services WHERE id=${id}`
-      )[0] ?? null
-    );
-  }
-  async listIncidents() {
-    return this
-      .sql`SELECT id,service_id,deduplication_key,state,severity,started_at,resolved_at,created_at,updated_at FROM incidents ORDER BY started_at DESC`;
-  }
-  async getIncident(id: string) {
-    return (
-      (
-        await this
-          .sql`SELECT id,service_id,deduplication_key,state,severity,started_at,resolved_at,created_at,updated_at FROM incidents WHERE id=${id}`
-      )[0] ?? null
-    );
-  }
-  async getIncidentEvents(id: string) {
-    return this
-      .sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at`;
-  }
-  async getIncidentEvidence(id: string) {
-    return this
-      .sql`SELECT e.id,e.evidence_kind,e.threshold_count,o.id observation_id,o.observed_at,o.healthy,o.http_status,o.latency_ms,o.timed_out,o.failure_reason,o.failure_category FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id WHERE e.incident_id=${id} ORDER BY o.observed_at`;
-  }
+  async ensureCloudResource(resource: ProviderResource) { const i = resource.identity; const rows = await this.sql`INSERT INTO cloud_resources(id,provider,provider_account,region,resource_type,provider_resource_id,display_name,provider_status,metadata) VALUES(${crypto.randomUUID()},${i.provider},${i.account},${i.region},${i.resourceType},${i.providerResourceId},${resource.displayName},${resource.status},${this.sql.json(resource.metadata)}) ON CONFLICT(provider,provider_account,region,resource_type,provider_resource_id) DO UPDATE SET display_name=EXCLUDED.display_name,provider_status=EXCLUDED.provider_status,metadata=EXCLUDED.metadata,updated_at=now() RETURNING id,provider,provider_account,region,resource_type,provider_resource_id,display_name,provider_status,metadata`; return rows[0]!; }
+  async ensureService(name: string, healthUrl: string, cloudResourceId?: string) { const rows = await this.sql`INSERT INTO services (id,name,health_url,cloud_resource_id) VALUES (${crypto.randomUUID()},${name},${healthUrl},${cloudResourceId ?? null}) ON CONFLICT(name) DO UPDATE SET health_url=EXCLUDED.health_url,cloud_resource_id=COALESCE(EXCLUDED.cloud_resource_id,services.cloud_resource_id) RETURNING id,name,health_url,cloud_resource_id,created_at`; return rows[0]!; }
+  async recordObservation(o: TelemetryObservation, cloudResourceId?: string, providerState?: string) { await this.sql`INSERT INTO telemetry_observations(id,service_id,observed_at,healthy,http_status,latency_ms,timed_out,failure_reason,failure_category,cloud_resource_id,provider_state) VALUES(${o.id},${o.serviceId},${o.observedAt},${o.healthy},${o.httpStatus},${Math.round(o.latencyMs)},${o.timedOut},${o.failureReason},${o.failureCategory},${cloudResourceId ?? null},${providerState ?? null}) ON CONFLICT(id) DO NOTHING`; }
+  async recordEvent(event: DomainEvent) { const e = parseDomainEvent(event); await this.sql`INSERT INTO domain_events(event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload) VALUES(${e.eventId},${e.eventType},${e.schemaVersion},${e.occurredAt},${e.source},${e.serviceId ?? null},${e.correlationId ?? null},${this.sql.json(e.payload)}) ON CONFLICT(event_id) DO NOTHING`; }
+  async createIncident(i: IncidentSnapshot) { await this.sql.begin(async (tx) => { await tx`INSERT INTO incidents(id,service_id,deduplication_key,state,severity,started_at,resolved_at) VALUES(${i.id},${i.serviceId},${i.deduplicationKey},${i.state},${i.severity},${i.startedAt},${i.resolvedAt})`; for (let n=0;n<i.evidence.length;n++){const o=i.evidence[n]!;await tx`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${i.id},${o.id},'trigger',${n+1}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;}}); }
+  async appendEvidence(incidentId:string,o:TelemetryObservation,kind:"ongoing"|"recovery",count:number){await this.sql`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${incidentId},${o.id},${kind},${count}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;}
+  async resolveIncident(i:IncidentSnapshot){await this.sql`UPDATE incidents SET state='RESOLVED',resolved_at=${i.resolvedAt},updated_at=now() WHERE id=${i.id}`;for(let n=0;n<i.recoveryEvidence.length;n++)await this.appendEvidence(i.id,i.recoveryEvidence[n]!,"recovery",n+1);}
+  async listServices(){return this.sql`SELECT s.id,s.name,s.health_url,s.created_at,s.cloud_resource_id,r.provider,r.provider_account,r.region,r.resource_type,r.provider_resource_id,r.display_name resource_name,r.provider_status FROM services s LEFT JOIN cloud_resources r ON r.id=s.cloud_resource_id ORDER BY s.created_at`;}
+  async getService(id:string){return (await this.sql`SELECT s.id,s.name,s.health_url,s.created_at,s.cloud_resource_id,r.provider,r.provider_account,r.region,r.resource_type,r.provider_resource_id,r.display_name resource_name,r.provider_status FROM services s LEFT JOIN cloud_resources r ON r.id=s.cloud_resource_id WHERE s.id=${id}`)[0]??null;}
+  async listIncidents(){return this.sql`SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,s.name service_name,r.id resource_id,r.provider,r.provider_account,r.region,r.resource_type,r.provider_resource_id,r.display_name resource_name,r.provider_status FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN cloud_resources r ON r.id=s.cloud_resource_id ORDER BY i.started_at DESC`;}
+  async getIncident(id:string){return (await this.sql`SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,s.name service_name,r.id resource_id,r.provider,r.provider_account,r.region,r.resource_type,r.provider_resource_id,r.display_name resource_name,r.provider_status FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN cloud_resources r ON r.id=s.cloud_resource_id WHERE i.id=${id}`)[0]??null;}
+  async getIncidentEvents(id:string){return this.sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at,event_id`;}
+  async getIncidentEvidence(id:string){return this.sql`SELECT e.id,e.evidence_kind,e.threshold_count,o.id observation_id,o.observed_at,o.healthy,o.http_status,o.latency_ms,o.timed_out,o.failure_reason,o.failure_category,o.provider_state,r.provider,r.provider_account,r.region,r.resource_type,r.provider_resource_id FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id LEFT JOIN cloud_resources r ON r.id=o.cloud_resource_id WHERE e.incident_id=${id} ORDER BY o.observed_at,o.id`;}
+  async getIncidentTimeline(id:string){return this.sql`SELECT occurred_at,event_type,event_id,payload FROM domain_events WHERE correlation_id=${id} UNION ALL SELECT o.observed_at,CASE WHEN o.healthy THEN 'HealthCheckSucceeded' ELSE 'HealthCheckFailed' END,o.id,jsonb_build_object('httpStatus',o.http_status,'latencyMs',o.latency_ms,'failureCategory',o.failure_category,'providerState',o.provider_state,'provider',r.provider,'providerResourceId',r.provider_resource_id) FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id LEFT JOIN cloud_resources r ON r.id=o.cloud_resource_id WHERE e.incident_id=${id} ORDER BY occurred_at,event_id`;}
 }
