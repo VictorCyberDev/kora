@@ -1,9 +1,28 @@
 import { z } from "zod";
-import type {
-  CloudProvider,
-  ProviderCapability,
-  ProviderResource,
-} from "@kora/topology";
+
+export type ProviderCapability =
+  | "RESOURCE_DISCOVERY"
+  | "RESOURCE_STATUS"
+  | "HEALTH_OBSERVATION"
+  | "LOG_ACCESS"
+  | "METRIC_ACCESS"
+  | "DEPLOYMENT_METADATA"
+  | "RESTART"
+  | "REDEPLOY"
+  | "ROLLBACK"
+  | "SCALING";
+
+export interface ProviderResource {
+  provider: string;
+  providerAccount: string;
+  region: string;
+  resourceType: string;
+  providerResourceId: string;
+  displayName?: string;
+  environment: string;
+  status?: string;
+  metadata: Readonly<Record<string, string | number | boolean | null>>;
+}
 
 const SAFE_METADATA_KEYS = new Set(["publicUrl", "healthPath"]);
 const SECRET_PATTERN = /token|secret|password|credential|api[_-]?key|authorization/i;
@@ -41,23 +60,48 @@ export class ProviderError extends Error {
 export function redactProviderText(value: string): string {
   return value
     .replace(/rmp_[A-Za-z0-9_-]+/g, "[REDACTED]")
-    .replace(/(token|password|secret|api[_-]?key|authorization)\s*[=:]\s*[^\s,;]+/gi, "$1=[REDACTED]");
+    .replace(
+      /(token|password|secret|api[_-]?key|authorization)\s*[=:]\s*[^\s,;]+/gi,
+      "$1=[REDACTED]",
+    );
 }
 
 export function normalizeProviderError(error: unknown): ProviderError {
-  const message = redactProviderText(error instanceof Error ? error.message : String(error));
+  const message = redactProviderText(
+    error instanceof Error ? error.message : String(error),
+  );
   if (/401|403|unauthori[sz]ed|forbidden/i.test(message))
-    return new ProviderError("AUTHENTICATION_FAILED", "RumptyCloud authentication failed", false);
+    return new ProviderError(
+      "AUTHENTICATION_FAILED",
+      "RumptyCloud authentication failed",
+      false,
+    );
   if (/429|rate.?limit/i.test(message))
-    return new ProviderError("RATE_LIMITED", "RumptyCloud rate limit reached", true);
+    return new ProviderError(
+      "RATE_LIMITED",
+      "RumptyCloud rate limit reached",
+      true,
+    );
   if (/404|not found|unknown resource/i.test(message))
-    return new ProviderError("UNKNOWN_RESOURCE", "RumptyCloud resource was not found", false);
+    return new ProviderError(
+      "UNKNOWN_RESOURCE",
+      "RumptyCloud resource was not found",
+      false,
+    );
   if (/timeout|timed out|ECONN|network|unavailable/i.test(message))
-    return new ProviderError("PROVIDER_UNAVAILABLE", "RumptyCloud is temporarily unavailable", true);
-  return new ProviderError("MALFORMED_RESPONSE", `RumptyCloud response could not be normalized: ${message}`, false);
+    return new ProviderError(
+      "PROVIDER_UNAVAILABLE",
+      "RumptyCloud is temporarily unavailable",
+      true,
+    );
+  return new ProviderError(
+    "MALFORMED_RESPONSE",
+    `RumptyCloud response could not be normalized: ${message}`,
+    false,
+  );
 }
 
-export class RumptyCloudProvider implements CloudProvider {
+export class RumptyCloudProvider {
   readonly name = "rumptycloud";
   readonly capabilities: ReadonlySet<ProviderCapability> = new Set([
     "HEALTH_OBSERVATION",
@@ -67,7 +111,11 @@ export class RumptyCloudProvider implements CloudProvider {
     const parsed = rumptyResourceSchema.parse(input);
     const metadata: Record<string, string> = {};
     for (const [key, value] of Object.entries(parsed)) {
-      if (SAFE_METADATA_KEYS.has(key) && typeof value === "string" && !SECRET_PATTERN.test(key))
+      if (
+        SAFE_METADATA_KEYS.has(key) &&
+        typeof value === "string" &&
+        !SECRET_PATTERN.test(key)
+      )
         metadata[key] = value;
     }
     return {
@@ -84,7 +132,6 @@ export class RumptyCloudProvider implements CloudProvider {
   }
 }
 
-// Official docs currently document API-key authentication and VM/deployment CLI
-// operations, but not a stable machine-readable resource-discovery response schema.
-// Consequently this adapter deliberately does not advertise RESOURCE_DISCOVERY or
-// RESOURCE_STATUS. Credentialed discovery will be added only against a verified API contract.
+// Official docs document API-key authentication and VM/deployment CLI operations,
+// but not a stable machine-readable discovery response schema. The adapter therefore
+// does not advertise RESOURCE_DISCOVERY or RESOURCE_STATUS yet.
