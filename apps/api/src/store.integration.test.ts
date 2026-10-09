@@ -61,7 +61,7 @@ describe.skipIf(!databaseUrl)("PostgreSQL persistence", () => {
     expect(evidence[0]?.observation_id).toBe(observation.id);
   });
 
-  it("proves the deterministic failure and recovery lifecycle through PostgreSQL and the API", async () => {
+  it("persists the full failure and recovery lifecycle", async () => {
     const service = await store!.ensureService(
       `vertical-${crypto.randomUUID()}`,
       "http://demo.test/health",
@@ -85,9 +85,10 @@ describe.skipIf(!databaseUrl)("PostgreSQL persistence", () => {
     let index = 0;
     vi.stubGlobal(
       "fetch",
-      vi.fn(() =>
-        Promise.resolve(new Response("", { status: statuses[index++] ?? 200 })),
-      ),
+      vi.fn(() => {
+        const status = statuses[index++] ?? 200;
+        return Promise.resolve(new Response("", { status }));
+      }),
     );
     const monitor = new HealthMonitor(config, store!, logger, serviceId);
 
@@ -99,21 +100,24 @@ describe.skipIf(!databaseUrl)("PostgreSQL persistence", () => {
     expect(active).toHaveLength(1);
     const incidentId = String(active[0]!.id);
     const observationsAfterFailure = await sql!`
-        SELECT id, healthy FROM telemetry_observations
-        WHERE service_id = ${serviceId}
-        ORDER BY observed_at
-      `;
+      SELECT id, healthy FROM telemetry_observations
+      WHERE service_id = ${serviceId}
+      ORDER BY observed_at
+    `;
     expect(observationsAfterFailure).toHaveLength(5);
-    expect(observationsAfterFailure.filter((row) => !row.healthy)).toHaveLength(
-      4,
+    const failedObservations = observationsAfterFailure.filter(
+      (row) => !row.healthy,
     );
+    expect(failedObservations).toHaveLength(4);
     const failureEvidence = await store!.getIncidentEvidence(incidentId);
-    expect(
-      failureEvidence.filter((row) => row.evidence_kind === "trigger"),
-    ).toHaveLength(3);
-    expect(
-      failureEvidence.filter((row) => row.evidence_kind === "ongoing"),
-    ).toHaveLength(1);
+    const triggerEvidence = failureEvidence.filter(
+      (row) => row.evidence_kind === "trigger",
+    );
+    const ongoingEvidence = failureEvidence.filter(
+      (row) => row.evidence_kind === "ongoing",
+    );
+    expect(triggerEvidence).toHaveLength(3);
+    expect(ongoingEvidence).toHaveLength(1);
 
     for (let n = 0; n < 3; n++) await monitor.checkOnce();
 
@@ -121,38 +125,42 @@ describe.skipIf(!databaseUrl)("PostgreSQL persistence", () => {
     expect(incident?.state).toBe("RESOLVED");
     expect(incident?.resolved_at).not.toBeNull();
     const finalEvidence = await store!.getIncidentEvidence(incidentId);
-    expect(
-      finalEvidence.filter((row) => row.evidence_kind === "recovery"),
-    ).toHaveLength(3);
+    const recoveryEvidence = finalEvidence.filter(
+      (row) => row.evidence_kind === "recovery",
+    );
+    expect(recoveryEvidence).toHaveLength(3);
     const events = await store!.getIncidentEvents(incidentId);
-    expect(
-      events.filter((row) => row.event_type === "IncidentCreated"),
-    ).toHaveLength(1);
-    expect(
-      events.filter((row) => row.event_type === "RecoveryVerified"),
-    ).toHaveLength(1);
+    const createdEvents = events.filter(
+      (row) => row.event_type === "IncidentCreated",
+    );
+    const recoveryEvents = events.filter(
+      (row) => row.event_type === "RecoveryVerified",
+    );
+    expect(createdEvents).toHaveLength(1);
+    expect(recoveryEvents).toHaveLength(1);
 
     const app = buildApi(store!, "test");
     const servicesResponse = await app.inject("/services");
-    const services = servicesResponse.json<{
-      data: Array<{ id: string }>;
-    }>();
+    const services = servicesResponse.json<{ data: Array<{ id: string }> }>();
     expect(services.data.some((item) => item.id === serviceId)).toBe(true);
     const incidentResponse = await app.inject(`/incidents/${incidentId}`);
     expect(incidentResponse.statusCode).toBe(200);
-    expect(
-      incidentResponse.json<{ data: { state: string } }>().data.state,
-    ).toBe("RESOLVED");
-    const evidenceResponse = await app.inject(`/incidents/${incidentId}/evidence`);
+    const incidentBody = incidentResponse.json<{ data: { state: string } }>();
+    expect(incidentBody.data.state).toBe("RESOLVED");
+    const evidencePath = `/incidents/${incidentId}/evidence`;
+    const evidenceResponse = await app.inject(evidencePath);
     expect(evidenceResponse.statusCode).toBe(200);
     expect(evidenceResponse.json<{ data: unknown[] }>().data).toHaveLength(7);
-    const eventsResponse = await app.inject(`/incidents/${incidentId}/events`);
+    const eventsPath = `/incidents/${incidentId}/events`;
+    const eventsResponse = await app.inject(eventsPath);
     expect(eventsResponse.statusCode).toBe(200);
-    expect(
-      eventsResponse
-        .json<{ data: Array<{ event_type: string }> }>()
-        .data.some((item) => item.event_type === "RecoveryVerified"),
-    ).toBe(true);
+    const eventsBody = eventsResponse.json<{
+      data: Array<{ event_type: string }>;
+    }>();
+    const recoveryExposed = eventsBody.data.some(
+      (item) => item.event_type === "RecoveryVerified",
+    );
+    expect(recoveryExposed).toBe(true);
     await app.close();
   });
 });
