@@ -17,18 +17,14 @@ export function buildApi(
   app.setErrorHandler((error, request, reply) => {
     request.log.error({ err: error }, "request failed");
     if (error instanceof ZodError) {
-      void reply
-        .code(400)
-        .send({ error: "invalid_request", requestId: request.id });
+      reply.code(400).send({ error: "invalid_request", requestId: request.id });
       return;
     }
     const status = (error as { statusCode?: number }).statusCode ?? 500;
-    void reply
-      .code(status >= 500 ? 500 : status)
-      .send({
-        error: status >= 500 ? "internal_server_error" : "bad_request",
-        requestId: request.id,
-      });
+    reply.code(status >= 500 ? 500 : status).send({
+      error: status >= 500 ? "internal_server_error" : "bad_request",
+      requestId: request.id,
+    });
   });
   app.get("/health", async () => ({ status: "ok" }));
   app.get("/services", async () => ({ data: await store.listServices() }));
