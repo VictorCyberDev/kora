@@ -19,6 +19,7 @@ const config: KoraConfig = {
   MONITOR_TIMEOUT_MS: 500,
   MONITOR_FAILURE_THRESHOLD: 3,
   MONITOR_RECOVERY_THRESHOLD: 3,
+  KORA_ENVIRONMENT: "test",
 };
 const logger = {
   info: () => undefined,
