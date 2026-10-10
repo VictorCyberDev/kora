@@ -162,7 +162,9 @@ describe("deterministic diagnosis", () => {
   });
   it("never infers threshold crossing solely from the third failure", () => {
     const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX"]);
-    expect(buildDiagnosticSnapshot(data).temporal.thresholdCrossedAt).toBeNull();
+    expect(
+      buildDiagnosticSnapshot(data).temporal.thresholdCrossedAt,
+    ).toBeNull();
   });
   it("uses an authoritative threshold timestamp independent of failure position", () => {
     const data = input([
