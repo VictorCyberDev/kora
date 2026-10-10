@@ -27,7 +27,8 @@ export class KoraStore {
     )) as T;
   }
   async ensureService(name: string, healthUrl: string) {
-    const rows = await this.sql`INSERT INTO services (id,name,health_url) VALUES (${crypto.randomUUID()},${name},${healthUrl}) ON CONFLICT(name) DO UPDATE SET health_url=EXCLUDED.health_url RETURNING id,name,health_url,created_at`;
+    const rows = await this
+      .sql`INSERT INTO services (id,name,health_url) VALUES (${crypto.randomUUID()},${name},${healthUrl}) ON CONFLICT(name) DO UPDATE SET health_url=EXCLUDED.health_url RETURNING id,name,health_url,created_at`;
     return rows[0]!;
   }
   async ensureProviderResource(resource: ProviderResource) {
@@ -40,7 +41,8 @@ export class KoraStore {
     return rows[0]!;
   }
   async bindServiceToResource(serviceId: string, resourceId: string) {
-    await this.sql`INSERT INTO service_resource_bindings(service_id,resource_id,relationship) VALUES(${serviceId},${resourceId},'RUNS_ON') ON CONFLICT DO NOTHING`;
+    await this
+      .sql`INSERT INTO service_resource_bindings(service_id,resource_id,relationship) VALUES(${serviceId},${resourceId},'RUNS_ON') ON CONFLICT DO NOTHING`;
   }
   async recordObservation(o: TelemetryObservation) {
     await this.sql`
@@ -155,7 +157,8 @@ export class KoraStore {
     );
   }
   async getIncidentEvents(id: string) {
-    return this.sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at,event_id`;
+    return this
+      .sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at,event_id`;
   }
   async getIncidentEvidence(id: string) {
     return this.sql`
@@ -186,15 +189,10 @@ export class KoraStore {
           : null,
         source: "HEALTH_CHECK",
         type: row.healthy ? "HealthCheckSucceeded" : "HealthCheckFailed",
-        observedAt: new Date(
-          row.observed_at as string | Date,
-        ).toISOString(),
-        ingestedAt: new Date(
-          row.ingested_at as string | Date,
-        ).toISOString(),
+        observedAt: new Date(row.observed_at as string | Date).toISOString(),
+        ingestedAt: new Date(row.ingested_at as string | Date).toISOString(),
         healthy: Boolean(row.healthy),
-        httpStatus:
-          row.http_status === null ? null : Number(row.http_status),
+        httpStatus: row.http_status === null ? null : Number(row.http_status),
         failureCategory:
           row.failure_category === null ? null : String(row.failure_category),
         providerStatus:
@@ -211,9 +209,7 @@ export class KoraStore {
         id,
         serviceId: String(incident.service_id),
         state: String(incident.state),
-        startedAt: new Date(
-          incident.started_at as string | Date,
-        ).toISOString(),
+        startedAt: new Date(incident.started_at as string | Date).toISOString(),
         resolvedAt: incident.resolved_at
           ? new Date(incident.resolved_at as string | Date).toISOString()
           : null,
@@ -239,19 +235,23 @@ export class KoraStore {
         new Date(incident.updated_at as string | Date).toISOString(),
     });
     const snapshotId = crypto.randomUUID();
-    await this.sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${snapshotId},${id},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot)}) ON CONFLICT(incident_id,content_hash) DO NOTHING`;
+    await this
+      .sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${snapshotId},${id},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot)}) ON CONFLICT(incident_id,content_hash) DO NOTHING`;
     const persisted = (
-      await this.sql`SELECT id FROM diagnostic_snapshots WHERE incident_id=${id} AND content_hash=${snapshot.contentHash}`
+      await this
+        .sql`SELECT id FROM diagnostic_snapshots WHERE incident_id=${id} AND content_hash=${snapshot.contentHash}`
     )[0]!;
     return { snapshotId: String(persisted.id), ...snapshot };
   }
   async listDiagnosticSnapshots(id: string) {
-    return this.sql`SELECT id,incident_id,created_at,content_hash FROM diagnostic_snapshots WHERE incident_id=${id} ORDER BY created_at,id`;
+    return this
+      .sql`SELECT id,incident_id,created_at,content_hash FROM diagnostic_snapshots WHERE incident_id=${id} ORDER BY created_at,id`;
   }
   async getDiagnosticSnapshot(incidentId: string, snapshotId: string) {
     return (
       (
-        await this.sql`SELECT id,incident_id,created_at,content_hash,snapshot FROM diagnostic_snapshots WHERE incident_id=${incidentId} AND id=${snapshotId}`
+        await this
+          .sql`SELECT id,incident_id,created_at,content_hash,snapshot FROM diagnostic_snapshots WHERE incident_id=${incidentId} AND id=${snapshotId}`
       )[0] ?? null
     );
   }
