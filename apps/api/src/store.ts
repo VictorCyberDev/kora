@@ -225,14 +225,10 @@ export class KoraStore {
           ? new Date(incident.resolved_at as string | Date).toISOString()
           : null,
         detectedAt: incidentCreated
-          ? new Date(
-              incidentCreated.occurred_at as string | Date,
-            ).toISOString()
+          ? new Date(incidentCreated.occurred_at as string | Date).toISOString()
           : null,
         thresholdCrossedAt: thresholdEvidence
-          ? new Date(
-              thresholdEvidence.observed_at as string | Date,
-            ).toISOString()
+          ? new Date(thresholdEvidence.observed_at as string | Date).toISOString()
           : null,
       },
       resource: incident.resource
