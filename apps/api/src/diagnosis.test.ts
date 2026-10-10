@@ -17,8 +17,10 @@ function input(
       id: incidentId,
       serviceId,
       state: "DETECTED",
-      startedAt: "2026-01-01T00:00:30.000Z",
+      startedAt: "2026-01-01T00:00:00.000Z",
       resolvedAt: null,
+      detectedAt: "2026-01-01T00:00:31.000Z",
+      thresholdCrossedAt: null,
     },
     resource: {
       id: "r1",
@@ -122,6 +124,15 @@ describe("deterministic diagnosis", () => {
       buildDiagnosticSnapshot(b).contentHash,
     );
   });
+  it("does not include snapshot creation time in the diagnostic content hash", () => {
+    const a = input(["HTTP_5XX", "TIMEOUT", "HTTP_5XX"]);
+    const b = structuredClone(a);
+    b.createdAt = "2030-12-31T23:59:59.000Z";
+    const first = buildDiagnosticSnapshot(a);
+    const second = buildDiagnosticSnapshot(b);
+    expect(first.createdAt).not.toBe(second.createdAt);
+    expect(first.contentHash).toBe(second.contentHash);
+  });
   it("changes hash when diagnostically relevant evidence changes", () => {
     const a = input(["HTTP_5XX"]);
     const b = input(["TIMEOUT"]);
@@ -148,6 +159,41 @@ describe("deterministic diagnosis", () => {
     expect(result.truncated).toBe(true);
     expect(result.totalEvidenceCount).toBe(3);
     expect(result.evidence).toHaveLength(2);
+  });
+  it("never infers threshold crossing solely from the third failure", () => {
+    const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX"]);
+    expect(buildDiagnosticSnapshot(data).temporal.thresholdCrossedAt).toBeNull();
+  });
+  it("uses an authoritative threshold timestamp independent of failure position", () => {
+    const data = input([
+      "HTTP_5XX",
+      "HTTP_5XX",
+      "HTTP_5XX",
+      "HTTP_5XX",
+    ]);
+    data.incident.thresholdCrossedAt = data.evidence[3]!.observedAt;
+    expect(buildDiagnosticSnapshot(data).temporal.thresholdCrossedAt).toBe(
+      data.evidence[3]!.observedAt,
+    );
+  });
+  it("truncated evidence cannot manufacture a threshold crossing", () => {
+    const data = input([
+      "HTTP_5XX",
+      "HTTP_5XX",
+      "HTTP_5XX",
+      "HTTP_5XX",
+    ]);
+    data.limit = 2;
+    const result = buildDiagnosticSnapshot(data);
+    expect(result.truncated).toBe(true);
+    expect(result.temporal.thresholdCrossedAt).toBeNull();
+  });
+  it("preserves the authoritative incident detection timestamp", () => {
+    const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX"]);
+    data.incident.detectedAt = "2026-01-01T00:00:47.000Z";
+    expect(buildDiagnosticSnapshot(data).temporal.incidentDetectedAt).toBe(
+      "2026-01-01T00:00:47.000Z",
+    );
   });
   it("adds recovery finding only for verified recovery", () => {
     const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX", null, null, null]);
