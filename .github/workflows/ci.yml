@@ -36,11 +36,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
-      - name: Show formatter repair diff
-        if: failure()
-        run: |
-          pnpm exec prettier --write apps/api/src/diagnosis.ts apps/api/src/diagnosis.test.ts apps/api/src/store.ts
-          git diff -- apps/api/src/diagnosis.ts apps/api/src/diagnosis.test.ts apps/api/src/store.ts
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
