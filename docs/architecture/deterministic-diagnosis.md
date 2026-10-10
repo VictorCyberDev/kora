@@ -42,9 +42,17 @@ Provider `RUNNING` plus failing health is preserved as `RESOURCE_RUNNING_SERVICE
 
 The snapshot explicitly records missing evidence. With the current collection surface these include `NO_RESOURCE_METRICS`, `NO_APPLICATION_LOGS` and `NO_DEPLOYMENT_CONTEXT`; `NO_PROVIDER_STATUS` is added when no provider status is present.
 
+## Temporal authority
+
+Diagnostic temporal facts do not depend on evidence-array position. `thresholdCrossedAt` comes from the persisted trigger evidence with the greatest `threshold_count`, which is written by the deterministic incident engine when the incident is created. It is `null` when that authoritative trigger metadata is unavailable. Evidence truncation therefore cannot manufacture a threshold crossing.
+
+`incidentDetectedAt` comes from the persisted `IncidentCreated` domain event and is `null` when that event is unavailable. The incident's `startedAt` remains a separate persisted incident fact; it is not relabeled as detection time.
+
 ## Snapshots and integrity
 
-`diagnostic_snapshots` stores immutable JSON snapshots and SHA-256 hashes. Equivalent diagnostically relevant input is canonicalized with sorted object keys and deterministic evidence/finding ordering. The hash changes when relevant input changes. Snapshot rows reject updates at the database layer.
+`diagnostic_snapshots` stores immutable JSON snapshots and SHA-256 hashes. Equivalent diagnostically relevant input is canonicalized with sorted object keys and deterministic evidence/finding ordering. PostgreSQL rejects both `UPDATE` and `DELETE` of snapshot rows; any future retention or purge mechanism requires a separately designed privileged path.
+
+The content-hash boundary deliberately excludes snapshot metadata such as the snapshot UUID, `createdAt`, and database persistence timestamps. It includes the canonical diagnostic state: incident identity and state, authoritative diagnostic temporal facts, evidence identities and content hashes (including evidence observation/ingestion timestamps), findings and exact supporting evidence IDs, contradictions, evidence gaps, root-cause state, and truncation semantics. Therefore recreating the same diagnostic state at a different snapshot creation time yields the same `contentHash`, while diagnostically meaningful evidence or state changes alter it.
 
 Evidence retrieval is capped deterministically (default 500 items). If the cap is reached, `truncated=true` and `totalEvidenceCount` exposes the loss explicitly rather than silently pretending the snapshot is complete.
 
