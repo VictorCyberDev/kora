@@ -203,6 +203,17 @@ export class KoraStore {
     const recoveryVerified = events.some(
       (row) => row.event_type === "RecoveryVerified",
     );
+    const incidentCreated = events.find(
+      (row) => row.event_type === "IncidentCreated",
+    );
+    const thresholdEvidence = rows
+      .filter((row) => row.evidence_kind === "trigger")
+      .reduce<(typeof rows)[number] | null>((latest, row) => {
+        if (!latest) return row;
+        return Number(row.threshold_count) > Number(latest.threshold_count)
+          ? row
+          : latest;
+      }, null);
     const latestEvidenceAt = evidence.at(-1)?.observedAt;
     const snapshot = buildDiagnosticSnapshot({
       incident: {
@@ -212,6 +223,16 @@ export class KoraStore {
         startedAt: new Date(incident.started_at as string | Date).toISOString(),
         resolvedAt: incident.resolved_at
           ? new Date(incident.resolved_at as string | Date).toISOString()
+          : null,
+        detectedAt: incidentCreated
+          ? new Date(
+              incidentCreated.occurred_at as string | Date,
+            ).toISOString()
+          : null,
+        thresholdCrossedAt: thresholdEvidence
+          ? new Date(
+              thresholdEvidence.observed_at as string | Date,
+            ).toISOString()
           : null,
       },
       resource: incident.resource
