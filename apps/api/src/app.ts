@@ -3,15 +3,11 @@ import { z, ZodError } from "zod";
 import { KoraStore } from "./store.js";
 
 const idParams = z.object({ id: z.string().uuid() });
-export function buildApi(
-  store: KoraStore,
-  nodeEnv = "development",
-  logLevel = "info",
-) {
+const snapshotParams = z.object({ id: z.string().uuid(), snapshotId: z.string().uuid() });
+export function buildApi(store: KoraStore, nodeEnv = "development", logLevel = "info") {
   const app = Fastify({
     logger: nodeEnv === "test" ? false : { level: logLevel },
-    genReqId: (req) =>
-      String(req.headers["x-request-id"] ?? crypto.randomUUID()),
+    genReqId: (req) => String(req.headers["x-request-id"] ?? crypto.randomUUID()),
     disableRequestLogging: false,
   });
   app.setErrorHandler((error, request, reply) => {
@@ -21,45 +17,50 @@ export function buildApi(
       return;
     }
     const status = (error as { statusCode?: number }).statusCode ?? 500;
-    reply.code(status >= 500 ? 500 : status).send({
-      error: status >= 500 ? "internal_server_error" : "bad_request",
-      requestId: request.id,
-    });
+    reply.code(status >= 500 ? 500 : status).send({ error: status >= 500 ? "internal_server_error" : "bad_request", requestId: request.id });
   });
   app.get("/health", () => ({ status: "ok" }));
   app.get("/services", async () => ({ data: await store.listServices() }));
   app.get("/services/:id", async (req, reply) => {
     const { id } = idParams.parse(req.params);
     const item = await store.getService(id);
-    return item
-      ? { data: item }
-      : reply.code(404).send({ error: "not_found", requestId: req.id });
+    return item ? { data: item } : reply.code(404).send({ error: "not_found", requestId: req.id });
   });
   app.get("/incidents", async () => ({ data: await store.listIncidents() }));
   app.get("/incidents/:id", async (req, reply) => {
     const { id } = idParams.parse(req.params);
     const item = await store.getIncident(id);
-    return item
-      ? { data: item }
-      : reply.code(404).send({ error: "not_found", requestId: req.id });
+    return item ? { data: item } : reply.code(404).send({ error: "not_found", requestId: req.id });
   });
   app.get("/incidents/:id/events", async (req, reply) => {
     const { id } = idParams.parse(req.params);
-    if (!(await store.getIncident(id)))
-      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    if (!(await store.getIncident(id))) return reply.code(404).send({ error: "not_found", requestId: req.id });
     return { data: await store.getIncidentEvents(id) };
   });
   app.get("/incidents/:id/evidence", async (req, reply) => {
     const { id } = idParams.parse(req.params);
-    if (!(await store.getIncident(id)))
-      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    if (!(await store.getIncident(id))) return reply.code(404).send({ error: "not_found", requestId: req.id });
     return { data: await store.getIncidentEvidence(id) };
   });
   app.get("/incidents/:id/timeline", async (req, reply) => {
     const { id } = idParams.parse(req.params);
-    if (!(await store.getIncident(id)))
-      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    if (!(await store.getIncident(id))) return reply.code(404).send({ error: "not_found", requestId: req.id });
     return { data: await store.getIncidentTimeline(id) };
+  });
+  app.get("/incidents/:id/diagnosis", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    const snapshot = await store.createDiagnosticSnapshot(id);
+    return snapshot ? { data: snapshot } : reply.code(404).send({ error: "not_found", requestId: req.id });
+  });
+  app.get("/incidents/:id/snapshots", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    if (!(await store.getIncident(id))) return reply.code(404).send({ error: "not_found", requestId: req.id });
+    return { data: await store.listDiagnosticSnapshots(id) };
+  });
+  app.get("/incidents/:id/snapshots/:snapshotId", async (req, reply) => {
+    const { id, snapshotId } = snapshotParams.parse(req.params);
+    const snapshot = await store.getDiagnosticSnapshot(id, snapshotId);
+    return snapshot ? { data: snapshot } : reply.code(404).send({ error: "not_found", requestId: req.id });
   });
   return app;
 }
