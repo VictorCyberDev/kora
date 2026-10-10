@@ -96,8 +96,7 @@ describe("deterministic diagnosis", () => {
     ).toBe("TLS_HANDSHAKE_FAILURE"));
   it("maps connection refused evidence", () =>
     expect(
-      buildDiagnosticSnapshot(input(["CONNECTION_REFUSED"])).findings[0]
-        ?.code,
+      buildDiagnosticSnapshot(input(["CONNECTION_REFUSED"])).findings[0]?.code,
     ).toBe("CONNECTION_REFUSED"));
   it("maps provider unavailable without claiming workload failure cause", () => {
     const result = buildDiagnosticSnapshot(
@@ -151,14 +150,7 @@ describe("deterministic diagnosis", () => {
     expect(result.evidence).toHaveLength(2);
   });
   it("adds recovery finding only for verified recovery", () => {
-    const data = input([
-      "HTTP_5XX",
-      "HTTP_5XX",
-      "HTTP_5XX",
-      null,
-      null,
-      null,
-    ]);
+    const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX", null, null, null]);
     data.recoveryVerified = true;
     data.incident.state = "RESOLVED";
     data.incident.resolvedAt = "2026-01-01T00:01:00.000Z";
