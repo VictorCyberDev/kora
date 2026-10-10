@@ -129,10 +129,14 @@ export class KoraStore {
       FROM services s LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id ORDER BY s.created_at`;
   }
   async getService(id: string) {
-    return ((await this.sql`
+    return (
+      (
+        await this.sql`
       SELECT s.id,s.name,s.health_url,s.created_at,
         CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,'displayName',r.display_name,'environment',r.environment,'status',r.provider_status) END AS resource
-      FROM services s LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id WHERE s.id=${id}`)[0] ?? null);
+      FROM services s LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id WHERE s.id=${id}`
+      )[0] ?? null
+    );
   }
   async listIncidents() {
     return this.sql`
@@ -141,10 +145,14 @@ export class KoraStore {
       FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id ORDER BY i.started_at DESC`;
   }
   async getIncident(id: string) {
-    return ((await this.sql`
+    return (
+      (
+        await this.sql`
       SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,s.name AS service_name,
         CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,'displayName',r.display_name,'environment',r.environment,'status',r.provider_status) END AS resource
-      FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id WHERE i.id=${id}`)[0] ?? null);
+      FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id WHERE i.id=${id}`
+      )[0] ?? null
+    );
   }
   async getIncidentEvents(id: string) {
     return this.sql`SELECT event_id,event_type,schema_version,occurred_at,source,service_id,correlation_id,payload FROM domain_events WHERE correlation_id=${id} ORDER BY occurred_at,event_id`;
@@ -168,52 +176,83 @@ export class KoraStore {
     if (!incident) return null;
     const rows = await this.getIncidentEvidence(id);
     const events = await this.getIncidentEvents(id);
-    const evidence: Omit<DiagnosticEvidence, "contentHash">[] = rows.map((row) => ({
-      id: String(row.observation_id),
-      incidentId: id,
-      serviceId: String(row.service_id),
-      resourceId: row.resource ? String((row.resource as { id: string }).id) : null,
-      source: "HEALTH_CHECK",
-      type: row.healthy ? "HealthCheckSucceeded" : "HealthCheckFailed",
-      observedAt: new Date(row.observed_at as string | Date).toISOString(),
-      ingestedAt: new Date(row.ingested_at as string | Date).toISOString(),
-      healthy: Boolean(row.healthy),
-      httpStatus: row.http_status === null ? null : Number(row.http_status),
-      failureCategory: row.failure_category === null ? null : String(row.failure_category),
-      providerStatus: row.provider_status === null ? null : String(row.provider_status),
-      provenance: "kora:health-monitor",
-    }));
-    const recoveryVerified = events.some((row) => row.event_type === "RecoveryVerified");
+    const evidence: Omit<DiagnosticEvidence, "contentHash">[] = rows.map(
+      (row) => ({
+        id: String(row.observation_id),
+        incidentId: id,
+        serviceId: String(row.service_id),
+        resourceId: row.resource
+          ? String((row.resource as { id: string }).id)
+          : null,
+        source: "HEALTH_CHECK",
+        type: row.healthy ? "HealthCheckSucceeded" : "HealthCheckFailed",
+        observedAt: new Date(
+          row.observed_at as string | Date,
+        ).toISOString(),
+        ingestedAt: new Date(
+          row.ingested_at as string | Date,
+        ).toISOString(),
+        healthy: Boolean(row.healthy),
+        httpStatus:
+          row.http_status === null ? null : Number(row.http_status),
+        failureCategory:
+          row.failure_category === null ? null : String(row.failure_category),
+        providerStatus:
+          row.provider_status === null ? null : String(row.provider_status),
+        provenance: "kora:health-monitor",
+      }),
+    );
+    const recoveryVerified = events.some(
+      (row) => row.event_type === "RecoveryVerified",
+    );
     const latestEvidenceAt = evidence.at(-1)?.observedAt;
     const snapshot = buildDiagnosticSnapshot({
       incident: {
         id,
         serviceId: String(incident.service_id),
         state: String(incident.state),
-        startedAt: new Date(incident.started_at as string | Date).toISOString(),
-        resolvedAt: incident.resolved_at ? new Date(incident.resolved_at as string | Date).toISOString() : null,
+        startedAt: new Date(
+          incident.started_at as string | Date,
+        ).toISOString(),
+        resolvedAt: incident.resolved_at
+          ? new Date(incident.resolved_at as string | Date).toISOString()
+          : null,
       },
       resource: incident.resource
         ? {
             id: String((incident.resource as { id: string }).id),
-            provider: String((incident.resource as { provider: string }).provider),
-            providerResourceId: String((incident.resource as { providerResourceId: string }).providerResourceId),
-            providerStatus: (incident.resource as { status: string | null }).status,
+            provider: String(
+              (incident.resource as { provider: string }).provider,
+            ),
+            providerResourceId: String(
+              (incident.resource as { providerResourceId: string })
+                .providerResourceId,
+            ),
+            providerStatus: (incident.resource as { status: string | null })
+              .status,
           }
         : null,
       evidence,
       recoveryVerified,
-      createdAt: latestEvidenceAt ?? new Date(incident.updated_at as string | Date).toISOString(),
+      createdAt:
+        latestEvidenceAt ??
+        new Date(incident.updated_at as string | Date).toISOString(),
     });
     const snapshotId = crypto.randomUUID();
     await this.sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${snapshotId},${id},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot)}) ON CONFLICT(incident_id,content_hash) DO NOTHING`;
-    const persisted = (await this.sql`SELECT id FROM diagnostic_snapshots WHERE incident_id=${id} AND content_hash=${snapshot.contentHash}`)[0]!;
+    const persisted = (
+      await this.sql`SELECT id FROM diagnostic_snapshots WHERE incident_id=${id} AND content_hash=${snapshot.contentHash}`
+    )[0]!;
     return { snapshotId: String(persisted.id), ...snapshot };
   }
   async listDiagnosticSnapshots(id: string) {
     return this.sql`SELECT id,incident_id,created_at,content_hash FROM diagnostic_snapshots WHERE incident_id=${id} ORDER BY created_at,id`;
   }
   async getDiagnosticSnapshot(incidentId: string, snapshotId: string) {
-    return ((await this.sql`SELECT id,incident_id,created_at,content_hash,snapshot FROM diagnostic_snapshots WHERE incident_id=${incidentId} AND id=${snapshotId}`)[0] ?? null);
+    return (
+      (
+        await this.sql`SELECT id,incident_id,created_at,content_hash,snapshot FROM diagnostic_snapshots WHERE incident_id=${incidentId} AND id=${snapshotId}`
+      )[0] ?? null
+    );
   }
 }
