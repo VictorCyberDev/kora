@@ -3,10 +3,7 @@ import { createHash } from "node:crypto";
 export type EvidenceSource =
   "HEALTH_CHECK" | "PROVIDER" | "TOPOLOGY" | "INCIDENT_ENGINE" | "SYSTEM";
 export type DiagnosticConfidence =
-  | "CONFIRMED"
-  | "STRONGLY_SUPPORTED"
-  | "SUPPORTED"
-  | "INSUFFICIENT_EVIDENCE";
+  "CONFIRMED" | "STRONGLY_SUPPORTED" | "SUPPORTED" | "INSUFFICIENT_EVIDENCE";
 export type RootCauseState = "IDENTIFIED" | "SUSPECTED" | "UNKNOWN";
 export type FindingCode =
   | "SERVICE_HTTP_5XX"
@@ -285,9 +282,7 @@ export function buildDiagnosticSnapshot(
     },
     evidence,
     findings: findings.sort((a, b) => a.code.localeCompare(b.code)),
-    contradictions: contradictions.sort((a, b) =>
-      a.code.localeCompare(b.code),
-    ),
+    contradictions: contradictions.sort((a, b) => a.code.localeCompare(b.code)),
     evidenceGaps: gaps.sort(),
     rootCause: {
       state: "UNKNOWN" as const,

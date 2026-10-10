@@ -167,24 +167,14 @@ describe("deterministic diagnosis", () => {
     ).toBeNull();
   });
   it("uses an authoritative threshold timestamp independent of failure position", () => {
-    const data = input([
-      "HTTP_5XX",
-      "HTTP_5XX",
-      "HTTP_5XX",
-      "HTTP_5XX",
-    ]);
+    const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX", "HTTP_5XX"]);
     data.incident.thresholdCrossedAt = data.evidence[3]!.observedAt;
     expect(buildDiagnosticSnapshot(data).temporal.thresholdCrossedAt).toBe(
       data.evidence[3]!.observedAt,
     );
   });
   it("truncated evidence cannot manufacture a threshold crossing", () => {
-    const data = input([
-      "HTTP_5XX",
-      "HTTP_5XX",
-      "HTTP_5XX",
-      "HTTP_5XX",
-    ]);
+    const data = input(["HTTP_5XX", "HTTP_5XX", "HTTP_5XX", "HTTP_5XX"]);
     data.limit = 2;
     const result = buildDiagnosticSnapshot(data);
     expect(result.truncated).toBe(true);
