@@ -1,5 +1,25 @@
 import { z } from "zod";
 
+export const failureCategorySchema = z.enum([
+  "HTTP_4XX",
+  "HTTP_5XX",
+  "TIMEOUT",
+  "CONNECTION_REFUSED",
+  "DNS_FAILURE",
+  "TLS_FAILURE",
+  "INVALID_RESPONSE",
+  "PROVIDER_UNAVAILABLE",
+  "RESOURCE_STOPPED",
+  "UNKNOWN",
+  // Legacy Milestone 1 values remain accepted for persisted compatibility.
+  "http",
+  "timeout",
+  "dns",
+  "network",
+  "invalid_response",
+  "unknown",
+]);
+
 export const observationSchema = z.object({
   id: z.string().uuid(),
   serviceId: z.string().uuid(),
@@ -9,9 +29,9 @@ export const observationSchema = z.object({
   latencyMs: z.number().nonnegative(),
   timedOut: z.boolean(),
   failureReason: z.string().nullable(),
-  failureCategory: z
-    .enum(["http", "timeout", "dns", "network", "invalid_response", "unknown"])
-    .nullable(),
+  failureCategory: failureCategorySchema.nullable(),
+  resourceId: z.string().uuid().nullable().optional(),
+  providerStatus: z.string().nullable().optional(),
 });
 export type TelemetryObservation = z.infer<typeof observationSchema>;
 export type IncidentState =

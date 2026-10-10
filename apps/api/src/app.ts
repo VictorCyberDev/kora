@@ -55,5 +55,11 @@ export function buildApi(
       return reply.code(404).send({ error: "not_found", requestId: req.id });
     return { data: await store.getIncidentEvidence(id) };
   });
+  app.get("/incidents/:id/timeline", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    if (!(await store.getIncident(id)))
+      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    return { data: await store.getIncidentTimeline(id) };
+  });
   return app;
 }

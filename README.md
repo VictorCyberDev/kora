@@ -2,25 +2,30 @@
 
 **The reliability control plane for cloud infrastructure.**
 
-Kora observes running systems, records deterministic telemetry, turns repeated failures into evidence-backed incidents, and verifies recovery from subsequent observations. The long-term system adds topology, change correlation, evidence-based AI reasoning, policy-controlled typed remediation and independent recovery verification. AI is never the monitoring source of truth or an unrestricted infrastructure executor.
+Kora observes running systems, records deterministic telemetry, turns repeated failures into evidence-backed incidents, and verifies recovery from subsequent observations. Milestone 2 adds durable cloud-resource identity and provider-aware evidence without making a provider control plane or AI the source of reliability truth.
 
-## Milestone 1: what works
+## What works now
 
-A Fastify demo workload exposes `/health`; its failure injection is disabled by default. Kora periodically checks a configured endpoint, persists observations in PostgreSQL, creates one incident after a configurable consecutive-failure threshold (default 3), retains structured evidence, exposes incidents/events/evidence over HTTP, and resolves only after a configurable consecutive-success threshold (default 3). Events use a versioned v1 runtime-validated envelope.
+A Fastify demo workload exposes `/health`; failure injection is disabled by default. Kora periodically checks a configured endpoint, persists observations in PostgreSQL, creates one incident after a configurable consecutive-failure threshold (default 3), retains structured evidence, and resolves only after a configurable consecutive-success threshold (default 3).
 
-Not implemented: frontend, AI diagnosis, automatic remediation, policy evaluation, authentication/RBAC, RumptyCloud API/CLI integration, Kubernetes, multi-cloud or distributed monitoring.
+A monitored service can now be bound to a durable provider resource. Incident/service/evidence API responses expose that infrastructure context, and `/incidents/:id/timeline` returns a deterministic chronological evidence timeline.
 
 ```mermaid
 flowchart LR
-  W[Demo / real workload] -->|health checks| M[Kora monitor]
-  M --> P[(PostgreSQL)]
-  M --> I[Deterministic incident engine]
-  I --> P
+  RC[RumptyCloud workspace] --> R[Provider resource]
+  R -->|RUNS| S[Service]
+  S -->|EXPOSES| H[Health endpoint]
+  M[Kora monitor] -->|MONITORS| H
+  M --> O[Observation]
+  O --> I[Deterministic incident engine]
+  I --> P[(PostgreSQL)]
+  P --> T[Evidence timeline]
   P --> A[Kora API]
-  P -. structured evidence .-> R[Future reasoning]
-  R -. typed proposal .-> G[Future policy + executor]
-  G -. observed recovery .-> M
+  P -. structured evidence .-> AI[Future reasoning]
+  AI -. typed proposal .-> PE[Future policy + executor]
 ```
+
+Not implemented: frontend, AI diagnosis, automatic remediation, policy evaluation, authentication/RBAC, Kubernetes, multi-cloud, distributed monitoring, or undocumented RumptyCloud discovery/status APIs.
 
 ## Quick start
 
@@ -41,41 +46,63 @@ For a controlled local incident set `DEMO_FAILURE_INJECTION_ENABLED=true` before
 
 Common gates: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check`.
 
-## Configuration
+## Provider-aware configuration
 
-`.env.example` is the contract. `DATABASE_URL` must be PostgreSQL. Monitor URL, interval, timeout, failure threshold and recovery threshold are runtime validated. Times are UTC ISO timestamps and identifiers are UUIDs. Secrets belong in environment/secret management, never source control.
+`.env.example` is the contract. `DATABASE_URL` must be PostgreSQL. To bind a monitored endpoint to a real RumptyCloud resource, set all of `RUMPTY_WORKSPACE`, `RUMPTY_REGION`, `RUMPTY_RESOURCE_TYPE`, and `RUMPTY_RESOURCE_ID`. Partial provider identity is rejected. `RUMPTY_RESOURCE_NAME` is display metadata only.
+
+The current adapter does not require `RUMPTY_API_KEY`; it intentionally avoids guessing undocumented machine-readable provider APIs. Future credentialed calls must obtain credentials from secret storage and must never persist or return them.
+
+## Provider model
+
+Provider resource identity is:
+
+`provider + provider account/workspace + region + resource type + provider resource ID`
+
+Display names are not identity. The common capability vocabulary includes discovery, status, health, logs, metrics, deployment metadata and future remediation operations. RumptyCloud currently advertises only `HEALTH_OBSERVATION`, because that is the capability implemented without fabricating an API response contract.
+
+Kora keeps **observation**, **inference**, and **diagnosis** separate. An HTTP 503 proves an unhealthy HTTP observation; it does not prove a VM crash.
+
+## Failure classification
+
+New observations distinguish `TIMEOUT`, `CONNECTION_REFUSED`, `DNS_FAILURE`, `TLS_FAILURE`, `HTTP_4XX`, `HTTP_5XX`, `INVALID_RESPONSE`, `PROVIDER_UNAVAILABLE`, `RESOURCE_STOPPED`, and `UNKNOWN` where evidence supports the distinction. Legacy Milestone 1 category values remain accepted for persisted compatibility.
 
 ## API
 
-`GET /health`, `/services`, `/services/:id`, `/incidents`, `/incidents/:id`, `/incidents/:id/events`, `/incidents/:id/evidence`. Responses are JSON with `data` for resource endpoints. Unknown resources return 404; invalid boundary inputs are rejected. Requests receive request IDs and logs are structured.
+`GET /health`, `/services`, `/services/:id`, `/incidents`, `/incidents/:id`, `/incidents/:id/events`, `/incidents/:id/evidence`, `/incidents/:id/timeline`.
+
+Responses are JSON with `data` for resource endpoints. Unknown resources return 404; invalid boundary inputs are rejected. Requests receive request IDs and logs are structured. Service and incident responses resolve provider/resource context when a binding exists.
 
 ## Persistence and reliability semantics
 
-PostgreSQL stores services, telemetry observations, incidents, evidence, versioned domain events and lightweight service dependencies. A partial unique index enforces one unresolved incident for a deduplication key. Current key: `<service-id>:health-check-unhealthy`. Evidence references concrete observations rather than generated prose. Recovery is a verified observation threshold, not an action/provider success code.
+PostgreSQL stores services, provider resources, service/resource bindings, telemetry observations, incidents, evidence, versioned domain events and lightweight dependencies. A partial unique index continues to enforce one unresolved incident for the Milestone 1 deduplication key. Observations reference provider resources rather than copying mutable provider metadata into every row. Evidence remains concrete and recovery remains an observed threshold, never an action/provider success code.
 
 ## Repository
 
-- `apps/api` — API, monitor runtime, PostgreSQL access/migration.
+- `apps/api` — API, monitor runtime, provider adapter boundary, PostgreSQL access/migrations.
 - `apps/demo-service` — controlled workload.
 - `services/incident-engine` — deterministic pure reliability rules.
 - `packages/event-schema` — event/action contracts and runtime validation.
-- `packages/topology` — lightweight dependency model.
-- `integrations/rumptycloud` — documented provider seam; no fabricated client.
+- `packages/topology` — provider-neutral identity, capabilities and topology relationships.
+- `integrations/rumptycloud` — verified provider documentation and integration boundary.
 - `docs` — architecture, ADRs, security and runbooks.
 
 ## Security philosophy
 
-Deterministic facts precede reasoning; cloud credentials never belong in an AI context; automatic arbitrary shell execution is out of scope; future actions are typed and policy-gated. Development failure controls fail closed. SQL values are parameterized. The current API has no authentication and therefore is not suitable for unrestricted public exposure. See `docs/security/threat-model.md`.
+Deterministic facts precede reasoning; cloud credentials never belong in evidence or an AI context; arbitrary shell execution is out of scope; future actions are typed and policy-gated. Development failure controls fail closed. SQL values are parameterized. Provider metadata is allow-listed and provider error text is redacted. The current API has no authentication and therefore is not suitable for unrestricted public exposure.
 
 ## RumptyCloud status
 
-RumptyCloud is the first intended provider and the project workspace is named Kora. Milestone 1 deliberately does not invent Rumpty APIs, CLI commands or authentication. `docs/runbooks/first-rumpty-deployment.md` records what must be verified for Milestone 2.
+Official RumptyCloud documentation was reviewed before implementing the adapter. The documented CLI covers VM operations and non-interactive API-key authentication; GitHub deployment uses a unique VM ID and token. The currently available docs do not define a stable machine-readable discovery/status response schema, so Kora does not parse guessed CLI output or invent REST endpoints.
+
+Credentialless CI verifies the provider contract, identity mapping, error normalization/redaction, PostgreSQL resource persistence, provider-aware incident lifecycle, timeline and recovery. A true RumptyCloud acceptance run still requires account-scoped resource identity and a deployed public test workload.
+
+See `integrations/rumptycloud/README.md` and `docs/architecture/provider-observation.md`.
 
 ## Roadmap
 
-1. **Current:** deterministic local reliability loop.
-2. Deploy Kora/demo/PostgreSQL on verified RumptyCloud primitives.
-3. Real infrastructure telemetry and deployment correlation.
+1. Deterministic reliability kernel — complete.
+2. **Current PR:** provider-aware real-cloud observation foundation and RumptyCloud acceptance boundary.
+3. Real deployment/change telemetry correlation.
 4. Live system graph.
 5. Evidence-based AI reasoning.
 6. Blast-radius/policy engine.

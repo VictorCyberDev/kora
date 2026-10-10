@@ -80,6 +80,7 @@ describe.skipIf(!databaseUrl)("PostgreSQL persistence", () => {
       MONITOR_TIMEOUT_MS: 500,
       MONITOR_FAILURE_THRESHOLD: 3,
       MONITOR_RECOVERY_THRESHOLD: 3,
+      KORA_ENVIRONMENT: "test",
     };
     const statuses = [200, 503, 503, 503, 503, 200, 200, 200];
     let index = 0;
