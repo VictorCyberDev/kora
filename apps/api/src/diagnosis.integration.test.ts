@@ -53,34 +53,56 @@ async function fixture() {
     deduplicationKey: `${serviceId}:health-check-unhealthy`,
     state: "DETECTED",
     severity: "HIGH",
-    startedAt: observations[2]!.observedAt,
+    startedAt: observations[0]!.observedAt,
     resolvedAt: null,
     evidence: observations,
     recoveryEvidence: [],
   };
   await store!.createIncident(incident);
-  return { incident, observations };
+  const detectedAt = new Date(Date.now() + 100).toISOString();
+  await store!.recordEvent({
+    eventId: crypto.randomUUID(),
+    eventType: "IncidentCreated",
+    schemaVersion: 1,
+    occurredAt: detectedAt,
+    source: "incident-engine",
+    serviceId,
+    correlationId: incident.id,
+    payload: {
+      severity: incident.severity,
+      deduplicationKey: incident.deduplicationKey,
+      triggerObservationIds: observations.map((observation) => observation.id),
+    },
+  });
+  return { incident, observations, detectedAt };
 }
 
 describe.skipIf(!databaseUrl)("diagnostic persistence", () => {
   it("persists a deterministic provider-aware diagnostic snapshot", async () => {
-    const { incident } = await fixture();
+    const { incident, observations, detectedAt } = await fixture();
     const snapshot = await store!.createDiagnosticSnapshot(incident.id);
     expect(snapshot?.findings.map((f) => f.code)).toContain("SERVICE_HTTP_5XX");
     expect(snapshot?.contradictions[0]?.code).toBe(
       "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
     );
     expect(snapshot?.rootCause.state).toBe("UNKNOWN");
+    expect(snapshot?.temporal.thresholdCrossedAt).toBe(
+      observations[2]!.observedAt,
+    );
+    expect(snapshot?.temporal.incidentDetectedAt).toBe(detectedAt);
     expect(snapshot?.contentHash).toMatch(/^[0-9a-f]{64}$/);
   });
-  it("deduplicates equivalent snapshots and rejects mutation", async () => {
+  it("deduplicates equivalent snapshots and rejects update and delete", async () => {
     const { incident } = await fixture();
     const first = await store!.createDiagnosticSnapshot(incident.id);
     const second = await store!.createDiagnosticSnapshot(incident.id);
     expect(second?.snapshotId).toBe(first?.snapshotId);
     await expect(
       sql!`UPDATE diagnostic_snapshots SET content_hash=${"0".repeat(64)} WHERE id=${first!.snapshotId}`,
-    ).rejects.toThrow(/immutable/i);
+    ).rejects.toThrow(/immutable.*UPDATE/i);
+    await expect(
+      sql!`DELETE FROM diagnostic_snapshots WHERE id=${first!.snapshotId}`,
+    ).rejects.toThrow(/immutable.*DELETE/i);
   });
   it("exposes diagnosis and persisted snapshot through the API", async () => {
     const { incident } = await fixture();
