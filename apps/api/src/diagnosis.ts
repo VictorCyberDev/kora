@@ -1,9 +1,16 @@
 import { createHash } from "node:crypto";
 
 export type EvidenceSource =
-  "HEALTH_CHECK" | "PROVIDER" | "TOPOLOGY" | "INCIDENT_ENGINE" | "SYSTEM";
+  | "HEALTH_CHECK"
+  | "PROVIDER"
+  | "TOPOLOGY"
+  | "INCIDENT_ENGINE"
+  | "SYSTEM";
 export type DiagnosticConfidence =
-  "CONFIRMED" | "STRONGLY_SUPPORTED" | "SUPPORTED" | "INSUFFICIENT_EVIDENCE";
+  | "CONFIRMED"
+  | "STRONGLY_SUPPORTED"
+  | "SUPPORTED"
+  | "INSUFFICIENT_EVIDENCE";
 export type RootCauseState = "IDENTIFIED" | "SUSPECTED" | "UNKNOWN";
 export type FindingCode =
   | "SERVICE_HTTP_5XX"
@@ -53,6 +60,8 @@ export interface DiagnosticInput {
     state: string;
     startedAt: string;
     resolvedAt: string | null;
+    detectedAt: string | null;
+    thresholdCrossedAt: string | null;
   };
   resource: {
     id: string;
@@ -73,7 +82,7 @@ export interface DiagnosticSnapshot {
     lastKnownHealthyAt: string | null;
     firstFailureAt: string | null;
     thresholdCrossedAt: string | null;
-    incidentDetectedAt: string;
+    incidentDetectedAt: string | null;
     latestFailureAt: string | null;
     recoveryStartedAt: string | null;
     recoveryVerifiedAt: string | null;
@@ -92,8 +101,7 @@ export interface DiagnosticSnapshot {
   contentHash: string;
 }
 
-const secretPattern =
-  /(authorization|bearer|api[_-]?key|token|password|secret)/i;
+const secretPattern = /(authorization|bearer|api[_-]?key|token|password|secret)/i;
 export function redactDiagnosticText(value: string): string {
   return secretPattern.test(value) ? "[REDACTED]" : value;
 }
@@ -259,15 +267,19 @@ export function buildDiagnosticSnapshot(
   const beforeFailureHealthy = healthy.filter(
     (e) => !failureTimes.length || e.observedAt < failureTimes[0]!,
   );
-  const snapshotWithoutHash = {
+
+  // Hash only diagnostically meaningful state. Snapshot creation metadata is
+  // intentionally outside this boundary so recreating the same diagnosis later
+  // yields the same content hash.
+  const diagnosticContent = {
     version: 1 as const,
     incidentId: input.incident.id,
-    createdAt: input.createdAt,
+    incidentState: input.incident.state,
     temporal: {
       lastKnownHealthyAt: beforeFailureHealthy.at(-1)?.observedAt ?? null,
       firstFailureAt: failureTimes[0] ?? null,
-      thresholdCrossedAt: failures[2]?.observedAt ?? null,
-      incidentDetectedAt: input.incident.startedAt,
+      thresholdCrossedAt: input.incident.thresholdCrossedAt,
+      incidentDetectedAt: input.incident.detectedAt,
       latestFailureAt: failureTimes.at(-1) ?? null,
       recoveryStartedAt: postFailureHealthy[0]?.observedAt ?? null,
       recoveryVerifiedAt: input.recoveryVerified
@@ -287,7 +299,17 @@ export function buildDiagnosticSnapshot(
     totalEvidenceCount: all.length,
   };
   return {
-    ...snapshotWithoutHash,
-    contentHash: deterministicHash(snapshotWithoutHash),
+    version: diagnosticContent.version,
+    incidentId: diagnosticContent.incidentId,
+    createdAt: input.createdAt,
+    temporal: diagnosticContent.temporal,
+    evidence: diagnosticContent.evidence,
+    findings: diagnosticContent.findings,
+    contradictions: diagnosticContent.contradictions,
+    evidenceGaps: diagnosticContent.evidenceGaps,
+    rootCause: diagnosticContent.rootCause,
+    truncated: diagnosticContent.truncated,
+    totalEvidenceCount: diagnosticContent.totalEvidenceCount,
+    contentHash: deterministicHash(diagnosticContent),
   };
 }
