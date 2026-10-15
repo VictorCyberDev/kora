@@ -76,7 +76,18 @@ Kora keeps **observation**, **inference**, and **diagnosis** separate. An HTTP 5
 
 ## Failure classification
 
-New observations distinguish `TIMEOUT`, `CONNECTION_REFUSED`, `DNS_FAILURE`, `TLS_FAILURE`, `HTTP_4XX`, `HTTP_5XX`, `INVALID_RESPONSE`, `PROVIDER_UNAVAILABLE`, `RESOURCE_STOPPED`, and `UNKNOWN` where evidence supports the distinction. Legacy Milestone 1 category values remain accepted for persisted compatibility.
+A failed health check is classified from the HTTP status or, for transport failures, from stable error **codes** found by walking the `fetch()` error's `cause` chain and any `AggregateError` members. Error messages are never pattern-matched.
+
+| Category                                   | Source                                                                                                                     |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `HTTP_5XX`, `HTTP_4XX`, `INVALID_RESPONSE` | HTTP status of a received response (`>=500`, `>=400`, other non-OK)                                                        |
+| `DNS_FAILURE`                              | `ENOTFOUND`, `EAI_AGAIN`                                                                                                   |
+| `CONNECTION_REFUSED`                       | `ECONNREFUSED`                                                                                                             |
+| `TLS_FAILURE`                              | `CERT_*`, `DEPTH_ZERO_SELF_SIGNED_CERT`, `UNABLE_TO_*CERT*`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `ERR_TLS_*`, `ERR_SSL_*`   |
+| `TIMEOUT`                                  | `TimeoutError` (the monitor's timeout), `UND_ERR_CONNECT_TIMEOUT`, `UND_ERR_HEADERS_TIMEOUT`, `UND_ERR_BODY_TIMEOUT`       |
+| `UNKNOWN`                                  | anything else, including a bare `AbortError` ("health check aborted"). The reason carries the underlying code and message. |
+
+`failureReason` includes the matched code and cause message with URL credentials and secret-like values redacted. `PROVIDER_UNAVAILABLE` and `RESOURCE_STOPPED` are accepted by the schema but are not produced by the health monitor. Legacy Milestone 1 category values remain accepted for persisted compatibility.
 
 ## API
 
