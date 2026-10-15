@@ -7,7 +7,21 @@ import type {
 import type { ProviderResource } from "./providers/rumptycloud.js";
 
 export class KoraStore {
-  constructor(private readonly sql: postgres.Sql) {}
+  constructor(
+    private readonly sql: postgres.Sql,
+    private readonly inTx = false,
+  ) {}
+  /**
+   * Runs `fn` in one PostgreSQL transaction. The store passed to `fn` is bound
+   * to that transaction: if `fn` throws, every write made through it is rolled
+   * back. Called on an already-transactional store it joins the outer one.
+   */
+  async inTransaction<T>(fn: (tx: KoraStore) => Promise<T>): Promise<T> {
+    if (this.inTx) return fn(this);
+    return (await this.sql.begin((tx) =>
+      fn(new KoraStore(tx as unknown as postgres.Sql, true)),
+    )) as T;
+  }
   async ensureService(name: string, healthUrl: string) {
     const rows = await this
       .sql`INSERT INTO services (id,name,health_url) VALUES (${crypto.randomUUID()},${name},${healthUrl}) ON CONFLICT(name) DO UPDATE SET health_url=EXCLUDED.health_url RETURNING id,name,health_url,created_at`;
@@ -42,7 +56,7 @@ export class KoraStore {
       ON CONFLICT(event_id) DO NOTHING`;
   }
   async createIncident(i: IncidentSnapshot) {
-    await this.sql.begin(async (tx) => {
+    await this.inTransaction(async ({ sql: tx }) => {
       await tx`INSERT INTO incidents(id,service_id,deduplication_key,state,severity,started_at,resolved_at) VALUES(${i.id},${i.serviceId},${i.deduplicationKey},${i.state},${i.severity},${i.startedAt},${i.resolvedAt})`;
       for (let n = 0; n < i.evidence.length; n++) {
         const o = i.evidence[n]!;
@@ -100,7 +114,7 @@ export class KoraStore {
       .sql`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${incidentId},${o.id},${kind},${count}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
   }
   async resolveIncident(i: IncidentSnapshot) {
-    await this.sql.begin(async (tx) => {
+    await this.inTransaction(async ({ sql: tx }) => {
       await tx`UPDATE incidents SET state='RESOLVED',resolved_at=${i.resolvedAt},updated_at=now() WHERE id=${i.id}`;
       for (let n = 0; n < i.recoveryEvidence.length; n++) {
         const o = i.recoveryEvidence[n]!;

@@ -28,13 +28,14 @@ export function testConfig(overrides: Partial<KoraConfig> = {}): KoraConfig {
   };
 }
 
-const noopStore = {
+const noopStore: KoraStore = {
   recordObservation: () => Promise.resolve(undefined),
   recordEvent: () => Promise.resolve(undefined),
   getOpenIncident: () => Promise.resolve(null),
   createIncident: () => Promise.resolve(undefined),
   appendEvidence: () => Promise.resolve(undefined),
   resolveIncident: () => Promise.resolve(undefined),
+  inTransaction: (fn: (tx: KoraStore) => Promise<unknown>) => fn(noopStore),
 } as unknown as KoraStore;
 
 /** Runs one real health check against `url` with a no-op store. */

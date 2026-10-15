@@ -31,7 +31,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("monitor event loop", () => {
   it("records RecoveryVerified only after the configured recovery threshold", async () => {
     const events: DomainEvent[] = [];
-    const store = {
+    const store: KoraStore = {
       recordObservation: () => Promise.resolve(undefined),
       recordEvent: (e: DomainEvent) => {
         events.push(e);
@@ -41,6 +41,7 @@ describe("monitor event loop", () => {
       createIncident: () => Promise.resolve(undefined),
       appendEvidence: () => Promise.resolve(undefined),
       resolveIncident: () => Promise.resolve(undefined),
+      inTransaction: (fn: (tx: KoraStore) => Promise<unknown>) => fn(store),
     } as unknown as KoraStore;
     const responses = [503, 503, 503, 200, 200, 200];
     let index = 0;

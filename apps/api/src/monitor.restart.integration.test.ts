@@ -148,9 +148,9 @@ describe.skipIf(!databaseUrl)("restart durability", () => {
     }
 
     it("replays the same observation once without another fetch", async () => {
-      const { store, serviceId, fetchMock, stale, incidentId } =
+      const { serviceId, fetchMock, stale, incidentId } =
         await raceWithAnotherWorker();
-      const createIncident = vi.spyOn(store, "createIncident");
+      const createIncident = vi.spyOn(KoraStore.prototype, "createIncident");
       const fetchesBefore = fetchMock.mock.calls.length;
       const observation: TelemetryObservation = await stale.checkOnce(); // 3rd failure -> 23505
 
@@ -170,10 +170,9 @@ describe.skipIf(!databaseUrl)("restart durability", () => {
     });
 
     it("leaves in-memory state at the last committed state when reconciliation fails", async () => {
-      const { store, stale, incidentId, status } =
-        await raceWithAnotherWorker();
+      const { stale, incidentId, status } = await raceWithAnotherWorker();
       const before = { ...memoryOf(stale) };
-      vi.spyOn(store, "appendEvidence").mockRejectedValueOnce(
+      vi.spyOn(KoraStore.prototype, "appendEvidence").mockRejectedValueOnce(
         new Error("injected reconcile failure"),
       );
       await expect(stale.checkOnce()).rejects.toThrow(

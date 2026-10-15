@@ -239,42 +239,57 @@ export class HealthMonitor {
     return observation;
   }
   /**
-   * Persists the check and advances in-memory state only after every effect
-   * succeeded. If incident creation loses to an incident another writer
-   * already holds, the stored state is reloaded and the SAME observation is
-   * replayed once (no new fetch; same event identities).
+   * Persists one check atomically: the observation, its HealthCheck event and
+   * every incident effect with its evidence and domain event commit together
+   * or not at all. The candidate next engine state is computed first and
+   * becomes the live state only after the commit; on failure the check is
+   * lost (never half-persisted) and the error propagates to the scheduler.
+   *
+   * If incident creation loses to an incident another writer already holds,
+   * the transaction rolls back, the stored state is reloaded and the SAME
+   * observation is replayed once (no new fetch; same event identities).
    */
   private async persist(observation: TelemetryObservation) {
     const plan = eventPlan();
     let prior = this.state;
     for (let attempt = 0; ; attempt++) {
       const priorIncidentId = prior.activeIncident?.id;
-      await this.store.recordObservation(observation);
-      await this.store.recordEvent(
-        plan("health", () =>
-          event(
-            observation.healthy ? "HealthCheckSucceeded" : "HealthCheckFailed",
-            this.serviceId,
-            priorIncidentId,
-            {
-              observationId: observation.id,
-              resourceId: observation.resourceId ?? null,
-              httpStatus: observation.httpStatus,
-              latencyMs: observation.latencyMs,
-              timedOut: observation.timedOut,
-              failureReason: observation.failureReason,
-              failureCategory: observation.failureCategory,
-            },
-          ),
-        ),
-      );
       const result = evaluateObservation(prior, observation, {
         failureThreshold: this.config.MONITOR_FAILURE_THRESHOLD,
         recoveryThreshold: this.config.MONITOR_RECOVERY_THRESHOLD,
       });
+      // Events are built before the transaction and reused on a replay.
+      const healthEvent = plan("health", () =>
+        event(
+          observation.healthy ? "HealthCheckSucceeded" : "HealthCheckFailed",
+          this.serviceId,
+          priorIncidentId,
+          {
+            observationId: observation.id,
+            resourceId: observation.resourceId ?? null,
+            httpStatus: observation.httpStatus,
+            latencyMs: observation.latencyMs,
+            timedOut: observation.timedOut,
+            failureReason: observation.failureReason,
+            failureCategory: observation.failureCategory,
+          },
+        ),
+      );
+      const effects = result.effects.map((effect) => ({
+        effect,
+        event: plan(`${effect.type}:${effect.incident.id}`, () =>
+          this.effectEvent(effect, observation),
+        ),
+      }));
       try {
-        for (const effect of result.effects)
-          await this.applyEffect(effect, observation, plan);
+        await this.store.inTransaction(async (tx) => {
+          await tx.recordObservation(observation);
+          await tx.recordEvent(healthEvent);
+          for (const { effect, event: effectEvent } of effects) {
+            await this.applyEffect(tx, effect, observation);
+            await tx.recordEvent(effectEvent);
+          }
+        });
       } catch (error) {
         if (attempt === 0 && isActiveIncidentConflict(error)) {
           this.logger.warn(
@@ -287,73 +302,59 @@ export class HealthMonitor {
         throw error;
       }
       this.state = result.state;
+      for (const { effect } of effects) this.logEffect(effect);
       return;
     }
   }
-  private async applyEffect(
+  private effectEvent(
     effect: EngineEffect,
     observation: TelemetryObservation,
-    plan: EventPlan,
+  ): DomainEvent {
+    const { incident } = effect;
+    if (effect.type === "incident_created")
+      return event("IncidentCreated", this.serviceId, incident.id, {
+        severity: incident.severity,
+        deduplicationKey: incident.deduplicationKey,
+        resourceId: this.resourceId,
+        triggerObservationIds: incident.evidence.map((x) => x.id),
+      });
+    if (effect.type === "incident_updated")
+      return event("IncidentUpdated", this.serviceId, incident.id, {
+        observationId: observation.id,
+        resourceId: this.resourceId,
+      });
+    return event("RecoveryVerified", this.serviceId, incident.id, {
+      recoveryObservationIds: incident.recoveryEvidence.map((x) => x.id),
+      resourceId: this.resourceId,
+      resolvedAt: incident.resolvedAt,
+    });
+  }
+  private async applyEffect(
+    tx: KoraStore,
+    effect: EngineEffect,
+    observation: TelemetryObservation,
   ) {
-    if (effect.type === "incident_created") {
-      await this.store.createIncident(effect.incident);
-      await this.store.recordEvent(
-        plan(`created:${effect.incident.id}`, () =>
-          event("IncidentCreated", this.serviceId, effect.incident.id, {
-            severity: effect.incident.severity,
-            deduplicationKey: effect.incident.deduplicationKey,
-            resourceId: this.resourceId,
-            triggerObservationIds: effect.incident.evidence.map((x) => x.id),
-          }),
-        ),
-      );
-      this.logger.warn(
-        {
-          incidentId: effect.incident.id,
-          serviceId: this.serviceId,
-          resourceId: this.resourceId,
-        },
-        "incident created",
-      );
-    }
-    if (effect.type === "incident_updated") {
-      await this.store.appendEvidence(
+    if (effect.type === "incident_created")
+      await tx.createIncident(effect.incident);
+    else if (effect.type === "incident_updated")
+      await tx.appendEvidence(
         effect.incident.id,
         observation,
         "ongoing",
         effect.incident.evidence.length,
       );
-      await this.store.recordEvent(
-        plan(`updated:${effect.incident.id}`, () =>
-          event("IncidentUpdated", this.serviceId, effect.incident.id, {
-            observationId: observation.id,
-            resourceId: this.resourceId,
-          }),
-        ),
-      );
-    }
-    if (effect.type === "recovery_verified") {
-      await this.store.resolveIncident(effect.incident);
-      await this.store.recordEvent(
-        plan(`recovered:${effect.incident.id}`, () =>
-          event("RecoveryVerified", this.serviceId, effect.incident.id, {
-            recoveryObservationIds: effect.incident.recoveryEvidence.map(
-              (x) => x.id,
-            ),
-            resourceId: this.resourceId,
-            resolvedAt: effect.incident.resolvedAt,
-          }),
-        ),
-      );
-      this.logger.info(
-        {
-          incidentId: effect.incident.id,
-          serviceId: this.serviceId,
-          resourceId: this.resourceId,
-        },
-        "recovery verified",
-      );
-    }
+    else await tx.resolveIncident(effect.incident);
+  }
+  private logEffect(effect: EngineEffect) {
+    const fields = {
+      incidentId: effect.incident.id,
+      serviceId: this.serviceId,
+      resourceId: this.resourceId,
+    };
+    if (effect.type === "incident_created")
+      this.logger.warn(fields, "incident created");
+    if (effect.type === "recovery_verified")
+      this.logger.info(fields, "recovery verified");
   }
   private runScheduledCheck() {
     if (this.inFlight) return;
