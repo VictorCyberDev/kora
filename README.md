@@ -50,6 +50,18 @@ Common gates: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm fo
 
 `.env.example` is the contract. `DATABASE_URL` must be PostgreSQL. To bind a monitored endpoint to a real RumptyCloud resource, set all of `RUMPTY_WORKSPACE`, `RUMPTY_REGION`, `RUMPTY_RESOURCE_TYPE`, and `RUMPTY_RESOURCE_ID`. Partial provider identity is rejected. `RUMPTY_RESOURCE_NAME` is display metadata only.
 
+### Running tests
+
+PostgreSQL-backed tests are destructive (they delete rows) and run serially. They only start when `DATABASE_URL` names a database ending in `_test`; the name is parsed from the URL, so anything else is refused. With the compose database running:
+
+```bash
+docker compose exec postgres createdb -U kora kora_test
+export DATABASE_URL=postgresql://kora:kora@localhost:5432/kora_test
+pnpm db:migrate && pnpm test
+```
+
+Without `DATABASE_URL` the PostgreSQL suites are skipped.
+
 The current adapter does not require `RUMPTY_API_KEY`; it intentionally avoids guessing undocumented machine-readable provider APIs. Future credentialed calls must obtain credentials from secret storage and must never persist or return them.
 
 ## Provider model
@@ -64,7 +76,18 @@ Kora keeps **observation**, **inference**, and **diagnosis** separate. An HTTP 5
 
 ## Failure classification
 
-New observations distinguish `TIMEOUT`, `CONNECTION_REFUSED`, `DNS_FAILURE`, `TLS_FAILURE`, `HTTP_4XX`, `HTTP_5XX`, `INVALID_RESPONSE`, `PROVIDER_UNAVAILABLE`, `RESOURCE_STOPPED`, and `UNKNOWN` where evidence supports the distinction. Legacy Milestone 1 category values remain accepted for persisted compatibility.
+A failed health check is classified from the HTTP status or, for transport failures, from stable error **codes** found by walking the `fetch()` error's `cause` chain and any `AggregateError` members. Error messages are never pattern-matched.
+
+| Category                                   | Source                                                                                                                     |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `HTTP_5XX`, `HTTP_4XX`, `INVALID_RESPONSE` | HTTP status of a received response (`>=500`, `>=400`, other non-OK)                                                        |
+| `DNS_FAILURE`                              | `ENOTFOUND`, `EAI_AGAIN`                                                                                                   |
+| `CONNECTION_REFUSED`                       | `ECONNREFUSED`                                                                                                             |
+| `TLS_FAILURE`                              | `CERT_*`, `DEPTH_ZERO_SELF_SIGNED_CERT`, `UNABLE_TO_*CERT*`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `ERR_TLS_*`, `ERR_SSL_*`   |
+| `TIMEOUT`                                  | `TimeoutError` (the monitor's timeout), `UND_ERR_CONNECT_TIMEOUT`, `UND_ERR_HEADERS_TIMEOUT`, `UND_ERR_BODY_TIMEOUT`       |
+| `UNKNOWN`                                  | anything else, including a bare `AbortError` ("health check aborted"). The reason carries the underlying code and message. |
+
+`failureReason` includes the matched code and cause message with URL credentials and secret-like values redacted. `PROVIDER_UNAVAILABLE` and `RESOURCE_STOPPED` are accepted by the schema but are not produced by the health monitor. Legacy Milestone 1 category values remain accepted for persisted compatibility.
 
 ## API
 

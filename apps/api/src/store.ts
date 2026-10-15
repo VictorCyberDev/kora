@@ -4,10 +4,24 @@ import type {
   IncidentSnapshot,
   TelemetryObservation,
 } from "@kora/incident-engine";
-import type { ProviderResource } from "./providers/rumptycloud.js";
+import type { ProviderResource } from "@kora/topology";
 
 export class KoraStore {
-  constructor(private readonly sql: postgres.Sql) {}
+  constructor(
+    private readonly sql: postgres.Sql,
+    private readonly inTx = false,
+  ) {}
+  /**
+   * Runs `fn` in one PostgreSQL transaction. The store passed to `fn` is bound
+   * to that transaction: if `fn` throws, every write made through it is rolled
+   * back. Called on an already-transactional store it joins the outer one.
+   */
+  async inTransaction<T>(fn: (tx: KoraStore) => Promise<T>): Promise<T> {
+    if (this.inTx) return fn(this);
+    return (await this.sql.begin((tx) =>
+      fn(new KoraStore(tx as unknown as postgres.Sql, true)),
+    )) as T;
+  }
   async ensureService(name: string, healthUrl: string) {
     const rows = await this
       .sql`INSERT INTO services (id,name,health_url) VALUES (${crypto.randomUUID()},${name},${healthUrl}) ON CONFLICT(name) DO UPDATE SET health_url=EXCLUDED.health_url RETURNING id,name,health_url,created_at`;
@@ -42,13 +56,53 @@ export class KoraStore {
       ON CONFLICT(event_id) DO NOTHING`;
   }
   async createIncident(i: IncidentSnapshot) {
-    await this.sql.begin(async (tx) => {
+    await this.inTransaction(async ({ sql: tx }) => {
       await tx`INSERT INTO incidents(id,service_id,deduplication_key,state,severity,started_at,resolved_at) VALUES(${i.id},${i.serviceId},${i.deduplicationKey},${i.state},${i.severity},${i.startedAt},${i.resolvedAt})`;
       for (let n = 0; n < i.evidence.length; n++) {
         const o = i.evidence[n]!;
         await tx`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${i.id},${o.id},'trigger',${n + 1}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
       }
     });
+  }
+  /** The unresolved incident for this deduplication key (the identity enforced
+   * by one_active_incident_per_key) with its trigger+ongoing evidence. */
+  async getOpenIncident(key: string): Promise<IncidentSnapshot | null> {
+    const incident = (
+      await this
+        .sql`SELECT id,service_id,deduplication_key,state,severity,started_at FROM incidents WHERE deduplication_key=${key} AND resolved_at IS NULL`
+    )[0];
+    if (!incident) return null;
+    const rows = await this.sql`
+      SELECT o.id,o.service_id,o.observed_at,o.healthy,o.http_status,o.latency_ms,o.timed_out,o.failure_reason,o.failure_category,o.resource_id,o.provider_status
+      FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id
+      WHERE e.incident_id=${incident.id as string} AND e.evidence_kind IN ('trigger','ongoing')
+      ORDER BY e.threshold_count,o.observed_at,o.id`;
+    return {
+      id: String(incident.id),
+      serviceId: String(incident.service_id),
+      deduplicationKey: String(incident.deduplication_key),
+      state: incident.state as IncidentSnapshot["state"],
+      severity: incident.severity as IncidentSnapshot["severity"],
+      startedAt: new Date(incident.started_at as string | Date).toISOString(),
+      resolvedAt: null,
+      evidence: rows.map((o) => ({
+        id: String(o.id),
+        serviceId: String(o.service_id),
+        observedAt: new Date(o.observed_at as string | Date).toISOString(),
+        healthy: Boolean(o.healthy),
+        httpStatus: o.http_status === null ? null : Number(o.http_status),
+        latencyMs: Number(o.latency_ms),
+        timedOut: Boolean(o.timed_out),
+        failureReason:
+          o.failure_reason === null ? null : String(o.failure_reason),
+        failureCategory: (o.failure_category ??
+          null) as TelemetryObservation["failureCategory"],
+        resourceId: o.resource_id === null ? null : String(o.resource_id),
+        providerStatus:
+          o.provider_status === null ? null : String(o.provider_status),
+      })),
+      recoveryEvidence: [],
+    };
   }
   async appendEvidence(
     incidentId: string,
@@ -60,7 +114,7 @@ export class KoraStore {
       .sql`INSERT INTO incident_evidence(id,incident_id,observation_id,evidence_kind,threshold_count) VALUES(${crypto.randomUUID()},${incidentId},${o.id},${kind},${count}) ON CONFLICT(incident_id,observation_id) DO NOTHING`;
   }
   async resolveIncident(i: IncidentSnapshot) {
-    await this.sql.begin(async (tx) => {
+    await this.inTransaction(async ({ sql: tx }) => {
       await tx`UPDATE incidents SET state='RESOLVED',resolved_at=${i.resolvedAt},updated_at=now() WHERE id=${i.id}`;
       for (let n = 0; n < i.recoveryEvidence.length; n++) {
         const o = i.recoveryEvidence[n]!;
