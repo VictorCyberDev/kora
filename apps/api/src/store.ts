@@ -50,6 +50,46 @@ export class KoraStore {
       }
     });
   }
+  /** The unresolved incident for this deduplication key (the identity enforced
+   * by one_active_incident_per_key) with its trigger+ongoing evidence. */
+  async getOpenIncident(key: string): Promise<IncidentSnapshot | null> {
+    const incident = (
+      await this
+        .sql`SELECT id,service_id,deduplication_key,state,severity,started_at FROM incidents WHERE deduplication_key=${key} AND resolved_at IS NULL`
+    )[0];
+    if (!incident) return null;
+    const rows = await this.sql`
+      SELECT o.id,o.service_id,o.observed_at,o.healthy,o.http_status,o.latency_ms,o.timed_out,o.failure_reason,o.failure_category,o.resource_id,o.provider_status
+      FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id
+      WHERE e.incident_id=${incident.id as string} AND e.evidence_kind IN ('trigger','ongoing')
+      ORDER BY e.threshold_count,o.observed_at,o.id`;
+    return {
+      id: String(incident.id),
+      serviceId: String(incident.service_id),
+      deduplicationKey: String(incident.deduplication_key),
+      state: incident.state as IncidentSnapshot["state"],
+      severity: incident.severity as IncidentSnapshot["severity"],
+      startedAt: new Date(incident.started_at as string | Date).toISOString(),
+      resolvedAt: null,
+      evidence: rows.map((o) => ({
+        id: String(o.id),
+        serviceId: String(o.service_id),
+        observedAt: new Date(o.observed_at as string | Date).toISOString(),
+        healthy: Boolean(o.healthy),
+        httpStatus: o.http_status === null ? null : Number(o.http_status),
+        latencyMs: Number(o.latency_ms),
+        timedOut: Boolean(o.timed_out),
+        failureReason:
+          o.failure_reason === null ? null : String(o.failure_reason),
+        failureCategory: (o.failure_category ??
+          null) as TelemetryObservation["failureCategory"],
+        resourceId: o.resource_id === null ? null : String(o.resource_id),
+        providerStatus:
+          o.provider_status === null ? null : String(o.provider_status),
+      })),
+      recoveryEvidence: [],
+    };
+  }
   async appendEvidence(
     incidentId: string,
     o: TelemetryObservation,

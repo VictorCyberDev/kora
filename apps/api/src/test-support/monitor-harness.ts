@@ -31,6 +31,7 @@ export function testConfig(overrides: Partial<KoraConfig> = {}): KoraConfig {
 const noopStore = {
   recordObservation: () => Promise.resolve(undefined),
   recordEvent: () => Promise.resolve(undefined),
+  getOpenIncident: () => Promise.resolve(null),
   createIncident: () => Promise.resolve(undefined),
   appendEvidence: () => Promise.resolve(undefined),
   resolveIncident: () => Promise.resolve(undefined),

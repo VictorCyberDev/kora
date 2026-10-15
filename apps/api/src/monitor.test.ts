@@ -37,6 +37,7 @@ describe("monitor event loop", () => {
         events.push(e);
         return Promise.resolve(undefined);
       },
+      getOpenIncident: () => Promise.resolve(null),
       createIncident: () => Promise.resolve(undefined),
       appendEvidence: () => Promise.resolve(undefined),
       resolveIncident: () => Promise.resolve(undefined),
