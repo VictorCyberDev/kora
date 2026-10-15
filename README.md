@@ -50,6 +50,18 @@ Common gates: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm fo
 
 `.env.example` is the contract. `DATABASE_URL` must be PostgreSQL. To bind a monitored endpoint to a real RumptyCloud resource, set all of `RUMPTY_WORKSPACE`, `RUMPTY_REGION`, `RUMPTY_RESOURCE_TYPE`, and `RUMPTY_RESOURCE_ID`. Partial provider identity is rejected. `RUMPTY_RESOURCE_NAME` is display metadata only.
 
+### Running tests
+
+PostgreSQL-backed tests are destructive (they delete rows) and run serially. They only start when `DATABASE_URL` names a database ending in `_test`; the name is parsed from the URL, so anything else is refused. With the compose database running:
+
+```bash
+docker compose exec postgres createdb -U kora kora_test
+export DATABASE_URL=postgresql://kora:kora@localhost:5432/kora_test
+pnpm db:migrate && pnpm test
+```
+
+Without `DATABASE_URL` the PostgreSQL suites are skipped.
+
 The current adapter does not require `RUMPTY_API_KEY`; it intentionally avoids guessing undocumented machine-readable provider APIs. Future credentialed calls must obtain credentials from secret storage and must never persist or return them.
 
 ## Provider model

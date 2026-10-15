@@ -14,15 +14,15 @@ jobs:
         env:
           POSTGRES_USER: kora
           POSTGRES_PASSWORD: kora
-          POSTGRES_DB: kora
+          POSTGRES_DB: kora_test
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U kora -d kora"
+          --health-cmd "pg_isready -U kora -d kora_test"
           --health-interval 5s
           --health-timeout 3s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://kora:kora@localhost:5432/kora
+      DATABASE_URL: postgresql://kora:kora@localhost:5432/kora_test
       NODE_ENV: test
       MONITOR_ENABLED: "false"
     steps:
