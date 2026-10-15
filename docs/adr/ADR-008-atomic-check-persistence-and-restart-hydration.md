@@ -12,6 +12,10 @@ The monitor wrote the observation, its event, and each incident effect as separa
 - **Event identity.** Domain events (`eventId`, `occurredAt`, `correlationId`) are built before the transaction and reused on a replay. The health event correlates to the incident active before the observation was evaluated; `Incident*` and `RecoveryVerified` events correlate to their incident.
 - **Restart hydration.** PostgreSQL is authoritative. Before its first check the monitor loads the unresolved incident for the deduplication key (`resolved_at IS NULL`) with its full trigger and ongoing evidence. Pre-incident failure streaks are not persisted and restart at zero; recovery of a reloaded incident requires the full configured success count observed after startup.
 - **Single-retry reconciliation.** If creation hits `one_active_incident_per_key`, the transaction rolls back, stored state is reloaded and the same observation is replayed once without a new network check. If that fails, the error is logged and in-memory state stays at the last committed state.
+- **Replay correlation (known semantic).**
+  - The HealthCheck event is built before the transaction and keeps its original correlation (none, if no incident was active when the observation was evaluated). It is not rewritten after reconciliation.
+  - After a 23505 reconciliation, the observation's evidence attaches to the existing incident A, and the replay emits `IncidentUpdated` for A instead of `IncidentCreated`.
+  - Rationale: events record what Kora knew when it evaluated the observation; history is not rewritten after learning more. Accepted as a contract, not an accident.
 
 ## Consequences
 
