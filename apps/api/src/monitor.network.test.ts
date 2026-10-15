@@ -27,7 +27,7 @@ const close = (server: net.Server) =>
   new Promise<void>((resolve) => server.close(() => resolve()));
 
 describe("health check classification against real local failures", () => {
-  const servers: Array<net.Server & { closeAllConnections?: () => void }> = [];
+  const servers: net.Server[] = [];
   let closedPort = 0;
   let holePort = 0;
   let selfSignedPort = 0;
@@ -40,7 +40,6 @@ describe("health check classification against real local failures", () => {
     closedPort = await listen(tmp);
     await close(tmp);
     const hole = net.createServer((s) => {
-      open.push(s);
       s.on("error", () => undefined);
     });
     holePort = await listen(hole);
@@ -59,11 +58,12 @@ describe("health check classification against real local failures", () => {
     });
     plainPort = await listen(plain);
     servers.push(hole, selfSigned, expired, plain);
+    for (const server of servers)
+      server.on("connection", (socket) => open.push(socket));
   });
   afterAll(async () => {
     for (const s of open) s.destroy();
     for (const s of servers) {
-      s.closeAllConnections?.();
       await close(s);
     }
   });

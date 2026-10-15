@@ -8,6 +8,7 @@ import {
 } from "@kora/incident-engine";
 import type { KoraConfig } from "./config.js";
 import { KoraStore } from "./store.js";
+import { redactProviderText } from "./providers/rumptycloud.js";
 
 function event(
   eventType: DomainEvent["eventType"],
@@ -26,29 +27,111 @@ function event(
     payload,
   };
 }
-function classify(error: unknown): {
+type Category = TelemetryObservation["failureCategory"];
+interface Classified {
   reason: string;
-  category: TelemetryObservation["failureCategory"];
+  category: Category;
   timedOut: boolean;
-} {
-  if (
-    error instanceof DOMException &&
-    (error.name === "AbortError" || error.name === "TimeoutError")
-  )
+}
+const DNS_CODES = new Set(["ENOTFOUND", "EAI_AGAIN"]);
+const TIMEOUT_CODES = new Set([
+  "UND_ERR_CONNECT_TIMEOUT",
+  "UND_ERR_HEADERS_TIMEOUT",
+  "UND_ERR_BODY_TIMEOUT",
+]);
+const TLS_CODE =
+  /^(CERT_|DEPTH_ZERO_SELF_SIGNED_CERT$|UNABLE_TO_\w*CERT|UNABLE_TO_VERIFY_LEAF_SIGNATURE$|ERR_TLS_|ERR_SSL_)/;
+const MAX_CHAIN = 16;
+
+/** The error, then its cause chain and AggregateError members, depth first. */
+function errorChain(root: unknown): Array<Record<string, unknown>> {
+  const out: Array<Record<string, unknown>> = [];
+  const seen = new Set<unknown>();
+  const visit = (e: unknown) => {
+    if (!e || typeof e !== "object" || seen.has(e) || out.length >= MAX_CHAIN)
+      return;
+    seen.add(e);
+    const node = e as Record<string, unknown>;
+    out.push(node);
+    visit(node.cause);
+    if (Array.isArray(node.errors)) for (const x of node.errors) visit(x);
+  };
+  visit(root);
+  return out;
+}
+function sanitizeReason(message: string): string {
+  return redactProviderText(
+    message.replace(/\b([a-z][a-z0-9+.-]*:\/\/)[^\s/@]+@/gi, "$1"),
+  ).slice(0, 300);
+}
+function describe(label: string, node: Record<string, unknown>): string {
+  const code = typeof node.code === "string" ? node.code : null;
+  const message = typeof node.message === "string" ? node.message : "";
+  const detail = message && message !== code ? `: ${message}` : "";
+  return sanitizeReason(code ? `${label} (${code})${detail}` : label + detail);
+}
+/**
+ * Classifies a failed fetch() from stable error codes found anywhere in the
+ * cause chain. Messages are never pattern-matched for classification.
+ */
+function classify(error: unknown): Classified {
+  const chain = errorChain(error);
+  for (const node of chain) {
+    const code = typeof node.code === "string" ? node.code : "";
+    if (node.name === "TimeoutError")
+      return {
+        reason: "health check timed out",
+        category: "TIMEOUT",
+        timedOut: true,
+      };
+    if (TIMEOUT_CODES.has(code))
+      return {
+        reason: describe("health check timed out", node),
+        category: "TIMEOUT",
+        timedOut: true,
+      };
+    if (DNS_CODES.has(code))
+      return {
+        reason: describe("DNS resolution failed", node),
+        category: "DNS_FAILURE",
+        timedOut: false,
+      };
+    if (code === "ECONNREFUSED")
+      return {
+        reason: describe("connection refused", node),
+        category: "CONNECTION_REFUSED",
+        timedOut: false,
+      };
+    if (TLS_CODE.test(code))
+      return {
+        reason: describe("TLS failure", node),
+        category: "TLS_FAILURE",
+        timedOut: false,
+      };
+    if (node.name === "AbortError")
+      return {
+        reason: "health check aborted",
+        category: "UNKNOWN",
+        timedOut: false,
+      };
+  }
+  // Unrecognised: surface the most specific message (undici wraps the real
+  // failure in a generic "fetch failed" TypeError).
+  const specific = chain.find(
+    (n, i) => i > 0 && typeof n.message === "string" && n.message,
+  );
+  const node = specific ?? chain[0];
+  if (!node)
     return {
-      reason: "health check timed out",
-      category: "TIMEOUT",
-      timedOut: true,
+      reason: "unknown health check error",
+      category: "UNKNOWN",
+      timedOut: false,
     };
-  const msg =
-    error instanceof Error ? error.message : "unknown health check error";
-  if (/ENOTFOUND|EAI_AGAIN|dns/i.test(msg))
-    return { reason: msg, category: "DNS_FAILURE", timedOut: false };
-  if (/ECONNREFUSED|connection refused/i.test(msg))
-    return { reason: msg, category: "CONNECTION_REFUSED", timedOut: false };
-  if (/certificate|tls|ssl/i.test(msg))
-    return { reason: msg, category: "TLS_FAILURE", timedOut: false };
-  return { reason: msg, category: "UNKNOWN", timedOut: false };
+  return {
+    reason: describe("health check failed", node),
+    category: "UNKNOWN",
+    timedOut: false,
+  };
 }
 function httpFailureCategory(
   status: number,
