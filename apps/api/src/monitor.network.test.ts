@@ -155,6 +155,22 @@ describe("health check classification of synthetic error shapes", () => {
     );
     expect(o.failureCategory).toBe("CONNECTION_REFUSED");
   });
+  it("classifies the dual-stack AggregateError shape observed on Node 22", async () => {
+    // net.connect with autoSelectFamily and an unusable ::1: the aggregate has its
+    // own code (EAFNOSUPPORT) and the real refusal only in .errors.
+    const o = await failWith(
+      fetchFailed(
+        Object.assign(
+          new AggregateError([
+            coded("EAFNOSUPPORT", "connect EAFNOSUPPORT ::1:9"),
+            coded("ECONNREFUSED", "connect ECONNREFUSED 127.0.0.1:9"),
+          ]),
+          { code: "EAFNOSUPPORT" },
+        ),
+      ),
+    );
+    expect(o.failureCategory).toBe("CONNECTION_REFUSED");
+  });
   it("walks multi-level cause chains", async () => {
     const o = await failWith(
       new Error("outer", {
