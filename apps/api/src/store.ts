@@ -4,7 +4,7 @@ import type {
   IncidentSnapshot,
   TelemetryObservation,
 } from "@kora/incident-engine";
-import type { ProviderResource } from "./providers/rumptycloud.js";
+import type { ProviderResource } from "@kora/topology";
 
 export class KoraStore {
   constructor(

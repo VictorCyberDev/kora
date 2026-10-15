@@ -37,6 +37,9 @@ importers:
       "@kora/incident-engine":
         specifier: workspace:*
         version: link:../../services/incident-engine
+      "@kora/topology":
+        specifier: workspace:*
+        version: link:../../packages/topology
       fastify:
         specifier: ^5.6.1
         version: 5.12.5

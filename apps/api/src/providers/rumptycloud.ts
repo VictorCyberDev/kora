@@ -1,28 +1,9 @@
 import { z } from "zod";
-
-export type ProviderCapability =
-  | "RESOURCE_DISCOVERY"
-  | "RESOURCE_STATUS"
-  | "HEALTH_OBSERVATION"
-  | "LOG_ACCESS"
-  | "METRIC_ACCESS"
-  | "DEPLOYMENT_METADATA"
-  | "RESTART"
-  | "REDEPLOY"
-  | "ROLLBACK"
-  | "SCALING";
-
-export interface ProviderResource {
-  provider: string;
-  providerAccount: string;
-  region: string;
-  resourceType: string;
-  providerResourceId: string;
-  displayName?: string;
-  environment: string;
-  status?: string;
-  metadata: Readonly<Record<string, string | number | boolean | null>>;
-}
+import type {
+  CloudProvider,
+  ProviderCapability,
+  ProviderResource,
+} from "@kora/topology";
 
 const SAFE_METADATA_KEYS = new Set(["publicUrl", "healthPath"]);
 const SECRET_PATTERN =
@@ -102,7 +83,7 @@ export function normalizeProviderError(error: unknown): ProviderError {
   );
 }
 
-export class RumptyCloudProvider {
+export class RumptyCloudProvider implements CloudProvider {
   readonly name = "rumptycloud";
   readonly capabilities: ReadonlySet<ProviderCapability> = new Set([
     "HEALTH_OBSERVATION",
