@@ -35,6 +35,14 @@ The Rumpty docs I read do not document the console's start-command field (only t
 | Readiness path | `/health`                                                  |
 | Auto deploy    | your choice (default on: every push to the branch deploys) |
 
+## Commit identity (`GET /__kora`)
+
+Both services answer `GET /__kora` with `kora.runtime-claim/v1` (service, environment, commit, commitSource, builtAt, startedAt, uptimeSeconds). The commit comes from, in order: the image's `build-info.json`, then `KORA_COMMIT_SHA`, else `null` / `unavailable`.
+
+- With a Dockerfile build from GitHub the build context normally contains `.git`, and the image records its `HEAD`. If the platform's build context has no `.git`, set the build argument `GIT_SHA` (40 hex characters; not a secret) if the console offers build arguments. The docs I read do not say whether it does.
+- Environment variables are runtime-only on Rumpty, so `KORA_COMMIT_SHA` can only describe the running deployment, not the build. Set it to the deployed commit only if you maintain it by hand; if it is unset and the build recorded nothing, the claim says `unavailable`. A wrong value here is a wrong claim.
+- Never treat this as proof of what is running (see ADR-009).
+
 ## Environment variables (names only)
 
 **kora-api**
@@ -43,7 +51,8 @@ The Rumpty docs I read do not document the console's start-command field (only t
 - `NODE_ENV`: `production`.
 - `MONITOR_HEALTH_URL`: the demo-service health URL the monitor polls, for example `<demo-service URL>/health`. The docs I read do not describe deployment-to-deployment internal URLs; use the URL the console shows for demo-service.
 - `MONITOR_SERVICE_NAME`: for example `demo-service`.
-- `KORA_ENVIRONMENT`: for example `production` or `demo`.
+- `KORA_ENVIRONMENT`: for example `production` or `demo`. Also reported by `/__kora`.
+- Optional: `KORA_COMMIT_SHA` (see above).
 - Optional provider binding, **all four or none**: `RUMPTY_WORKSPACE`, `RUMPTY_REGION`, `RUMPTY_RESOURCE_TYPE` (`virtual_machine` or `deployment`), `RUMPTY_RESOURCE_ID`; plus the display-only `RUMPTY_RESOURCE_NAME`. A partial binding is rejected at startup.
 - Optional tuning: `MONITOR_ENABLED`, `MONITOR_INTERVAL_MS`, `MONITOR_TIMEOUT_MS`, `MONITOR_FAILURE_THRESHOLD`, `MONITOR_RECOVERY_THRESHOLD`, `LOG_LEVEL`.
 - Do **not** set `API_PORT` or `PORT`. The API reads `API_PORT`, then the platform `PORT`, then `3000`; setting `API_PORT` would override the Port setting and break routing.
@@ -51,6 +60,8 @@ The Rumpty docs I read do not document the console's start-command field (only t
 **demo-service**
 
 - `NODE_ENV`: `production`.
+- `KORA_ENVIRONMENT`: reported by `/__kora` (default `development`).
+- Optional: `KORA_COMMIT_SHA` (see above).
 - Leave `DEMO_FAILURE_INJECTION_ENABLED` unset (it defaults to `false`; `/dev/failure` and `/dev/recover` then return 404). Enable it only for a controlled incident demo.
 - Do **not** set `DEMO_PORT` or `PORT` (same reason; it reads `DEMO_PORT`, then `PORT`, then `3100`).
 - It needs no database and no `DATABASE_URL`.
@@ -102,13 +113,14 @@ After both deployments are Active:
 
 1. demo-service: `GET <demo URL>/health` returns `200` and `{"status":"healthy"}`.
 2. kora-api: `GET <api URL>/health` returns `200` and `{"status":"ok"}`. This is a liveness check and does not query the database.
-3. `GET <api URL>/services` lists the monitored service (and its provider resource when the `RUMPTY_*` binding is set).
-4. Wait two monitor intervals; `GET <api URL>/incidents` is empty while demo-service is healthy.
-5. Check the Runtime Logs of kora-api for `Server listening` on the Port and no repeated `monitor iteration failed`.
-6. Optional, demo only: enable `DEMO_FAILURE_INJECTION_ENABLED=true` on demo-service, redeploy, `POST /dev/failure`, and watch an incident open after the failure threshold and resolve after `POST /dev/recover` plus the recovery threshold. Turn the flag off afterwards.
+3. `GET <demo URL>/__kora` and `GET <api URL>/__kora` return `kora.runtime-claim/v1` with the expected `service` and `environment`; `commit` matches what you deployed or says `unavailable`.
+4. `GET <api URL>/services` lists the monitored service (and its provider resource when the `RUMPTY_*` binding is set).
+5. Wait two monitor intervals; `GET <api URL>/incidents` is empty while demo-service is healthy.
+6. Check the Runtime Logs of kora-api for `Server listening` on the Port and no repeated `monitor iteration failed`.
+7. Optional, demo only: enable `DEMO_FAILURE_INJECTION_ENABLED=true` on demo-service, redeploy, `POST /dev/failure`, and watch an incident open after the failure threshold and resolve after `POST /dev/recover` plus the recovery threshold. Turn the flag off afterwards.
 
 ## Known limits
 
 - The API is unauthenticated, including `POST /incidents/:id/diagnosis/snapshots`. Hosted-demo mitigation: **none yet**. Do not store real tenant data until authentication exists (see `docs/security/threat-model.md`).
-- `GET /__kora` is **not implemented**: no runtime-claim specification exists in this repository or in the Rumpty docs I read, and its fields must not be invented.
-- The image build and container start were **not run** where this was authored (no Docker). They were checked by simulating the image layout (production-only install plus compiled output) and starting both servers from it with a minimal environment. The first deploy is the first real image build.
+- `GET /__kora` is a self-reported runtime claim (ADR-009), not proof or attestation. Rumpty documents no such endpoint; the shape is defined by Kora.
+- The image build and container start could not be run where this was authored (no Docker). CI now builds the root Dockerfile on every pull request (job `docker image`) in three situations (context with `.git`, `GIT_SHA` build argument, no `.git` and no argument), starts containers, and checks `/health`, `/__kora`, the non-root user and the in-image migration.
