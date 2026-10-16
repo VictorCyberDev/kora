@@ -175,7 +175,8 @@ export class KoraStore {
       FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id WHERE e.incident_id=${id}
       ORDER BY occurred_at,event_type`;
   }
-  async createDiagnosticSnapshot(id: string) {
+  /** Reads the incident's evidence and computes its diagnosis. Writes nothing. */
+  async computeDiagnosticSnapshot(id: string) {
     const incident = await this.getIncident(id);
     if (!incident) return null;
     const rows = await this.getIncidentEvidence(id);
@@ -258,14 +259,42 @@ export class KoraStore {
       throw new Error(
         "diagnostic snapshot does not reproduce its content hash",
       );
-    const snapshotId = crypto.randomUUID();
-    await this
-      .sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${snapshotId},${id},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot as unknown as postgres.JSONValue)}) ON CONFLICT(incident_id,content_hash) DO NOTHING`;
-    const persisted = (
+    return snapshot;
+  }
+  /**
+   * Persists an immutable snapshot, idempotently on (incident_id,
+   * content_hash). Returns the stored row: `created` is false when an
+   * equivalent snapshot already existed.
+   */
+  async persistDiagnosticSnapshot(
+    snapshot: NonNullable<
+      Awaited<ReturnType<KoraStore["computeDiagnosticSnapshot"]>>
+    >,
+  ) {
+    const inserted = (
       await this
-        .sql`SELECT id FROM diagnostic_snapshots WHERE incident_id=${id} AND content_hash=${snapshot.contentHash}`
-    )[0]!;
-    return { snapshotId: String(persisted.id), ...snapshot };
+        .sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${crypto.randomUUID()},${snapshot.incidentId},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot as unknown as postgres.JSONValue)}) ON CONFLICT(incident_id,content_hash) DO NOTHING RETURNING id,snapshot`
+    )[0];
+    const row =
+      inserted ??
+      (
+        await this
+          .sql`SELECT id,snapshot FROM diagnostic_snapshots WHERE incident_id=${snapshot.incidentId} AND content_hash=${snapshot.contentHash}`
+      )[0]!;
+    return {
+      created: inserted !== undefined,
+      snapshot: {
+        snapshotId: String(row.id),
+        ...(row.snapshot as typeof snapshot),
+      },
+    };
+  }
+  /** Compute and persist in one call. */
+  async createDiagnosticSnapshot(id: string) {
+    const computed = await this.computeDiagnosticSnapshot(id);
+    return computed
+      ? (await this.persistDiagnosticSnapshot(computed)).snapshot
+      : null;
   }
   async listDiagnosticSnapshots(id: string) {
     return this

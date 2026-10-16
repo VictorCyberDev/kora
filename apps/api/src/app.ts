@@ -67,10 +67,19 @@ export function buildApi(
   });
   app.get("/incidents/:id/diagnosis", async (req, reply) => {
     const { id } = idParams.parse(req.params);
-    const snapshot = await store.createDiagnosticSnapshot(id);
+    const snapshot = await store.computeDiagnosticSnapshot(id);
     return snapshot
       ? { data: snapshot }
       : reply.code(404).send({ error: "not_found", requestId: req.id });
+  });
+  app.post("/incidents/:id/diagnosis/snapshots", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    const computed = await store.computeDiagnosticSnapshot(id);
+    if (!computed)
+      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    const { created, snapshot } =
+      await store.persistDiagnosticSnapshot(computed);
+    return reply.code(created ? 201 : 200).send({ data: snapshot });
   });
   app.get("/incidents/:id/snapshots", async (req, reply) => {
     const { id } = idParams.parse(req.params);

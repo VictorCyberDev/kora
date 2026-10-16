@@ -58,7 +58,8 @@ Evidence retrieval is capped deterministically (default 500 items). If the cap i
 
 ## API
 
-- `GET /incidents/:id/diagnosis` creates or reuses the deterministic snapshot for the current incident evidence.
+- `GET /incidents/:id/diagnosis` computes and returns the current diagnosis. It performs no database writes and returns no `snapshotId`.
+- `POST /incidents/:id/diagnosis/snapshots` intentionally persists the current diagnosis as an immutable snapshot, idempotently on `(incident_id, content_hash)`: `201` with the new snapshot, or `200` with the existing equivalent snapshot. `404` for an unknown incident.
 - `GET /incidents/:id/snapshots` lists persisted snapshot identities and hashes.
 - `GET /incidents/:id/snapshots/:snapshotId` retrieves a persisted snapshot.
 - Existing incident, event, evidence and timeline endpoints remain available.
