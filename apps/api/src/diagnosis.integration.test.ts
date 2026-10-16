@@ -157,22 +157,96 @@ describe.skipIf(!databaseUrl)("diagnostic persistence", () => {
     const [row] = await sql!`SELECT ${sql!.json(value)}::jsonb AS v`;
     expect(deterministicHash(row!.v)).toBe(deterministicHash(value));
   });
-  it("exposes diagnosis and persisted snapshot through the API", async () => {
+  const totals = async () =>
+    (
+      await sql!`SELECT
+        (SELECT count(*) FROM diagnostic_snapshots)::int AS snapshots,
+        (SELECT count(*) FROM domain_events)::int AS events,
+        (SELECT count(*) FROM telemetry_observations)::int AS observations,
+        (SELECT count(*) FROM incident_evidence)::int AS evidence,
+        (SELECT count(*) FROM incidents)::int AS incidents`
+    )[0]!;
+  type SnapshotBody = {
+    data: {
+      snapshotId?: string;
+      contentHash: string;
+      rootCause: { state: string };
+    };
+  };
+  it("GET /diagnosis computes the diagnosis with zero database writes", async () => {
     const { incident } = await fixture();
     const app = buildApi(store!, "test");
-    const diagnosis = await app.inject(`/incidents/${incident.id}/diagnosis`);
-    expect(diagnosis.statusCode).toBe(200);
-    const body = diagnosis.json<{
-      data: { snapshotId: string; rootCause: { state: string } };
-    }>();
+    const before = await totals();
+    const first = await app.inject(`/incidents/${incident.id}/diagnosis`);
+    const second = await app.inject(`/incidents/${incident.id}/diagnosis`);
+    expect(first.statusCode).toBe(200);
+    const body = first.json<SnapshotBody>();
     expect(body.data.rootCause.state).toBe("UNKNOWN");
+    expect(body.data.snapshotId).toBeUndefined();
+    expect(verifyDiagnosticSnapshot(body.data)).toBe(true);
+    expect(second.json<SnapshotBody>().data.contentHash).toBe(
+      body.data.contentHash,
+    );
+    expect(await totals()).toEqual(before);
+    const list = await app.inject(`/incidents/${incident.id}/snapshots`);
+    expect(list.json<{ data: unknown[] }>().data).toHaveLength(0);
+    const missing = await app.inject(
+      `/incidents/${crypto.randomUUID()}/diagnosis`,
+    );
+    expect(missing.statusCode).toBe(404);
+    await app.close();
+  });
+  it("POST /diagnosis/snapshots persists once: 201 then 200 with the same snapshot", async () => {
+    const { incident } = await fixture();
+    const app = buildApi(store!, "test");
+    const url = `/incidents/${incident.id}/diagnosis/snapshots`;
+    const created = await app.inject({ method: "POST", url });
+    expect(created.statusCode).toBe(201);
+    const createdBody = created.json<SnapshotBody>();
+    expect(createdBody.data.snapshotId).toMatch(/^[0-9a-f-]{36}$/);
+    expect(verifyDiagnosticSnapshot(createdBody.data as never)).toBe(true);
+    const again = await app.inject({ method: "POST", url });
+    expect(again.statusCode).toBe(200);
+    expect(again.json<SnapshotBody>().data.snapshotId).toBe(
+      createdBody.data.snapshotId,
+    );
+    expect(
+      (
+        await sql!`SELECT count(*)::int n FROM diagnostic_snapshots WHERE incident_id=${incident.id}`
+      )[0]!.n,
+    ).toBe(1);
+    // Existing read endpoints keep their contract.
     const list = await app.inject(`/incidents/${incident.id}/snapshots`);
     expect(list.statusCode).toBe(200);
-    expect(list.json<{ data: unknown[] }>().data.length).toBeGreaterThan(0);
+    expect(list.json<{ data: unknown[] }>().data).toHaveLength(1);
     const detail = await app.inject(
-      `/incidents/${incident.id}/snapshots/${body.data.snapshotId}`,
+      `/incidents/${incident.id}/snapshots/${createdBody.data.snapshotId}`,
     );
     expect(detail.statusCode).toBe(200);
+    const unknown = await app.inject({
+      method: "POST",
+      url: `/incidents/${crypto.randomUUID()}/diagnosis/snapshots`,
+    });
+    expect(unknown.statusCode).toBe(404);
+    const invalid = await app.inject({
+      method: "POST",
+      url: "/incidents/not-a-uuid/diagnosis/snapshots",
+    });
+    expect(invalid.statusCode).toBe(400);
+    await app.close();
+  });
+  it("concurrent POSTs create exactly one snapshot", async () => {
+    const { incident } = await fixture();
+    const app = buildApi(store!, "test");
+    const url = `/incidents/${incident.id}/diagnosis/snapshots`;
+    const responses = await Promise.all(
+      [0, 1, 2].map(() => app.inject({ method: "POST", url })),
+    );
+    expect(responses.map((r) => r.statusCode).sort()).toEqual([200, 200, 201]);
+    expect(
+      new Set(responses.map((r) => r.json<SnapshotBody>().data.snapshotId))
+        .size,
+    ).toBe(1);
     await app.close();
   });
 });
