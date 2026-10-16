@@ -127,6 +127,26 @@ describe.skipIf(!databaseUrl)("diagnostic persistence", () => {
     // The returned object is what was stored (plus its row id).
     expect(omit(created!, ["snapshotId"])).toEqual(stored);
   });
+  it("rejects UPDATE, DELETE and TRUNCATE of snapshots", async () => {
+    const { incident } = await fixture();
+    const created = await store!.createDiagnosticSnapshot(incident.id);
+    await expect(
+      sql!`UPDATE diagnostic_snapshots SET snapshot='{}'::jsonb WHERE id=${created!.snapshotId}`,
+    ).rejects.toThrow(/immutable.*UPDATE/i);
+    await expect(
+      sql!`DELETE FROM diagnostic_snapshots WHERE id=${created!.snapshotId}`,
+    ).rejects.toThrow(/immutable.*DELETE/i);
+    await expect(sql!`TRUNCATE diagnostic_snapshots`).rejects.toThrow(
+      /immutable.*TRUNCATE/i,
+    );
+    // TRUNCATE of the parent cascades to snapshots and must be refused too.
+    await expect(sql!`TRUNCATE incidents CASCADE`).rejects.toThrow(
+      /immutable.*TRUNCATE/i,
+    );
+    const rows =
+      await sql!`SELECT id FROM diagnostic_snapshots WHERE id=${created!.snapshotId}`;
+    expect(rows).toHaveLength(1);
+  });
   it("canonical hashing survives a JSONB round trip with fractional numbers", async () => {
     const value = {
       z: 0.1,
