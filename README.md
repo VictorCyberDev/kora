@@ -46,6 +46,10 @@ Common gates: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm fo
 
 `.env.example` is the contract. `DATABASE_URL` must be PostgreSQL. To bind a monitored endpoint to a real RumptyCloud resource, set all of `RUMPTY_WORKSPACE`, `RUMPTY_REGION`, `RUMPTY_RESOURCE_TYPE`, and `RUMPTY_RESOURCE_ID`. Partial provider identity is rejected. `RUMPTY_RESOURCE_NAME` is display metadata only.
 
+### Container image and Rumpty Cloud
+
+The root `Dockerfile` builds one image for both services (default command: the API; the demo service runs with `node apps/demo-service/dist/server.js`). Both servers bind `0.0.0.0` and read the platform-injected `PORT` (`API_PORT`/`DEMO_PORT` win if set). See `docs/runbooks/rumpty-deploy.md` for console settings, environment variable names, database strings, migrations over `sslmode=require` and a smoke-test checklist.
+
 ### Running tests
 
 PostgreSQL-backed tests are destructive (they delete rows) and run serially. They only start when `DATABASE_URL` names a database ending in `_test`; the name is parsed from the URL, so anything else is refused. With the compose database running:

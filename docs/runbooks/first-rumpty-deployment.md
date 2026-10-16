@@ -1,5 +1,7 @@
 # First RumptyCloud deployment — preparation runbook
 
+> The concrete console settings now live in [rumpty-deploy.md](rumpty-deploy.md). This page keeps the original planning notes.
+
 This is a Milestone 2 plan, not a claim that deployment commands are known.
 
 ## Components and infrastructure
