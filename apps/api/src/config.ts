@@ -53,6 +53,14 @@ export const configSchema = z
       });
   });
 export type KoraConfig = z.infer<typeof configSchema>;
+/**
+ * Listen port: API_PORT, then the platform-injected PORT, then 3000. Empty
+ * values count as unset. Everything else is read from `env` unchanged.
+ */
 export const loadConfig = (
   env: Record<string, string | undefined> = process.env,
-) => configSchema.parse(env);
+) =>
+  configSchema.parse({
+    ...env,
+    API_PORT: env.API_PORT || env.PORT || undefined,
+  });
