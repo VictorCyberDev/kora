@@ -72,9 +72,9 @@ Kora keeps **fact**, **inference**, **diagnosis**, and **hypothesis** separate. 
 
 ## Deterministic diagnosis
 
-Milestone 3 correlates evidence by exact incident/service/resource identity and deterministic time ordering. Findings use machine-readable codes such as `SERVICE_HTTP_5XX`, `SERVICE_TIMEOUT`, `DNS_RESOLUTION_FAILURE`, `TLS_HANDSHAKE_FAILURE`, `CONNECTION_REFUSED`, `RESOURCE_REPORTED_STOPPED`, `PROVIDER_UNAVAILABLE`, and `RECOVERY_VERIFIED`.
+Milestone 3 correlates evidence by exact incident/service/resource identity and deterministic time ordering. Findings use machine-readable codes such as `SERVICE_HTTP_5XX`, `SERVICE_TIMEOUT`, `DNS_RESOLUTION_FAILURE`, `TLS_HANDSHAKE_FAILURE`, `CONNECTION_REFUSED`, and `RECOVERY_VERIFIED`. The codes `RESOURCE_REPORTED_STOPPED` and `PROVIDER_UNAVAILABLE` are defined but not yet emitted by any monitor path.
 
-Confidence is finite and rule-based (`CONFIRMED`, `STRONGLY_SUPPORTED`, `SUPPORTED`, `INSUFFICIENT_EVIDENCE`), never a fabricated percentage. Provider `RUNNING` plus failed service health is preserved as a contradiction. Missing metrics, logs, provider status or deployment context are represented as explicit evidence gaps. Unsupported root cause remains `UNKNOWN`.
+Confidence is finite and rule-based (`CONFIRMED`, `STRONGLY_SUPPORTED`, `SUPPORTED`; `INSUFFICIENT_EVIDENCE` is defined but not yet emitted), never a fabricated percentage. Provider `RUNNING` plus failed service health is preserved as a contradiction. Missing metrics, logs, provider status or deployment context are represented as explicit evidence gaps. Root cause is always `UNKNOWN` today (`IDENTIFIED` and `SUSPECTED` are defined, not yet emitted).
 
 Diagnostic snapshots are deterministically serialized, SHA-256 hashed, persisted in PostgreSQL and immutable after creation. Equivalent evidence produces equivalent diagnostic content; diagnostically relevant changes alter the hash. See `docs/architecture/deterministic-diagnosis.md`.
 
@@ -91,7 +91,7 @@ A failed health check is classified from the HTTP status or, for transport failu
 | `TIMEOUT`                                  | `TimeoutError` (the monitor's timeout), `UND_ERR_CONNECT_TIMEOUT`, `UND_ERR_HEADERS_TIMEOUT`, `UND_ERR_BODY_TIMEOUT`       |
 | `UNKNOWN`                                  | anything else, including a bare `AbortError` ("health check aborted"). The reason carries the underlying code and message. |
 
-`failureReason` includes the matched code and cause message with URL credentials and secret-like values redacted. `PROVIDER_UNAVAILABLE` and `RESOURCE_STOPPED` are accepted by the schema but are not produced by the health monitor. Legacy Milestone 1 category values remain accepted for persisted compatibility.
+`failureReason` includes the matched code and cause message with URL credentials and secret-like values redacted. `PROVIDER_UNAVAILABLE` and `RESOURCE_STOPPED` are defined, not yet emitted: the schema accepts them but the health monitor never produces them. Legacy Milestone 1 category values remain accepted for persisted compatibility.
 
 ## API
 
