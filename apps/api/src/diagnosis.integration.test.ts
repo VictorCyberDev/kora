@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
 import { KoraStore } from "./store.js";
 import { buildApi } from "./app.js";
+import { deterministicHash } from "./diagnosis.js";
 import type {
   IncidentSnapshot,
   TelemetryObservation,
@@ -103,6 +104,31 @@ describe.skipIf(!databaseUrl)("diagnostic persistence", () => {
     await expect(
       sql!`DELETE FROM diagnostic_snapshots WHERE id=${first!.snapshotId}`,
     ).rejects.toThrow(/immutable.*DELETE/i);
+  });
+  it("stored snapshot JSON alone reproduces its content_hash", async () => {
+    const { incident } = await fixture();
+    const created = await store!.createDiagnosticSnapshot(incident.id);
+    const [row] =
+      await sql!`SELECT content_hash,snapshot FROM diagnostic_snapshots WHERE id=${created!.snapshotId}`;
+    // createdAt and contentHash are the only fields outside the hash.
+    const omit = (o: object, keys: string[]) =>
+      Object.fromEntries(Object.entries(o).filter(([k]) => !keys.includes(k)));
+    const stored = row!.snapshot as Record<string, unknown>;
+    expect(deterministicHash(omit(stored, ["createdAt", "contentHash"]))).toBe(
+      String(row!.content_hash),
+    );
+    // The returned object is what was stored (plus its row id).
+    expect(omit(created!, ["snapshotId"])).toEqual(stored);
+  });
+  it("canonical hashing survives a JSONB round trip with fractional numbers", async () => {
+    const value = {
+      z: 0.1,
+      a: { y: 1.5e-7, x: 123456.789, w: [0.30000000000000004, -0.5, 1e21] },
+      m: null,
+      b: true,
+    };
+    const [row] = await sql!`SELECT ${sql!.json(value)}::jsonb AS v`;
+    expect(deterministicHash(row!.v)).toBe(deterministicHash(value));
   });
   it("exposes diagnosis and persisted snapshot through the API", async () => {
     const { incident } = await fixture();
