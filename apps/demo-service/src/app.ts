@@ -1,4 +1,5 @@
 import Fastify from "fastify";
+import { createRuntimeClaim } from "@kora/runtime-claim";
 import { z } from "zod";
 
 export const demoConfigSchema = z.object({
@@ -13,14 +14,23 @@ export const demoConfigSchema = z.object({
 
 export function buildDemoService(
   input: Record<string, string | undefined> = process.env,
+  options: { runtimeClaim?: ReturnType<typeof createRuntimeClaim> } = {},
 ) {
   const config = demoConfigSchema.parse(input);
   const app = Fastify({ logger: config.NODE_ENV !== "test" });
+  const runtimeClaim =
+    options.runtimeClaim ??
+    createRuntimeClaim({ service: "demo-service", env: input });
   let failing = false;
   app.get("/health", (_request, reply) =>
     failing
       ? reply.code(503).send({ status: "unhealthy" })
       : { status: "healthy" },
+  );
+  // Self-reported identity of this process: unauthenticated, read-only, no
+  // secrets, and a claim rather than proof (ADR-009).
+  app.get("/__kora", (_request, reply) =>
+    reply.header("cache-control", "no-store").send(runtimeClaim.snapshot()),
   );
   const control = (
     next: boolean,
