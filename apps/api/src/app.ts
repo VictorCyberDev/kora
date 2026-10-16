@@ -3,6 +3,10 @@ import { z, ZodError } from "zod";
 import { KoraStore } from "./store.js";
 
 const idParams = z.object({ id: z.string().uuid() });
+const snapshotParams = z.object({
+  id: z.string().uuid(),
+  snapshotId: z.string().uuid(),
+});
 export function buildApi(
   store: KoraStore,
   nodeEnv = "development",
@@ -60,6 +64,35 @@ export function buildApi(
     if (!(await store.getIncident(id)))
       return reply.code(404).send({ error: "not_found", requestId: req.id });
     return { data: await store.getIncidentTimeline(id) };
+  });
+  app.get("/incidents/:id/diagnosis", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    const snapshot = await store.computeDiagnosticSnapshot(id);
+    return snapshot
+      ? { data: snapshot }
+      : reply.code(404).send({ error: "not_found", requestId: req.id });
+  });
+  app.post("/incidents/:id/diagnosis/snapshots", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    const computed = await store.computeDiagnosticSnapshot(id);
+    if (!computed)
+      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    const { created, snapshot } =
+      await store.persistDiagnosticSnapshot(computed);
+    return reply.code(created ? 201 : 200).send({ data: snapshot });
+  });
+  app.get("/incidents/:id/snapshots", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    if (!(await store.getIncident(id)))
+      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    return { data: await store.listDiagnosticSnapshots(id) };
+  });
+  app.get("/incidents/:id/snapshots/:snapshotId", async (req, reply) => {
+    const { id, snapshotId } = snapshotParams.parse(req.params);
+    const snapshot = await store.getDiagnosticSnapshot(id, snapshotId);
+    return snapshot
+      ? { data: snapshot }
+      : reply.code(404).send({ error: "not_found", requestId: req.id });
   });
   return app;
 }

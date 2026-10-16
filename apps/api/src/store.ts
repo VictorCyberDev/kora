@@ -5,6 +5,11 @@ import type {
   TelemetryObservation,
 } from "@kora/incident-engine";
 import type { ProviderResource } from "@kora/topology";
+import {
+  buildDiagnosticSnapshot,
+  verifyDiagnosticSnapshot,
+  type DiagnosticEvidence,
+} from "./diagnosis.js";
 
 export class KoraStore {
   constructor(
@@ -37,10 +42,8 @@ export class KoraStore {
     return rows[0]!;
   }
   async bindServiceToResource(serviceId: string, resourceId: string) {
-    await this.sql`
-      INSERT INTO service_resource_bindings(service_id,resource_id,relationship)
-      VALUES(${serviceId},${resourceId},'RUNS_ON')
-      ON CONFLICT DO NOTHING`;
+    await this
+      .sql`INSERT INTO service_resource_bindings(service_id,resource_id,relationship) VALUES(${serviceId},${resourceId},'RUNS_ON') ON CONFLICT DO NOTHING`;
   }
   async recordObservation(o: TelemetryObservation) {
     await this.sql`
@@ -125,62 +128,32 @@ export class KoraStore {
   async listServices() {
     return this.sql`
       SELECT s.id,s.name,s.health_url,s.created_at,
-        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object(
-          'id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,
-          'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,
-          'displayName',r.display_name,'environment',r.environment,'status',r.provider_status
-        ) END AS resource
-      FROM services s
-      LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON'
-      LEFT JOIN provider_resources r ON r.id=b.resource_id
-      ORDER BY s.created_at`;
+        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,'displayName',r.display_name,'environment',r.environment,'status',r.provider_status) END AS resource
+      FROM services s LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id ORDER BY s.created_at`;
   }
   async getService(id: string) {
     return (
       (
         await this.sql`
       SELECT s.id,s.name,s.health_url,s.created_at,
-        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object(
-          'id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,
-          'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,
-          'displayName',r.display_name,'environment',r.environment,'status',r.provider_status
-        ) END AS resource
-      FROM services s
-      LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON'
-      LEFT JOIN provider_resources r ON r.id=b.resource_id
-      WHERE s.id=${id}`
+        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,'displayName',r.display_name,'environment',r.environment,'status',r.provider_status) END AS resource
+      FROM services s LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id WHERE s.id=${id}`
       )[0] ?? null
     );
   }
   async listIncidents() {
     return this.sql`
-      SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,
-        s.name AS service_name,
-        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object(
-          'id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,
-          'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,
-          'displayName',r.display_name,'environment',r.environment,'status',r.provider_status
-        ) END AS resource
-      FROM incidents i JOIN services s ON s.id=i.service_id
-      LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON'
-      LEFT JOIN provider_resources r ON r.id=b.resource_id
-      ORDER BY i.started_at DESC`;
+      SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,s.name AS service_name,
+        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,'displayName',r.display_name,'environment',r.environment,'status',r.provider_status) END AS resource
+      FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id ORDER BY i.started_at DESC`;
   }
   async getIncident(id: string) {
     return (
       (
         await this.sql`
-      SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,
-        s.name AS service_name,
-        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object(
-          'id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,
-          'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,
-          'displayName',r.display_name,'environment',r.environment,'status',r.provider_status
-        ) END AS resource
-      FROM incidents i JOIN services s ON s.id=i.service_id
-      LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON'
-      LEFT JOIN provider_resources r ON r.id=b.resource_id
-      WHERE i.id=${id}`
+      SELECT i.id,i.service_id,i.deduplication_key,i.state,i.severity,i.started_at,i.resolved_at,i.created_at,i.updated_at,s.name AS service_name,
+        CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerAccount',r.provider_account,'region',r.region,'resourceType',r.resource_type,'providerResourceId',r.provider_resource_id,'displayName',r.display_name,'environment',r.environment,'status',r.provider_status) END AS resource
+      FROM incidents i JOIN services s ON s.id=i.service_id LEFT JOIN service_resource_bindings b ON b.service_id=s.id AND b.relationship='RUNS_ON' LEFT JOIN provider_resources r ON r.id=b.resource_id WHERE i.id=${id}`
       )[0] ?? null
     );
   }
@@ -190,22 +163,149 @@ export class KoraStore {
   }
   async getIncidentEvidence(id: string) {
     return this.sql`
-      SELECT e.id,e.evidence_kind,e.threshold_count,o.id observation_id,o.observed_at,o.healthy,o.http_status,o.latency_ms,o.timed_out,o.failure_reason,o.failure_category,o.provider_status,
+      SELECT e.id,e.created_at AS ingested_at,e.evidence_kind,e.threshold_count,o.id observation_id,o.service_id,o.observed_at,o.healthy,o.http_status,o.latency_ms,o.timed_out,o.failure_reason,o.failure_category,o.provider_status,
         CASE WHEN r.id IS NULL THEN NULL ELSE jsonb_build_object('id',r.id,'provider',r.provider,'providerResourceId',r.provider_resource_id,'region',r.region,'environment',r.environment) END AS resource
-      FROM incident_evidence e
-      JOIN telemetry_observations o ON o.id=e.observation_id
-      LEFT JOIN provider_resources r ON r.id=o.resource_id
-      WHERE e.incident_id=${id} ORDER BY o.observed_at,e.id`;
+      FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id LEFT JOIN provider_resources r ON r.id=o.resource_id WHERE e.incident_id=${id} ORDER BY o.observed_at,e.id`;
   }
   async getIncidentTimeline(id: string) {
     return this.sql`
       SELECT occurred_at,event_type,source,payload FROM domain_events WHERE correlation_id=${id}
       UNION ALL
-      SELECT o.observed_at,
-        CASE WHEN o.healthy THEN 'HealthObservationSucceeded' ELSE 'HealthObservationFailed' END,
-        'health-monitor',
-        jsonb_build_object('observationId',o.id,'healthy',o.healthy,'httpStatus',o.http_status,'latencyMs',o.latency_ms,'failureCategory',o.failure_category,'providerStatus',o.provider_status,'resourceId',o.resource_id)
+      SELECT o.observed_at,CASE WHEN o.healthy THEN 'HealthObservationSucceeded' ELSE 'HealthObservationFailed' END,'health-monitor',jsonb_build_object('observationId',o.id,'healthy',o.healthy,'httpStatus',o.http_status,'latencyMs',o.latency_ms,'failureCategory',o.failure_category,'providerStatus',o.provider_status,'resourceId',o.resource_id)
       FROM incident_evidence e JOIN telemetry_observations o ON o.id=e.observation_id WHERE e.incident_id=${id}
       ORDER BY occurred_at,event_type`;
+  }
+  /** Reads the incident's evidence and computes its diagnosis. Writes nothing. */
+  async computeDiagnosticSnapshot(id: string) {
+    const incident = await this.getIncident(id);
+    if (!incident) return null;
+    const rows = await this.getIncidentEvidence(id);
+    const events = await this.getIncidentEvents(id);
+    const evidence: Omit<DiagnosticEvidence, "contentHash">[] = rows.map(
+      (row) => ({
+        id: String(row.observation_id),
+        incidentId: id,
+        serviceId: String(row.service_id),
+        resourceId: row.resource
+          ? String((row.resource as { id: string }).id)
+          : null,
+        source: "HEALTH_CHECK",
+        type: row.healthy ? "HealthCheckSucceeded" : "HealthCheckFailed",
+        observedAt: new Date(row.observed_at as string | Date).toISOString(),
+        ingestedAt: new Date(row.ingested_at as string | Date).toISOString(),
+        healthy: Boolean(row.healthy),
+        httpStatus: row.http_status === null ? null : Number(row.http_status),
+        failureCategory:
+          row.failure_category === null ? null : String(row.failure_category),
+        providerStatus:
+          row.provider_status === null ? null : String(row.provider_status),
+        provenance: "kora:health-monitor",
+      }),
+    );
+    const recoveryVerified = events.some(
+      (row) => row.event_type === "RecoveryVerified",
+    );
+    const incidentCreated = events.find(
+      (row) => row.event_type === "IncidentCreated",
+    );
+    const thresholdEvidence = rows
+      .filter((row) => row.evidence_kind === "trigger")
+      .reduce<(typeof rows)[number] | null>((latest, row) => {
+        if (!latest) return row;
+        return Number(row.threshold_count) > Number(latest.threshold_count)
+          ? row
+          : latest;
+      }, null);
+    const latestEvidenceAt = evidence.at(-1)?.observedAt;
+    const snapshot = buildDiagnosticSnapshot({
+      incident: {
+        id,
+        serviceId: String(incident.service_id),
+        state: String(incident.state),
+        startedAt: new Date(incident.started_at as string | Date).toISOString(),
+        resolvedAt: incident.resolved_at
+          ? new Date(incident.resolved_at as string | Date).toISOString()
+          : null,
+        detectedAt: incidentCreated
+          ? new Date(incidentCreated.occurred_at as string | Date).toISOString()
+          : null,
+        thresholdCrossedAt: thresholdEvidence
+          ? new Date(
+              thresholdEvidence.observed_at as string | Date,
+            ).toISOString()
+          : null,
+      },
+      resource: incident.resource
+        ? {
+            id: String((incident.resource as { id: string }).id),
+            provider: String(
+              (incident.resource as { provider: string }).provider,
+            ),
+            providerResourceId: String(
+              (incident.resource as { providerResourceId: string })
+                .providerResourceId,
+            ),
+            providerStatus: (incident.resource as { status: string | null })
+              .status,
+          }
+        : null,
+      evidence,
+      recoveryVerified,
+      createdAt:
+        latestEvidenceAt ??
+        new Date(incident.updated_at as string | Date).toISOString(),
+    });
+    if (!verifyDiagnosticSnapshot(snapshot))
+      throw new Error(
+        "diagnostic snapshot does not reproduce its content hash",
+      );
+    return snapshot;
+  }
+  /**
+   * Persists an immutable snapshot, idempotently on (incident_id,
+   * content_hash). Returns the stored row: `created` is false when an
+   * equivalent snapshot already existed.
+   */
+  async persistDiagnosticSnapshot(
+    snapshot: NonNullable<
+      Awaited<ReturnType<KoraStore["computeDiagnosticSnapshot"]>>
+    >,
+  ) {
+    const inserted = (
+      await this
+        .sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${crypto.randomUUID()},${snapshot.incidentId},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot as unknown as postgres.JSONValue)}) ON CONFLICT(incident_id,content_hash) DO NOTHING RETURNING id,snapshot`
+    )[0];
+    const row =
+      inserted ??
+      (
+        await this
+          .sql`SELECT id,snapshot FROM diagnostic_snapshots WHERE incident_id=${snapshot.incidentId} AND content_hash=${snapshot.contentHash}`
+      )[0]!;
+    return {
+      created: inserted !== undefined,
+      snapshot: {
+        snapshotId: String(row.id),
+        ...(row.snapshot as typeof snapshot),
+      },
+    };
+  }
+  /** Compute and persist in one call. */
+  async createDiagnosticSnapshot(id: string) {
+    const computed = await this.computeDiagnosticSnapshot(id);
+    return computed
+      ? (await this.persistDiagnosticSnapshot(computed)).snapshot
+      : null;
+  }
+  async listDiagnosticSnapshots(id: string) {
+    return this
+      .sql`SELECT id,incident_id,created_at,content_hash FROM diagnostic_snapshots WHERE incident_id=${id} ORDER BY created_at,id`;
+  }
+  async getDiagnosticSnapshot(incidentId: string, snapshotId: string) {
+    return (
+      (
+        await this
+          .sql`SELECT id,incident_id,created_at,content_hash,snapshot FROM diagnostic_snapshots WHERE incident_id=${incidentId} AND id=${snapshotId}`
+      )[0] ?? null
+    );
   }
 }
