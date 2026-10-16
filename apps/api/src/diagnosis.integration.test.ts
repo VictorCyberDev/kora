@@ -147,6 +147,21 @@ describe.skipIf(!databaseUrl)("diagnostic persistence", () => {
       await sql!`SELECT id FROM diagnostic_snapshots WHERE id=${created!.snapshotId}`;
     expect(rows).toHaveLength(1);
   });
+  it("persistDiagnosticSnapshot rejects a tampered snapshot and stores nothing", async () => {
+    const { incident } = await fixture();
+    const computed = await store!.computeDiagnosticSnapshot(incident.id);
+    const tampered = { ...computed!, incidentState: "RESOLVED" };
+    await expect(store!.persistDiagnosticSnapshot(tampered)).rejects.toThrow(
+      /does not reproduce its content hash/,
+    );
+    const rows =
+      await sql!`SELECT id FROM diagnostic_snapshots WHERE incident_id=${incident.id}`;
+    expect(rows).toHaveLength(0);
+    // The untouched snapshot still persists.
+    expect((await store!.persistDiagnosticSnapshot(computed!)).created).toBe(
+      true,
+    );
+  });
   it("canonical hashing survives a JSONB round trip with fractional numbers", async () => {
     const value = {
       z: 0.1,
