@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from "vitest";
 import postgres from "postgres";
 import { KoraStore } from "./store.js";
 import { buildApi } from "./app.js";
-import { deterministicHash } from "./diagnosis.js";
+import { deterministicHash, verifyDiagnosticSnapshot } from "./diagnosis.js";
 import type {
   IncidentSnapshot,
   TelemetryObservation,
@@ -117,6 +117,13 @@ describe.skipIf(!databaseUrl)("diagnostic persistence", () => {
     expect(deterministicHash(omit(stored, ["createdAt", "contentHash"]))).toBe(
       String(row!.content_hash),
     );
+    expect(verifyDiagnosticSnapshot(created!)).toBe(true);
+    expect(
+      verifyDiagnosticSnapshot({
+        ...(stored as object),
+        incidentState: "RESOLVED",
+      } as never),
+    ).toBe(false);
     // The returned object is what was stored (plus its row id).
     expect(omit(created!, ["snapshotId"])).toEqual(stored);
   });

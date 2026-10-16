@@ -70,6 +70,7 @@ export interface DiagnosticInput {
 export interface DiagnosticSnapshot {
   version: 1;
   incidentId: string;
+  incidentState: string;
   createdAt: string;
   temporal: {
     lastKnownHealthyAt: string | null;
@@ -110,6 +111,23 @@ function stable(value: unknown): string {
 }
 export function deterministicHash(value: unknown): string {
   return createHash("sha256").update(stable(value)).digest("hex");
+}
+/**
+ * A snapshot is self-verifying: every field except `createdAt` and
+ * `contentHash` is hash input, so the stored JSON alone must reproduce
+ * `contentHash`. The API adds a row `snapshotId`, which is also not hash
+ * input. Used before persisting and by tests.
+ */
+export function verifyDiagnosticSnapshot(snapshot: {
+  contentHash: string;
+}): boolean {
+  const hashed = Object.fromEntries(
+    Object.entries(snapshot).filter(
+      ([key]) =>
+        key !== "createdAt" && key !== "contentHash" && key !== "snapshotId",
+    ),
+  );
+  return deterministicHash(hashed) === snapshot.contentHash;
 }
 function evidenceHash(e: Omit<DiagnosticEvidence, "contentHash">) {
   return deterministicHash(e);
@@ -295,6 +313,7 @@ export function buildDiagnosticSnapshot(
   return {
     version: diagnosticContent.version,
     incidentId: diagnosticContent.incidentId,
+    incidentState: diagnosticContent.incidentState,
     createdAt: input.createdAt,
     temporal: diagnosticContent.temporal,
     evidence: diagnosticContent.evidence,

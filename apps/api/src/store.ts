@@ -7,6 +7,7 @@ import type {
 import type { ProviderResource } from "@kora/topology";
 import {
   buildDiagnosticSnapshot,
+  verifyDiagnosticSnapshot,
   type DiagnosticEvidence,
 } from "./diagnosis.js";
 
@@ -253,6 +254,10 @@ export class KoraStore {
         latestEvidenceAt ??
         new Date(incident.updated_at as string | Date).toISOString(),
     });
+    if (!verifyDiagnosticSnapshot(snapshot))
+      throw new Error(
+        "diagnostic snapshot does not reproduce its content hash",
+      );
     const snapshotId = crypto.randomUUID();
     await this
       .sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${snapshotId},${id},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot as unknown as postgres.JSONValue)}) ON CONFLICT(incident_id,content_hash) DO NOTHING`;
