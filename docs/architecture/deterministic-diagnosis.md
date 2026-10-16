@@ -30,11 +30,11 @@ Confidence is finite and rule-based:
 - `CONFIRMED` — direct authoritative evidence establishes the represented condition, currently used for verified recovery.
 - `STRONGLY_SUPPORTED` — at least three consistent symptom observations support the finding.
 - `SUPPORTED` — one or more direct observations support the symptom but do not establish an underlying cause.
-- `INSUFFICIENT_EVIDENCE` — reserved for conclusions Kora cannot support; unsupported root causes remain `UNKNOWN` instead of receiving invented percentages.
+- `INSUFFICIENT_EVIDENCE` — **defined, not yet emitted.** The type exists but no rule produces it today; unsupported root causes are reported as `UNKNOWN` instead of receiving invented percentages.
 
 ## Root cause and contradictions
 
-Root-cause state is `IDENTIFIED`, `SUSPECTED` or `UNKNOWN`. Milestone 3 currently returns `UNKNOWN` because collected health observations do not establish infrastructure root cause. `SUSPECTED` must not be used without supporting evidence.
+The root-cause state type defines `IDENTIFIED`, `SUSPECTED` and `UNKNOWN`. **Only `UNKNOWN` is emitted today** (hardcoded) because collected health observations do not establish infrastructure root cause. `IDENTIFIED` and `SUSPECTED` are **defined, not yet emitted**; when a rule produces them it must be backed by supporting evidence.
 
 Provider `RUNNING` plus failing health is preserved as `RESOURCE_RUNNING_SERVICE_UNHEALTHY`. Neither fact overwrites the other. Conflicting provider states are also preserved.
 
@@ -54,7 +54,7 @@ Diagnostic temporal facts do not depend on evidence-array position. `thresholdCr
 
 The content-hash boundary deliberately excludes snapshot metadata such as the snapshot UUID, `createdAt`, and database persistence timestamps. It includes the canonical diagnostic state: incident identity and state, authoritative diagnostic temporal facts, evidence identities and content hashes (including evidence observation/ingestion timestamps), findings and exact supporting evidence IDs, contradictions, evidence gaps, root-cause state, and truncation semantics. Therefore recreating the same diagnostic state at a different snapshot creation time yields the same `contentHash`, while diagnostically meaningful evidence or state changes alter it. Snapshot metadata remains persisted for audit and retrieval but is not diagnostic hash input. Every hash input field, including `incidentState`, is part of the persisted snapshot, so the stored JSON alone (excluding `createdAt` and `contentHash`) reproduces `content_hash` via `verifyDiagnosticSnapshot`; no mutable table is needed to verify it. The hash input itself is unchanged, so `version` stays `1`.
 
-Evidence retrieval is capped deterministically (default 500 items). If the cap is reached, `truncated=true` and `totalEvidenceCount` exposes the loss explicitly rather than silently pretending the snapshot is complete.
+Evidence retrieval is capped deterministically at 500 items. `buildDiagnosticSnapshot` accepts an optional `limit` input, but nothing passes it today (the store never sets it), so the cap is always the default of 500. If the cap is reached, `truncated=true` and `totalEvidenceCount` exposes the loss explicitly rather than silently pretending the snapshot is complete.
 
 ## API
 
@@ -78,3 +78,12 @@ flowchart TD
 ```
 
 Future AI may reason over an explicit snapshot, but it must not replace monitoring facts, mutate historical evidence, or directly execute infrastructure actions. Milestone 3 is read-only reasoning and adds no provider mutation, shell execution, LLM, chatbot or agent framework.
+
+## Defined, not yet emitted
+
+These names exist in types or schemas but nothing produces them today. Do not read them as conditions that occur:
+
+- Confidence `INSUFFICIENT_EVIDENCE`.
+- Root-cause states `IDENTIFIED` and `SUSPECTED`.
+- Failure category `RESOURCE_STOPPED` and finding `RESOURCE_REPORTED_STOPPED`: the health monitor never emits this category, and Kora records no provider status in production (`provider_status` stays NULL), so the rule cannot fire outside tests.
+- Failure category `PROVIDER_UNAVAILABLE` and finding `PROVIDER_UNAVAILABLE`: the health monitor never emits this category.

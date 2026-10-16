@@ -26,4 +26,16 @@ PostgreSQL loss prevents durable truth, so Kora fails the affected operation lou
 
 ## Residual Milestone 1 risks
 
-No API auth, no TLS termination owned by the app, single-process in-memory consecutive counters, no distributed monitor leader election, and no restart reconstruction of threshold streaks. These are explicit deployment constraints, not hidden assumptions.
+No API auth, no TLS termination owned by the app, a single-process monitor with in-memory consecutive counters, and no distributed monitor leader election. These are explicit deployment constraints, not hidden assumptions.
+
+Restart behaviour (since R0, see ADR-008): the unresolved incident and its full evidence are reloaded from PostgreSQL before the first check, so an open incident survives a restart and can still be resolved. The consecutive-failure counters are in memory and are reset on restart: a failure streak that had not yet opened an incident restarts at zero, and recovery of a reloaded incident needs the full configured consecutive-success count observed after the restart.
+
+## Unauthenticated API
+
+Every API endpoint is unauthenticated, including the one write endpoint added in Milestone 3, `POST /incidents/:id/diagnosis/snapshots`. Any client that can reach the API can read incident data and can persist immutable diagnostic snapshots (idempotent on `(incident_id, content_hash)`, so repeated calls on unchanged evidence create no new rows, but each distinct evidence state creates one more row that cannot be deleted). `GET /incidents/:id/diagnosis` is read-only and writes nothing.
+
+Hosted-demo mitigation: **none yet.** Authentication and authorization must be addressed before any real tenant data is stored or the API is exposed beyond a trusted network.
+
+## Redaction scope
+
+Redaction in diagnostic snapshots currently covers only the `provenance` field, whose value is the constant `kora:health-monitor`, so in practice nothing is redacted. Other snapshot fields (`type`, `failureCategory`, `providerStatus`, resource identifiers) are not passed through redaction. Health-check `failureReason` text is redacted separately when the observation is recorded (URL credentials and secret-like values), but `failureReason` is not part of snapshots. Do not store secrets in any observed or provider-supplied field.

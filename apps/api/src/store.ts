@@ -271,6 +271,10 @@ export class KoraStore {
       Awaited<ReturnType<KoraStore["computeDiagnosticSnapshot"]>>
     >,
   ) {
+    if (!verifyDiagnosticSnapshot(snapshot))
+      throw new Error(
+        "diagnostic snapshot does not reproduce its content hash",
+      );
     const inserted = (
       await this
         .sql`INSERT INTO diagnostic_snapshots(id,incident_id,created_at,content_hash,snapshot) VALUES(${crypto.randomUUID()},${snapshot.incidentId},${snapshot.createdAt},${snapshot.contentHash},${this.sql.json(snapshot as unknown as postgres.JSONValue)}) ON CONFLICT(incident_id,content_hash) DO NOTHING RETURNING id,snapshot`
