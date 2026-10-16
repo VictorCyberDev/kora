@@ -48,3 +48,24 @@ jobs:
           pnpm --filter @kora/topology exec node -e "import('@kora/topology')"
       - run: pnpm db:migrate
       - run: pnpm -r test
+
+  docker-image:
+    name: docker image (build, no push)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: kora
+          POSTGRES_PASSWORD: kora
+          POSTGRES_DB: kora_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kora -d kora_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the root Dockerfile and check the containers
+        run: .github/scripts/image-check.sh

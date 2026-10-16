@@ -1,7 +1,10 @@
 **/node_modules
 **/dist
 **/coverage
-.git
+.git/*
+!.git/HEAD
+!.git/refs
+!.git/packed-refs
 .github
 .env
 .env.*
