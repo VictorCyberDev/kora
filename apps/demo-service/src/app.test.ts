@@ -22,4 +22,14 @@ describe("demo failure controls", () => {
     expect((await app.inject("/health")).statusCode).toBe(200);
     await app.close();
   });
+  it("GET /health is unauthenticated and independent of any database", async () => {
+    const app = buildDemoService({
+      NODE_ENV: "test",
+      DATABASE_URL: "postgresql://nobody:nothing@db.unreachable.invalid:5432/x",
+    });
+    const r = await app.inject({ method: "GET", url: "/health" });
+    expect(r.statusCode).toBe(200);
+    expect(r.json()).toEqual({ status: "healthy" });
+    await app.close();
+  });
 });

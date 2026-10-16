@@ -11,6 +11,21 @@ const store = {
   getIncidentEvidence: () => Promise.resolve([]),
 } as unknown as KoraStore;
 describe("API contracts", () => {
+  it("GET /health answers 200 without credentials and without touching the store", async () => {
+    const untouchable = new Proxy(
+      {},
+      {
+        get: (_target, prop) => {
+          throw new Error(`store.${String(prop)} must not be used by /health`);
+        },
+      },
+    ) as unknown as KoraStore;
+    const app = buildApi(untouchable, "test");
+    const r = await app.inject({ method: "GET", url: "/health" });
+    expect(r.statusCode).toBe(200);
+    expect(r.json()).toEqual({ status: "ok" });
+    await app.close();
+  });
   it("returns an incident through API", async () => {
     const app = buildApi(store, "test");
     const r = await app.inject(`/incidents/${known}`);
