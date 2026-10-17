@@ -60,8 +60,9 @@ async function setup(s: Scenario = {}) {
   });
   return { verifier, serviceId, github, workload };
 }
-const rows = (serviceId: string) =>
-  sql!`SELECT * FROM verification_observations WHERE service_id=${serviceId} ORDER BY kind`;
+type Row = Record<string, unknown>;
+const rows = async (serviceId: string) =>
+  (await sql!`SELECT * FROM verification_observations WHERE service_id=${serviceId} ORDER BY kind`) as unknown as Row[];
 
 describe.skipIf(!databaseUrl)("migration 005", () => {
   it("is re-runnable and creates the append-only observation table", async () => {
@@ -112,7 +113,10 @@ describe.skipIf(!databaseUrl)("DeploymentVerifier.checkOnce", () => {
       "workload_claim",
     ]);
     expect(new Set(r.map((x) => x.check_id)).size).toBe(1);
-    const by = Object.fromEntries(r.map((x) => [x.kind, x]));
+    const by = Object.fromEntries(r.map((x) => [String(x.kind), x])) as Record<
+      string,
+      Row
+    >;
     expect(by.scm_head).toMatchObject({
       outcome: "OBSERVED",
       commit_sha: sha(2),
@@ -210,6 +214,7 @@ describe.skipIf(!databaseUrl)("DeploymentVerifier.checkOnce", () => {
   });
   it("is atomic: a failure while writing leaves nothing from that check", async () => {
     const { verifier, serviceId } = await setup();
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const original = KoraStore.prototype.insertVerificationObservation;
     let calls = 0;
     vi.spyOn(
