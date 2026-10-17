@@ -7,6 +7,8 @@ import {
 } from "../test-support/fake-servers.js";
 import { observeWorkloadClaim } from "./claim.js";
 
+const omit = (o: Record<string, unknown>, key: string) =>
+  Object.fromEntries(Object.entries(o).filter(([k]) => k !== key));
 let close: (() => Promise<void>) | undefined;
 afterEach(async () => {
   await close?.();
@@ -60,7 +62,7 @@ describe("observeWorkloadClaim", () => {
   });
   it.each([
     ["an unknown schema", claimBody({ schema: "kora.runtime-claim/v2" })],
-    ["a missing schema", (({ schema: _s, ...rest }) => rest)(claimBody())],
+    ["a missing schema", omit(claimBody(), "schema")],
     ["an unexpected extra field", claimBody({ extra: "x" })],
     ["a short commit", claimBody({ commit: "abc123" })],
     [
@@ -72,7 +74,7 @@ describe("observeWorkloadClaim", () => {
     ["a non-ISO builtAt", claimBody({ builtAt: "last tuesday" })],
     ["a non-ISO startedAt", claimBody({ startedAt: "soon" })],
     ["a negative uptime", claimBody({ uptimeSeconds: -1 })],
-    ["a missing field", (({ environment: _e, ...rest }) => rest)(claimBody())],
+    ["a missing field", omit(claimBody(), "environment")],
     ["a non-object body", ["not", "an", "object"]],
   ])("treats %s as UNKNOWN", async (_name, body) => {
     const o = await observe(await serve({ body }));
