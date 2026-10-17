@@ -43,6 +43,18 @@ describe("golden vectors from the existing diagnosis implementation", () => {
   );
 });
 
+describe("JSON round trip", () => {
+  it("never changes a hash, fractional numbers included", () => {
+    for (const v of file.vectors.filter((v) => v.kind === "value"))
+      expect(hash(JSON.parse(JSON.stringify(v.value)))).toBe(v.hash);
+    const tricky = {
+      a: [0.1, 0.30000000000000004, 12.345678901234567, 1e-7, 5e-324, -0],
+      b: { c: 1.7976931348623157e308, d: 1e21, e: 123456.789 },
+    };
+    expect(hash(JSON.parse(JSON.stringify(tricky)))).toBe(hash(tricky));
+  });
+});
+
 describe("canonicalize", () => {
   it("sorts keys, keeps array order, emits no whitespace", () => {
     expect(canonicalize({ b: [2, 1], a: { d: null, c: "x" } })).toBe(

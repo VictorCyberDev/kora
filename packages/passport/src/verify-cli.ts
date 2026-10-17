@@ -30,8 +30,8 @@ export function run(args: string[], io: CliIo): number {
   const result = verifyPassport(parsed);
   if (!result.ok) {
     io.out(`FAIL ${file}: ${result.reason}`);
-    for (const c of result.checks.filter((c) => !c.ok))
-      io.out(`  ${c.name}: ${c.detail}`);
+    for (const c of result.checks.filter((c) => !c.ok).slice(1))
+      io.out(`  also failed, ${c.name}: ${c.detail}`);
     return 1;
   }
   io.out(`PASS ${file}`);
