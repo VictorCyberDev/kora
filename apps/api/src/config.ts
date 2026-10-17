@@ -36,6 +36,23 @@ export const configSchema = z
     RUMPTY_RESOURCE_ID: z.string().min(1).optional(),
     RUMPTY_RESOURCE_NAME: z.string().min(1).optional(),
     KORA_ENVIRONMENT: z.string().min(1).default("development"),
+    // Deployment Verification (not cryptographic). All optional: without
+    // GITHUB_REPO no verification runs.
+    GITHUB_REPO: z
+      .string()
+      .regex(
+        /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/,
+        "GITHUB_REPO must be owner/name",
+      )
+      .optional(),
+    // Defaults ("main", "https://api.github.com") are applied by loadConfig.
+    GITHUB_BRANCH: z
+      .string()
+      .regex(/^[A-Za-z0-9_./-]+$/, "GITHUB_BRANCH has unsupported characters")
+      .optional(),
+    GITHUB_API_URL: z.string().url().optional(),
+    GITHUB_TOKEN: z.string().min(1).optional(),
+    MONITOR_CLAIM_URL: z.string().url().optional(),
   })
   .superRefine((value, ctx) => {
     const fields = [
@@ -56,11 +73,42 @@ export type KoraConfig = z.infer<typeof configSchema>;
 /**
  * Listen port: API_PORT, then the platform-injected PORT, then 3000. Empty
  * values count as unset. Everything else is read from `env` unchanged.
+ *
+ * GITHUB_TOKEN is kept readable but non-enumerable, so spreading, logging or
+ * serialising the config can never emit it.
  */
 export const loadConfig = (
   env: Record<string, string | undefined> = process.env,
-) =>
-  configSchema.parse({
-    ...env,
+): KoraConfig => {
+  // An empty value counts as unset for the optional settings below.
+  const cleaned: Record<string, string | undefined> = { ...env };
+  for (const key of [
+    "GITHUB_REPO",
+    "GITHUB_BRANCH",
+    "GITHUB_API_URL",
+    "GITHUB_TOKEN",
+    "MONITOR_CLAIM_URL",
+  ])
+    if (cleaned[key] === "") cleaned[key] = undefined;
+  const { GITHUB_TOKEN, ...rest } = configSchema.parse({
+    ...cleaned,
     API_PORT: env.API_PORT || env.PORT || undefined,
   });
+  return Object.defineProperty(
+    {
+      ...rest,
+      GITHUB_BRANCH: rest.GITHUB_BRANCH ?? "main",
+      GITHUB_API_URL: rest.GITHUB_API_URL ?? "https://api.github.com",
+    },
+    "GITHUB_TOKEN",
+    { value: GITHUB_TOKEN, enumerable: false },
+  );
+};
+
+/** Where the workload's runtime claim is read: MONITOR_CLAIM_URL, else the
+ * health URL's origin plus /__kora. */
+export const resolveClaimUrl = (
+  config: Pick<KoraConfig, "MONITOR_CLAIM_URL" | "MONITOR_HEALTH_URL">,
+): string =>
+  config.MONITOR_CLAIM_URL ??
+  new URL("/__kora", new URL(config.MONITOR_HEALTH_URL).origin).toString();
