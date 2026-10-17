@@ -139,10 +139,10 @@ describe("verifyPassport", () => {
       const p = clone(base);
       let parent: Json | unknown[] = p;
       for (const key of path.slice(0, -1))
-        parent = (parent as Json)[key as string] as Json;
+        parent = parent[key as string] as Json;
       const last = path[path.length - 1] as string;
-      const old = (parent as Json)[last];
-      (parent as Json)[last] =
+      const old = parent[last];
+      parent[last] =
         typeof old === "string"
           ? old + "x"
           : typeof old === "number"

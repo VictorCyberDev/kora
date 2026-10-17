@@ -92,7 +92,11 @@ describe("the offline verifier", () => {
     ).toEqual(expect.arrayContaining(["cli.ts", "index.ts", "verify-cli.ts"]));
     for (const [file, source] of files)
       expect(
-        forbiddenImports(source, file, new Set(builtinModules)),
+        forbiddenImports(
+          source,
+          file.slice(srcDir.length + 1),
+          new Set(builtinModules),
+        ),
         file,
       ).toEqual([]);
   });

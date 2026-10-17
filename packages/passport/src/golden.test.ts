@@ -66,7 +66,7 @@ describe("canonicalize", () => {
       [undefined],
       Object.create({ inherited: 1 }) as object,
     ])
-      expect(() => canonicalize(bad), String(bad)).toThrow(TypeError);
+      expect(() => canonicalize(bad), typeof bad).toThrow(TypeError);
   });
   it("refuses cycles", () => {
     const a: Record<string, unknown> = {};
