@@ -1,0 +1,403 @@
+{
+  "schema": "kora.incident-passport/v1",
+  "incident": {
+    "id": "6eb6a517-44bb-46b7-afa5-557302860885",
+    "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+    "deduplicationKey": "d9c9642a-c33c-4235-867a-914d2362abd7:health-check-unhealthy",
+    "state": "RESOLVED",
+    "severity": "HIGH",
+    "startedAt": "2026-10-17T12:14:34.820Z",
+    "resolvedAt": "2026-10-17T12:14:40.820Z",
+    "createdAt": "2026-10-17T12:15:34.829Z",
+    "updatedAt": "2026-10-17T12:15:34.843Z"
+  },
+  "service": {
+    "id": "d9c9642a-c33c-4235-867a-914d2362abd7",
+    "name": "passport-4713582d-8ce5-402c-abf7-d69f44643329",
+    "healthUrl": "http://example.invalid/health",
+    "createdAt": "2026-10-17T12:15:34.810Z"
+  },
+  "resource": {
+    "id": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+    "region": "verified-test-region",
+    "status": "RUNNING",
+    "provider": "rumptycloud",
+    "displayName": "passport-test",
+    "environment": "test",
+    "resourceType": "virtual_machine",
+    "providerAccount": "workspace-7b9d5df4-b830-45db-ab24-a27fd5d8aa4b",
+    "providerResourceId": "rc-f0c5c1c0-9283-46fa-a0dc-f3c9d93a854f"
+  },
+  "evidence": [
+    {
+      "id": "3bcc7439-6ff8-4ec1-a51c-761288303c1a",
+      "observationId": "14433321-d4cf-4ca3-9d4a-d88aa6676f0d",
+      "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+      "kind": "trigger",
+      "thresholdCount": 1,
+      "observedAt": "2026-10-17T12:14:34.820Z",
+      "ingestedAt": "2026-10-17T12:15:34.829Z",
+      "healthy": false,
+      "httpStatus": 503,
+      "latencyMs": 10,
+      "timedOut": false,
+      "failureReason": "health endpoint returned 503",
+      "failureCategory": "HTTP_5XX",
+      "providerStatus": "RUNNING",
+      "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+      "contentHash": "ac1d87845e98c69dcb275dc64ddecdb96c9ad11003523eee9943d80cf54cd17e"
+    },
+    {
+      "id": "1b70146c-0d71-4f77-bf1d-cfad50e02d5f",
+      "observationId": "7500a4a8-34bc-4c20-b279-80d209ef4580",
+      "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+      "kind": "trigger",
+      "thresholdCount": 2,
+      "observedAt": "2026-10-17T12:14:35.820Z",
+      "ingestedAt": "2026-10-17T12:15:34.829Z",
+      "healthy": false,
+      "httpStatus": 503,
+      "latencyMs": 11,
+      "timedOut": false,
+      "failureReason": "[REDACTED]",
+      "failureCategory": "HTTP_5XX",
+      "providerStatus": "RUNNING",
+      "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+      "contentHash": "fd01c910f94e701fbeb45447ffb386363b85e5a7cb5f3668cbe12607059d1e21"
+    },
+    {
+      "id": "00f5dd3d-a674-4a4f-8d1d-fde9e3290123",
+      "observationId": "a69e2ba5-a33a-4f6a-918c-08d20812c87a",
+      "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+      "kind": "trigger",
+      "thresholdCount": 3,
+      "observedAt": "2026-10-17T12:14:36.820Z",
+      "ingestedAt": "2026-10-17T12:15:34.829Z",
+      "healthy": false,
+      "httpStatus": 503,
+      "latencyMs": 12,
+      "timedOut": false,
+      "failureReason": "health endpoint returned 503",
+      "failureCategory": "HTTP_5XX",
+      "providerStatus": "RUNNING",
+      "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+      "contentHash": "48ff0c1038cf5b26b74b311441ebf23b3aafc990a9c61040fa94215f37d80ad5"
+    },
+    {
+      "id": "ebc0fc42-d5fe-440e-bb77-b7493cbeb8bf",
+      "observationId": "8c20c03f-9b4e-4f60-85bb-850123df0efe",
+      "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+      "kind": "recovery",
+      "thresholdCount": 1,
+      "observedAt": "2026-10-17T12:14:39.820Z",
+      "ingestedAt": "2026-10-17T12:15:34.843Z",
+      "healthy": true,
+      "httpStatus": 200,
+      "latencyMs": 15,
+      "timedOut": false,
+      "failureReason": null,
+      "failureCategory": null,
+      "providerStatus": "RUNNING",
+      "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+      "contentHash": "e37017d84111011aebad75193857d5f2f01586a4743bd94b54da1e94d7d146f7"
+    },
+    {
+      "id": "1b34d0d9-bccd-41e4-96f6-f9466ebdbe95",
+      "observationId": "e4413804-67aa-44a1-a739-3c5b5baf0e95",
+      "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+      "kind": "recovery",
+      "thresholdCount": 2,
+      "observedAt": "2026-10-17T12:14:40.820Z",
+      "ingestedAt": "2026-10-17T12:15:34.843Z",
+      "healthy": true,
+      "httpStatus": 200,
+      "latencyMs": 16,
+      "timedOut": false,
+      "failureReason": null,
+      "failureCategory": null,
+      "providerStatus": "RUNNING",
+      "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+      "contentHash": "697913f596c2239f89f7ce7b974ab4efd4606ccf9328ce0267bb2775442db50c"
+    }
+  ],
+  "timeline": [
+    {
+      "occurredAt": "2026-10-17T12:14:34.820Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 10,
+        "httpStatus": 503,
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "observationId": "14433321-d4cf-4ca3-9d4a-d88aa6676f0d",
+        "providerStatus": "RUNNING",
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-17T12:14:35.820Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 11,
+        "httpStatus": 503,
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "observationId": "7500a4a8-34bc-4c20-b279-80d209ef4580",
+        "providerStatus": "RUNNING",
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-17T12:14:36.820Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 12,
+        "httpStatus": 503,
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "observationId": "a69e2ba5-a33a-4f6a-918c-08d20812c87a",
+        "providerStatus": "RUNNING",
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-17T12:14:37.820Z",
+      "eventType": "IncidentCreated",
+      "source": "incident-engine",
+      "payload": {
+        "tiny": 1e-7,
+        "ratio": 0.1,
+        "severity": "HIGH",
+        "sumOfRatios": 0.30000000000000004,
+        "latencySeconds": 12.345678901234567
+      }
+    },
+    {
+      "occurredAt": "2026-10-17T12:14:39.820Z",
+      "eventType": "HealthObservationSucceeded",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": true,
+        "latencyMs": 15,
+        "httpStatus": 200,
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "observationId": "8c20c03f-9b4e-4f60-85bb-850123df0efe",
+        "providerStatus": "RUNNING",
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-17T12:14:40.820Z",
+      "eventType": "HealthObservationSucceeded",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": true,
+        "latencyMs": 16,
+        "httpStatus": 200,
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "observationId": "e4413804-67aa-44a1-a739-3c5b5baf0e95",
+        "providerStatus": "RUNNING",
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-17T12:14:40.820Z",
+      "eventType": "RecoveryVerified",
+      "source": "incident-engine",
+      "payload": { "verifiedBy": "consecutive healthy checks" }
+    }
+  ],
+  "diagnosis": {
+    "version": 1,
+    "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+    "incidentState": "RESOLVED",
+    "createdAt": "2026-10-17T12:14:40.820Z",
+    "temporal": {
+      "lastKnownHealthyAt": null,
+      "firstFailureAt": "2026-10-17T12:14:34.820Z",
+      "thresholdCrossedAt": "2026-10-17T12:14:36.820Z",
+      "incidentDetectedAt": "2026-10-17T12:14:37.820Z",
+      "latestFailureAt": "2026-10-17T12:14:36.820Z",
+      "recoveryStartedAt": "2026-10-17T12:14:39.820Z",
+      "recoveryVerifiedAt": "2026-10-17T12:14:40.820Z"
+    },
+    "evidence": [
+      {
+        "id": "14433321-d4cf-4ca3-9d4a-d88aa6676f0d",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-17T12:14:34.820Z",
+        "ingestedAt": "2026-10-17T12:15:34.829Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor",
+        "contentHash": "a6c05091f249c115700e29a036eed7844a324ff1c679a646fd7d50981d555ad9"
+      },
+      {
+        "id": "7500a4a8-34bc-4c20-b279-80d209ef4580",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-17T12:14:35.820Z",
+        "ingestedAt": "2026-10-17T12:15:34.829Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor",
+        "contentHash": "092e201abb9a892eeb03623d9d4fa89cf9ba5b22323bfcea5ffc90ea6f1291cb"
+      },
+      {
+        "id": "a69e2ba5-a33a-4f6a-918c-08d20812c87a",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-17T12:14:36.820Z",
+        "ingestedAt": "2026-10-17T12:15:34.829Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor",
+        "contentHash": "467f6db094858f13cbd5a2fc541ccf3dd792eb4556b1b292a52f3b55e5755180"
+      },
+      {
+        "id": "8c20c03f-9b4e-4f60-85bb-850123df0efe",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-10-17T12:14:39.820Z",
+        "ingestedAt": "2026-10-17T12:15:34.843Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor",
+        "contentHash": "a954f6c4a225be6796c805153dc1192beb2754f712f34626a49d2bb3f6dee7bb"
+      },
+      {
+        "id": "e4413804-67aa-44a1-a739-3c5b5baf0e95",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "serviceId": "d9c9642a-c33c-4235-867a-914d2362abd7",
+        "resourceId": "df04f0c7-08e9-4cef-816d-6d264325e54e",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-10-17T12:14:40.820Z",
+        "ingestedAt": "2026-10-17T12:15:34.843Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor",
+        "contentHash": "a2f443df05a93fc7c03c061896e935d54618fff51d35a2ed32cbfab9ae4e8cfe"
+      }
+    ],
+    "findings": [
+      {
+        "id": "895b60cd0d230cc8723f66c2255fac0b",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "code": "RECOVERY_VERIFIED",
+        "statement": "Recovery was verified by subsequent healthy observations.",
+        "confidence": "CONFIRMED",
+        "evidenceIds": [
+          "8c20c03f-9b4e-4f60-85bb-850123df0efe",
+          "e4413804-67aa-44a1-a739-3c5b5baf0e95"
+        ],
+        "method": "DETERMINISTIC_RULE"
+      },
+      {
+        "id": "dc9f525646da55dde00e84756241ca72",
+        "incidentId": "6eb6a517-44bb-46b7-afa5-557302860885",
+        "code": "SERVICE_HTTP_5XX",
+        "statement": "Service endpoint repeatedly returns server errors.",
+        "confidence": "STRONGLY_SUPPORTED",
+        "evidenceIds": [
+          "14433321-d4cf-4ca3-9d4a-d88aa6676f0d",
+          "7500a4a8-34bc-4c20-b279-80d209ef4580",
+          "a69e2ba5-a33a-4f6a-918c-08d20812c87a"
+        ],
+        "method": "DETERMINISTIC_RULE"
+      }
+    ],
+    "contradictions": [
+      {
+        "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+        "statement": "Provider reports the resource running while service health is failing.",
+        "evidenceIds": [
+          "14433321-d4cf-4ca3-9d4a-d88aa6676f0d",
+          "14433321-d4cf-4ca3-9d4a-d88aa6676f0d",
+          "7500a4a8-34bc-4c20-b279-80d209ef4580",
+          "7500a4a8-34bc-4c20-b279-80d209ef4580",
+          "8c20c03f-9b4e-4f60-85bb-850123df0efe",
+          "a69e2ba5-a33a-4f6a-918c-08d20812c87a",
+          "a69e2ba5-a33a-4f6a-918c-08d20812c87a",
+          "e4413804-67aa-44a1-a739-3c5b5baf0e95"
+        ]
+      }
+    ],
+    "evidenceGaps": [
+      "NO_APPLICATION_LOGS",
+      "NO_DEPLOYMENT_CONTEXT",
+      "NO_RESOURCE_METRICS"
+    ],
+    "rootCause": {
+      "state": "UNKNOWN",
+      "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+    },
+    "truncated": false,
+    "totalEvidenceCount": 5,
+    "contentHash": "64801bf8ca9dfc46341e45ff7f105242697b999f63f55aa6c89de3131fb118d4"
+  },
+  "gaps": [
+    {
+      "item": "applicationLogs",
+      "status": "NOT COLLECTED",
+      "reason": "Kora does not collect application logs from the service."
+    },
+    {
+      "item": "deploymentContext",
+      "status": "NOT COLLECTED",
+      "reason": "No deployment record (revision, rollout time) is linked to this incident."
+    },
+    {
+      "item": "lastKnownHealthyAt",
+      "status": "UNKNOWN",
+      "reason": "No healthy observation precedes the first failure in the collected evidence."
+    },
+    {
+      "item": "producer",
+      "status": "UNKNOWN",
+      "reason": "This Passport is not signed. Its hash shows the file was not changed after export; it does not show who produced it."
+    },
+    {
+      "item": "resourceMetrics",
+      "status": "NOT COLLECTED",
+      "reason": "Kora does not collect resource metrics (CPU, memory, disk, network) for this resource."
+    },
+    {
+      "item": "rootCause",
+      "status": "UNKNOWN",
+      "reason": "Available evidence establishes symptoms but does not establish an underlying root cause."
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "canonicalization": "kora-stable-json/v1",
+    "contentHash": "fe1be3f51ec12b92530724b3c9fe8fa043b1b1a2e360af2d0e1318aea3dc2348"
+  },
+  "generatedAt": "2026-10-17T12:15:34.933Z"
+}
