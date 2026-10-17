@@ -1,4 +1,5 @@
 import type { FastifyBaseLogger } from "fastify";
+import { resolveClaimUrl, type KoraConfig } from "../config.js";
 import type { KoraStore } from "../store.js";
 import { observeWorkloadClaim } from "./claim.js";
 import { observeCommitRelation, observeScmHead } from "./scm.js";
@@ -14,7 +15,7 @@ interface VerifierOptions {
   timeoutMs: number;
   /** Used for one request header to GitHub; never stored or logged. */
   token?: string | undefined;
-  intervalMs?: number;
+  intervalMs?: number | undefined;
 }
 
 /**
@@ -102,4 +103,26 @@ export class DeploymentVerifier {
     this.#timer = undefined;
     await this.#inFlight;
   }
+}
+
+/** The verifier for this configuration, or null when GITHUB_REPO is not set. */
+export function verifierFromConfig(
+  config: KoraConfig,
+  store: KoraStore,
+  serviceId: string,
+  logger: FastifyBaseLogger,
+): DeploymentVerifier | null {
+  if (!config.GITHUB_REPO) return null;
+  return new DeploymentVerifier({
+    store,
+    serviceId,
+    logger,
+    repo: config.GITHUB_REPO,
+    branch: config.GITHUB_BRANCH ?? "main",
+    apiUrl: config.GITHUB_API_URL ?? "https://api.github.com",
+    claimUrl: resolveClaimUrl(config),
+    timeoutMs: config.MONITOR_TIMEOUT_MS,
+    token: config.GITHUB_TOKEN,
+    intervalMs: config.VERIFICATION_INTERVAL_MS,
+  });
 }

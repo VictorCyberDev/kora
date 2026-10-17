@@ -51,6 +51,8 @@ export const configSchema = z
       .regex(/^[A-Za-z0-9_./-]+$/, "GITHUB_BRANCH has unsupported characters")
       .optional(),
     GITHUB_API_URL: z.string().url().optional(),
+    // Unauthenticated GitHub allows 60 requests/hour: check every 5 minutes.
+    VERIFICATION_INTERVAL_MS: z.coerce.number().int().min(10_000).optional(),
     GITHUB_TOKEN: z.string().min(1).optional(),
     MONITOR_CLAIM_URL: z.string().url().optional(),
   })
@@ -99,6 +101,7 @@ export const loadConfig = (
       ...rest,
       GITHUB_BRANCH: rest.GITHUB_BRANCH ?? "main",
       GITHUB_API_URL: rest.GITHUB_API_URL ?? "https://api.github.com",
+      VERIFICATION_INTERVAL_MS: rest.VERIFICATION_INTERVAL_MS ?? 300_000,
     },
     "GITHUB_TOKEN",
     { value: GITHUB_TOKEN, enumerable: false },
