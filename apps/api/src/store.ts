@@ -356,7 +356,7 @@ export class KoraStore {
     )[0];
     if (!latest) return null;
     const rows = await this
-      .sql`SELECT * FROM verification_observations WHERE check_id=${latest.check_id as string} ORDER BY observed_at,kind`;
+      .sql`SELECT * FROM verification_observations WHERE check_id=${latest.check_id as string} ORDER BY kind`;
     return { checkId: String(latest.check_id), rows };
   }
 }
