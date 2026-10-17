@@ -35,6 +35,15 @@ const iso = (value: unknown): string =>
 const isoOrNull = (value: unknown): string | null =>
   value === null || value === undefined ? null : iso(value);
 
+/** A text column: its string, or null. */
+const text = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
+
+const redacted = (value: unknown): string | null => {
+  const t = text(value);
+  return t === null ? null : redactDiagnosticText(t);
+};
+
 const REDACTED = "[REDACTED]";
 /** Redacts string values, and any string under a secret-looking key. */
 function redactDeep(value: unknown, key = ""): unknown {
@@ -166,14 +175,9 @@ async function assemble(
     httpStatus: r.http_status === null ? null : Number(r.http_status),
     latencyMs: Number(r.latency_ms),
     timedOut: Boolean(r.timed_out),
-    failureReason:
-      r.failure_reason === null
-        ? null
-        : redactDiagnosticText(String(r.failure_reason)),
-    failureCategory:
-      r.failure_category === null ? null : String(r.failure_category),
-    providerStatus:
-      r.provider_status === null ? null : String(r.provider_status),
+    failureReason: redacted(r.failure_reason),
+    failureCategory: text(r.failure_category),
+    providerStatus: text(r.provider_status),
     resourceId: r.resource ? String((r.resource as { id: string }).id) : null,
   }));
   const timeline = timelineRows

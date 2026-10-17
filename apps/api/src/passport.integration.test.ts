@@ -384,9 +384,7 @@ describe.skipIf(!databaseUrl)("GET /incidents/:id/passport", () => {
   it("never claims more than integrity", async () => {
     const { incident } = await fixture();
     const r = await exportPassport(incident.id);
-    expect(r.body).not.toMatch(
-      /tamper[- ]?proof|attested|verified deployment/i,
-    );
+    expect(r.body).not.toMatch(forbiddenClaims);
   });
 
   it("404s for an unknown incident and 400s for an invalid id", async () => {
