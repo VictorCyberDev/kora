@@ -10,7 +10,8 @@ import {
   type RecordedRequest,
 } from "../test-support/fake-servers.js";
 import { quietLogger } from "../test-support/monitor-harness.js";
-import { DeploymentVerifier } from "./verifier.js";
+import { loadConfig } from "../config.js";
+import { DeploymentVerifier, verifierFromConfig } from "./verifier.js";
 
 const TOKEN = "ghp_TESTTOKEN_do_not_leak_0123456789";
 const databaseUrl = process.env.DATABASE_URL;
@@ -258,5 +259,59 @@ describe.skipIf(!databaseUrl)("DeploymentVerifier.checkOnce", () => {
     expect(JSON.stringify(await rows(serviceId))).not.toContain(TOKEN);
     expect(JSON.stringify(verifier)).not.toContain(TOKEN);
     expect(logs.join("\n")).not.toContain(TOKEN);
+  });
+});
+
+describe.skipIf(!databaseUrl)("verifierFromConfig", () => {
+  const env = {
+    DATABASE_URL: "postgresql://u:p@localhost/db_test",
+    MONITOR_ENABLED: "false",
+  };
+  it("is disabled without GITHUB_REPO", async () => {
+    const service = await store!.ensureService(
+      `cfg-${crypto.randomUUID()}`,
+      "http://x.test/health",
+    );
+    expect(
+      verifierFromConfig(
+        loadConfig(env),
+        store!,
+        String(service.id),
+        quietLogger,
+      ),
+    ).toBeNull();
+  });
+  it("wires repo, branch, API URL, claim URL and the token from config", async () => {
+    const github = await startFakeServer(() => ({
+      body: { object: { sha: sha(1), type: "commit" } },
+    }));
+    const workload = await startFakeServer(() => ({ body: claimBody() }));
+    closers.push(github.close, workload.close);
+    const service = await store!.ensureService(
+      `cfg-${crypto.randomUUID()}`,
+      `${workload.url}/health`,
+    );
+    const config = loadConfig({
+      ...env,
+      MONITOR_HEALTH_URL: `${workload.url}/health`,
+      GITHUB_REPO: "acme/widgets",
+      GITHUB_BRANCH: "trunk",
+      GITHUB_API_URL: github.url,
+      GITHUB_TOKEN: TOKEN,
+    });
+    const verifier = verifierFromConfig(
+      config,
+      store!,
+      String(service.id),
+      quietLogger,
+    );
+    expect(verifier).not.toBeNull();
+    await verifier!.checkOnce();
+    expect(github.requests[0]!.url).toBe(
+      "/repos/acme/widgets/git/ref/heads/trunk",
+    );
+    expect(github.requests[0]!.headers.authorization).toBe(`Bearer ${TOKEN}`);
+    expect(workload.requests[0]!.url).toBe("/__kora"); // default: health origin + /__kora
+    expect(JSON.stringify(verifier)).not.toContain(TOKEN);
   });
 });

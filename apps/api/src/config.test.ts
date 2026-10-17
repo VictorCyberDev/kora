@@ -85,6 +85,16 @@ describe("configuration", () => {
       expect(message).not.toBe("");
       expect(message).not.toContain("ghp_secret_value");
     });
+    it("checks every 5 minutes by default (GitHub rate limits) and is tunable", () => {
+      expect(loadConfig(base).VERIFICATION_INTERVAL_MS).toBe(300_000);
+      expect(
+        loadConfig({ ...base, VERIFICATION_INTERVAL_MS: "60000" })
+          .VERIFICATION_INTERVAL_MS,
+      ).toBe(60_000);
+      expect(() =>
+        loadConfig({ ...base, VERIFICATION_INTERVAL_MS: "10" }),
+      ).toThrow();
+    });
     it("treats an empty token as unset", () =>
       expect(
         loadConfig({ ...base, GITHUB_TOKEN: "" }).GITHUB_TOKEN,
