@@ -1,3 +1,15 @@
+/** A URL safe to record: credentials stripped; unparseable input is never echoed. */
+export function publicUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    parsed.username = "";
+    parsed.password = "";
+    return parsed.toString();
+  } catch {
+    return "[invalid url]";
+  }
+}
+
 export type FetchOutcome =
   | { ok: true; status: number; json: unknown }
   | { ok: false; reason: string; httpStatus: number | null };
@@ -38,6 +50,9 @@ export async function fetchJson(
     parsed = new URL(url);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:")
       throw new Error("unsupported protocol");
+    // Credentials never travel inside URLs (use GITHUB_TOKEN for GitHub).
+    if (parsed.username || parsed.password)
+      throw new Error("credentials in URL");
   } catch {
     return { ok: false, reason: "invalid_url", httpStatus: null };
   }

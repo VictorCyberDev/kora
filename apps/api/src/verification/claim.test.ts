@@ -144,4 +144,9 @@ describe("observeWorkloadClaim", () => {
     const o = await observe("not a url");
     expect(o).toMatchObject({ outcome: "UNKNOWN", reason: "invalid_url" });
   });
+  it("rejects URLs carrying credentials and never records them", async () => {
+    const o = await observe("http://user:pw@127.0.0.1:1/__kora");
+    expect(o).toMatchObject({ outcome: "UNKNOWN", reason: "invalid_url" });
+    expect(JSON.stringify(o)).not.toContain("pw");
+  });
 });

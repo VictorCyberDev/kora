@@ -153,13 +153,14 @@ describe("observeScmHead", () => {
     expect(JSON.stringify(seen)).not.toContain(TOKEN);
     expect(outputs.join("\n")).not.toContain(TOKEN);
   });
-  it("strips credentials from the recorded source URL", async () => {
+  it("rejects URLs carrying credentials and never records them", async () => {
     const server = await github(() => ({ body: refBody() }));
     const withUserinfo = server.url.replace("http://", "http://user:pw@");
     const o = await head(withUserinfo);
+    expect(o).toMatchObject({ outcome: "UNKNOWN", reason: "invalid_url" });
     expect(o.sourceUrl).not.toContain("user");
-    expect(o.sourceUrl).not.toContain("pw@");
-    expect(o.outcome).toBe("OBSERVED");
+    expect(o.sourceUrl).not.toContain("pw");
+    expect(server.requests).toHaveLength(0);
   });
 });
 

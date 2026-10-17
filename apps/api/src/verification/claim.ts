@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { fetchJson } from "./safe-fetch.js";
+import { fetchJson, publicUrl } from "./safe-fetch.js";
 
 const isoInstant = z.string().refine((v) => {
   const time = new Date(v);
@@ -55,7 +55,7 @@ export async function observeWorkloadClaim(input: {
   const base = {
     kind: "workload_claim" as const,
     observedAt,
-    sourceUrl: input.url,
+    sourceUrl: publicUrl(input.url),
   };
   const result = await fetchJson(input.url, { timeoutMs: input.timeoutMs });
   if (!result.ok)
