@@ -297,7 +297,7 @@ describe.skipIf(!databaseUrl)("GET /incidents/:id/passport", () => {
       if (ok) survivors.push(i);
     }
     expect(survivors).toEqual([]);
-  });
+  }, 60_000);
 
   it("is identical on repeated calls except generatedAt", async () => {
     const { incident } = await fixture();

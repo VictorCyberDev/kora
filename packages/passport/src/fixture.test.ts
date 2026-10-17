@@ -7,6 +7,10 @@ import { verifyPassport } from "./index.js";
 // A v1 verifier must keep accepting it, whatever the exporter does later.
 const path = new URL("../test-fixtures/example.passport.json", import.meta.url);
 const text = readFileSync(path, "utf8");
+// Re-verifies the file once per character (~15k hashes). About 4s alone and far
+// more when the suite runs in parallel, so it gets an explicit generous timeout
+// rather than fewer positions.
+const SLOW = 60_000;
 
 describe("committed real export", () => {
   it("verifies", () => {
@@ -23,25 +27,29 @@ describe("committed real export", () => {
     expect((p.incident as { state: string }).state).toBe("RESOLVED");
   });
 
-  it("fails when any single character is changed, except inside generatedAt", () => {
-    const marker = '"generatedAt": "';
-    const start = text.indexOf(marker) + marker.length;
-    const survivors: number[] = [];
-    for (let i = 0; i < text.length; i++) {
-      if (i >= start && i < start + 24) continue;
-      const mutated =
-        text.slice(0, i) + (text[i] === "x" ? "y" : "x") + text.slice(i + 1);
-      let ok = false;
-      try {
-        ok = verifyPassport(JSON.parse(mutated)).ok;
-      } catch {
-        ok = false;
+  it(
+    "fails when any single character is changed, except inside generatedAt",
+    () => {
+      const marker = '"generatedAt": "';
+      const start = text.indexOf(marker) + marker.length;
+      const survivors: number[] = [];
+      for (let i = 0; i < text.length; i++) {
+        if (i >= start && i < start + 24) continue;
+        const mutated =
+          text.slice(0, i) + (text[i] === "x" ? "y" : "x") + text.slice(i + 1);
+        let ok = false;
+        try {
+          ok = verifyPassport(JSON.parse(mutated)).ok;
+        } catch {
+          ok = false;
+        }
+        if (ok) survivors.push(i);
       }
-      if (ok) survivors.push(i);
-    }
-    expect(text.length).toBeGreaterThan(5000);
-    expect(survivors).toEqual([]);
-  });
+      expect(text.length).toBeGreaterThan(5000);
+      expect(survivors).toEqual([]);
+    },
+    SLOW,
+  );
 
   it("is stable across a JSON round trip with fractional numbers", () => {
     const p = JSON.parse(text) as Record<string, unknown>;
