@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { z, ZodError } from "zod";
 import { createRuntimeClaim } from "@kora/runtime-claim";
 import { KoraStore } from "./store.js";
+import { registerPassportRoutes } from "./passport-routes.js";
 
 const idParams = z.object({ id: z.string().uuid() });
 const snapshotParams = z.object({
@@ -103,5 +104,6 @@ export function buildApi(
       ? { data: snapshot }
       : reply.code(404).send({ error: "not_found", requestId: req.id });
   });
+  registerPassportRoutes(app, store);
   return app;
 }
