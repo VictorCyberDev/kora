@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import { z, ZodError } from "zod";
+import { createRuntimeClaim } from "@kora/runtime-claim";
 import { KoraStore } from "./store.js";
 
 const idParams = z.object({ id: z.string().uuid() });
@@ -11,7 +12,10 @@ export function buildApi(
   store: KoraStore,
   nodeEnv = "development",
   logLevel = "info",
+  options: { runtimeClaim?: ReturnType<typeof createRuntimeClaim> } = {},
 ) {
+  const runtimeClaim =
+    options.runtimeClaim ?? createRuntimeClaim({ service: "kora-api" });
   const app = Fastify({
     logger: nodeEnv === "test" ? false : { level: logLevel },
     genReqId: (req) =>
@@ -31,6 +35,11 @@ export function buildApi(
     });
   });
   app.get("/health", () => ({ status: "ok" }));
+  // Self-reported identity of this process: unauthenticated, read-only, no
+  // secrets, and a claim rather than proof (ADR-009).
+  app.get("/__kora", (_request, reply) =>
+    reply.header("cache-control", "no-store").send(runtimeClaim.snapshot()),
+  );
   app.get("/services", async () => ({ data: await store.listServices() }));
   app.get("/services/:id", async (req, reply) => {
     const { id } = idParams.parse(req.params);

@@ -48,7 +48,7 @@ Common gates: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm fo
 
 ### Container image and Rumpty Cloud
 
-The root `Dockerfile` builds one image for both services (default command: the API; the demo service runs with `node apps/demo-service/dist/server.js`). Both servers bind `0.0.0.0` and read the platform-injected `PORT` (`API_PORT`/`DEMO_PORT` win if set). See `docs/runbooks/rumpty-deploy.md` for console settings, environment variable names, database strings, migrations over `sslmode=require` and a smoke-test checklist.
+The root `Dockerfile` builds one image for both services (default command: the API; the demo service runs with `node apps/demo-service/dist/server.js`). Both servers bind `0.0.0.0` and read the platform-injected `PORT` (`API_PORT`/`DEMO_PORT` win if set). Both services serve `GET /__kora`, an unauthenticated read-only self-report (`kora.runtime-claim/v1`: service, environment, commit, build time, start time, uptime). It is a claim, not proof or attestation; see ADR-009. The image records its commit from the `GIT_SHA` build argument or the build context's `.git`; `KORA_COMMIT_SHA` is the runtime fallback; otherwise the commit is `null`. See `docs/runbooks/rumpty-deploy.md` for console settings, environment variable names, database strings, migrations over `sslmode=require` and a smoke-test checklist.
 
 ### Running tests
 

@@ -36,6 +36,10 @@ Every API endpoint is unauthenticated, including the one write endpoint added in
 
 Hosted-demo mitigation: **none yet.** Authentication and authorization must be addressed before any real tenant data is stored or the API is exposed beyond a trusted network.
 
+## Runtime claim
+
+`GET /__kora` (both services) is unauthenticated and discloses the service name, environment name, commit, build time and uptime. It contains no secrets. It is a self-report and must not be trusted as proof of what is running (ADR-009); anyone who controls a build argument or environment variable controls what it says.
+
 ## Redaction scope
 
 Redaction in diagnostic snapshots currently covers only the `provenance` field, whose value is the constant `kora:health-monitor`, so in practice nothing is redacted. Other snapshot fields (`type`, `failureCategory`, `providerStatus`, resource identifiers) are not passed through redaction. Health-check `failureReason` text is redacted separately when the observation is recorded (URL credentials and secret-like values), but `failureReason` is not part of snapshots. Do not store secrets in any observed or provider-supplied field.
