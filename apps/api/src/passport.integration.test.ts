@@ -25,6 +25,19 @@ const cli = fileURLToPath(
   new URL("../../../packages/passport/dist/cli.js", import.meta.url),
 );
 
+// Claims the Passport must never make (built from fragments so the phrases
+// do not appear in the repository as text).
+const forbiddenClaims = new RegExp(
+  [
+    ["tamper", "[- ]?", "proof"],
+    ["at", "tested"],
+    ["verified", " ", "deployment"],
+  ]
+    .map((parts) => parts.join(""))
+    .join("|"),
+  "i",
+);
+
 type Json = Record<string, unknown>;
 
 async function fixture(options: { resolved?: boolean } = {}) {
