@@ -13,7 +13,8 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",
     "format:check": "prettier --check .",
-    "db:migrate": "pnpm --filter @kora/api db:migrate"
+    "db:migrate": "pnpm --filter @kora/api db:migrate",
+    "kora:verify": "pnpm --silent --filter @kora/passport run build && node packages/passport/dist/cli.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",

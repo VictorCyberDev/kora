@@ -82,6 +82,8 @@ Confidence is finite and rule-based (`CONFIRMED`, `STRONGLY_SUPPORTED`, `SUPPORT
 
 Diagnostic snapshots are deterministically serialized, SHA-256 hashed, persisted in PostgreSQL and immutable after creation. Equivalent evidence produces equivalent diagnostic content; diagnostically relevant changes alter the hash. See `docs/architecture/deterministic-diagnosis.md`.
 
+An incident can be exported as an **Incident Passport** (`GET /incidents/:id/passport`) and checked offline with `pnpm kora:verify <file>`. The Passport is integrity-evident only: a SHA-256 shows the file was not changed after export, not who produced it. It is not signed (future work). See `docs/architecture/incident-passport.md` and ADR-011.
+
 ## Failure classification
 
 A failed health check is classified from the HTTP status or, for transport failures, from stable error **codes** found by walking the `fetch()` error's `cause` chain and any `AggregateError` members. Error messages are never pattern-matched.

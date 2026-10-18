@@ -1,0 +1,1562 @@
+{
+  "note": "Hashes produced by the original deterministicHash()/buildDiagnosticSnapshot() in apps/api/src/diagnosis.ts at main 242c2ce74dd935be57240adc68df32028ac25815. Do not regenerate: they pin legacy output.",
+  "vectors": [
+    {
+      "kind": "value",
+      "value": null,
+      "hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "kind": "value",
+      "value": true,
+      "hash": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    {
+      "kind": "value",
+      "value": false,
+      "hash": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "kind": "value",
+      "value": "",
+      "hash": "12ae32cb1ec02d01eda3581b127c1fee3b0dc53572ed6baf239721a03d82e126"
+    },
+    {
+      "kind": "value",
+      "value": "a",
+      "hash": "ac8d8342bbb2362d13f0a559a3621bb407011368895164b628a54f7fc33fc43c"
+    },
+    {
+      "kind": "value",
+      "value": "quote \" backslash \\ slash / tab \t",
+      "hash": "398d83b4e14e2a02cdfcbaa121ad7eb708cbfd369f2dbd4f9999eb97cd546556"
+    },
+    {
+      "kind": "value",
+      "value": "é ü 日本 😀",
+      "hash": "12fb9c076c1ea60fe1189d010c3e1d69ccb26e3f03b1ef3aecf6de193bfaf706"
+    },
+    {
+      "kind": "value",
+      "value": "  ",
+      "hash": "e3a0e2262ac7790f4df36b522a8fbdd4ee3370d568eb15dc25c5f1775f14ed6c"
+    },
+    {
+      "kind": "value",
+      "value": 0,
+      "hash": "5feceb66ffc86f38d952786c6d696c79c2dbc239dd4e91b46729d73a27fb57e9"
+    },
+    {
+      "kind": "value",
+      "value": 1,
+      "hash": "6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b"
+    },
+    {
+      "kind": "value",
+      "value": -1,
+      "hash": "1bad6b8cf97131fceab8543e81f7757195fbb1d36b376ee994ad1cf17699c464"
+    },
+    {
+      "kind": "value",
+      "value": 0.1,
+      "hash": "14be4b45f18e0d8c67b4f719b5144eee88497e413709d11d85b096d8e2346310"
+    },
+    {
+      "kind": "value",
+      "value": -1.5,
+      "hash": "37c2b212b94e5372b33df924ea2a91182d90c237d0bf942c1768e794ebef2376"
+    },
+    {
+      "kind": "value",
+      "value": 123456.789,
+      "hash": "df16e278bec8bd79b90a36552e05a4179549b0870da68fbe2580a8a920597ef4"
+    },
+    {
+      "kind": "value",
+      "value": 0.30000000000000004,
+      "hash": "06bad31060c1212ae832de4c031f7b31e3b48aed57858294478cb19450cf34ca"
+    },
+    {
+      "kind": "value",
+      "value": 1e21,
+      "hash": "241c4643fa70b1dcde1205b71be4e3bebb17e9f880c8e1a33d0ead6c27271d3c"
+    },
+    {
+      "kind": "value",
+      "value": 1e-7,
+      "hash": "5b33e02f2c5103a05d32f6ba9cb058294452bfbf393967f68bb30c1bdcbbab22"
+    },
+    {
+      "kind": "value",
+      "value": 5e-324,
+      "hash": "c46e7ca1be4c8734f373a56530787288fa2058d73d07855e9247e949f811a42a"
+    },
+    {
+      "kind": "value",
+      "value": 1.7976931348623157e308,
+      "hash": "c2784e1abd6317452708f3fbf9641c16b959561bc621a1d408c23a20aa2cb585"
+    },
+    {
+      "kind": "value",
+      "value": [],
+      "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "kind": "value",
+      "value": {},
+      "hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "kind": "value",
+      "value": [[]],
+      "hash": "cf1cbb66a638b4860a516671fb74850e6ccf787fe6c4c8d29e9c04efe880bd05"
+    },
+    {
+      "kind": "value",
+      "value": [{}],
+      "hash": "e10808d43975dc400731053386849f864f297e6c4f7519c380f3dbaf7067a840"
+    },
+    {
+      "kind": "value",
+      "value": [1, "1", null, true],
+      "hash": "ef58e061056b6e9cb1df88bf9ab33937b7d392f17f7707282789e8d10fa3be36"
+    },
+    {
+      "kind": "value",
+      "value": {
+        "9": 4,
+        "10": 3,
+        "b": 1,
+        "a": 2,
+        "Z": 5,
+        "é": 6,
+        "😀": 7,
+        "￿": 8
+      },
+      "hash": "0fc9642e1a74e9b81e80b3808c3932ec628a54941ae3993760137b2b69bb7080"
+    },
+    {
+      "kind": "value",
+      "value": {
+        "z": {
+          "y": {
+            "x": [
+              3,
+              2,
+              1,
+              {
+                "b": null,
+                "a": []
+              }
+            ]
+          }
+        }
+      },
+      "hash": "c0e6be3bdf1cb0070919b5c6728f8ef2b4f12f1ad83f785ec21d9ed6c325de8c"
+    },
+    {
+      "kind": "value",
+      "value": {
+        "latencyMs": 12.5,
+        "ratio": 0.1,
+        "big": 9007199254740992,
+        "neg": -0.000001
+      },
+      "hash": "558f16b003803830e61658dec0c773aabd4572eda1f8075fd39d47099c91208c"
+    },
+    {
+      "kind": "snapshot",
+      "name": "three-5xx-provider-running",
+      "snapshot": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "createdAt": "2026-01-01T00:06:00.000Z",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:20.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "45c161b0f1b4454cf2c99eaaec3c0d54244b259566f1c79e828e6059a3496a89"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "6159cf99834d0ff623cee1a9e9bf3de97d31a505bcf498820b5b422184a55ca7"
+          },
+          {
+            "id": "e3",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:20.000Z",
+            "ingestedAt": "2026-01-01T00:01:02.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "36f32f75f3d256e007cfdefe8801b5626b99777ad06eaa86058d577596c1aa44"
+          }
+        ],
+        "findings": [
+          {
+            "id": "c2e8e3e0db583fc48170db482b706c1d",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_HTTP_5XX",
+            "statement": "Service endpoint repeatedly returns server errors.",
+            "confidence": "STRONGLY_SUPPORTED",
+            "evidenceIds": ["e1", "e2", "e3"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e1", "e1", "e2", "e2", "e3", "e3"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 3,
+        "contentHash": "73da9a3ddf9041306bb8a081f71a44e477f8d8331f770312154914e9ed30f0e8"
+      },
+      "hashInput": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:20.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "45c161b0f1b4454cf2c99eaaec3c0d54244b259566f1c79e828e6059a3496a89"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "6159cf99834d0ff623cee1a9e9bf3de97d31a505bcf498820b5b422184a55ca7"
+          },
+          {
+            "id": "e3",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:20.000Z",
+            "ingestedAt": "2026-01-01T00:01:02.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "36f32f75f3d256e007cfdefe8801b5626b99777ad06eaa86058d577596c1aa44"
+          }
+        ],
+        "findings": [
+          {
+            "id": "c2e8e3e0db583fc48170db482b706c1d",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_HTTP_5XX",
+            "statement": "Service endpoint repeatedly returns server errors.",
+            "confidence": "STRONGLY_SUPPORTED",
+            "evidenceIds": ["e1", "e2", "e3"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e1", "e1", "e2", "e2", "e3", "e3"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 3
+      },
+      "hash": "73da9a3ddf9041306bb8a081f71a44e477f8d8331f770312154914e9ed30f0e8"
+    },
+    {
+      "kind": "evidence",
+      "name": "three-5xx-provider-running",
+      "value": {
+        "id": "e1",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:00.000Z",
+        "ingestedAt": "2026-01-01T00:01:00.000Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "45c161b0f1b4454cf2c99eaaec3c0d54244b259566f1c79e828e6059a3496a89"
+    },
+    {
+      "kind": "evidence",
+      "name": "three-5xx-provider-running",
+      "value": {
+        "id": "e2",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:10.000Z",
+        "ingestedAt": "2026-01-01T00:01:01.000Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "6159cf99834d0ff623cee1a9e9bf3de97d31a505bcf498820b5b422184a55ca7"
+    },
+    {
+      "kind": "evidence",
+      "name": "three-5xx-provider-running",
+      "value": {
+        "id": "e3",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:20.000Z",
+        "ingestedAt": "2026-01-01T00:01:02.000Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "36f32f75f3d256e007cfdefe8801b5626b99777ad06eaa86058d577596c1aa44"
+    },
+    {
+      "kind": "snapshot",
+      "name": "timeouts-then-recovery",
+      "snapshot": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "RESOLVED",
+        "createdAt": "2026-01-01T00:06:00.000Z",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:10.000Z",
+          "recoveryStartedAt": "2026-01-01T00:00:20.000Z",
+          "recoveryVerifiedAt": "2026-01-01T00:05:00.000Z"
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TIMEOUT",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "b0772de17ce34f688f5f0b1a694fef89d32baaf7b3ae296a1254d3de1df9101e"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TIMEOUT",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "357c81df28a388dee3c9d45d1ab61a7598f11228fa16eeeef4d7a9840d420eee"
+          },
+          {
+            "id": "e3",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckSucceeded",
+            "observedAt": "2026-01-01T00:00:20.000Z",
+            "ingestedAt": "2026-01-01T00:01:02.000Z",
+            "healthy": true,
+            "httpStatus": 200,
+            "failureCategory": null,
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "53608cb0604514f08a04578986f1d2abac507bd60df9887bcd016ef31474fcc9"
+          },
+          {
+            "id": "e4",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckSucceeded",
+            "observedAt": "2026-01-01T00:00:30.000Z",
+            "ingestedAt": "2026-01-01T00:01:03.000Z",
+            "healthy": true,
+            "httpStatus": 200,
+            "failureCategory": null,
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "280cb5c9ed98a68978b6a5f286e1a2c80096a8a89db733d26eb08d780ceea680"
+          }
+        ],
+        "findings": [
+          {
+            "id": "53f0cf1afd0593d5cee371971746f76d",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "RECOVERY_VERIFIED",
+            "statement": "Recovery was verified by subsequent healthy observations.",
+            "confidence": "CONFIRMED",
+            "evidenceIds": ["e3", "e4"],
+            "method": "DETERMINISTIC_RULE"
+          },
+          {
+            "id": "7624fd96b3ac74ed1f816a10e8017956",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_TIMEOUT",
+            "statement": "Service health checks repeatedly time out.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1", "e2"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e1", "e1", "e2", "e2", "e3", "e4"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 4,
+        "contentHash": "05ea576140696af8f5c257f0030cd1bf482e4fe7eb579ccebe6f6822d2508b5d"
+      },
+      "hashInput": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "RESOLVED",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:10.000Z",
+          "recoveryStartedAt": "2026-01-01T00:00:20.000Z",
+          "recoveryVerifiedAt": "2026-01-01T00:05:00.000Z"
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TIMEOUT",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "b0772de17ce34f688f5f0b1a694fef89d32baaf7b3ae296a1254d3de1df9101e"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TIMEOUT",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "357c81df28a388dee3c9d45d1ab61a7598f11228fa16eeeef4d7a9840d420eee"
+          },
+          {
+            "id": "e3",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckSucceeded",
+            "observedAt": "2026-01-01T00:00:20.000Z",
+            "ingestedAt": "2026-01-01T00:01:02.000Z",
+            "healthy": true,
+            "httpStatus": 200,
+            "failureCategory": null,
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "53608cb0604514f08a04578986f1d2abac507bd60df9887bcd016ef31474fcc9"
+          },
+          {
+            "id": "e4",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckSucceeded",
+            "observedAt": "2026-01-01T00:00:30.000Z",
+            "ingestedAt": "2026-01-01T00:01:03.000Z",
+            "healthy": true,
+            "httpStatus": 200,
+            "failureCategory": null,
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "280cb5c9ed98a68978b6a5f286e1a2c80096a8a89db733d26eb08d780ceea680"
+          }
+        ],
+        "findings": [
+          {
+            "id": "53f0cf1afd0593d5cee371971746f76d",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "RECOVERY_VERIFIED",
+            "statement": "Recovery was verified by subsequent healthy observations.",
+            "confidence": "CONFIRMED",
+            "evidenceIds": ["e3", "e4"],
+            "method": "DETERMINISTIC_RULE"
+          },
+          {
+            "id": "7624fd96b3ac74ed1f816a10e8017956",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_TIMEOUT",
+            "statement": "Service health checks repeatedly time out.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1", "e2"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e1", "e1", "e2", "e2", "e3", "e4"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 4
+      },
+      "hash": "05ea576140696af8f5c257f0030cd1bf482e4fe7eb579ccebe6f6822d2508b5d"
+    },
+    {
+      "kind": "evidence",
+      "name": "timeouts-then-recovery",
+      "value": {
+        "id": "e1",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:00.000Z",
+        "ingestedAt": "2026-01-01T00:01:00.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TIMEOUT",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "b0772de17ce34f688f5f0b1a694fef89d32baaf7b3ae296a1254d3de1df9101e"
+    },
+    {
+      "kind": "evidence",
+      "name": "timeouts-then-recovery",
+      "value": {
+        "id": "e2",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:10.000Z",
+        "ingestedAt": "2026-01-01T00:01:01.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TIMEOUT",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "357c81df28a388dee3c9d45d1ab61a7598f11228fa16eeeef4d7a9840d420eee"
+    },
+    {
+      "kind": "evidence",
+      "name": "timeouts-then-recovery",
+      "value": {
+        "id": "e3",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-01-01T00:00:20.000Z",
+        "ingestedAt": "2026-01-01T00:01:02.000Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "53608cb0604514f08a04578986f1d2abac507bd60df9887bcd016ef31474fcc9"
+    },
+    {
+      "kind": "evidence",
+      "name": "timeouts-then-recovery",
+      "value": {
+        "id": "e4",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-01-01T00:00:30.000Z",
+        "ingestedAt": "2026-01-01T00:01:03.000Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "280cb5c9ed98a68978b6a5f286e1a2c80096a8a89db733d26eb08d780ceea680"
+    },
+    {
+      "kind": "snapshot",
+      "name": "mixed-categories-provider-stopped",
+      "snapshot": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "createdAt": "2026-01-01T00:06:00.000Z",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:20.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "CONNECTION_REFUSED",
+            "providerStatus": "STOPPED",
+            "provenance": "kora:health-monitor",
+            "contentHash": "d349e422c1d37f680dbab16ca690c98cb5ad55820d7bba639f124c8f8e8d8428"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "DNS_FAILURE",
+            "providerStatus": "STOPPED",
+            "provenance": "kora:health-monitor",
+            "contentHash": "8ad0f7dd42f2009f6c35da09458cb2d7d8dd1975a04f370364a202ba8548ef6d"
+          },
+          {
+            "id": "e3",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:20.000Z",
+            "ingestedAt": "2026-01-01T00:01:02.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TLS_FAILURE",
+            "providerStatus": "STOPPED",
+            "provenance": "kora:health-monitor",
+            "contentHash": "1f3757e5f7d2befa2532f939558bd6e00aab73cf6da5284d73fcc6cbaac05d86"
+          }
+        ],
+        "findings": [
+          {
+            "id": "f5468b3b1e0b26c929a7f82c14591af4",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "CONNECTION_REFUSED",
+            "statement": "Service health connection attempts are refused.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1"],
+            "method": "DETERMINISTIC_RULE"
+          },
+          {
+            "id": "393d497c46f2ede8dc0d53d5cc123496",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "DNS_RESOLUTION_FAILURE",
+            "statement": "Service health checks fail during DNS resolution.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e2"],
+            "method": "DETERMINISTIC_RULE"
+          },
+          {
+            "id": "a65fe099393a81fc9ff28e1627dee2b0",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "TLS_HANDSHAKE_FAILURE",
+            "statement": "Service health checks fail during TLS negotiation.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e3"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 3,
+        "contentHash": "40cbaf52a528bb4c5794e9daaf5ea45e7958db6e96576728e246b9de4e902bc1"
+      },
+      "hashInput": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:20.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "CONNECTION_REFUSED",
+            "providerStatus": "STOPPED",
+            "provenance": "kora:health-monitor",
+            "contentHash": "d349e422c1d37f680dbab16ca690c98cb5ad55820d7bba639f124c8f8e8d8428"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "DNS_FAILURE",
+            "providerStatus": "STOPPED",
+            "provenance": "kora:health-monitor",
+            "contentHash": "8ad0f7dd42f2009f6c35da09458cb2d7d8dd1975a04f370364a202ba8548ef6d"
+          },
+          {
+            "id": "e3",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:20.000Z",
+            "ingestedAt": "2026-01-01T00:01:02.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TLS_FAILURE",
+            "providerStatus": "STOPPED",
+            "provenance": "kora:health-monitor",
+            "contentHash": "1f3757e5f7d2befa2532f939558bd6e00aab73cf6da5284d73fcc6cbaac05d86"
+          }
+        ],
+        "findings": [
+          {
+            "id": "f5468b3b1e0b26c929a7f82c14591af4",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "CONNECTION_REFUSED",
+            "statement": "Service health connection attempts are refused.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1"],
+            "method": "DETERMINISTIC_RULE"
+          },
+          {
+            "id": "393d497c46f2ede8dc0d53d5cc123496",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "DNS_RESOLUTION_FAILURE",
+            "statement": "Service health checks fail during DNS resolution.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e2"],
+            "method": "DETERMINISTIC_RULE"
+          },
+          {
+            "id": "a65fe099393a81fc9ff28e1627dee2b0",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "TLS_HANDSHAKE_FAILURE",
+            "statement": "Service health checks fail during TLS negotiation.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e3"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 3
+      },
+      "hash": "40cbaf52a528bb4c5794e9daaf5ea45e7958db6e96576728e246b9de4e902bc1"
+    },
+    {
+      "kind": "evidence",
+      "name": "mixed-categories-provider-stopped",
+      "value": {
+        "id": "e1",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:00.000Z",
+        "ingestedAt": "2026-01-01T00:01:00.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "CONNECTION_REFUSED",
+        "providerStatus": "STOPPED",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "d349e422c1d37f680dbab16ca690c98cb5ad55820d7bba639f124c8f8e8d8428"
+    },
+    {
+      "kind": "evidence",
+      "name": "mixed-categories-provider-stopped",
+      "value": {
+        "id": "e2",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:10.000Z",
+        "ingestedAt": "2026-01-01T00:01:01.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "DNS_FAILURE",
+        "providerStatus": "STOPPED",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "8ad0f7dd42f2009f6c35da09458cb2d7d8dd1975a04f370364a202ba8548ef6d"
+    },
+    {
+      "kind": "evidence",
+      "name": "mixed-categories-provider-stopped",
+      "value": {
+        "id": "e3",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:20.000Z",
+        "ingestedAt": "2026-01-01T00:01:02.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TLS_FAILURE",
+        "providerStatus": "STOPPED",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "1f3757e5f7d2befa2532f939558bd6e00aab73cf6da5284d73fcc6cbaac05d86"
+    },
+    {
+      "kind": "snapshot",
+      "name": "truncated-to-two",
+      "snapshot": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "createdAt": "2026-01-01T00:06:00.000Z",
+        "temporal": {
+          "lastKnownHealthyAt": "2026-01-01T00:00:30.000Z",
+          "firstFailureAt": "2026-01-01T00:00:40.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:40.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e4",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckSucceeded",
+            "observedAt": "2026-01-01T00:00:30.000Z",
+            "ingestedAt": "2026-01-01T00:01:03.000Z",
+            "healthy": true,
+            "httpStatus": 200,
+            "failureCategory": null,
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "280cb5c9ed98a68978b6a5f286e1a2c80096a8a89db733d26eb08d780ceea680"
+          },
+          {
+            "id": "e5",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:40.000Z",
+            "ingestedAt": "2026-01-01T00:01:04.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TIMEOUT",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "cc80a9683c54238dfd972ffbf5b67aec29478cf5708ab91022a6ed8dfa897eda"
+          }
+        ],
+        "findings": [
+          {
+            "id": "933ee21ce8a4c5e174be125cf5189f40",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_TIMEOUT",
+            "statement": "Service health checks repeatedly time out.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e5"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e4", "e5", "e5"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": true,
+        "totalEvidenceCount": 5,
+        "contentHash": "345b5513f08c029ef7d98528d154c1355df6584c462a1512fb7eddd62e2125b2"
+      },
+      "hashInput": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "temporal": {
+          "lastKnownHealthyAt": "2026-01-01T00:00:30.000Z",
+          "firstFailureAt": "2026-01-01T00:00:40.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:40.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e4",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckSucceeded",
+            "observedAt": "2026-01-01T00:00:30.000Z",
+            "ingestedAt": "2026-01-01T00:01:03.000Z",
+            "healthy": true,
+            "httpStatus": 200,
+            "failureCategory": null,
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "280cb5c9ed98a68978b6a5f286e1a2c80096a8a89db733d26eb08d780ceea680"
+          },
+          {
+            "id": "e5",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:40.000Z",
+            "ingestedAt": "2026-01-01T00:01:04.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "TIMEOUT",
+            "providerStatus": "RUNNING",
+            "provenance": "kora:health-monitor",
+            "contentHash": "cc80a9683c54238dfd972ffbf5b67aec29478cf5708ab91022a6ed8dfa897eda"
+          }
+        ],
+        "findings": [
+          {
+            "id": "933ee21ce8a4c5e174be125cf5189f40",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_TIMEOUT",
+            "statement": "Service health checks repeatedly time out.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e5"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e4", "e5", "e5"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": true,
+        "totalEvidenceCount": 5
+      },
+      "hash": "345b5513f08c029ef7d98528d154c1355df6584c462a1512fb7eddd62e2125b2"
+    },
+    {
+      "kind": "evidence",
+      "name": "truncated-to-two",
+      "value": {
+        "id": "e4",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-01-01T00:00:30.000Z",
+        "ingestedAt": "2026-01-01T00:01:03.000Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "280cb5c9ed98a68978b6a5f286e1a2c80096a8a89db733d26eb08d780ceea680"
+    },
+    {
+      "kind": "evidence",
+      "name": "truncated-to-two",
+      "value": {
+        "id": "e5",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:40.000Z",
+        "ingestedAt": "2026-01-01T00:01:04.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TIMEOUT",
+        "providerStatus": "RUNNING",
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "cc80a9683c54238dfd972ffbf5b67aec29478cf5708ab91022a6ed8dfa897eda"
+    },
+    {
+      "kind": "snapshot",
+      "name": "no-provider-status",
+      "snapshot": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "createdAt": "2026-01-01T00:06:00.000Z",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:10.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "HTTP_4XX",
+            "providerStatus": null,
+            "provenance": "kora:health-monitor",
+            "contentHash": "dbba4628d1836f0b2277636fe861df27ee40db70b5b7ad2bf3c0a8388cca3b99"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "HTTP_4XX",
+            "providerStatus": null,
+            "provenance": "kora:health-monitor",
+            "contentHash": "0ea450abce95f961de7f101dd0b1921a48292784b94d6e40fbb5e14cd9e00ea6"
+          }
+        ],
+        "findings": [
+          {
+            "id": "5e41f187efeeb68bc18c9437e96a39ef",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_HTTP_4XX",
+            "statement": "Service endpoint repeatedly returns client-error responses.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1", "e2"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_PROVIDER_STATUS",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 2,
+        "contentHash": "431ec2934294b849c5351ddad18c9aad458b73ef5816cb92848d284212baed68"
+      },
+      "hashInput": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:10.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "HTTP_4XX",
+            "providerStatus": null,
+            "provenance": "kora:health-monitor",
+            "contentHash": "dbba4628d1836f0b2277636fe861df27ee40db70b5b7ad2bf3c0a8388cca3b99"
+          },
+          {
+            "id": "e2",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:10.000Z",
+            "ingestedAt": "2026-01-01T00:01:01.000Z",
+            "healthy": false,
+            "httpStatus": null,
+            "failureCategory": "HTTP_4XX",
+            "providerStatus": null,
+            "provenance": "kora:health-monitor",
+            "contentHash": "0ea450abce95f961de7f101dd0b1921a48292784b94d6e40fbb5e14cd9e00ea6"
+          }
+        ],
+        "findings": [
+          {
+            "id": "5e41f187efeeb68bc18c9437e96a39ef",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_HTTP_4XX",
+            "statement": "Service endpoint repeatedly returns client-error responses.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1", "e2"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_PROVIDER_STATUS",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 2
+      },
+      "hash": "431ec2934294b849c5351ddad18c9aad458b73ef5816cb92848d284212baed68"
+    },
+    {
+      "kind": "evidence",
+      "name": "no-provider-status",
+      "value": {
+        "id": "e1",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:00.000Z",
+        "ingestedAt": "2026-01-01T00:01:00.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "HTTP_4XX",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "dbba4628d1836f0b2277636fe861df27ee40db70b5b7ad2bf3c0a8388cca3b99"
+    },
+    {
+      "kind": "evidence",
+      "name": "no-provider-status",
+      "value": {
+        "id": "e2",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:10.000Z",
+        "ingestedAt": "2026-01-01T00:01:01.000Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "HTTP_4XX",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor"
+      },
+      "hash": "0ea450abce95f961de7f101dd0b1921a48292784b94d6e40fbb5e14cd9e00ea6"
+    },
+    {
+      "kind": "snapshot",
+      "name": "redacted-provenance",
+      "snapshot": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "createdAt": "2026-01-01T00:06:00.000Z",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:00.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "[REDACTED]",
+            "contentHash": "c892237fc93dcf3d820002fd9ade5ef735fafc434e882b74c3498f6b544b92a0"
+          }
+        ],
+        "findings": [
+          {
+            "id": "e1a6692137f6578b8e663a16645cdbc5",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_HTTP_5XX",
+            "statement": "Service endpoint repeatedly returns server errors.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e1", "e1"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 1,
+        "contentHash": "0c1e8de8a7fc22387cce3e80ed89aec90c08157a65262cc5376032a7a1d26e44"
+      },
+      "hashInput": {
+        "version": 1,
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "incidentState": "DETECTED",
+        "temporal": {
+          "lastKnownHealthyAt": null,
+          "firstFailureAt": "2026-01-01T00:00:00.000Z",
+          "thresholdCrossedAt": "2026-01-01T00:00:20.000Z",
+          "incidentDetectedAt": "2026-01-01T00:00:31.000Z",
+          "latestFailureAt": "2026-01-01T00:00:00.000Z",
+          "recoveryStartedAt": null,
+          "recoveryVerifiedAt": null
+        },
+        "evidence": [
+          {
+            "id": "e1",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "serviceId": "00000000-0000-4000-8000-000000000002",
+            "resourceId": "r1",
+            "source": "HEALTH_CHECK",
+            "type": "HealthCheckFailed",
+            "observedAt": "2026-01-01T00:00:00.000Z",
+            "ingestedAt": "2026-01-01T00:01:00.000Z",
+            "healthy": false,
+            "httpStatus": 503,
+            "failureCategory": "HTTP_5XX",
+            "providerStatus": "RUNNING",
+            "provenance": "[REDACTED]",
+            "contentHash": "c892237fc93dcf3d820002fd9ade5ef735fafc434e882b74c3498f6b544b92a0"
+          }
+        ],
+        "findings": [
+          {
+            "id": "e1a6692137f6578b8e663a16645cdbc5",
+            "incidentId": "00000000-0000-4000-8000-000000000001",
+            "code": "SERVICE_HTTP_5XX",
+            "statement": "Service endpoint repeatedly returns server errors.",
+            "confidence": "SUPPORTED",
+            "evidenceIds": ["e1"],
+            "method": "DETERMINISTIC_RULE"
+          }
+        ],
+        "contradictions": [
+          {
+            "code": "RESOURCE_RUNNING_SERVICE_UNHEALTHY",
+            "statement": "Provider reports the resource running while service health is failing.",
+            "evidenceIds": ["e1", "e1"]
+          }
+        ],
+        "evidenceGaps": [
+          "NO_APPLICATION_LOGS",
+          "NO_DEPLOYMENT_CONTEXT",
+          "NO_RESOURCE_METRICS"
+        ],
+        "rootCause": {
+          "state": "UNKNOWN",
+          "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+        },
+        "truncated": false,
+        "totalEvidenceCount": 1
+      },
+      "hash": "0c1e8de8a7fc22387cce3e80ed89aec90c08157a65262cc5376032a7a1d26e44"
+    },
+    {
+      "kind": "evidence",
+      "name": "redacted-provenance",
+      "value": {
+        "id": "e1",
+        "incidentId": "00000000-0000-4000-8000-000000000001",
+        "serviceId": "00000000-0000-4000-8000-000000000002",
+        "resourceId": "r1",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-01-01T00:00:00.000Z",
+        "ingestedAt": "2026-01-01T00:01:00.000Z",
+        "healthy": false,
+        "httpStatus": 503,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": "RUNNING",
+        "provenance": "[REDACTED]"
+      },
+      "hash": "c892237fc93dcf3d820002fd9ade5ef735fafc434e882b74c3498f6b544b92a0"
+    }
+  ]
+}
