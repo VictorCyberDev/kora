@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { z, ZodError } from "zod";
 import { createRuntimeClaim } from "@kora/runtime-claim";
 import { KoraStore } from "./store.js";
+import { buildVerificationReport } from "./verification/report.js";
 import { registerPassportRoutes } from "./passport-routes.js";
 
 const idParams = z.object({ id: z.string().uuid() });
@@ -48,6 +49,17 @@ export function buildApi(
     return item
       ? { data: item }
       : reply.code(404).send({ error: "not_found", requestId: req.id });
+  });
+  app.get("/services/:id/verification", async (req, reply) => {
+    const { id } = idParams.parse(req.params);
+    if (!(await store.getService(id)))
+      return reply.code(404).send({ error: "not_found", requestId: req.id });
+    const latest = await store.getLatestVerification(id);
+    if (!latest)
+      return reply
+        .code(404)
+        .send({ error: "verification_not_run", requestId: req.id });
+    return { data: buildVerificationReport(id, latest) };
   });
   app.get("/incidents", async () => ({ data: await store.listIncidents() }));
   app.get("/incidents/:id", async (req, reply) => {

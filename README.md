@@ -101,7 +101,7 @@ A failed health check is classified from the HTTP status or, for transport failu
 
 ## API
 
-`GET /health`, `/services`, `/services/:id`, `/incidents`, `/incidents/:id`, `/incidents/:id/events`, `/incidents/:id/evidence`, `/incidents/:id/timeline`, `/incidents/:id/diagnosis` (read-only, computes the current diagnosis), `/incidents/:id/snapshots`, `/incidents/:id/snapshots/:snapshotId`, and `POST /incidents/:id/diagnosis/snapshots` (persists an immutable snapshot; `201` created, `200` already exists).
+`GET /health`, `/services`, `/services/:id`, `/incidents`, `/incidents/:id`, `/incidents/:id/events`, `/incidents/:id/evidence`, `/services/:id/verification` (Deployment Verification, not cryptographic; see ADR-010), `/incidents/:id/timeline`, `/incidents/:id/diagnosis` (read-only, computes the current diagnosis), `/incidents/:id/snapshots`, `/incidents/:id/snapshots/:snapshotId`, and `POST /incidents/:id/diagnosis/snapshots` (persists an immutable snapshot; `201` created, `200` already exists).
 
 Responses are JSON with `data` for resource endpoints. Unknown resources return 404; invalid boundary inputs are rejected. Requests receive request IDs and logs are structured. Service and incident responses resolve provider/resource context when a binding exists.
 

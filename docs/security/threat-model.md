@@ -40,6 +40,10 @@ Hosted-demo mitigation: **none yet.** Authentication and authorization must be a
 
 `GET /__kora` (both services) is unauthenticated and discloses the service name, environment name, commit, build time and uptime. It contains no secrets. It is a self-report and must not be trusted as proof of what is running (ADR-009); anyone who controls a build argument or environment variable controls what it says.
 
+## Deployment Verification
+
+When `GITHUB_REPO` is set, kora-api makes outbound requests to the configured GitHub API (`GITHUB_API_URL`) and to the workload's claim URL (`MONITOR_CLAIM_URL`). Both are operator configuration, not API input; redirects are not followed and URLs with embedded credentials are rejected. `GITHUB_TOKEN`, if set, is sent only as an `Authorization` header to the GitHub API and is excluded from config enumeration, observations, errors, logs and responses. The check is **not cryptographic**: a workload controls its own claim, and `GET /services/:id/verification` is unauthenticated like every other endpoint.
+
 ## Redaction scope
 
 Redaction in diagnostic snapshots currently covers only the `provenance` field, whose value is the constant `kora:health-monitor`, so in practice nothing is redacted. Other snapshot fields (`type`, `failureCategory`, `providerStatus`, resource identifiers) are not passed through redaction. Health-check `failureReason` text is redacted separately when the observation is recorded (URL credentials and secret-like values), but `failureReason` is not part of snapshots. Do not store secrets in any observed or provider-supplied field.

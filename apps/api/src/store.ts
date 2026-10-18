@@ -5,6 +5,11 @@ import type {
   TelemetryObservation,
 } from "@kora/incident-engine";
 import type { ProviderResource } from "@kora/topology";
+import type { ClaimObservation } from "./verification/claim.js";
+import type {
+  RelationObservation,
+  ScmHeadObservation,
+} from "./verification/scm.js";
 import {
   buildDiagnosticSnapshot,
   verifyDiagnosticSnapshot,
@@ -311,5 +316,47 @@ export class KoraStore {
           .sql`SELECT id,incident_id,created_at,content_hash,snapshot FROM diagnostic_snapshots WHERE incident_id=${incidentId} AND id=${snapshotId}`
       )[0] ?? null
     );
+  }
+
+  /** One row of Deployment Verification evidence. Call inside inTransaction. */
+  async insertVerificationObservation(
+    checkId: string,
+    serviceId: string,
+    o: ScmHeadObservation | ClaimObservation | RelationObservation,
+  ) {
+    const id = crypto.randomUUID();
+    const claim = o.kind === "workload_claim" ? o.claim : null;
+    const relation = o.kind === "commit_relation" ? o : null;
+    await this.sql`
+      INSERT INTO verification_observations(id,check_id,service_id,kind,outcome,observed_at,source_url,http_status,reason,commit_sha,commit_source,built_at,claim_service,claim_environment,claim_started_at,relation,behind_by,ahead_by)
+      VALUES(${id},${checkId},${serviceId},${o.kind},${o.outcome},${o.observedAt},${o.sourceUrl},${o.httpStatus},${o.reason},
+        ${o.kind === "scm_head" ? o.sha : (claim?.commit ?? null)},${claim?.commitSource ?? null},${claim?.builtAt ?? null},${claim?.service ?? null},${claim?.environment ?? null},${claim?.startedAt ?? null},
+        ${relation?.relation ?? null},${relation?.behindBy ?? null},${relation?.aheadBy ?? null})`;
+    return id;
+  }
+  /** Persists the observations of one check in a single transaction. */
+  async recordVerificationCheck(
+    serviceId: string,
+    observations: Array<
+      ScmHeadObservation | ClaimObservation | RelationObservation
+    >,
+  ) {
+    const checkId = crypto.randomUUID();
+    await this.inTransaction(async (tx) => {
+      for (const o of observations)
+        await tx.insertVerificationObservation(checkId, serviceId, o);
+    });
+    return checkId;
+  }
+  /** The most recent check's observations for a service, or null if none ran. */
+  async getLatestVerification(serviceId: string) {
+    const latest = (
+      await this
+        .sql`SELECT check_id FROM verification_observations WHERE service_id=${serviceId} ORDER BY observed_at DESC, created_at DESC LIMIT 1`
+    )[0];
+    if (!latest) return null;
+    const rows = await this
+      .sql`SELECT * FROM verification_observations WHERE check_id=${latest.check_id as string} ORDER BY kind`;
+    return { checkId: String(latest.check_id), rows };
   }
 }

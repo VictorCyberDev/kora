@@ -43,6 +43,16 @@ Both services answer `GET /__kora` with `kora.runtime-claim/v1` (service, enviro
 - Environment variables are runtime-only on Rumpty, so `KORA_COMMIT_SHA` can only describe the running deployment, not the build. Set it to the deployed commit only if you maintain it by hand; if it is unset and the build recorded nothing, the claim says `unavailable`. A wrong value here is a wrong claim.
 - Never treat this as proof of what is running (see ADR-009).
 
+## Deployment Verification (optional)
+
+Kora can compare what a workload claims it runs with what the source repository says should run (ADR-010; **not cryptographic**). It is off unless `GITHUB_REPO` is set on kora-api.
+
+- `GITHUB_REPO` (`owner/name`), `GITHUB_BRANCH` (default `main`).
+- `GITHUB_TOKEN` (optional, a secret: set it only in the console's environment variables; it is sent only to GitHub and never stored or logged). Unauthenticated GitHub allows 60 requests/hour, enough for the default check every five minutes.
+- `MONITOR_CLAIM_URL` (default: the health URL's origin plus `/__kora`), `GITHUB_API_URL` (default `https://api.github.com`), `VERIFICATION_INTERVAL_MS` (default `300000`, minimum `10000`).
+- Read the result with `GET <api URL>/services/<service id>/verification`. Statuses: `MATCH`, `BEHIND` (N commits), `DIVERGED`, `CLAIM_HAS_NO_COMMIT`, `CLAIM_UNREACHABLE`, `SCM_UNKNOWN`. Until the first check runs it answers `404 verification_not_run`.
+- The provider leg always shows `NOT COLLECTED`: Rumpty exposes no documented deployment revision signal.
+
 ## Environment variables (names only)
 
 **kora-api**
@@ -115,9 +125,10 @@ After both deployments are Active:
 2. kora-api: `GET <api URL>/health` returns `200` and `{"status":"ok"}`. This is a liveness check and does not query the database.
 3. `GET <demo URL>/__kora` and `GET <api URL>/__kora` return `kora.runtime-claim/v1` with the expected `service` and `environment`; `commit` matches what you deployed or says `unavailable`.
 4. `GET <api URL>/services` lists the monitored service (and its provider resource when the `RUMPTY_*` binding is set).
-5. Wait two monitor intervals; `GET <api URL>/incidents` is empty while demo-service is healthy.
-6. Check the Runtime Logs of kora-api for `Server listening` on the Port and no repeated `monitor iteration failed`.
-7. Optional, demo only: enable `DEMO_FAILURE_INJECTION_ENABLED=true` on demo-service, redeploy, `POST /dev/failure`, and watch an incident open after the failure threshold and resolve after `POST /dev/recover` plus the recovery threshold. Turn the flag off afterwards.
+5. If `GITHUB_REPO` is set: after one verification interval, `GET <api URL>/services/<service id>/verification` returns a status with evidence, and `providerLeg` is `NOT COLLECTED`.
+6. Wait two monitor intervals; `GET <api URL>/incidents` is empty while demo-service is healthy.
+7. Check the Runtime Logs of kora-api for `Server listening` on the Port and no repeated `monitor iteration failed`.
+8. Optional, demo only: enable `DEMO_FAILURE_INJECTION_ENABLED=true` on demo-service, redeploy, `POST /dev/failure`, and watch an incident open after the failure threshold and resolve after `POST /dev/recover` plus the recovery threshold. Turn the flag off afterwards.
 
 ## Known limits
 

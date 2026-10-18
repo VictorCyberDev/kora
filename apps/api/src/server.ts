@@ -4,6 +4,7 @@ import { loadConfig } from "./config.js";
 import { buildApi } from "./app.js";
 import { KoraStore } from "./store.js";
 import { HealthMonitor } from "./monitor.js";
+import { verifierFromConfig } from "./verification/verifier.js";
 import { RumptyCloudProvider } from "./providers/rumptycloud.js";
 
 const config = loadConfig();
@@ -61,9 +62,14 @@ const monitor = new HealthMonitor(
   resourceId,
   providerStatus,
 );
+const verifier = verifierFromConfig(config, store, String(service.id), app.log);
 app.addHook("onClose", async () => {
   await monitor.stop();
+  await verifier?.stop();
   await sql.end();
 });
 await app.listen({ host: config.API_HOST, port: config.API_PORT });
-if (config.MONITOR_ENABLED) monitor.start();
+if (config.MONITOR_ENABLED) {
+  monitor.start();
+  verifier?.start();
+}
