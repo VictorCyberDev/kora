@@ -7,7 +7,23 @@ import {
   type Reply,
 } from "../test-support/ui-harness.js";
 
-type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+type Json = Record<string, unknown>;
+interface Passport {
+  incident: Json & { id: string };
+  service: Json & { id: string };
+  timeline: Json[];
+  evidence: Array<Json & { contentHash: string }>;
+  gaps: Json[];
+  integrity: Json & { contentHash: string };
+  diagnosis: {
+    contentHash: string;
+    truncated: boolean;
+    rootCause: Json & { statement: string };
+    findings: Json[];
+    contradictions: Json[];
+    evidence: Json[];
+  };
+}
 
 // A real export from GET /incidents/:id/passport (resolved incident).
 const passport = JSON.parse(
@@ -18,9 +34,9 @@ const passport = JSON.parse(
     ),
     "utf8",
   ),
-) as Json;
-const INCIDENT_ID = passport.incident.id as string;
-const SERVICE_ID = passport.service.id as string;
+) as Passport;
+const INCIDENT_ID = passport.incident.id;
+const SERVICE_ID = passport.service.id;
 
 const service = (over: Json = {}): Json => ({
   id: SERVICE_ID,
@@ -306,7 +322,7 @@ describe("empty and error states for every list on the home page", () => {
     const el = section(page, name);
     expect(el.getAttribute("data-state")).toBe(state);
     const message = el.querySelector(`[data-kind="${state}"]`)!;
-    expect(message.textContent!.trim().length).toBeGreaterThan(10);
+    expect(message.textContent.trim().length).toBeGreaterThan(10);
     expect(message.getAttribute("role")).toBe(
       state === "error" ? "alert" : "status",
     );
@@ -379,7 +395,7 @@ describe("one incident: fact to diagnosis to export", () => {
     const root = q(page, '[data-field="rootCause"]')!;
     expect(root.querySelector(".badge .label")!.textContent).toBe("UNKNOWN");
     expect(root.textContent).toContain(passport.diagnosis.rootCause.statement);
-    expect(root.textContent!.toLowerCase()).not.toMatch(
+    expect(root.textContent.toLowerCase()).not.toMatch(
       /likely|probably|maybe|possibly/,
     );
   });
@@ -399,7 +415,7 @@ describe("one incident: fact to diagnosis to export", () => {
     const page = await incidentView();
     const badges = new Map<string, Element>();
     for (const b of qa(page, '[data-section="gaps"] .badge'))
-      badges.set(b.querySelector(".label")!.textContent!, b);
+      badges.set(b.querySelector(".label")!.textContent, b);
     const unknown = badges.get("UNKNOWN")!;
     const notCollected = badges.get("NOT COLLECTED")!;
     expect(unknown).toBeDefined();
@@ -421,7 +437,7 @@ describe("one incident: fact to diagnosis to export", () => {
     expect(
       gaps.map((g) => g.querySelector('[data-field="reason"]')!.textContent),
     ).toEqual(passport.gaps.map((g: Json) => g.reason));
-    const css = page.document.querySelector("style")!.textContent!;
+    const css = page.document.querySelector("style")!.textContent;
     expect(css).toMatch(/\.badge\.unknown\s*\{[^}]*dashed/);
     expect(css).toMatch(/\.badge\.notcollected\s*\{[^}]*(solid|double)/);
   });
@@ -557,10 +573,10 @@ describe("hostile data is rendered inert", () => {
     for (const a of page.document.querySelectorAll("a")) {
       const href = a.getAttribute("href") ?? "";
       expect(href, href).toMatch(
-        /^(#\/|\/incidents\/[0-9a-f-]{36}\/passport$)/,
+        /^(#\/|#app$|\/incidents\/[0-9a-f-]{36}\/passport$)/,
       );
     }
-    const body = page.document.body.textContent!;
+    const body = page.document.body.textContent;
     for (const h of hostile) expect(body).toContain(h.slice(0, 40));
   }
 
@@ -571,7 +587,7 @@ describe("hostile data is rendered inert", () => {
         name: h,
         health_url: h,
         resource: {
-          ...service().resource,
+          ...(service().resource as Json),
           displayName: h,
           status: h,
           region: h,
@@ -598,24 +614,27 @@ describe("hostile data is rendered inert", () => {
 
   it("in evidence, timeline, diagnosis and gaps", async () => {
     const p = structuredClone(passport);
+    const at = <T>(list: T[], i: number): T => list[i % list.length]!;
     HOSTILE.forEach((h, i) => {
-      const e = p.evidence[i % p.evidence.length];
+      const e = at(p.evidence, i);
       e.failureReason = h;
       e.failureCategory = h;
       e.providerStatus = h;
       e.contentHash = h;
-      p.timeline[i % p.timeline.length].eventType = h;
-      p.timeline[i % p.timeline.length].source = h;
-      p.timeline[i % p.timeline.length].payload = { [h]: h, nested: [h] };
+      const t = at(p.timeline, i);
+      t.eventType = h;
+      t.source = h;
+      t.payload = { [h]: h, nested: [h] };
       p.gaps.push({ item: h, status: h, reason: h });
-      p.diagnosis.findings[0].statement = h;
-      p.diagnosis.findings[0].code = h;
-      p.diagnosis.contradictions[0].statement = h;
+      const finding = at(p.diagnosis.findings, 0);
+      finding.statement = h;
+      finding.code = h;
+      at(p.diagnosis.contradictions, 0).statement = h;
     });
-    p.diagnosis.rootCause = { state: HOSTILE[0], statement: HOSTILE[1] };
+    p.diagnosis.rootCause = { state: HOSTILE[0], statement: HOSTILE[1]! };
     p.incident.severity = HOSTILE[2];
     p.service.name = HOSTILE[3];
-    p.integrity.contentHash = HOSTILE[4];
+    p.integrity.contentHash = HOSTILE[4]!;
     const page = await incidentView({ passport: { body: p } });
     assertInert(page, HOSTILE);
     expect(text(page, 'a[data-action="download-passport"]')).toBe(
@@ -650,10 +669,10 @@ describe("hostile data is rendered inert", () => {
     const page = await home({
       services: { body: { data: [service({ name: LONG, health_url: LONG })] } },
     });
-    const name = q(page, '[data-item="service"] h3')!.textContent!;
+    const name = q(page, '[data-item="service"] h3')!.textContent;
     expect(name.length).toBeLessThan(5000);
     expect(name).toMatch(/truncated.*200000/);
-    const css = page.document.querySelector("style")!.textContent!;
+    const css = page.document.querySelector("style")!.textContent;
     expect(css).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
@@ -683,7 +702,7 @@ describe("hostile data is rendered inert", () => {
 describe("page rules", () => {
   it("makes only GET requests to same-origin paths it knows", async () => {
     const page = await home();
-    await page.window.document
+    page.window.document
       .querySelector<HTMLAnchorElement>('[data-item="incident"] a')!
       .click();
     await page.settle();

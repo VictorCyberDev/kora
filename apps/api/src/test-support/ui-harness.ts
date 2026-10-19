@@ -46,7 +46,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * only thing replaced: it answers from `routes` and records every request.
  */
 export async function openUi(options: {
-  routes: (url: string) => Reply;
+  routes: (url: string) => Reply | Promise<Reply>;
   hash?: string;
 }) {
   const html = (await uiResponse()).body;
@@ -62,17 +62,19 @@ export async function openUi(options: {
       w.fetch = (input: unknown, init?: { method?: string }) => {
         const url = String(input);
         requests.push({ url, method: init?.method ?? "GET" });
-        const reply = options.routes(url);
-        if (reply === "network-error")
-          return Promise.reject(new TypeError("Failed to fetch"));
-        const status = reply.status ?? 200;
-        return Promise.resolve({
-          ok: status >= 200 && status < 300,
-          status,
-          json: () =>
-            reply.body === undefined
-              ? Promise.reject(new SyntaxError("Unexpected end of JSON input"))
-              : Promise.resolve(structuredClone(reply.body)),
+        return Promise.resolve(options.routes(url)).then((reply) => {
+          if (reply === "network-error") throw new TypeError("Failed to fetch");
+          const status = reply.status ?? 200;
+          return {
+            ok: status >= 200 && status < 300,
+            status,
+            json: () =>
+              reply.body === undefined
+                ? Promise.reject(
+                    new SyntaxError("Unexpected end of JSON input"),
+                  )
+                : Promise.resolve(structuredClone(reply.body)),
+          };
         });
       };
       const Original = window.XMLHttpRequest;

@@ -39,8 +39,8 @@ describe("GET /ui", () => {
     expect(csp).not.toMatch(/unsafe-|\*|https?:|data:|blob:/);
     // Only the page's own style and script, by hash.
     const dom = new JSDOM(r.body);
-    const style = dom.window.document.querySelector("style")!.textContent!;
-    const script = dom.window.document.querySelector("script")!.textContent!;
+    const style = dom.window.document.querySelector("style")!.textContent;
+    const script = dom.window.document.querySelector("script")!.textContent;
     expect(directives["style-src"]).toEqual([sha256(style)]);
     expect(directives["script-src"]).toEqual([sha256(script)]);
   });
@@ -76,10 +76,10 @@ describe("GET /ui", () => {
   it("states what it is, what it is not, and that there is no authentication", async () => {
     const { body } = await uiResponse();
     const doc = new JSDOM(body).window.document;
-    const footer = doc.querySelector("footer")!.textContent!;
+    const footer = doc.querySelector("footer")!.textContent;
     expect(footer).toMatch(/no authentication/i);
     expect(footer).toMatch(/read-only/i);
-    const text = doc.body.textContent!;
+    const text = doc.body.textContent;
     expect(text).toContain("Deployment Verification (not cryptographic)");
     expect(text).toContain("Download Incident Passport");
     expect(text).toContain("pnpm kora:verify <file>");
@@ -92,7 +92,7 @@ describe("GET /ui", () => {
     const { body } = await uiResponse();
     const script = new JSDOM(body).window.document.querySelector(
       "script",
-    )!.textContent!;
+    )!.textContent;
     for (const banned of [
       "innerHTML",
       "outerHTML",
@@ -121,7 +121,7 @@ describe("GET /ui", () => {
     expect(
       doc.querySelector('meta[name="viewport"]')!.getAttribute("content"),
     ).toContain("width=device-width");
-    const css = doc.querySelector("style")!.textContent!;
+    const css = doc.querySelector("style")!.textContent;
     expect(css).toContain("prefers-color-scheme: dark");
     expect(css).toContain("color-scheme");
     expect(css).toContain(":focus-visible");
