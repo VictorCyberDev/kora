@@ -11,6 +11,7 @@ import {
 } from "../test-support/fake-servers.js";
 import { quietLogger } from "../test-support/monitor-harness.js";
 import { loadConfig } from "../config.js";
+import { buildVerificationReport } from "./report.js";
 import { DeploymentVerifier, verifierFromConfig } from "./verifier.js";
 
 const TOKEN = "ghp_TESTTOKEN_do_not_leak_0123456789";
@@ -313,5 +314,128 @@ describe.skipIf(!databaseUrl)("verifierFromConfig", () => {
     expect(github.requests[0]!.headers.authorization).toBe(`Bearer ${TOKEN}`);
     expect(workload.requests[0]!.url).toBe("/__kora"); // default: health origin + /__kora
     expect(JSON.stringify(verifier)).not.toContain(TOKEN);
+  });
+});
+
+const rateLimited = (): FakeResponse => ({
+  status: 403,
+  headers: { "x-ratelimit-remaining": "0", "x-ratelimit-reset": "1999999999" },
+  body: { message: `API rate limit exceeded; token ${TOKEN}` },
+});
+
+describe.skipIf(!databaseUrl)("rate limiting and conditional requests", () => {
+  it("records rate_limited, makes exactly one GitHub call and reports it honestly", async () => {
+    const { verifier, serviceId, github } = await setup({
+      scm: rateLimited,
+      token: TOKEN,
+    });
+    await verifier.checkOnce();
+    expect(github.requests).toHaveLength(1); // no retry, no compare
+    const r = await rows(serviceId);
+    expect(r.map((x) => [x.kind, x.outcome, x.reason, x.http_status])).toEqual([
+      ["scm_head", "UNKNOWN", "rate_limited", 403],
+      ["workload_claim", "OBSERVED", null, 200],
+    ]);
+    const latest = await store!.getLatestVerification(serviceId);
+    const report = buildVerificationReport(serviceId, latest!);
+    expect(report.status).toBe("SCM_UNKNOWN");
+    expect(report.detail).toMatch(/rate limited/i);
+    expect(report.detail).toContain("GITHUB_TOKEN");
+    const text = JSON.stringify([r, report]);
+    for (const leaked of [TOKEN, "1999999999", "exceeded"])
+      expect(text).not.toContain(leaked);
+  });
+  it("makes exactly one GitHub call per interval while rate limited", async () => {
+    const { serviceId, github, workload } = await setup({ scm: rateLimited });
+    const intervalMs = 150;
+    const limited = new DeploymentVerifier({
+      store: store!,
+      serviceId,
+      logger: quietLogger,
+      repo: "acme/widgets",
+      branch: "main",
+      apiUrl: github.url,
+      claimUrl: `${workload.url}/__kora`,
+      timeoutMs: 1000,
+      intervalMs,
+    });
+    limited.start();
+    await new Promise((resolve) => setTimeout(resolve, intervalMs * 3.5));
+    await limited.stop();
+    const checks = new Set(
+      (await rows(serviceId)).map((x) => String(x.check_id)),
+    );
+    expect(checks.size).toBeGreaterThanOrEqual(3);
+    expect(
+      github.requests.filter((q) => q.url.includes("/git/ref/")),
+    ).toHaveLength(checks.size);
+    expect(github.requests).toHaveLength(checks.size);
+  });
+  it("sends If-None-Match and reuses the OBSERVED head and relation on 304", async () => {
+    const { verifier, serviceId, github } = await setup({
+      scm: (r) => {
+        const tag = r.url.includes("/compare/") ? '"cmp1"' : '"head1"';
+        if (r.headers["if-none-match"] === tag)
+          return { status: 304, body: "" };
+        return r.url.includes("/compare/")
+          ? {
+              body: { status: "ahead", ahead_by: 3, behind_by: 0 },
+              headers: { etag: tag },
+            }
+          : {
+              body: { object: { sha: sha(2), type: "commit" } },
+              headers: { etag: tag },
+            };
+      },
+    });
+    await verifier.checkOnce();
+    await verifier.checkOnce();
+    expect(github.requests.map((q) => q.headers["if-none-match"])).toEqual([
+      undefined,
+      undefined,
+      '"head1"',
+      '"cmp1"',
+    ]);
+    const latest = await store!.getLatestVerification(serviceId);
+    const report = buildVerificationReport(serviceId, latest!);
+    expect(report).toMatchObject({
+      status: "BEHIND",
+      behindBy: 3,
+      scmHead: sha(2),
+    });
+    const second = (await rows(serviceId)).filter(
+      (x) => x.check_id === latest!.checkId,
+    );
+    expect(
+      second.map((x) => [x.kind, x.outcome, x.http_status, x.commit_sha]),
+    ).toEqual([
+      ["commit_relation", "OBSERVED", 304, null],
+      ["scm_head", "OBSERVED", 304, sha(2)],
+      ["workload_claim", "OBSERVED", 200, sha(1)],
+    ]);
+  });
+  it("a new verifier (a restart) starts with an empty cache", async () => {
+    const { verifier, serviceId, github, workload } = await setup({
+      scm: () => ({
+        body: { object: { sha: sha(1), type: "commit" } },
+        headers: { etag: '"head1"' },
+      }),
+    });
+    await verifier.checkOnce();
+    const restarted = new DeploymentVerifier({
+      store: store!,
+      serviceId,
+      logger: quietLogger,
+      repo: "acme/widgets",
+      branch: "main",
+      apiUrl: github.url,
+      claimUrl: `${workload.url}/__kora`,
+      timeoutMs: 1000,
+    });
+    await restarted.checkOnce();
+    expect(github.requests.map((q) => q.headers["if-none-match"])).toEqual([
+      undefined,
+      undefined,
+    ]);
   });
 });

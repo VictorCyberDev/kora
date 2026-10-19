@@ -176,6 +176,35 @@ describe("evaluateVerification", () => {
       s ? ["scm_head", "workload_claim"] : ["workload_claim"],
     );
   });
+  it("says plainly when the source was rate limited and how to raise the limit", () => {
+    const r = evaluateVerification({
+      scm: scm({
+        outcome: "UNKNOWN",
+        sha: null,
+        reason: "rate_limited",
+        httpStatus: 403,
+      }),
+      claim: claim(),
+      relation: null,
+    });
+    expect(r.status).toBe("SCM_UNKNOWN");
+    expect(r.detail).toMatch(/rate limited/i);
+    expect(r.detail).toContain("GITHUB_TOKEN");
+    expect(r.detail).toMatch(/raises the limit/i);
+  });
+  it("keeps the generic detail for other unknown-source reasons", () => {
+    const r = evaluateVerification({
+      scm: scm({
+        outcome: "UNKNOWN",
+        sha: null,
+        reason: "http_status_403",
+        httpStatus: 403,
+      }),
+      claim: claim(),
+      relation: null,
+    });
+    expect(r.detail).not.toMatch(/rate limited/i);
+  });
   it("precedence: unreachable claim, then no-commit claim, then unknown source", () => {
     const badScm = scm({ outcome: "UNKNOWN", sha: null, reason: "timeout" });
     expect(
