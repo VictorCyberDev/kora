@@ -154,6 +154,14 @@ describe("terminology guard", () => {
     expect(FORBIDDEN.test("integrity only, not signed")).toBe(false);
   });
   it("the UI sources and tests do not contain them", () => {
+    for (const doc of [
+      "../../../../docs/architecture/evidence-ui.md",
+      "../../../../docs/ui/README.md",
+    ])
+      expect(
+        readFileSync(new URL(doc, import.meta.url), "utf8"),
+        doc,
+      ).not.toMatch(FORBIDDEN);
     const dir = new URL(".", import.meta.url);
     for (const file of readdirSync(dir).filter((f) => f.endsWith(".ts"))) {
       const text = readFileSync(new URL(file, dir), "utf8");

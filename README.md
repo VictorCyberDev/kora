@@ -84,6 +84,8 @@ Diagnostic snapshots are deterministically serialized, SHA-256 hashed, persisted
 
 An incident can be exported as an **Incident Passport** (`GET /incidents/:id/passport`) and checked offline with `pnpm kora:verify <file>`. The Passport is integrity-evident only: a SHA-256 shows the file was not changed after export, not who produced it. It is not signed (future work). See `docs/architecture/incident-passport.md` and ADR-011.
 
+The API also serves a read-only evidence page at `GET /ui` (services, Deployment Verification, incidents, diagnosis, gaps, Passport download). It has no authentication, like the API. See `docs/architecture/evidence-ui.md`.
+
 ## Failure classification
 
 A failed health check is classified from the HTTP status or, for transport failures, from stable error **codes** found by walking the `fetch()` error's `cause` chain and any `AggregateError` members. Error messages are never pattern-matched.
