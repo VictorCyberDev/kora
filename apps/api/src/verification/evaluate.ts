@@ -85,7 +85,9 @@ export function evaluateVerification(input: {
   if (!scmHead)
     return result(
       "SCM_UNKNOWN",
-      "The source branch head could not be determined.",
+      input.scm?.reason === "rate_limited"
+        ? "The source branch head could not be determined: the source was rate limited. Setting GITHUB_TOKEN raises the limit."
+        : "The source branch head could not be determined.",
       input.scm ? ["scm_head", "workload_claim"] : ["workload_claim"],
     );
   if (claimedCommit === scmHead)

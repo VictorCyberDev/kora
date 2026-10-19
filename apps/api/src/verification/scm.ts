@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ConditionalCache } from "./conditional-cache.js";
 import { fetchJson, publicUrl } from "./safe-fetch.js";
 
 export interface ScmHeadObservation {
@@ -35,6 +36,8 @@ type Common = {
   token?: string | undefined;
   timeoutMs: number;
   now?: () => Date;
+  /** Remembers ETags so unchanged answers come back as 304 (not rate limited). */
+  cache?: ConditionalCache | undefined;
 };
 
 const SHA = /^[0-9a-f]{40}$/;
@@ -60,6 +63,47 @@ const root = (apiUrl: string) => apiUrl.replace(/\/+$/, "");
 const nowIso = (now?: () => Date) =>
   (now ?? (() => new Date()))().toISOString();
 
+/**
+ * One GET through the conditional cache. A 304 yields the previously
+ * validated JSON with status 304; a 200 with a usable ETag refreshes the
+ * cache; a payload that fails `schema` is never cached.
+ */
+async function conditionalGet<T>(
+  url: string,
+  schema: z.ZodType<T>,
+  input: Common,
+  extra: { maxBytes?: number } = {},
+): Promise<
+  | { ok: true; status: number; data: T }
+  | { ok: false; httpStatus: number | null; reason: string }
+> {
+  const cached = input.cache?.get(url);
+  const result = await fetchJson(url, {
+    timeoutMs: input.timeoutMs,
+    headers: headers(input.token),
+    ...extra,
+    ...(cached ? { etag: cached.etag } : {}),
+  });
+  if (!result.ok && result.notModified && cached) {
+    const reused = schema.safeParse(cached.json);
+    if (reused.success) return { ok: true, status: 304, data: reused.data };
+    input.cache?.delete(url);
+    return { ok: false, httpStatus: 304, reason: "invalid_payload" };
+  }
+  if (!result.ok)
+    return { ok: false, httpStatus: result.httpStatus, reason: result.reason };
+  const parsed = schema.safeParse(result.json);
+  if (!parsed.success) {
+    input.cache?.delete(url);
+    return { ok: false, httpStatus: result.status, reason: "invalid_payload" };
+  }
+  if (input.cache) {
+    if (result.etag) input.cache.set(url, result.etag, result.json);
+    else input.cache.delete(url);
+  }
+  return { ok: true, status: result.status, data: parsed.data };
+}
+
 /** The branch head commit from GitHub's REST API. Never throws. */
 export async function observeScmHead(
   input: Common & { branch: string },
@@ -71,10 +115,7 @@ export async function observeScmHead(
     observedAt: nowIso(input.now),
     sourceUrl: publicUrl(url),
   };
-  const result = await fetchJson(url, {
-    timeoutMs: input.timeoutMs,
-    headers: headers(input.token),
-  });
+  const result = await conditionalGet(url, headSchema, input);
   if (!result.ok)
     return {
       ...base,
@@ -83,21 +124,12 @@ export async function observeScmHead(
       reason: result.reason,
       sha: null,
     };
-  const parsed = headSchema.safeParse(result.json);
-  if (!parsed.success)
-    return {
-      ...base,
-      outcome: "UNKNOWN",
-      httpStatus: result.status,
-      reason: "invalid_payload",
-      sha: null,
-    };
   return {
     ...base,
     outcome: "OBSERVED",
     httpStatus: result.status,
     reason: null,
-    sha: parsed.data.object.sha,
+    sha: result.data.object.sha,
   };
 }
 
@@ -123,15 +155,11 @@ export async function observeCommitRelation(
     behindBy: null,
     aheadBy: null,
   });
-  const result = await fetchJson(url, {
-    timeoutMs: input.timeoutMs,
-    headers: headers(input.token),
+  const result = await conditionalGet(url, compareSchema, input, {
     maxBytes: 512 * 1024,
   });
   if (!result.ok) return unknown(result.httpStatus, result.reason);
-  const parsed = compareSchema.safeParse(result.json);
-  if (!parsed.success) return unknown(result.status, "invalid_payload");
-  const { status, ahead_by: headAhead, behind_by: headBehind } = parsed.data;
+  const { status, ahead_by: headAhead, behind_by: headBehind } = result.data;
   let relation: CommitRelation;
   if (status === "identical") relation = "identical";
   else if (status === "ahead" && headAhead >= 1) relation = "claimed_behind";

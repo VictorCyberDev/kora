@@ -2,6 +2,7 @@ import type { FastifyBaseLogger } from "fastify";
 import { resolveClaimUrl, type KoraConfig } from "../config.js";
 import type { KoraStore } from "../store.js";
 import { observeWorkloadClaim } from "./claim.js";
+import { ConditionalCache } from "./conditional-cache.js";
 import { observeCommitRelation, observeScmHead } from "./scm.js";
 
 interface VerifierOptions {
@@ -26,6 +27,8 @@ interface VerifierOptions {
 export class DeploymentVerifier {
   readonly #token: string | undefined;
   readonly #options: Omit<VerifierOptions, "token">;
+  /** ETags for GitHub answers; memory only, so a restart starts empty. */
+  readonly #cache = new ConditionalCache();
   #timer: NodeJS.Timeout | undefined;
   #inFlight: Promise<void> | undefined;
 
@@ -45,6 +48,7 @@ export class DeploymentVerifier {
         branch: this.#options.branch,
         token: this.#token,
         timeoutMs,
+        cache: this.#cache,
       }),
       observeWorkloadClaim({ url: this.#options.claimUrl, timeoutMs }),
     ]);
@@ -63,6 +67,7 @@ export class DeploymentVerifier {
           headSha: scm.sha,
           token: this.#token,
           timeoutMs,
+          cache: this.#cache,
         }),
       );
     const checkId = await this.#options.store.recordVerificationCheck(
@@ -74,6 +79,7 @@ export class DeploymentVerifier {
         checkId,
         serviceId: this.#options.serviceId,
         scm: scm.outcome,
+        scmReason: scm.reason,
         claim: claim.outcome,
       },
       "deployment verification recorded",

@@ -11,8 +11,14 @@ export function publicUrl(url: string): string {
 }
 
 export type FetchOutcome =
-  | { ok: true; status: number; json: unknown }
-  | { ok: false; reason: string; httpStatus: number | null };
+  | { ok: true; status: number; json: unknown; etag: string | null }
+  | {
+      ok: false;
+      reason: string;
+      httpStatus: number | null;
+      /** 304 in answer to our own If-None-Match: the cached copy is current. */
+      notModified?: true;
+    };
 
 const CODE = /^[A-Z][A-Z0-9_]+$/;
 
@@ -43,6 +49,8 @@ export async function fetchJson(
     timeoutMs: number;
     headers?: Record<string, string>;
     maxBytes?: number;
+    /** Sent as If-None-Match; a 304 then comes back as `notModified`. */
+    etag?: string;
   },
 ): Promise<FetchOutcome> {
   let parsed: URL;
@@ -59,14 +67,37 @@ export async function fetchJson(
   const maxBytes = options.maxBytes ?? 64 * 1024;
   try {
     const response = await fetch(parsed, {
-      headers: options.headers ?? {},
+      headers: {
+        ...(options.headers ?? {}),
+        ...(options.etag ? { "if-none-match": options.etag } : {}),
+      },
       redirect: "manual",
       signal: AbortSignal.timeout(options.timeoutMs),
     });
+    if (response.status === 304 && options.etag)
+      return {
+        ok: false,
+        reason: "not_modified",
+        httpStatus: 304,
+        notModified: true,
+      };
     if (response.status >= 300 && response.status < 400)
       return {
         ok: false,
         reason: "redirect_not_followed",
+        httpStatus: response.status,
+      };
+    // Two header values are read here and nowhere else: whether the rate limit
+    // is exhausted (as a boolean) and the ETag (kept only in the in-memory
+    // conditional cache). Neither is ever copied into an observation or log.
+    if (
+      response.status === 429 ||
+      (response.status === 403 &&
+        response.headers.get("x-ratelimit-remaining") === "0")
+    )
+      return {
+        ok: false,
+        reason: "rate_limited",
         httpStatus: response.status,
       };
     if (!response.ok)
@@ -94,7 +125,12 @@ export async function fetchJson(
     }
     try {
       const text = new TextDecoder().decode(Buffer.concat(chunks));
-      return { ok: true, status: response.status, json: JSON.parse(text) };
+      return {
+        ok: true,
+        status: response.status,
+        json: JSON.parse(text),
+        etag: response.headers.get("etag"),
+      };
     } catch {
       return { ok: false, reason: "invalid_json", httpStatus: response.status };
     }
