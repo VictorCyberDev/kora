@@ -1,0 +1,68 @@
+name: Rumpty LIVE-0B read-only verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-rumpty-bridge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      EXPECTED_RUMPTY_WORKSPACE: kora-01a11b00
+    steps:
+      - name: Checkout verification branch
+        uses: actions/checkout@v4
+
+      - name: Install official Rumpty CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://get.rumptycloud.com | sh
+          rumpty --version
+
+      - name: Verify secure inputs are present
+        shell: bash
+        env:
+          RUMPTY_API_KEY: ${{ secrets.RUMPTY_API_KEY }}
+          RUMPTY_WORKSPACE: ${{ secrets.RUMPTY_WORKSPACE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RUMPTY_API_KEY:-}" ]; then
+            echo "RUMPTY_API_KEY: ABSENT"
+            exit 1
+          fi
+          if [ -z "${RUMPTY_WORKSPACE:-}" ]; then
+            echo "RUMPTY_WORKSPACE: ABSENT"
+            exit 1
+          fi
+          echo "RUMPTY_API_KEY: PRESENT"
+          echo "RUMPTY_WORKSPACE: PRESENT"
+
+      - name: Authenticate and list workspaces read-only
+        shell: bash
+        env:
+          RUMPTY_API_KEY: ${{ secrets.RUMPTY_API_KEY }}
+          RUMPTY_WORKSPACE: ${{ secrets.RUMPTY_WORKSPACE }}
+        run: |
+          set -euo pipefail
+          echo "Authentication/read-only workspace discovery:"
+          rumpty workspaces
+
+      - name: Verify expected workspace and list VMs read-only
+        shell: bash
+        env:
+          RUMPTY_API_KEY: ${{ secrets.RUMPTY_API_KEY }}
+          RUMPTY_WORKSPACE: ${{ secrets.RUMPTY_WORKSPACE }}
+        run: |
+          set -euo pipefail
+          workspaces_output="$(rumpty workspaces)"
+          if ! printf '%s\n' "$workspaces_output" | grep -Fq -- "$EXPECTED_RUMPTY_WORKSPACE"; then
+            echo "Expected workspace present: NO"
+            exit 1
+          fi
+          echo "Expected workspace present: YES"
+          echo "Read-only VM discovery for expected workspace:"
+          rumpty vm ls --ws "$EXPECTED_RUMPTY_WORKSPACE"
