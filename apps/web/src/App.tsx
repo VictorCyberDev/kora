@@ -20,7 +20,8 @@ import {
   Signup,
   Terms,
 } from "./pages/public";
-import { Dashboard, NewSite, SitesList } from "./pages/sites";
+import { NewSite, SitesList } from "./pages/sites";
+import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
 import { IncidentPage, IncidentsList } from "./pages/incident";
 import {
