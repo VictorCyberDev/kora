@@ -41,6 +41,8 @@ export function SiteShell() {
           [base, "Overview"],
           [`${base}/presence`, "Presence"],
           [`${base}/brand`, "Brand"],
+          [`${base}/channels`, "Channels"],
+          [`${base}/customers`, "Customers"],
           [`${base}/build`, "Build"],
           [`${base}/deployments`, "Deployments"],
           [`${base}/incidents`, "Incidents"],

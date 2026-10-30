@@ -179,6 +179,14 @@ test.beforeAll(async ({ browser }) => {
   await api.post(`/api/sites/${site.id}/versions/${edit.version.id}/publish`, {
     headers: H,
   });
+  await api.post(`/api/public/sites/${site.id}/forms`, {
+    data: {
+      name: "Adaeze Okonkwo-Bamidele",
+      phone: "+2348055500001",
+      message:
+        "Good afternoon, I would like a quote for pickup and delivery of about thirty shirts every week, please.",
+    },
+  });
   await api.post(`/api/sites/${site.id}/presence/import`, { headers: H });
   await api.post(`/api/sites/${site.id}/brand-kit`, {
     headers: H,
@@ -222,6 +230,8 @@ for (const w of WIDTHS) {
       ["site-overview", `/app/sites/${siteId}`],
       ["presence", `/app/sites/${siteId}/presence`],
       ["brand", `/app/sites/${siteId}/brand`],
+      ["channels", `/app/sites/${siteId}/channels`],
+      ["customers", `/app/sites/${siteId}/customers`],
       ["builder", `/app/sites/${siteId}/build`],
       ["deployments", `/app/sites/${siteId}/deployments`],
       ["incidents", `/app/sites/${siteId}/incidents`],
@@ -241,6 +251,10 @@ for (const w of WIDTHS) {
           await page.getByRole("tab", { name: tab }).click();
           await check(page, `builder/${tab}`, w, problems);
         }
+      if (label === "customers") {
+        await page.locator(".k-lead").first().click();
+        await check(page, "customers/open-lead", w, problems);
+      }
       if (label === "incident") {
         await page.getByRole("button", { name: "Proof", exact: true }).click();
         await page

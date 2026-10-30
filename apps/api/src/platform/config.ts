@@ -69,6 +69,20 @@ export const platformConfigSchema = z.object({
   OPENPROVIDER_USERNAME: optionalString,
   OPENPROVIDER_PASSWORD: optionalString,
   SMTP_URL: optionalString,
+  // Marketing channels (all optional; each provider reports NOT_CONFIGURED until its credentials exist).
+  /** 32 random bytes, base64. Encrypts provider tokens at rest. Without it no live provider can be connected. */
+  KORA_SECRETS_KEY: optionalString,
+  /** Fake providers for tests and demos. Ignored in production. */
+  KORA_SANDBOX_CHANNELS: bool,
+  META_APP_ID: optionalString,
+  META_APP_SECRET: optionalString,
+  WHATSAPP_VERIFY_TOKEN: optionalString,
+  GOOGLE_OAUTH_CLIENT_ID: optionalString,
+  GOOGLE_OAUTH_CLIENT_SECRET: optionalString,
+  TIKTOK_CLIENT_KEY: optionalString,
+  TIKTOK_CLIENT_SECRET: optionalString,
+  LINKEDIN_CLIENT_ID: optionalString,
+  LINKEDIN_CLIENT_SECRET: optionalString,
 });
 export type PlatformConfig = Omit<
   z.infer<typeof platformConfigSchema>,
@@ -78,6 +92,7 @@ export type PlatformConfig = Omit<
   | "KORA_TRUST_PROXY"
   | "KORA_SIGNUP_ENABLED"
   | "KORA_EXPERIMENTAL_RUMPTY_BUCKET"
+  | "KORA_SANDBOX_CHANNELS"
 > & {
   KORA_COOKIE_SECURE: boolean;
   KORA_LEGACY_PUBLIC_API: boolean;
@@ -85,6 +100,7 @@ export type PlatformConfig = Omit<
   KORA_TRUST_PROXY: boolean;
   KORA_SIGNUP_ENABLED: boolean;
   KORA_EXPERIMENTAL_RUMPTY_BUCKET: boolean;
+  KORA_SANDBOX_CHANNELS: boolean;
 };
 
 export function loadPlatformConfig(
@@ -103,5 +119,7 @@ export function loadPlatformConfig(
     KORA_TRUST_PROXY: c.KORA_TRUST_PROXY ?? prod,
     KORA_SIGNUP_ENABLED: c.KORA_SIGNUP_ENABLED ?? true,
     KORA_EXPERIMENTAL_RUMPTY_BUCKET: c.KORA_EXPERIMENTAL_RUMPTY_BUCKET ?? false,
+    // Fake providers must never exist in production.
+    KORA_SANDBOX_CHANNELS: prod ? false : (c.KORA_SANDBOX_CHANNELS ?? false),
   };
 }
