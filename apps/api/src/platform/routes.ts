@@ -894,7 +894,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
 
   app.get("/api/notifications/channels", (req) => {
     requireUser(req);
-    return { data: describeChannels(noEmailProvider) };
+    const aiOn = Boolean(
+      config.INFERENCE_BASE_URL &&
+      config.INFERENCE_API_KEY &&
+      config.INFERENCE_MODEL,
+    );
+    return {
+      data: {
+        ...describeChannels(noEmailProvider),
+        ai: aiOn
+          ? {
+              available: true,
+              model: config.INFERENCE_MODEL,
+              host: new URL(config.INFERENCE_BASE_URL!).hostname,
+            }
+          : {
+              available: false,
+              reason:
+                "No inference endpoint is configured; explanations are generated from the evidence by rules.",
+            },
+      },
+    };
   });
 
   // ---- controlled tests (Chaos Lab) ----------------------------------------------------

@@ -249,6 +249,58 @@ describe("deterministic reasoning", () => {
   });
 });
 
+describe("real-endpoint tolerance (validation unchanged)", () => {
+  it("accepts fenced or chatty JSON, but still rejects invented references", async () => {
+    const fenced = "Here you go:\n```json\n" + JSON.stringify(good) + "\n```";
+    expect((await reason(fake(fenced), input())).source).toBe("MODEL");
+    const bad = structuredClone(good);
+    bad.hypotheses[0]!.evidenceIds = ["99999999-9999-4999-8999-999999999999"];
+    const r = await reason(
+      fake("```json\n" + JSON.stringify(bad) + "\n```"),
+      input(),
+    );
+    expect(r.source).toBe("DETERMINISTIC_FALLBACK");
+    expect(r.rejectionReason).toMatch(/unknown evidence id/);
+  });
+  it("accepts a base URL or a full completions URL, and retries without response_format on 400", async () => {
+    const calls: Array<{ url: string; body: Record<string, unknown> }> = [];
+    const fetchImpl = ((url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string) as Record<string, unknown>;
+      calls.push({ url, body });
+      return Promise.resolve(
+        "response_format" in body
+          ? new Response("{}", { status: 400 })
+          : new Response(
+              JSON.stringify({
+                choices: [{ message: { content: "{}" } }],
+                usage: { prompt_tokens: 7, completion_tokens: 3 },
+              }),
+            ),
+      );
+    }) as unknown as typeof fetch;
+    for (const baseUrl of [
+      "https://x.test/v1",
+      "https://x.test/v1/",
+      "https://x.test/v1/chat/completions",
+    ]) {
+      calls.length = 0;
+      const c = new OpenAiCompatibleClient({
+        baseUrl,
+        apiKey: "k",
+        model: "m",
+        fetchImpl,
+      });
+      const out = await c.complete({ system: "s", user: "u" });
+      expect(out).toMatchObject({ inputTokens: 7, outputTokens: 3 });
+      expect(calls.map((x) => x.url)).toEqual([
+        "https://x.test/v1/chat/completions",
+        "https://x.test/v1/chat/completions",
+      ]);
+      expect("response_format" in calls[1]!.body).toBe(false);
+    }
+  });
+});
+
 describe("owner headline and client", () => {
   const base = {
     hasLiveUrl: true,

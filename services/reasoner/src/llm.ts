@@ -37,14 +37,17 @@ export class OpenAiCompatibleClient implements LlmClient {
   private readonly endpoint: string;
   constructor(private readonly cfg: OpenAiCompatibleConfig) {
     this.model = cfg.model;
-    this.endpoint = `${cfg.baseUrl.replace(/\/+$/, "")}/chat/completions`;
+    // Accept either the API base ("https://host/v1") or the full completions URL.
+    const base = cfg.baseUrl.replace(/\/+$/, "");
+    this.endpoint = base.endsWith("/chat/completions")
+      ? base
+      : `${base}/chat/completions`;
   }
   async complete(req: LlmRequest, signal?: AbortSignal): Promise<LlmResponse> {
     const timeout = AbortSignal.timeout(this.cfg.timeoutMs ?? 30_000);
     const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
-    let res: Response;
-    try {
-      res = await (this.cfg.fetchImpl ?? fetch)(this.endpoint, {
+    const send = (jsonMode: boolean) =>
+      (this.cfg.fetchImpl ?? fetch)(this.endpoint, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -54,7 +57,7 @@ export class OpenAiCompatibleClient implements LlmClient {
           model: this.cfg.model,
           temperature: 0,
           max_tokens: req.maxOutputTokens ?? this.cfg.maxOutputTokens ?? 1500,
-          response_format: { type: "json_object" },
+          ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
           messages: [
             { role: "system", content: req.system },
             { role: "user", content: req.user },
@@ -62,6 +65,12 @@ export class OpenAiCompatibleClient implements LlmClient {
         }),
         signal: combined,
       });
+    let res: Response;
+    try {
+      res = await send(true);
+      // Some hosted models reject response_format; the prompt already demands
+      // JSON and the output is validated either way, so retry once without it.
+      if (res.status === 400 || res.status === 422) res = await send(false);
     } catch (error) {
       // Message only: the request (and its Authorization header) is never attached.
       throw new LlmUnavailableError(

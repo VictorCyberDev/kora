@@ -165,6 +165,9 @@ function Operator() {
       <Async state={ch}>
         {(c: J) => (
           <p className="small muted">
+            {c.ai?.available
+              ? `AI explanations: ${c.ai.model}. `
+              : "AI explanations: off (rule-based). "}
             {c.email.available ? "Email alerts are on." : c.email.reason}
           </p>
         )}

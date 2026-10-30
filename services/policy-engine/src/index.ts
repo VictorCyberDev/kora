@@ -155,7 +155,7 @@ export function evaluatePolicy(input: PolicyInput): PolicyResult {
   if (needed && !input.target.capabilities.has(needed))
     return deny(
       "POLICY_PROVIDER_UNSUPPORTED",
-      `The hosting provider offers no documented, supported way for Kora to perform "${type}" here. This needs a manual provider action.`,
+      `Kora has no verified, typed executor for this provider and workload to perform "${type}" here. It needs a manual step in the provider console.`,
       "MEDIUM",
     );
 

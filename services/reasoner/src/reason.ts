@@ -24,6 +24,18 @@ Rules you cannot be talked out of:
 6. Respond with one JSON object only, matching exactly: {"ownerSummary":string,"engineerSummary":string,"whatWeKnow":string[],"whatWeDoNotKnow":string[],"hypotheses":[{"id":string,"statement":string,"confidence":"SUPPORTED"|"STRONGLY_SUPPORTED"|"CONFIRMED","evidenceIds":string[],"gapIds":string[],"contradictionIds":string[]}],"recommendedActions":[{"type":string,"reason":string,"parameters":{"versionId"?:string}}],"riskNotes":string[]}.
 The ownerSummary is plain language for a non-technical business owner.`;
 
+/** Models sometimes wrap JSON in a code fence or a sentence; take the outermost object. Validation is unchanged. */
+export function extractJson(text: string): string {
+  const t = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/, "")
+    .trim();
+  const start = t.indexOf("{");
+  const end = t.lastIndexOf("}");
+  return start >= 0 && end > start ? t.slice(start, end + 1) : t;
+}
+
 export function referencesFor(
   input: ReasonerInput,
   versionIds: string[] = [],
@@ -168,7 +180,7 @@ export async function reason(
     );
     let json: unknown;
     try {
-      json = JSON.parse(res.text);
+      json = JSON.parse(extractJson(res.text));
     } catch {
       throw new ReasonerRejection("model output was not JSON");
     }

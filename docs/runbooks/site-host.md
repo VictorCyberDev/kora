@@ -27,7 +27,7 @@ The control plane and Site Host are separate deployments with separate processes
 ## Not available
 
 - Custom hostnames: RumptyCloud documents no custom-domain binding, so `CUSTOM_DOMAIN_PROVIDER_ROUTING_UNAVAILABLE`. Use the Rumpty-provided Site Host URL.
-- Hosted inference: no inference page exists in the published docs; Kora keeps its deterministic fallback unless you configure `INFERENCE_*` for an OpenAI-compatible endpoint you have.
+- Hosted inference: Rumpty documents **Inference projects** (an OpenAI-compatible endpoint and API key for hosted models) and a free inference-token pool per billing cycle with opt-in, wallet-funded overage. The published docs have no detail page for it; see the console steps below. Without `INFERENCE_*` Kora uses its deterministic fallback.
 - The `rumpty` CLI is not in the image. The bucket publisher (`KORA_EXPERIMENTAL_RUMPTY_BUCKET=true`) is experimental, requires a derived image that installs the CLI, and is not used by this deployment.
 
 ## Single instance
