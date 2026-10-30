@@ -91,10 +91,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   expect(await siteResponse.text()).toContain("Victor Laundry");
 
   // 5. Kora watches it: the overview says Online.
-  await page
-    .getByRole("link", { name: "Overview", exact: true })
-    .nth(1)
-    .click();
+  await page.getByRole("link", { name: "Overview", exact: true }).click();
   await expect(page.getByText("Healthy", { exact: true }).first()).toBeVisible({
     timeout: 30_000,
   });

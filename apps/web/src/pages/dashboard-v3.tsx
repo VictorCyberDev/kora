@@ -114,6 +114,12 @@ export function Dashboard() {
                     detail="Read and follow up from your website"
                   />
                   <QuickAction
+                    to={`/app/sites/${rows[0].id}/presence`}
+                    eyebrow="Presence"
+                    title="Business details and health"
+                    detail="What customers see about you, and what could be better"
+                  />
+                  <QuickAction
                     to={`/app/sites/${rows[0].id}/domains`}
                     eyebrow="Presence"
                     title="Your domain"

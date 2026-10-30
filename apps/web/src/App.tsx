@@ -23,6 +23,7 @@ import {
 import { NewSite, SitesList } from "./pages/sites";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
+import { BrandPage, PresenceEntry, PresencePage } from "./pages/presence";
 import { IncidentPage, IncidentsList } from "./pages/incident";
 import {
   AuditPage,
@@ -213,10 +214,11 @@ function AppLayout() {
           <Logo />
           <nav className="main" aria-label="Mission Control">
             <NavLink to="/app" end>
-              Overview
+              Home
             </NavLink>
             <NavLink to="/app/sites">Websites</NavLink>
-            <NavLink to="/app/operations">Operations</NavLink>
+            <NavLink to="/app/presence">Presence</NavLink>
+            <NavLink to="/app/operations">Health</NavLink>
             <NavLink to="/app/billing">Billing</NavLink>
             <NavLink to="/app/audit">Activity</NavLink>
             <NavLink to="/app/settings">Settings</NavLink>
@@ -274,6 +276,8 @@ export function App() {
         <Route path="sites/new" element={<NewSite />} />
         <Route path="sites/:id" element={<SiteShell />}>
           <Route index element={<SiteOverview />} />
+          <Route path="presence" element={<PresencePage />} />
+          <Route path="brand" element={<BrandPage />} />
           <Route path="build" element={<Build />} />
           <Route path="deployments" element={<DeploymentsPage />} />
           <Route path="incidents" element={<IncidentsList />} />
@@ -282,6 +286,7 @@ export function App() {
           <Route path="forms" element={<FormsPage />} />
           <Route path="settings" element={<SiteSettings />} />
         </Route>
+        <Route path="presence" element={<PresenceEntry />} />
         <Route path="operations" element={<OperationsPage />} />
         <Route path="billing" element={<BillingPage />} />
         <Route path="settings" element={<SettingsPage />} />

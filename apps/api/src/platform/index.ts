@@ -24,6 +24,8 @@ import {
   type SitePublisher,
 } from "./publisher.js";
 import { registerRoutes } from "./routes.js";
+import { GrowthStore } from "../growth/store.js";
+import { registerGrowthRoutes } from "../growth/routes.js";
 import { SESSION_COOKIE, readCookie, sha256Hex } from "./security.js";
 import { PublishService, SiteMonitors } from "./services.js";
 import { PlatformStore } from "./store.js";
@@ -350,6 +352,13 @@ export function registerPlatform(
     billing: rt.billing,
   });
   registerBillingRoutes(app, { billing: rt.billing, platform });
+  registerGrowthRoutes(app, {
+    platform,
+    ops: rt.ops,
+    billing: rt.billing,
+    growth: new GrowthStore(platform.sql),
+    config,
+  });
   registerHosting(app, {
     platform,
     ops: rt.ops,

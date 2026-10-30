@@ -39,6 +39,8 @@ export function SiteShell() {
       <Tabs
         items={[
           [base, "Overview"],
+          [`${base}/presence`, "Presence"],
+          [`${base}/brand`, "Brand"],
           [`${base}/build`, "Build"],
           [`${base}/deployments`, "Deployments"],
           [`${base}/incidents`, "Incidents"],

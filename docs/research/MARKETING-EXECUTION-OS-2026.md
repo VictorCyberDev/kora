@@ -293,21 +293,25 @@ Kora's marketing agent must inherit the product's existing approval philosophy.
 ### Safe autonomy levels
 
 **Level 0 — Suggest only**
+
 - recommendations
 - draft copy/assets
 - no external actions
 
 **Level 1 — Prepare**
+
 - build campaign bundle
 - choose proposed schedule
 - wait for approval
 
 **Level 2 — Organic autopilot**
+
 - user explicitly authorises selected channels, content categories and schedule rules
 - Kora may publish within those boundaries
 - every action is logged and reversible where the platform allows
 
 **Level 3 — Customer messaging automation**
+
 - only with explicit consent/compliance rules
 - approved templates and segmentation
 - frequency caps and unsubscribe/opt-out handling
@@ -350,13 +354,13 @@ On mobile, Marketing should open to **Today**: current recommendation, scheduled
 
 Keep exact price experimental until customer interviews, but align feature boundaries to outcomes.
 
-| Plan | Test price | Core outcome |
-| --- | ---: | --- |
-| Trial | Free | experience a real Kora site and basic presence monitoring |
-| Launch | ~₦4,900/mo or ~₦49k/yr | website, Kora address, basic brand kit, inbox, reachability |
-| **Plus** | **~₦12,900–₦14,900/mo or ~₦129k–₦149k/yr** | custom domain, Presence Health, connected channels, Marketing Agent, Brand/Motion Studio, content calendar, publishing, Growth Brief, lightweight customer follow-up |
-| Pro | ~₦29,900/mo or ~₦299k/yr | teams/multi-location, advanced automation, reputation, competitor intelligence, higher media generation/retention, approval policies and priority recovery |
-| Done-for-you | ₦25k–₦75k setup test | Kora configures the starting presence, brand and channels for the owner |
+| Plan         |                                 Test price | Core outcome                                                                                                                                                         |
+| ------------ | -----------------------------------------: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trial        |                                       Free | experience a real Kora site and basic presence monitoring                                                                                                            |
+| Launch       |                     ~₦4,900/mo or ~₦49k/yr | website, Kora address, basic brand kit, inbox, reachability                                                                                                          |
+| **Plus**     | **~₦12,900–₦14,900/mo or ~₦129k–₦149k/yr** | custom domain, Presence Health, connected channels, Marketing Agent, Brand/Motion Studio, content calendar, publishing, Growth Brief, lightweight customer follow-up |
+| Pro          |                   ~₦29,900/mo or ~₦299k/yr | teams/multi-location, advanced automation, reputation, competitor intelligence, higher media generation/retention, approval policies and priority recovery           |
+| Done-for-you |                       ₦25k–₦75k setup test | Kora configures the starting presence, brand and channels for the owner                                                                                              |
 
 Do not expose confusing token/AI-credit accounting as the main pricing story. Use fair-use limits internally for expensive rendering/generation and show the customer practical limits such as included video renders, connected brands or storage only when needed.
 
