@@ -2,6 +2,10 @@
 
 "Verified" means executed and observed. Anything not executed is listed under **Not verified** with the single action that unblocks it.
 
+## Remote state
+
+PR #13 merged into `main` as `1b4a390e36a8ec9ce97770589ecb741d6036abb8` after all three jobs were green on its final head `41774fa`. PR #12 was closed as superseded (its only change, the LIVE-0B workflow, is byte-identical on `main`).
+
 ## Remote CI (authoritative)
 
 | Commit                                           | Run                                                             | quality | e2e     | docker image |
@@ -10,6 +14,21 @@
 | `584e190` (Site Host, domains, tenant integrity) | https://github.com/VictorCyberDev/kora/actions/runs/41055520596 | success | success | success      |
 
 `quality` covers format, lint, typecheck, build, runtime-export checks, secret scan, migrations applied twice, and every package/API test against PostgreSQL 17. `docker image` builds the root Dockerfile and runs `.github/scripts/image-check.sh` (API and Site Host containers: `/health`, `/__kora`, non-root, in-image migrate, no `rumpty` binary).
+
+## LIVE-0B (RumptyCloud read-only bridge): PASSED
+
+| Field              | Value                                                                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Workflow           | `Rumpty LIVE-0B read-only verification`, run https://github.com/VictorCyberDev/kora/actions/runs/41056218717 (job `verify-rumpty-bridge`) |
+| Commit             | `main` @ `1b4a390e36a8ec9ce97770589ecb741d6036abb8`                                                                                       |
+| Time               | 2026-10-30 12:33 UTC, conclusion `success`                                                                                                |
+| Rumpty CLI         | `rumpty 0.0.5 (cc1de7df20ad75dfb0006346307d49e0da2028aa)`, installed by the official script                                               |
+| Secrets            | `RUMPTY_API_KEY: PRESENT`, `RUMPTY_WORKSPACE: PRESENT` (values masked by Actions; nothing printed)                                        |
+| Authentication     | `rumpty workspaces` succeeded and listed the workspace named **Kora** (slug masked in the log)                                            |
+| Expected workspace | `Expected workspace present: YES`                                                                                                         |
+| Resources          | `rumpty vm ls --ws <workspace>` returned **"No VMs."**                                                                                    |
+
+What this proves: the API key is valid and the Kora workspace exists. What it does not prove: nothing is deployed. VMs are not deployments; the CLI documented for this account has no deployment listing, so whether a console deployment or database already exists is **unknown** from here.
 
 ## Verified in the build environment (real servers, PostgreSQL 16 locally and 17 in CI, real browser)
 
