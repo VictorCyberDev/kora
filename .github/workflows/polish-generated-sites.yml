@@ -1,0 +1,108 @@
+name: Apply generated-site polish
+
+on:
+  push:
+    branches:
+      - design-presence-os-v3
+
+permissions:
+  contents: write
+
+jobs:
+  polish:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: design-presence-os-v3
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install --frozen-lockfile
+      - name: Raise the generated-site visual quality floor
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          recipes = Path('packages/site-schema/src/v2/recipes.ts')
+          text = recipes.read_text()
+
+          def tune_look(name, replacements):
+              global text
+              marker = f'  "{name}": L({{' 
+              start = text.index(marker)
+              end = text.index('  }),', start) + len('  }),')
+              block = text[start:end]
+              for old, new in replacements:
+                  if block.count(old) != 1:
+                      raise SystemExit(f'{name}: expected exactly one {old!r}, found {block.count(old)}')
+                  block = block.replace(old, new)
+              text = text[:start] + block + text[end:]
+
+          # The two most common small-business looks were also the most generic:
+          # card grids, light nav, compact type. Keep their personality but give
+          # them stronger rhythm and less "template SaaS" grammar.
+          tune_look('soft-friendly', [
+              ('    surface: "raised",', '    surface: "flat",'),
+              ('    services: "grid",', '    services: "image-cards",'),
+              ('    process: "steps",', '    process: "horizontal",'),
+          ])
+          tune_look('local-trust', [
+              ('    nav: "classic",', '    nav: "dark",'),
+              ('    density: "compact",', '    density: "balanced",'),
+              ('    surface: "outlined",', '    surface: "flat",'),
+              ('    scale: "compact",', '    scale: "balanced",'),
+              ('    services: "grid",', '    services: "numbered",'),
+              ('    process: "steps",', '    process: "horizontal",'),
+              ('    trust: "checklist",', '    trust: "strip",'),
+          ])
+          recipes.write_text(text)
+
+          css = Path('packages/site-schema/src/v2/css.ts')
+          c = css.read_text()
+
+          replacements = [
+              (
+                  '.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 26px;',
+                  '.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;gap:10px;padding:14px 26px;'
+              ),
+              (
+                  '.hero{padding-block:clamp(48px,8vw,112px) var(--sp)}',
+                  '.hero{padding-block:clamp(48px,8vw,112px) var(--sp);overflow:clip}'
+              ),
+              (
+                  '.hero .art-slot{aspect-ratio:5/4.4;border-radius:var(--r);overflow:hidden}',
+                  '.hero .art-slot{aspect-ratio:5/4.4;border-radius:var(--r);overflow:hidden;box-shadow:0 24px 70px -42px rgba(0,0,0,.55)}'
+              ),
+              (
+                  '.sticky-cta{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:30;gap:10px}.sticky-cta a{flex:1;justify-content:center;box-shadow:0 12px 30px -10px rgba(0,0,0,.5)}body.has-sticky{padding-bottom:84px}}',
+                  '.sticky-cta{display:flex;position:fixed;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));z-index:30;gap:10px;padding:8px;border:1px solid var(--border);border-radius:calc(var(--r) + 4px);background:color-mix(in srgb,var(--surface-raised) 88%,transparent);backdrop-filter:blur(14px);box-shadow:0 18px 50px -24px rgba(0,0,0,.45)}.sticky-cta a{flex:1;justify-content:center;box-shadow:none}body.has-sticky{padding-bottom:104px}}'
+              ),
+              (
+                  '@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}',
+                  '@media(hover:hover) and (prefers-reduced-motion:no-preference){.card{transition:transform .24s ease,box-shadow .24s ease}.card:hover{transform:translateY(-2px)}}\n@media(max-width:560px){.wrap{width:min(var(--wrap),100% - 28px)}.cta-row{gap:10px}.cta-row>.btn{flex:1 1 100%}.sec-head{margin-bottom:30px}.hero .lead{font-size:1.03rem}.card{padding:20px}}\n@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}'
+              ),
+          ]
+          for old, new in replacements:
+              if c.count(old) != 1:
+                  raise SystemExit(f'css: expected exactly one target {old[:70]!r}, found {c.count(old)}')
+              c = c.replace(old, new)
+          css.write_text(c)
+          PY
+      - run: pnpm exec prettier --write packages/site-schema/src/v2/recipes.ts packages/site-schema/src/v2/css.ts
+      - name: Verify site-schema package before committing
+        run: pnpm --filter @kora/site-schema test
+      - name: Commit generated-site polish
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/site-schema/src/v2/recipes.ts packages/site-schema/src/v2/css.ts
+          git commit -m "feat(design): raise generated-site visual quality floor"
+          git push origin HEAD:design-presence-os-v3
