@@ -18,6 +18,8 @@ import type { KoraStore } from "./store.js";
  * vectors and by tests that verify real exports with the built CLI.
  */
 export const PASSPORT_SCHEMA = "kora.incident-passport/v1";
+/** v1 plus a hashed `remediation` section; emitted only when actions exist. */
+export const PASSPORT_SCHEMA_V2 = "kora.incident-passport/v2";
 export const INTEGRITY_ALGORITHM = "sha256";
 export const CANONICALIZATION = "kora-stable-json/v1";
 
@@ -143,10 +145,13 @@ function hashInput(passport: Json): Json {
  * incident and `{ changed: true }` when the incident moved while it was being
  * read (the caller retries), so the document never mixes two states.
  */
+export type RemediationSource = (incidentId: string) => Promise<Json | null>;
+
 async function assemble(
   store: KoraStore,
   id: string,
   now: Date,
+  remediation?: RemediationSource,
 ): Promise<Json | null | { changed: true }> {
   const incident = await store.getIncident(id);
   if (!incident) return null;
@@ -227,6 +232,11 @@ async function assemble(
     },
     generatedAt: now.toISOString(),
   };
+  const trail = remediation ? await remediation(id) : null;
+  if (trail) {
+    draft.schema = PASSPORT_SCHEMA_V2;
+    draft.remediation = trail;
+  }
   // Hash exactly what goes over the wire: anything JSON would drop or rewrite
   // (undefined, Date) is normalised before it is hashed, never after.
   const wire = JSON.parse(JSON.stringify(draft)) as Json;
@@ -241,11 +251,12 @@ async function assemble(
 export function registerPassportRoutes(
   app: FastifyInstance,
   store: KoraStore,
+  options: { remediation?: RemediationSource } = {},
 ): void {
   app.get("/incidents/:id/passport", async (req, reply) => {
     const { id } = idParams.parse(req.params);
     for (let attempt = 0; attempt < 3; attempt++) {
-      const result = await assemble(store, id, new Date());
+      const result = await assemble(store, id, new Date(), options.remediation);
       if (result === null)
         return reply.code(404).send({ error: "not_found", requestId: req.id });
       if ("changed" in result) continue;

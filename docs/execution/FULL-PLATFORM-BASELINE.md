@@ -2,24 +2,24 @@
 
 Recorded before any behaviour change.
 
-| Item                 | Value                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------- |
-| Repository           | `VictorCyberDev/kora`                                                                  |
-| Real `main` HEAD     | `c38e34b4e478901166b299df6969dcc15f444aca` (matches the mandate's last-verified SHA)   |
-| Execution branch     | `ccr-c679ee1d-481m3b` (branched from that SHA)                                         |
-| Open PRs             | #12 (draft) `live-0b-rumpty-auth-verification` — read-only Rumpty machine bridge       |
-| Other branches       | Historical milestone branches, all already merged into `main`; none carry unmerged work |
-| CI on `main`         | `ci.yml` (quality + docker image); one-shot format-repair workflows exist but are inert |
+| Item             | Value                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| Repository       | `VictorCyberDev/kora`                                                                   |
+| Real `main` HEAD | `c38e34b4e478901166b299df6969dcc15f444aca` (matches the mandate's last-verified SHA)    |
+| Execution branch | `ccr-c679ee1d-481m3b` (branched from that SHA)                                          |
+| Open PRs         | #12 (draft) `live-0b-rumpty-auth-verification` — read-only Rumpty machine bridge        |
+| Other branches   | Historical milestone branches, all already merged into `main`; none carry unmerged work |
+| CI on `main`     | `ci.yml` (quality + docker image); one-shot format-repair workflows exist but are inert |
 
 ## Baseline gate results (Node 22.22, pnpm 10.18.3, PostgreSQL 16, `kora_test`)
 
-| Gate                | Result                                               |
-| ------------------- | ---------------------------------------------------- |
-| `pnpm format:check` | pass                                                 |
-| `pnpm lint`         | pass                                                 |
-| `pnpm typecheck`    | pass                                                 |
-| `pnpm build`        | pass                                                 |
-| `pnpm db:migrate`   | 001–006 applied                                      |
+| Gate                | Result                                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check` | pass                                                                                                                      |
+| `pnpm lint`         | pass                                                                                                                      |
+| `pnpm typecheck`    | pass                                                                                                                      |
+| `pnpm build`        | pass                                                                                                                      |
+| `pnpm db:migrate`   | 001–006 applied                                                                                                           |
 | `pnpm -r test`      | api 343 passed / 1 skipped; passport 88; runtime-claim 27; demo-service 14; incident-engine 6; topology 4; event-schema 2 |
 
 ## Existing routes (all unauthenticated at baseline)

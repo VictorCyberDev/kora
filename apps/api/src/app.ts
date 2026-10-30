@@ -1,10 +1,12 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyBaseLogger } from "fastify";
 import { z, ZodError } from "zod";
 import { createRuntimeClaim } from "@kora/runtime-claim";
 import { KoraStore } from "./store.js";
 import { buildVerificationReport } from "./verification/report.js";
 import { registerPassportRoutes } from "./passport-routes.js";
 import { registerUiRoutes } from "./ui/ui-routes.js";
+import { HttpError } from "./platform/http.js";
+import { registerPlatform, type PlatformRuntime } from "./platform/index.js";
 
 const idParams = z.object({ id: z.string().uuid() });
 const snapshotParams = z.object({
@@ -15,17 +17,34 @@ export function buildApi(
   store: KoraStore,
   nodeEnv = "development",
   logLevel = "info",
-  options: { runtimeClaim?: ReturnType<typeof createRuntimeClaim> } = {},
+  options: {
+    runtimeClaim?: ReturnType<typeof createRuntimeClaim>;
+    platform?: PlatformRuntime;
+    /** Builds the platform once the app's logger exists. */
+    createPlatform?: (log: FastifyBaseLogger) => PlatformRuntime;
+    webDir?: string;
+  } = {},
 ) {
   const runtimeClaim =
     options.runtimeClaim ?? createRuntimeClaim({ service: "kora-api" });
   const app = Fastify({
     logger: nodeEnv === "test" ? false : { level: logLevel },
+    trustProxy:
+      options.platform?.config.KORA_TRUST_PROXY ??
+      process.env.KORA_TRUST_PROXY === "true",
     genReqId: (req) =>
       String(req.headers["x-request-id"] ?? crypto.randomUUID()),
     disableRequestLogging: false,
   });
   app.setErrorHandler((error, request, reply) => {
+    if (error instanceof HttpError) {
+      reply.code(error.statusCode).send({
+        error: error.code,
+        message: error.message,
+        requestId: request.id,
+      });
+      return;
+    }
     request.log.error({ err: error }, "request failed");
     if (error instanceof ZodError) {
       reply.code(400).send({ error: "invalid_request", requestId: request.id });
@@ -37,6 +56,11 @@ export function buildApi(
       requestId: request.id,
     });
   });
+  const platform = options.platform ?? options.createPlatform?.(app.log);
+  if (platform)
+    registerPlatform(app, platform, {
+      ...(options.webDir ? { webDir: options.webDir } : {}),
+    });
   app.get("/health", () => ({ status: "ok" }));
   // Self-reported identity of this process: unauthenticated, read-only, no
   // secrets, and a claim rather than proof (ADR-009).
@@ -117,7 +141,13 @@ export function buildApi(
       ? { data: snapshot }
       : reply.code(404).send({ error: "not_found", requestId: req.id });
   });
-  registerPassportRoutes(app, store);
+  registerPassportRoutes(app, store, {
+    ...(platform
+      ? {
+          remediation: (id: string) => platform.operations.passportTrail(id),
+        }
+      : {}),
+  });
   registerUiRoutes(app);
   return app;
 }

@@ -106,7 +106,8 @@ CREATE INDEX IF NOT EXISTS notifications_org_idx ON notifications(org_id, create
 CREATE TABLE IF NOT EXISTS reasoner_outputs (
   id uuid PRIMARY KEY,
   incident_id uuid NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
-  snapshot_id uuid REFERENCES diagnostic_snapshots(id),
+  -- No FK: a foreign key would make TRUNCATE on diagnostic_snapshots fail before its immutability trigger fires.
+  snapshot_id uuid,
   source text NOT NULL CHECK (source IN ('MODEL','DETERMINISTIC_FALLBACK')),
   model text,
   output jsonb NOT NULL,

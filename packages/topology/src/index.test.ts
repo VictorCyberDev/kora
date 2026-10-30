@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { providerResourceKey, type SystemTopology } from "./index.js";
+import {
+  affectedComponents,
+  providerResourceKey,
+  validateGraph,
+  type SiteGraph,
+  type SystemTopology,
+} from "./index.js";
 
 const identity = {
   provider: "rumptycloud",
@@ -63,5 +69,51 @@ describe("cloud topology", () => {
       "RUNS",
       "EXPOSES",
     ]);
+  });
+});
+
+describe("system graph", () => {
+  const graph: SiteGraph = {
+    nodes: [
+      { id: "ws", kind: "provider_workspace", label: "ws" },
+      { id: "vm", kind: "provider_compute", label: "vm" },
+      { id: "dep", kind: "deployment", label: "dep" },
+      { id: "health", kind: "health_endpoint", label: "health" },
+      { id: "site", kind: "site", label: "site" },
+      { id: "dom", kind: "domain", label: "example.com" },
+      { id: "form", kind: "forms_backend", label: "forms" },
+    ],
+    edges: [
+      { from: "ws", to: "vm", relationship: "HOSTS" },
+      { from: "vm", to: "dep", relationship: "RUNS" },
+      { from: "dep", to: "health", relationship: "EXPOSES" },
+      { from: "dom", to: "site", relationship: "ROUTES_TO" },
+      { from: "site", to: "form", relationship: "DEPENDS_ON" },
+      { from: "dep", to: "site", relationship: "DEPLOYED_AS" },
+    ],
+  };
+  it("propagates a compute failure to everything it runs and serves", () => {
+    expect(affectedComponents(graph, "vm").map((n) => n.id)).toEqual([
+      "dep",
+      "dom",
+      "health",
+      "site",
+    ]);
+  });
+  it("propagates a dependency failure to its dependents only", () => {
+    expect(affectedComponents(graph, "form").map((n) => n.id)).toEqual([
+      "dom",
+      "site",
+    ]);
+    expect(affectedComponents(graph, "health")).toEqual([]);
+  });
+  it("flags edges to unknown nodes", () => {
+    expect(
+      validateGraph({
+        nodes: [],
+        edges: [{ from: "a", to: "b", relationship: "HOSTS" }],
+      }),
+    ).toHaveLength(1);
+    expect(validateGraph(graph)).toEqual([]);
   });
 });

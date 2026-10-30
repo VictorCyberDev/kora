@@ -37,12 +37,17 @@ export async function verifyPassword(
   const [scheme, n, r, p, salt, hash] = stored.split("$");
   if (scheme !== "scrypt" || !n || !r || !p || !salt || !hash) return false;
   const expected = Buffer.from(hash, "base64url");
-  const key = await scrypt(password, Buffer.from(salt, "base64url"), expected.length, {
-    N: Number(n),
-    r: Number(r),
-    p: Number(p),
-    maxmem: 128 * Number(n) * Number(r) * 2,
-  });
+  const key = await scrypt(
+    password,
+    Buffer.from(salt, "base64url"),
+    expected.length,
+    {
+      N: Number(n),
+      r: Number(r),
+      p: Number(p),
+      maxmem: 128 * Number(n) * Number(r) * 2,
+    },
+  );
   return key.length === expected.length && timingSafeEqual(key, expected);
 }
 
@@ -68,7 +73,10 @@ export function serializeSessionCookie(
   ].join("; ");
 }
 
-export function readCookie(header: string | undefined, name: string): string | null {
+export function readCookie(
+  header: string | undefined,
+  name: string,
+): string | null {
   if (!header) return null;
   for (const part of header.split(";")) {
     const i = part.indexOf("=");
@@ -112,7 +120,8 @@ const SECRET_PATTERNS: RegExp[] = [
 export function redactSecrets(text: string): string {
   let out = text;
   out = out.replace(SECRET_PATTERNS[5]!, "postgres://[REDACTED]@");
-  for (const re of SECRET_PATTERNS.slice(0, 4)) out = out.replace(re, "[REDACTED]");
+  for (const re of SECRET_PATTERNS.slice(0, 4))
+    out = out.replace(re, "[REDACTED]");
   out = out.replace(SECRET_PATTERNS[4]!, "$1$2[REDACTED]");
   return out;
 }

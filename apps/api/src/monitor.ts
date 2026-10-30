@@ -172,6 +172,11 @@ export class HealthMonitor {
     private readonly serviceId: string,
     private readonly resourceId: string | null = null,
     private readonly providerStatus: string | null = null,
+    /** Called after an incident effect has been durably committed. Never throws into the monitor. */
+    private readonly onEffect?: (
+      effect: EngineEffect,
+      observation: TelemetryObservation,
+    ) => void | Promise<void>,
   ) {}
   /** PostgreSQL is authoritative: the unresolved incident (same identity as
    * the one_active_incident_per_key invariant) becomes the engine's state. */
@@ -302,7 +307,14 @@ export class HealthMonitor {
         throw error;
       }
       this.state = result.state;
-      for (const { effect } of effects) this.logEffect(effect);
+      for (const { effect } of effects) {
+        this.logEffect(effect);
+        try {
+          await this.onEffect?.(effect, observation);
+        } catch (err) {
+          this.logger.error({ err }, "incident effect hook failed");
+        }
+      }
       return;
     }
   }

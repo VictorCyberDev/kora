@@ -49,5 +49,11 @@ export function requireOrgRole(
   if (ROLE_RANK[role] < ROLE_RANK[min]) throw forbidden();
   return role;
 }
-export const sendError = (reply: FastifyReply, e: HttpError, requestId: string) =>
-  reply.code(e.statusCode).send({ error: e.code, message: e.message, requestId });
+export const sendError = (
+  reply: FastifyReply,
+  e: HttpError,
+  requestId: string,
+) =>
+  reply
+    .code(e.statusCode)
+    .send({ error: e.code, message: e.message, requestId });

@@ -12,7 +12,7 @@ const SECRET_PATTERN =
 const rumptyResourceSchema = z.object({
   workspace: z.string().min(1),
   region: z.string().min(1),
-  resourceType: z.enum(["virtual_machine", "deployment"]),
+  resourceType: z.enum(["virtual_machine", "deployment", "bucket"]),
   resourceId: z.string().min(1),
   displayName: z.string().min(1).optional(),
   environment: z.string().min(1),

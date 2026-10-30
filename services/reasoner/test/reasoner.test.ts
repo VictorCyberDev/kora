@@ -70,12 +70,13 @@ const input = (over: Partial<ReasonerInput> = {}): ReasonerInput => ({
 });
 const fake = (text: string): LlmClient => ({
   model: "m",
-  complete: async () => ({
-    text,
-    inputTokens: 10,
-    outputTokens: 5,
-    model: "m",
-  }),
+  complete: () =>
+    Promise.resolve({
+      text,
+      inputTokens: 10,
+      outputTokens: 5,
+      model: "m",
+    }),
 });
 const good = {
   ownerSummary: "Your site is returning errors.",
@@ -153,9 +154,7 @@ describe("reasoner validation", () => {
   it("falls back when inference is unavailable or unconfigured", async () => {
     const down: LlmClient = {
       model: "m",
-      complete: async () => {
-        throw new Error("boom");
-      },
+      complete: () => Promise.reject(new Error("boom")),
     };
     expect((await reason(down, input())).source).toBe("DETERMINISTIC_FALLBACK");
     expect((await reason(null, input())).rejectionReason).toBe(
@@ -169,14 +168,14 @@ describe("prompt-injection containment", () => {
     let seen = "";
     const llm: LlmClient = {
       model: "m",
-      complete: async (req) => {
+      complete: (req) => {
         seen = req.user;
-        return {
+        return Promise.resolve({
           text: JSON.stringify(good),
           inputTokens: 1,
           outputTokens: 1,
           model: "m",
-        };
+        });
       },
     };
     const hostile = input();
@@ -285,9 +284,8 @@ describe("owner headline and client", () => {
       baseUrl: "https://x.test/v1",
       apiKey: "sk_live_SECRETSECRET",
       model: "m",
-      fetchImpl: async () => {
-        throw new Error("connect sk_live_SECRETSECRET failed");
-      },
+      fetchImpl: () =>
+        Promise.reject(new Error("connect sk_live_SECRETSECRET failed")),
     });
     await expect(c.complete({ system: "s", user: "u" })).rejects.toThrow(
       /inference request failed/,

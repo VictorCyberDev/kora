@@ -117,12 +117,10 @@ export function projectInput(input: ReasonerInput): ReasonerInput {
       })),
       affected: [...input.topology.affected],
     },
-    recentChanges: input.recentChanges
-      .slice(0, 10)
-      .map((c) => ({
-        ...c,
-        revision: c.revision ? sanitizeUntrusted(c.revision, 80) : null,
-      })),
+    recentChanges: input.recentChanges.slice(0, 10).map((c) => ({
+      ...c,
+      revision: c.revision ? sanitizeUntrusted(c.revision, 80) : null,
+    })),
     verification: input.verification
       ? {
           outcome: input.verification.outcome,

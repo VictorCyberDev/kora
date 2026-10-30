@@ -166,3 +166,35 @@ describe("verifyPassport", () => {
     expect(verifyPassport(p).ok).toBe(true);
   });
 });
+
+describe("schema v2 (remediation trail)", () => {
+  const withRemediation = (): Json => {
+    const base: Json = clone(samplePassport());
+    const action: Json = {
+      id: "a1",
+      type: "republish_site_version",
+      state: "RECOVERY_VERIFIED",
+    };
+    action.contentHash = hash(action);
+    base.schema = "kora.incident-passport/v2";
+    base.remediation = { actions: [action] };
+    return seal(base);
+  };
+  it("verifies a v2 passport and still verifies v1", () => {
+    expect(verifyPassport(withRemediation()).ok).toBe(true);
+    expect(verifyPassport(samplePassport()).ok).toBe(true);
+  });
+  it("detects tampering inside the remediation trail", () => {
+    const p = withRemediation();
+    (p.remediation as { actions: Json[] }).actions[0]!.state =
+      "RECOVERY_FAILED";
+    expect(verifyPassport(p).ok).toBe(false);
+  });
+  it("rejects remediation in a v1 document and unknown schemas", () => {
+    const p = withRemediation();
+    p.schema = "kora.incident-passport/v1";
+    expect(verifyPassport(seal(p)).ok).toBe(false);
+    p.schema = "kora.incident-passport/v9";
+    expect(verifyPassport(seal(p)).ok).toBe(false);
+  });
+});
