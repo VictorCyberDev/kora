@@ -1,0 +1,113 @@
+{
+  "runtime": {
+    "api": "cb871bfdd810e8ab6fefc116facece58066391fe",
+    "siteHost": "cb871bfdd810e8ab6fefc116facece58066391fe"
+  },
+  "siteId": "a8d59d32-2826-4a99-b4c6-f315c801bda3",
+  "url": "https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/",
+  "failedVersionId": "8137c41d-59e4-4a58-9167-8499a3bea342",
+  "restoredToVersionId": "de0af365-fe5d-4f84-98b4-e532b6d59c55",
+  "incidentsBefore": 2,
+  "healthyObservationsBeforeFailure": [
+    {
+      "at": "2026-10-30T18:34:55.922Z",
+      "healthy": true,
+      "http": 200
+    },
+    {
+      "at": "2026-10-30T18:35:00.229Z",
+      "healthy": true,
+      "http": 200
+    },
+    {
+      "at": "2026-10-30T18:35:06.045Z",
+      "healthy": true,
+      "http": 200
+    },
+    {
+      "at": "2026-10-30T18:35:10.246Z",
+      "healthy": true,
+      "http": 200
+    },
+    {
+      "at": "2026-10-30T18:35:16.076Z",
+      "healthy": true,
+      "http": 200
+    }
+  ],
+  "preFailureHttp": 200,
+  "chaosStartedAt": "2026-10-30T18:35:22.774Z",
+  "publicDuringFailureHttp": 500,
+  "incidentsAfterDetection": 3,
+  "newIncidentsForThisFailure": 1,
+  "incidentId": "49148f51-c4d8-4e26-aef4-9adbac25ee17",
+  "incidentStartedAt": "2026-10-30T18:35:25.761Z",
+  "ownerExplanation": "Your website is reachable, but the application is returning an internal error.",
+  "reasoningSource": "DETERMINISTIC_FALLBACK",
+  "actionId": "00d16615-e75e-4498-8eba-2b320bf4df07",
+  "actionType": "republish_site_version",
+  "actionText": "Restore the previous healthy version of your website",
+  "policy": {
+    "decision": "REQUIRE_APPROVAL",
+    "policyCode": "POLICY_VERSION_CHANGE_NEEDS_APPROVAL",
+    "reason": "Switching the live website to a different version changes what customers see.",
+    "risk": "MEDIUM",
+    "expiresAt": "2026-10-30T19:05:36.054Z",
+    "decidedAt": "2026-10-30T18:35:36.058Z"
+  },
+  "statusWhileWaiting": {
+    "status": "WAITING_APPROVAL",
+    "title": "Waiting for approval",
+    "detail": "Kora has a safe fix ready and is waiting for your go-ahead before changing anything."
+  },
+  "approvedAt": "2026-10-30T18:35:49.619Z",
+  "executedAt": "2026-10-30T18:35:51.427Z",
+  "execution": {
+    "attempt": 1,
+    "executor": "kora-site-host",
+    "outcome": "SUCCEEDED",
+    "responseClass": "PUBLISHED",
+    "trace": {
+      "kind": "ROLLBACK",
+      "note": "publishing is not recovery; only new health observations are",
+      "publicUrl": "https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/",
+      "versionId": "de0af365-fe5d-4f84-98b4-e532b6d59c55",
+      "deployedHash": "468ee1ec1ab533227ae2cec7dbc63fe652f7ff4fb21b8ee81ff90c3c694559bc",
+      "verification": {
+        "detail": "live index.html matches the published artifact",
+        "status": "MATCH"
+      }
+    },
+    "startedAt": "2026-10-30T18:35:49.879Z",
+    "finishedAt": "2026-10-30T18:35:51.225Z"
+  },
+  "publicAfterExecuteHttp": 200,
+  "statusAfterExecute": {
+    "status": "VERIFYING",
+    "title": "Checking recovery",
+    "detail": "The fix is in. Kora is watching to confirm customers can reach your website again."
+  },
+  "recoveryVerifiedAt": "2026-10-30T18:36:01.656Z",
+  "finalActionState": "RECOVERY_VERIFIED",
+  "recoveryVerification": {
+    "outcome": "RECOVERY_VERIFIED",
+    "windowStartedAt": "2026-10-30T18:35:51.225Z",
+    "decidedAt": "2026-10-30T18:36:00.933Z",
+    "observationIds": [
+      "2570eca6-7c68-4c8e-8813-ceb6e5e68462",
+      "5d22339d-e731-4962-86e2-7e48e63ed706",
+      "cf8ff9de-09f7-425e-8d5f-c147384f1b2e"
+    ],
+    "recoverySeconds": 35.074,
+    "detail": {
+      "basis": "consecutive healthy observations after the action",
+      "secondsAfterAction": 10
+    }
+  },
+  "finalStatus": {
+    "status": "RECOVERED",
+    "title": "Recovered",
+    "detail": "Recovery verified by new observations."
+  },
+  "passportStatus": 200
+}

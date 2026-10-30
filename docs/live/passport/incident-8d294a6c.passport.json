@@ -1,0 +1,884 @@
+{
+  "schema": "kora.incident-passport/v2",
+  "incident": {
+    "id": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+    "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+    "deduplicationKey": "44c27b85-0baa-408d-b08a-d3f0e02cec57:health-check-unhealthy",
+    "state": "RESOLVED",
+    "severity": "HIGH",
+    "startedAt": "2026-10-30T18:08:17.534Z",
+    "resolvedAt": "2026-10-30T18:08:50.827Z",
+    "createdAt": "2026-10-30T18:08:27.532Z",
+    "updatedAt": "2026-10-30T18:08:50.824Z"
+  },
+  "service": {
+    "id": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+    "name": "site-a8d59d32-2826-4a99-b4c6-f315c801bda3",
+    "healthUrl": "https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/",
+    "createdAt": "2026-10-30T18:07:19.958Z"
+  },
+  "resource": {
+    "id": "eac94b50-67b4-43da-abb8-807368d4f643",
+    "region": "production",
+    "status": null,
+    "provider": "rumptycloud",
+    "displayName": "site-host/fix-hub-phone-laptop-repair-9eb5cb",
+    "environment": "production",
+    "resourceType": "web_service",
+    "providerAccount": "unspecified",
+    "providerResourceId": "01a18d1b-fd59-79c7-85e8-0ea99ec89b83"
+  },
+  "evidence": [
+    {
+      "id": "ae47bc72-1267-4bb6-92a2-26f8eadb84ff",
+      "observationId": "4d6208fe-356f-40d3-84dd-25d9a4de19ea",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "trigger",
+      "thresholdCount": 1,
+      "observedAt": "2026-10-30T18:08:17.534Z",
+      "ingestedAt": "2026-10-30T18:08:27.532Z",
+      "healthy": false,
+      "httpStatus": null,
+      "latencyMs": 2003,
+      "timedOut": true,
+      "failureReason": "health check timed out",
+      "failureCategory": "TIMEOUT",
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "c69f2f88be08b7dba3588ef12f54b03637f5c281213da0abe9bc6d1aa1839f13"
+    },
+    {
+      "id": "9162c435-55e5-42fe-a425-4e45ec2de7c5",
+      "observationId": "6459d1a6-6d53-42a7-a990-00e7b1bdb2cf",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "trigger",
+      "thresholdCount": 2,
+      "observedAt": "2026-10-30T18:08:22.533Z",
+      "ingestedAt": "2026-10-30T18:08:27.532Z",
+      "healthy": false,
+      "httpStatus": null,
+      "latencyMs": 2001,
+      "timedOut": true,
+      "failureReason": "health check timed out",
+      "failureCategory": "TIMEOUT",
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "3d3443b36b22e0f0297916fe71f52ce54660fe3a49b5c47156cde0e308c11222"
+    },
+    {
+      "id": "9f0f33c2-0b75-4c17-9aae-d652626bea9b",
+      "observationId": "7615aee2-55a5-427a-a984-dea432c157cd",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "trigger",
+      "thresholdCount": 3,
+      "observedAt": "2026-10-30T18:08:27.535Z",
+      "ingestedAt": "2026-10-30T18:08:27.532Z",
+      "healthy": false,
+      "httpStatus": null,
+      "latencyMs": 2002,
+      "timedOut": true,
+      "failureReason": "health check timed out",
+      "failureCategory": "TIMEOUT",
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "e65845b1ea9fe4dbd534493317a212af8f29893205889fc67fc6fe40a022d51e"
+    },
+    {
+      "id": "a9386120-72b8-4367-a6af-5b5ab3b85403",
+      "observationId": "c7080bb9-3a0b-452c-8f75-7f126458fddb",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "ongoing",
+      "thresholdCount": 4,
+      "observedAt": "2026-10-30T18:08:30.865Z",
+      "ingestedAt": "2026-10-30T18:08:30.862Z",
+      "healthy": false,
+      "httpStatus": 500,
+      "latencyMs": 333,
+      "timedOut": false,
+      "failureReason": "health endpoint returned 500",
+      "failureCategory": "HTTP_5XX",
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "e9c700de83b918c3aaffb66776d20e60a3dd0769a76b7537a60b7738d555991d"
+    },
+    {
+      "id": "298d3378-fb0b-4836-a885-295f5aa67323",
+      "observationId": "9c03a329-1a70-4410-b511-f98071d40ffe",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "ongoing",
+      "thresholdCount": 5,
+      "observedAt": "2026-10-30T18:08:36.458Z",
+      "ingestedAt": "2026-10-30T18:08:36.455Z",
+      "healthy": false,
+      "httpStatus": 500,
+      "latencyMs": 924,
+      "timedOut": false,
+      "failureReason": "health endpoint returned 500",
+      "failureCategory": "HTTP_5XX",
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "3c0efcd2f8779e9ab357275e4069e83c79dd7a0a22d297969905548af16b631b"
+    },
+    {
+      "id": "5abf5bf8-895b-4cd4-8e4b-44cad55f610c",
+      "observationId": "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "recovery",
+      "thresholdCount": 1,
+      "observedAt": "2026-10-30T18:08:41.555Z",
+      "ingestedAt": "2026-10-30T18:08:50.824Z",
+      "healthy": true,
+      "httpStatus": 200,
+      "latencyMs": 1020,
+      "timedOut": false,
+      "failureReason": null,
+      "failureCategory": null,
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "496404a01affa094d209b53ee24c2717edfef59597c1a62258243ab6aab0c2c9"
+    },
+    {
+      "id": "ad59aede-592d-40a2-9560-6a06e7fca472",
+      "observationId": "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "recovery",
+      "thresholdCount": 2,
+      "observedAt": "2026-10-30T18:08:45.921Z",
+      "ingestedAt": "2026-10-30T18:08:50.824Z",
+      "healthy": true,
+      "httpStatus": 200,
+      "latencyMs": 386,
+      "timedOut": false,
+      "failureReason": null,
+      "failureCategory": null,
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "ab9b356e804cfca4a21d7c50b192e856351c1bc7f426286514514fbf822c472a"
+    },
+    {
+      "id": "787ae081-35a0-48a3-9141-15887cb59b0f",
+      "observationId": "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6",
+      "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+      "kind": "recovery",
+      "thresholdCount": 3,
+      "observedAt": "2026-10-30T18:08:50.827Z",
+      "ingestedAt": "2026-10-30T18:08:50.824Z",
+      "healthy": true,
+      "httpStatus": 200,
+      "latencyMs": 292,
+      "timedOut": false,
+      "failureReason": null,
+      "failureCategory": null,
+      "providerStatus": null,
+      "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+      "contentHash": "4c1492aa544a3978e03414286c51801aa30af1bee77d767077b2f9362373e826"
+    }
+  ],
+  "timeline": [
+    {
+      "occurredAt": "2026-10-30T18:08:17.534Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 2003,
+        "httpStatus": null,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "4d6208fe-356f-40d3-84dd-25d9a4de19ea",
+        "providerStatus": null,
+        "failureCategory": "TIMEOUT"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:22.533Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 2001,
+        "httpStatus": null,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "6459d1a6-6d53-42a7-a990-00e7b1bdb2cf",
+        "providerStatus": null,
+        "failureCategory": "TIMEOUT"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:27.535Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 2002,
+        "httpStatus": null,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "7615aee2-55a5-427a-a984-dea432c157cd",
+        "providerStatus": null,
+        "failureCategory": "TIMEOUT"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:27.536Z",
+      "eventType": "IncidentCreated",
+      "source": "kora-api",
+      "payload": {
+        "severity": "HIGH",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "deduplicationKey": "44c27b85-0baa-408d-b08a-d3f0e02cec57:health-check-unhealthy",
+        "triggerObservationIds": [
+          "4d6208fe-356f-40d3-84dd-25d9a4de19ea",
+          "6459d1a6-6d53-42a7-a990-00e7b1bdb2cf",
+          "7615aee2-55a5-427a-a984-dea432c157cd"
+        ]
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:27.755Z",
+      "eventType": "ActionProposed",
+      "source": "kora-remediation",
+      "payload": {
+        "reason": "Restore the previous healthy version, because the failure began shortly after a new version was published.",
+        "actionId": "9351477b-f870-4c41-81eb-d2f5aab56878",
+        "actionType": "republish_site_version",
+        "proposedBy": "kora-deterministic"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:30.865Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 333,
+        "httpStatus": 500,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "c7080bb9-3a0b-452c-8f75-7f126458fddb",
+        "providerStatus": null,
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:30.866Z",
+      "eventType": "HealthCheckFailed",
+      "source": "kora-api",
+      "payload": {
+        "timedOut": false,
+        "latencyMs": 332.61789399999543,
+        "httpStatus": 500,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "failureReason": "health endpoint returned 500",
+        "observationId": "c7080bb9-3a0b-452c-8f75-7f126458fddb",
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:30.866Z",
+      "eventType": "IncidentUpdated",
+      "source": "kora-api",
+      "payload": {
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "c7080bb9-3a0b-452c-8f75-7f126458fddb"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:36.458Z",
+      "eventType": "HealthCheckFailed",
+      "source": "kora-api",
+      "payload": {
+        "timedOut": false,
+        "latencyMs": 923.9651490000251,
+        "httpStatus": 500,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "failureReason": "health endpoint returned 500",
+        "observationId": "9c03a329-1a70-4410-b511-f98071d40ffe",
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:36.458Z",
+      "eventType": "HealthObservationFailed",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": false,
+        "latencyMs": 924,
+        "httpStatus": 500,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "9c03a329-1a70-4410-b511-f98071d40ffe",
+        "providerStatus": null,
+        "failureCategory": "HTTP_5XX"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:36.458Z",
+      "eventType": "IncidentUpdated",
+      "source": "kora-api",
+      "payload": {
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "9c03a329-1a70-4410-b511-f98071d40ffe"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:37.079Z",
+      "eventType": "ActionApproved",
+      "source": "kora-remediation",
+      "payload": {
+        "actionId": "9351477b-f870-4c41-81eb-d2f5aab56878",
+        "actionType": "republish_site_version",
+        "approvedBy": "842aab98-a012-4a81-96f5-747160d7e887"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:41.555Z",
+      "eventType": "HealthCheckSucceeded",
+      "source": "kora-api",
+      "payload": {
+        "timedOut": false,
+        "latencyMs": 1020.4349910000165,
+        "httpStatus": 200,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "failureReason": null,
+        "observationId": "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:41.555Z",
+      "eventType": "HealthObservationSucceeded",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": true,
+        "latencyMs": 1020,
+        "httpStatus": 200,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+        "providerStatus": null,
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:41.789Z",
+      "eventType": "ActionExecuted",
+      "source": "kora-remediation",
+      "payload": {
+        "outcome": "SUCCEEDED",
+        "actionId": "9351477b-f870-4c41-81eb-d2f5aab56878",
+        "actionType": "republish_site_version",
+        "responseClass": "PUBLISHED"
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:45.921Z",
+      "eventType": "HealthCheckSucceeded",
+      "source": "kora-api",
+      "payload": {
+        "timedOut": false,
+        "latencyMs": 386.4389009999868,
+        "httpStatus": 200,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "failureReason": null,
+        "observationId": "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:45.921Z",
+      "eventType": "HealthObservationSucceeded",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": true,
+        "latencyMs": 386,
+        "httpStatus": 200,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+        "providerStatus": null,
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:50.827Z",
+      "eventType": "HealthCheckSucceeded",
+      "source": "kora-api",
+      "payload": {
+        "timedOut": false,
+        "latencyMs": 292.06365100000403,
+        "httpStatus": 200,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "failureReason": null,
+        "observationId": "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6",
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:50.827Z",
+      "eventType": "HealthObservationSucceeded",
+      "source": "health-monitor",
+      "payload": {
+        "healthy": true,
+        "latencyMs": 292,
+        "httpStatus": 200,
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "observationId": "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6",
+        "providerStatus": null,
+        "failureCategory": null
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:50.827Z",
+      "eventType": "RecoveryVerified",
+      "source": "kora-api",
+      "payload": {
+        "resolvedAt": "2026-10-30T18:08:50.827Z",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "recoveryObservationIds": [
+          "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+          "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+          "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6"
+        ]
+      }
+    },
+    {
+      "occurredAt": "2026-10-30T18:08:50.890Z",
+      "eventType": "RecoveryVerified",
+      "source": "kora-remediation",
+      "payload": {
+        "actionId": "9351477b-f870-4c41-81eb-d2f5aab56878",
+        "actionType": "republish_site_version",
+        "observationIds": [
+          "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+          "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+          "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6"
+        ]
+      }
+    }
+  ],
+  "diagnosis": {
+    "version": 1,
+    "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+    "incidentState": "RESOLVED",
+    "createdAt": "2026-10-30T18:08:50.827Z",
+    "temporal": {
+      "lastKnownHealthyAt": null,
+      "firstFailureAt": "2026-10-30T18:08:17.534Z",
+      "thresholdCrossedAt": "2026-10-30T18:08:27.535Z",
+      "incidentDetectedAt": "2026-10-30T18:08:27.536Z",
+      "latestFailureAt": "2026-10-30T18:08:36.458Z",
+      "recoveryStartedAt": "2026-10-30T18:08:41.555Z",
+      "recoveryVerifiedAt": "2026-10-30T18:08:50.827Z"
+    },
+    "evidence": [
+      {
+        "id": "4d6208fe-356f-40d3-84dd-25d9a4de19ea",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-30T18:08:17.534Z",
+        "ingestedAt": "2026-10-30T18:08:27.532Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TIMEOUT",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "b852cd084c0798c7fd8d367fdc739ff6922ec164a0d51754bbb8f4fe10563897"
+      },
+      {
+        "id": "6459d1a6-6d53-42a7-a990-00e7b1bdb2cf",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-30T18:08:22.533Z",
+        "ingestedAt": "2026-10-30T18:08:27.532Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TIMEOUT",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "b3835a28758546dca0814f5e20609093409305d5f27e1a5cf76532b3572b420a"
+      },
+      {
+        "id": "7615aee2-55a5-427a-a984-dea432c157cd",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-30T18:08:27.535Z",
+        "ingestedAt": "2026-10-30T18:08:27.532Z",
+        "healthy": false,
+        "httpStatus": null,
+        "failureCategory": "TIMEOUT",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "df57b20b30a42eb11c9c9e887e3058d3db030fecc8e0f0c700854ca700a9a005"
+      },
+      {
+        "id": "c7080bb9-3a0b-452c-8f75-7f126458fddb",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-30T18:08:30.865Z",
+        "ingestedAt": "2026-10-30T18:08:30.862Z",
+        "healthy": false,
+        "httpStatus": 500,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "35535bde6458123fd0f280f070addc0a9d7d7131180bfa42a7f593a1a4c6ca5c"
+      },
+      {
+        "id": "9c03a329-1a70-4410-b511-f98071d40ffe",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckFailed",
+        "observedAt": "2026-10-30T18:08:36.458Z",
+        "ingestedAt": "2026-10-30T18:08:36.455Z",
+        "healthy": false,
+        "httpStatus": 500,
+        "failureCategory": "HTTP_5XX",
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "5b835378ec941c31b5ab69c5822d04d4addaa28372c878a612ca97e1ced42184"
+      },
+      {
+        "id": "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-10-30T18:08:41.555Z",
+        "ingestedAt": "2026-10-30T18:08:50.824Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "0c10408c38895e670fb68cab9a9a9b308f4a77c79e3b0c1b0554afef2afe8513"
+      },
+      {
+        "id": "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-10-30T18:08:45.921Z",
+        "ingestedAt": "2026-10-30T18:08:50.824Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "c56104a9604080e14f55bb929d3bdeda8a00e661fda11d9c6b565db9feeb9db0"
+      },
+      {
+        "id": "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "serviceId": "44c27b85-0baa-408d-b08a-d3f0e02cec57",
+        "resourceId": "eac94b50-67b4-43da-abb8-807368d4f643",
+        "source": "HEALTH_CHECK",
+        "type": "HealthCheckSucceeded",
+        "observedAt": "2026-10-30T18:08:50.827Z",
+        "ingestedAt": "2026-10-30T18:08:50.824Z",
+        "healthy": true,
+        "httpStatus": 200,
+        "failureCategory": null,
+        "providerStatus": null,
+        "provenance": "kora:health-monitor",
+        "contentHash": "ddfb86c58735e79b23e924ef955d5ee345db6204313d29c60ec54fdd279dc31d"
+      }
+    ],
+    "findings": [
+      {
+        "id": "bd62bb18d55d4ce02279be406a369287",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "code": "RECOVERY_VERIFIED",
+        "statement": "Recovery was verified by subsequent healthy observations.",
+        "confidence": "CONFIRMED",
+        "evidenceIds": [
+          "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+          "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6",
+          "e8cf0769-5d0a-4cb6-a662-1ab41d71716a"
+        ],
+        "method": "DETERMINISTIC_RULE"
+      },
+      {
+        "id": "629d83e7793d3d3fa22a9f26409a663a",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "code": "SERVICE_HTTP_5XX",
+        "statement": "Service endpoint repeatedly returns server errors.",
+        "confidence": "SUPPORTED",
+        "evidenceIds": [
+          "9c03a329-1a70-4410-b511-f98071d40ffe",
+          "c7080bb9-3a0b-452c-8f75-7f126458fddb"
+        ],
+        "method": "DETERMINISTIC_RULE"
+      },
+      {
+        "id": "7d826ed39a285fabcec28c0fa7df664e",
+        "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+        "code": "SERVICE_TIMEOUT",
+        "statement": "Service health checks repeatedly time out.",
+        "confidence": "STRONGLY_SUPPORTED",
+        "evidenceIds": [
+          "4d6208fe-356f-40d3-84dd-25d9a4de19ea",
+          "6459d1a6-6d53-42a7-a990-00e7b1bdb2cf",
+          "7615aee2-55a5-427a-a984-dea432c157cd"
+        ],
+        "method": "DETERMINISTIC_RULE"
+      }
+    ],
+    "contradictions": [],
+    "evidenceGaps": [
+      "NO_APPLICATION_LOGS",
+      "NO_DEPLOYMENT_CONTEXT",
+      "NO_PROVIDER_STATUS",
+      "NO_RESOURCE_METRICS"
+    ],
+    "rootCause": {
+      "state": "UNKNOWN",
+      "statement": "Available evidence establishes symptoms but does not establish an underlying root cause."
+    },
+    "truncated": false,
+    "totalEvidenceCount": 8,
+    "contentHash": "f30836303ceb3cfda334264af38f1b4496477d27c217febf01ab63982935e65e"
+  },
+  "gaps": [
+    {
+      "item": "applicationLogs",
+      "status": "NOT COLLECTED",
+      "reason": "Kora does not collect application logs from the service."
+    },
+    {
+      "item": "deploymentContext",
+      "status": "NOT COLLECTED",
+      "reason": "No deployment record (revision, rollout time) is linked to this incident."
+    },
+    {
+      "item": "lastKnownHealthyAt",
+      "status": "UNKNOWN",
+      "reason": "No healthy observation precedes the first failure in the collected evidence."
+    },
+    {
+      "item": "producer",
+      "status": "UNKNOWN",
+      "reason": "This Passport is not signed. Its hash shows the file was not changed after export; it does not show who produced it."
+    },
+    {
+      "item": "providerStatus",
+      "status": "NOT COLLECTED",
+      "reason": "None of the collected evidence carries a provider-reported resource status."
+    },
+    {
+      "item": "resourceMetrics",
+      "status": "NOT COLLECTED",
+      "reason": "Kora does not collect resource metrics (CPU, memory, disk, network) for this resource."
+    },
+    {
+      "item": "rootCause",
+      "status": "UNKNOWN",
+      "reason": "Available evidence establishes symptoms but does not establish an underlying root cause."
+    }
+  ],
+  "integrity": {
+    "algorithm": "sha256",
+    "canonicalization": "kora-stable-json/v1",
+    "contentHash": "d7f33fde712822869058f3e4180a474dddaa302f9920c08e5caadae0ece68aa0"
+  },
+  "generatedAt": "2026-10-30T18:09:03.857Z",
+  "remediation": {
+    "note": "Recovery is established only by new observations after the action, never by the action's own result.",
+    "actions": [
+      {
+        "id": "9351477b-f870-4c41-81eb-d2f5aab56878",
+        "type": "republish_site_version",
+        "parameters": {
+          "versionId": "de0af365-fe5d-4f84-98b4-e532b6d59c55"
+        },
+        "reason": "Restore the previous healthy version, because the failure began shortly after a new version was published.",
+        "proposedBy": "kora-deterministic",
+        "state": "RECOVERY_VERIFIED",
+        "createdAt": "2026-10-30T18:08:27.736Z",
+        "policyDecision": {
+          "decision": "REQUIRE_APPROVAL",
+          "policyCode": "POLICY_VERSION_CHANGE_NEEDS_APPROVAL",
+          "reason": "Switching the live website to a different version changes what customers see.",
+          "risk": "MEDIUM",
+          "expiresAt": "2026-10-30T18:38:27.798Z",
+          "decidedAt": "2026-10-30T18:08:27.795Z"
+        },
+        "approval": {
+          "decision": "APPROVED",
+          "decidedBy": "842aab98-a012-4a81-96f5-747160d7e887",
+          "note": null,
+          "decidedAt": "2026-10-30T18:08:37.046Z"
+        },
+        "executions": [
+          {
+            "attempt": 1,
+            "executor": "kora-site-host",
+            "outcome": "SUCCEEDED",
+            "responseClass": "PUBLISHED",
+            "trace": {
+              "kind": "ROLLBACK",
+              "note": "publishing is not recovery; only new health observations are",
+              "publicUrl": "https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/",
+              "versionId": "de0af365-fe5d-4f84-98b4-e532b6d59c55",
+              "deployedHash": "468ee1ec1ab533227ae2cec7dbc63fe652f7ff4fb21b8ee81ff90c3c694559bc",
+              "verification": {
+                "detail": "live index.html matches the published artifact",
+                "status": "MATCH"
+              }
+            },
+            "startedAt": "2026-10-30T18:08:38.006Z",
+            "finishedAt": "2026-10-30T18:08:41.763Z"
+          }
+        ],
+        "recoveryVerification": {
+          "outcome": "RECOVERY_VERIFIED",
+          "windowStartedAt": "2026-10-30T18:08:41.763Z",
+          "decidedAt": "2026-10-30T18:08:50.860Z",
+          "observationIds": [
+            "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+            "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+            "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6"
+          ],
+          "recoverySeconds": 33.293,
+          "detail": {
+            "basis": "consecutive healthy observations after the action",
+            "secondsAfterAction": 9
+          }
+        },
+        "contentHash": "e7657f9bf881d5c7bb2c56d546eab22bbe3a60d51e9cf5577d698713fcd7782a"
+      }
+    ],
+    "reasoner": {
+      "source": "DETERMINISTIC_FALLBACK",
+      "model": null,
+      "inputHash": "1b3a467e55f596efcf4933d2368cb3f5a1fc6b903f4ea344fb32f5bce444ff74",
+      "rejectionReason": "inference not configured",
+      "output": {
+        "riskNotes": [
+          "Kora does not know the root cause; any action is a hypothesis-driven attempt and recovery is only counted after new healthy observations."
+        ],
+        "hypotheses": [
+          {
+            "id": "7d826ed39a285fabcec28c0fa7df664e",
+            "gapIds": [],
+            "statement": "Service health checks repeatedly time out.",
+            "confidence": "STRONGLY_SUPPORTED",
+            "evidenceIds": [
+              "4d6208fe-356f-40d3-84dd-25d9a4de19ea",
+              "6459d1a6-6d53-42a7-a990-00e7b1bdb2cf",
+              "7615aee2-55a5-427a-a984-dea432c157cd"
+            ],
+            "contradictionIds": []
+          }
+        ],
+        "whatWeKnow": [
+          "Service health checks repeatedly time out.",
+          "The failure began 56 seconds after a recorded change (DEPLOYMENT_REVISION_CHANGED). This is a timing correlation, not proof the change caused the failure."
+        ],
+        "ownerSummary": "Your website is taking too long to respond.",
+        "engineerSummary": "SERVICE_TIMEOUT (STRONGLY_SUPPORTED): Service health checks repeatedly time out.",
+        "whatWeDoNotKnow": [
+          "Available evidence establishes symptoms but does not establish an underlying root cause.",
+          "Unknown: application logs are not available.",
+          "Unknown: which release is running is not confirmed.",
+          "Unknown: the hosting provider's own status for the server is not available.",
+          "Unknown: CPU, memory and disk metrics are not available."
+        ],
+        "recommendedActions": [
+          {
+            "type": "republish_site_version",
+            "reason": "Restore the previous healthy version, because the failure began shortly after a new version was published.",
+            "parameters": {
+              "versionId": "de0af365-fe5d-4f84-98b4-e532b6d59c55"
+            }
+          }
+        ]
+      }
+    },
+    "recentChanges": [
+      {
+        "kind": "ACTION_EXECUTED",
+        "occurredAt": "2026-10-30T18:08:41.803Z",
+        "revision": null,
+        "provenance": "kora:remediation"
+      },
+      {
+        "kind": "DEPLOYMENT_REVISION_CHANGED",
+        "occurredAt": "2026-10-30T18:08:41.702Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "VERSION_PUBLISHED",
+        "occurredAt": "2026-10-30T18:08:41.689Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_COMPLETED",
+        "occurredAt": "2026-10-30T18:08:41.676Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_STARTED",
+        "occurredAt": "2026-10-30T18:08:38.137Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_REVISION_CHANGED",
+        "occurredAt": "2026-10-30T18:07:21.620Z",
+        "revision": "v2",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "VERSION_PUBLISHED",
+        "occurredAt": "2026-10-30T18:07:21.607Z",
+        "revision": "v2",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_COMPLETED",
+        "occurredAt": "2026-10-30T18:07:21.595Z",
+        "revision": "v2",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_STARTED",
+        "occurredAt": "2026-10-30T18:07:21.203Z",
+        "revision": "v2",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "VERSION_PUBLISHED",
+        "occurredAt": "2026-10-30T18:07:20.451Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_COMPLETED",
+        "occurredAt": "2026-10-30T18:07:20.438Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      },
+      {
+        "kind": "DEPLOYMENT_STARTED",
+        "occurredAt": "2026-10-30T18:07:20.054Z",
+        "revision": "v1",
+        "provenance": "kora:publish-service"
+      }
+    ]
+  }
+}

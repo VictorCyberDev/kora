@@ -1,0 +1,50 @@
+[
+  {
+    "at": "2026-10-30T18:38:02.859Z",
+    "step": "overview-shows-problem",
+    "pill": "Waiting for approval"
+  },
+  {
+    "at": "2026-10-30T18:38:02.950Z",
+    "shot": "ui-1-overview-waiting-for-approval"
+  },
+  {
+    "at": "2026-10-30T18:38:03.854Z",
+    "shot": "ui-2-incident-waiting-for-approval"
+  },
+  {
+    "at": "2026-10-30T18:38:03.894Z",
+    "step": "approved"
+  },
+  {
+    "at": "2026-10-30T18:38:07.207Z",
+    "step": "pill",
+    "text": "Checking recovery"
+  },
+  {
+    "at": "2026-10-30T18:38:07.288Z",
+    "shot": "ui-3-after-approval"
+  },
+  {
+    "at": "2026-10-30T18:38:18.649Z",
+    "step": "recovered"
+  },
+  {
+    "at": "2026-10-30T18:38:18.649Z",
+    "step": "pill",
+    "text": "Recovered"
+  },
+  {
+    "at": "2026-10-30T18:38:18.742Z",
+    "shot": "ui-4-recovered"
+  },
+  {
+    "at": "2026-10-30T18:38:21.430Z",
+    "shot": "ui-5-proof-mode"
+  },
+  {
+    "at": "2026-10-30T18:38:22.197Z",
+    "step": "public-final",
+    "http": 200
+  }
+]

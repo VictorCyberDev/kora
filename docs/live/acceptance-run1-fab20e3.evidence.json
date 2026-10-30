@@ -1,0 +1,54 @@
+{
+  "siteId": "a8d59d32-2826-4a99-b4c6-f315c801bda3",
+  "url": "https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/",
+  "failedVersionId": "8137c41d-59e4-4a58-9167-8499a3bea342",
+  "restoredToVersionId": "de0af365-fe5d-4f84-98b4-e532b6d59c55",
+  "preFailureHttp": 200,
+  "chaosStartedAt": "2026-10-30T18:08:23.141Z",
+  "publicDuringFailureHttp": 500,
+  "incidentDetectedAt": "2026-10-30T18:08:31.913Z",
+  "incidentId": "8d294a6c-395c-48bb-ae39-167a1466fec0",
+  "incidentStartedAt": "2026-10-30T18:08:17.534Z",
+  "reasoningSource": "DETERMINISTIC_FALLBACK",
+  "actionId": "9351477b-f870-4c41-81eb-d2f5aab56878",
+  "actionText": "Restore the previous healthy version of your website",
+  "policy": {
+    "decision": "REQUIRE_APPROVAL",
+    "policyCode": "POLICY_VERSION_CHANGE_NEEDS_APPROVAL",
+    "reason": "Switching the live website to a different version changes what customers see.",
+    "risk": "MEDIUM",
+    "expiresAt": "2026-10-30T18:38:27.798Z",
+    "decidedAt": "2026-10-30T18:08:27.795Z"
+  },
+  "statusWhileWaiting": {
+    "status": "WAITING_APPROVAL",
+    "title": "Waiting for approval",
+    "detail": "Kora has a safe fix ready and is waiting for your go-ahead before changing anything."
+  },
+  "approvedAt": "2026-10-30T18:08:37.801Z",
+  "executedAt": "2026-10-30T18:08:42.001Z",
+  "publicAfterExecuteHttp": 200,
+  "recoveryVerifiedAt": "2026-10-30T18:08:54.820Z",
+  "finalActionState": "RECOVERY_VERIFIED",
+  "recoveryVerification": {
+    "outcome": "RECOVERY_VERIFIED",
+    "windowStartedAt": "2026-10-30T18:08:41.763Z",
+    "decidedAt": "2026-10-30T18:08:50.860Z",
+    "observationIds": [
+      "6f328a10-53f4-4946-9ac6-ea32519bbc16",
+      "e8cf0769-5d0a-4cb6-a662-1ab41d71716a",
+      "b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6"
+    ],
+    "recoverySeconds": 33.293,
+    "detail": {
+      "basis": "consecutive healthy observations after the action",
+      "secondsAfterAction": 9
+    }
+  },
+  "finalStatus": {
+    "status": "RECOVERED",
+    "title": "Recovered",
+    "detail": "Recovery verified by new observations."
+  },
+  "incidentCount": 1
+}

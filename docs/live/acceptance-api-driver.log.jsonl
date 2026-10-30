@@ -1,0 +1,50 @@
+{"at":"2026-10-30T18:06:12.496Z","event":"signup","status":201,"error":null,"message":null}
+{"at":"2026-10-30T18:06:13.691Z","event":"me","orgId":"d1c31dcb-82fa-491b-948a-1b5553ed7d83","role":"OWNER"}
+{"at":"2026-10-30T18:06:13.949Z","event":"plans","n":1}
+{"at":"2026-10-30T18:06:20.138Z","event":"plan","id":"043a7a4a-0344-459e-993b-5be3ac722cb7","code":"trial","name":"Trial (development)","currency":"NGN","amountMinor":0,"interval":"none","capabilities":{"sites":3,"storageMb":500,"teamMembers":5,"customDomain":true,"advancedProof":true,"managedRecovery":true,"aiOperationsPerMonth":200},"checkoutAvailable":false}
+{"at":"2026-10-30T18:06:21.991Z","event":"subscription","status":200,"data":{"subscription":{"id":"7b08823a-9d7d-434f-b1a7-803ceda6b92e","planId":"043a7a4a-0344-459e-993b-5be3ac722cb7","planCode":"trial","capabilities":{"sites":3,"storageMb":500,"teamMembers":5,"customDomain":true,"advancedProof":true,"managedRecovery":true,"aiOperationsPerMonth":200},"state":"TRIAL","periodEnd":"2026-11-29T18:06:12.284Z","graceUntil":null,"cancelAtPeriodEnd":false,"providerCustomerCode":null},"entitlements":{"monitoringContinues":true,"sitesStayOnline":true,"canCreateSite":true,"canGenerate":true,"canPublish":true,"canUseCustomDomain":true,"restrictedReason":null},"paymentsConfigured":false,"usage":[]}}
+{"at":"2026-10-30T18:06:31.559Z","event":"ai-channel","available":false,"reason":"No inference endpoint is configured; explanations are generated from the evidence by rules."}
+{"at":"2026-10-30T18:06:31.881Z","event":"site-created","id":"b7eed46f-f2a7-4e33-9dcd-ac5bf278a963","slug":"o-ko-dining-4c2c4a"}
+{"at":"2026-10-30T18:06:32.218Z","event":"directions","status":200,"names":["Quiet luxury","Dark & premium","Bright & local"]}
+{"at":"2026-10-30T18:06:32.581Z","event":"generate","status":201,"source":"DETERMINISTIC","provider":null,"note":"AI is not configured; designed by Kora from exactly what you provided","version":1}
+{"at":"2026-10-30T18:06:32.848Z","event":"publish","status":400,"err":"bad_request"}
+{"at":"2026-10-30T18:07:19.037Z","event":"acceptance-site","id":"a8d59d32-2826-4a99-b4c6-f315c801bda3","slug":"fix-hub-phone-laptop-repair-9eb5cb"}
+{"at":"2026-10-30T18:07:19.772Z","event":"generate-v1","status":201,"version":1,"id":"de0af365-fe5d-4f84-98b4-e532b6d59c55","source":"DETERMINISTIC"}
+{"at":"2026-10-30T18:07:20.591Z","event":"publish-v1","status":200,"url":"https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/","verification":"MATCH"}
+{"at":"2026-10-30T18:07:20.933Z","event":"edit-v2","status":201,"version":2,"id":"8137c41d-59e4-4a58-9167-8499a3bea342","parent":"de0af365-fe5d-4f84-98b4-e532b6d59c55"}
+{"at":"2026-10-30T18:07:21.744Z","event":"publish-v2","status":200,"url":"https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/","verification":"MATCH"}
+{"at":"2026-10-30T18:07:21.997Z","event":"status","headline":{"status":"ONLINE","title":"Healthy","detail":"Customers can reach your website."},"chaosAvailable":true,"publisher":"kora-site-host","latestCheck":{"healthy":true,"httpStatus":200,"failureCategory":null,"observedAt":"2026-10-30T18:07:20.817Z","latencyMs":291}}
+{"at":"2026-10-30T18:07:25.808Z","event":"observation","healthy":true,"http":200,"latencyMs":283,"uptime":{"checks":2,"healthy":2,"percent":100}}
+{"at":"2026-10-30T18:07:35.858Z","event":"observation","healthy":true,"http":200,"latencyMs":333,"uptime":{"checks":4,"healthy":4,"percent":100}}
+{"at":"2026-10-30T18:07:45.811Z","event":"observation","healthy":true,"http":200,"latencyMs":285,"uptime":{"checks":6,"healthy":6,"percent":100}}
+{"at":"2026-10-30T18:07:55.818Z","event":"observation","healthy":true,"http":200,"latencyMs":290,"uptime":{"checks":8,"healthy":8,"percent":100}}
+{"at":"2026-10-30T18:08:22.135Z","event":"public-before","http":200}
+{"at":"2026-10-30T18:08:23.141Z","event":"chaos-start","status":200,"data":{"mode":"http_500","label":"Controlled test","versionId":"8137c41d-59e4-4a58-9167-8499a3bea342","expiresInSeconds":600}}
+{"at":"2026-10-30T18:08:25.454Z","event":"public-during-failure","http":500}
+{"at":"2026-10-30T18:08:33.093Z","event":"incident","id":"8d294a6c-395c-48bb-ae39-167a1466fec0","startedAt":"2026-10-30T18:08:17.534Z","count":1}
+{"at":"2026-10-30T18:08:33.456Z","event":"owner-view","whatHappened":"Your website is reachable, but the application is returning an internal error.","affected":true,"reasoningSource":"DETERMINISTIC_FALLBACK","action":{"text":"Restore the previous healthy version of your website","state":"AWAITING_APPROVAL","policy":{"decision":"REQUIRE_APPROVAL","policyCode":"POLICY_VERSION_CHANGE_NEEDS_APPROVAL","reason":"Switching the live website to a different version changes what customers see.","risk":"MEDIUM","expiresAt":"2026-10-30T18:38:27.798Z","decidedAt":"2026-10-30T18:08:27.795Z"}}}
+{"at":"2026-10-30T18:08:34.855Z","event":"status-waiting","status":"WAITING_APPROVAL","title":"Waiting for approval","detail":"Kora has a safe fix ready and is waiting for your go-ahead before changing anything."}
+{"at":"2026-10-30T18:08:37.801Z","event":"approve","status":200,"state":"READY"}
+{"at":"2026-10-30T18:08:42.001Z","event":"execute","status":200,"state":"VERIFYING","execution":{"attempt":1,"executor":"kora-site-host","outcome":"SUCCEEDED","responseClass":"PUBLISHED","trace":{"kind":"ROLLBACK","note":"publishing is not recovery; only new health observations are","publicUrl":"https://kora-site-host.rumptycloud.app/s/fix-hub-phone-laptop-repair-9eb5cb/","versionId":"de0af365-fe5d-4f84-98b4-e532b6d59c55","deployedHash":"468ee1ec1ab533227ae2cec7dbc63fe652f7ff4fb21b8ee81ff90c3c694559bc","verification":{"detail":"live index.html matches the published artifact","status":"MATCH"}},"startedAt":"2026-10-30T18:08:38.006Z","finishedAt":"2026-10-30T18:08:41.763Z"}}
+{"at":"2026-10-30T18:08:42.763Z","event":"public-after-execute","http":200}
+{"at":"2026-10-30T18:08:43.588Z","event":"status-after-execute","status":"VERIFYING","title":"Checking recovery","detail":"The fix is in. Kora is watching to confirm customers can reach your website again."}
+{"at":"2026-10-30T18:08:54.820Z","event":"recovery","state":"RECOVERY_VERIFIED","verification":{"outcome":"RECOVERY_VERIFIED","windowStartedAt":"2026-10-30T18:08:41.763Z","decidedAt":"2026-10-30T18:08:50.860Z","observationIds":["6f328a10-53f4-4946-9ac6-ea32519bbc16","e8cf0769-5d0a-4cb6-a662-1ab41d71716a","b76ed94a-03aa-4e2b-83b9-f01f3e8ee1a6"],"recoverySeconds":33.293,"detail":{"basis":"consecutive healthy observations after the action","secondsAfterAction":9}}}
+{"at":"2026-10-30T18:08:55.536Z","event":"final-status","status":"RECOVERED","title":"Recovered","detail":"Recovery verified by new observations."}
+{"at":"2026-10-30T18:09:04.168Z","event":"passport","status":200,"keys":["schema","incident","service","resource","evidence","timeline","diagnosis","gaps","integrity","generatedAt","remediation"]}
+{"at":"2026-10-30T18:09:30.596Z","event":"ui-site","id":"241fbcec-93da-4dba-b6c5-98c994a70059","url":"https://kora-site-host.rumptycloud.app/s/crumb-co-f2ee47/","v1":"MATCH","v2":"MATCH"}
+{"at":"2026-10-30T18:34:58.311Z","event":"runtime-shas","api":"cb871bfdd810e8ab6fefc116facece58066391fe","siteHost":"cb871bfdd810e8ab6fefc116facece58066391fe"}
+{"at":"2026-10-30T18:34:59.999Z","event":"publish-v2-again","status":200,"verification":"MATCH"}
+{"at":"2026-10-30T18:35:21.285Z","event":"healthy-observations","n":5,"allHealthy":true}
+{"at":"2026-10-30T18:35:22.000Z","event":"public-before","http":200}
+{"at":"2026-10-30T18:35:22.774Z","event":"chaos-start","status":200,"data":{"mode":"http_500","label":"Controlled test","versionId":"8137c41d-59e4-4a58-9167-8499a3bea342","expiresInSeconds":600}}
+{"at":"2026-10-30T18:35:24.492Z","event":"public-during-failure","http":500}
+{"at":"2026-10-30T18:35:46.275Z","event":"incident","id":"49148f51-c4d8-4e26-aef4-9adbac25ee17","startedAt":"2026-10-30T18:35:25.761Z","newIncidents":1}
+{"at":"2026-10-30T18:35:47.307Z","event":"owner-view","whatHappened":"Your website is reachable, but the application is returning an internal error.","reasoningSource":"DETERMINISTIC_FALLBACK","action":"Restore the previous healthy version of your website","policy":"REQUIRE_APPROVAL","status":"Waiting for approval"}
+{"at":"2026-10-30T18:35:49.619Z","event":"approve","status":200,"state":"READY"}
+{"at":"2026-10-30T18:35:51.427Z","event":"execute","state":"VERIFYING","outcome":"SUCCEEDED","kind":"ROLLBACK","verification":"MATCH"}
+{"at":"2026-10-30T18:35:52.250Z","event":"public-after-execute","http":200}
+{"at":"2026-10-30T18:35:52.490Z","event":"status-after-execute","status":"VERIFYING","title":"Checking recovery","detail":"The fix is in. Kora is watching to confirm customers can reach your website again."}
+{"at":"2026-10-30T18:36:01.656Z","event":"recovery","state":"RECOVERY_VERIFIED","v":{"outcome":"RECOVERY_VERIFIED","windowStartedAt":"2026-10-30T18:35:51.225Z","decidedAt":"2026-10-30T18:36:00.933Z","observationIds":["2570eca6-7c68-4c8e-8813-ceb6e5e68462","5d22339d-e731-4962-86e2-7e48e63ed706","cf8ff9de-09f7-425e-8d5f-c147384f1b2e"],"recoverySeconds":35.074,"detail":{"basis":"consecutive healthy observations after the action","secondsAfterAction":10}}}
+{"at":"2026-10-30T18:36:02.327Z","event":"final-status","status":"RECOVERED","title":"Recovered","detail":"Recovery verified by new observations."}
+{"at":"2026-10-30T18:36:16.423Z","event":"republish-v2-for-ui-run","status":200,"v":"UNREACHABLE"}
+{"at":"2026-10-30T18:36:37.158Z","event":"status","status":"WAITING_APPROVAL","title":"Waiting for approval","detail":"Kora has a safe fix ready and is waiting for your go-ahead before changing anything."}
