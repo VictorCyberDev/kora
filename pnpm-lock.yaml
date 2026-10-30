@@ -32,15 +32,27 @@ importers:
 
   apps/api:
     dependencies:
+      '@kora/action-executor':
+        specifier: workspace:*
+        version: link:../../services/action-executor
       '@kora/event-schema':
         specifier: workspace:*
         version: link:../../packages/event-schema
       '@kora/incident-engine':
         specifier: workspace:*
         version: link:../../services/incident-engine
+      '@kora/policy-engine':
+        specifier: workspace:*
+        version: link:../../services/policy-engine
+      '@kora/reasoner':
+        specifier: workspace:*
+        version: link:../../services/reasoner
       '@kora/runtime-claim':
         specifier: workspace:*
         version: link:../../packages/runtime-claim
+      '@kora/site-schema':
+        specifier: workspace:*
+        version: link:../../packages/site-schema
       '@kora/topology':
         specifier: workspace:*
         version: link:../../packages/topology
@@ -145,7 +157,42 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
 
+  services/action-executor:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
   services/incident-engine:
+    dependencies:
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.5
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  services/policy-engine:
+    dependencies:
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.5
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  services/reasoner:
     dependencies:
       zod:
         specifier: ^4.1.12

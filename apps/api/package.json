@@ -12,9 +12,13 @@
     "db:migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
+    "@kora/action-executor": "workspace:*",
     "@kora/event-schema": "workspace:*",
     "@kora/incident-engine": "workspace:*",
+    "@kora/policy-engine": "workspace:*",
+    "@kora/reasoner": "workspace:*",
     "@kora/runtime-claim": "workspace:*",
+    "@kora/site-schema": "workspace:*",
     "@kora/topology": "workspace:*",
     "fastify": "^5.6.1",
     "postgres": "^3.4.7",
