@@ -7,7 +7,7 @@ import { SiteHostStore, type HostedSite } from "./store.js";
 export interface SiteHostOptions {
   store: SiteHostStore;
   /** Public base URL of this host; only used for sitemap/robots absolute URLs. */
-  publicUrl: string;
+  publicUrl?: string | undefined;
   /** How long a `timeout` controlled test stalls a response before failing it. */
   faultDelayMs?: number;
   logger?: false | { level: string };
@@ -28,7 +28,12 @@ export function buildSiteHost(o: SiteHostOptions) {
     bodyLimit: 1024,
   });
   const cache = new Map<string, SiteFiles>();
-  const base = o.publicUrl.replace(/\/+$/, "");
+  const configured = o.publicUrl?.replace(/\/+$/, "");
+  // Without configuration, the public origin is whatever the (single trusted) proxy says it is.
+  const baseFor = (req: {
+    protocol: string;
+    headers: { host?: string | undefined };
+  }) => configured ?? `${req.protocol}://${req.headers.host ?? "localhost"}`;
 
   app.get("/health", async () => ({
     status: "ok",
@@ -86,7 +91,7 @@ export function buildSiteHost(o: SiteHostOptions) {
       (req.params as Record<string, string>)["*"] ?? "",
       `/s/${slug}/`,
       req.headers["if-none-match"],
-      `${base}/s/${slug}/`,
+      `${baseFor(req)}/s/${slug}/`,
     );
     return reply.code(r.status).headers(r.headers).send(r.body);
   });
