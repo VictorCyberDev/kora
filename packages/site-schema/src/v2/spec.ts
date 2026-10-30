@@ -152,6 +152,9 @@ export const ART_STYLES = [
   "waves",
   "blocks",
   "arch",
+  "planes",
+  "orbit",
+  "signal",
 ] as const;
 export const mediaSchema = z.object({
   url: z

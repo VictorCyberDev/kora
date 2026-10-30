@@ -15,7 +15,7 @@ type LM = {
 };
 const lm = (): LM | null =>
   typeof globalThis !== "undefined" && "LanguageModel" in globalThis
-    ? ((globalThis as unknown as { LanguageModel: LM }).LanguageModel as LM)
+    ? (globalThis as unknown as { LanguageModel: LM }).LanguageModel
     : null;
 
 export type LocalAiState =

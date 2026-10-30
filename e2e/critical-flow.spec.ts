@@ -1,6 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /** Screenshots are captured only when asked for (E2E_SCREENSHOTS=dir). */
+/** Viewport (not full-page) captures used for the Kora homepage; written only when E2E_PRODUCT_SHOTS=dir. */
+const productShot = async (page: Page, name: string) => {
+  if (!process.env.E2E_PRODUCT_SHOTS) return;
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: `${process.env.E2E_PRODUCT_SHOTS}/${name}.png`,
+  });
+};
 const shot = async (page: Page, name: string) => {
   if (process.env.E2E_SCREENSHOTS)
     await page.screenshot({
@@ -111,7 +119,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
       .first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "6. What is still unknown?" }),
+    page.getByRole("heading", { name: "What Kora does not know" }),
   ).toBeVisible();
   await expect(page.getByText(/does not prove/).first()).toBeVisible();
   await expect(
@@ -123,6 +131,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
 
   // 8. Approval is required; approve and apply.
   await shot(page, "04-incident-approval");
+  await productShot(page, "incident-approval");
   await page.getByRole("button", { name: "Approve and apply" }).click();
   // 9. Not "fixed" yet: verifying, then restored only after new checks pass.
   await expect(
@@ -142,6 +151,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   ).toBeVisible();
 
   await shot(page, "05-restored");
+  await productShot(page, "incident-recovered");
   // 10. Proof mode shows the full chain of evidence.
   await page.getByRole("button", { name: "Proof", exact: true }).click();
   // Proof mode opens the technical evidence by default.

@@ -4,7 +4,16 @@ import { api, ago, ApiError, when, type J } from "../api";
 import { useAuth } from "../auth";
 import { FEELS, GOALS } from "../design-labels";
 import { localAiState, runLocalDesign, type LocalAiState } from "../local-ai";
-import { Async, Empty, Notice, Status, errText, kindFor, useLoad } from "../ui";
+import {
+  Async,
+  Empty,
+  LevelLine,
+  Notice,
+  Status,
+  errText,
+  kindFor,
+  useLoad,
+} from "../ui";
 
 export function SiteStatusCard({
   siteId,
@@ -35,6 +44,14 @@ export function SiteStatusCard({
               )}
             </div>
             <div className="big">{s.site.name}</div>
+            <LevelLine
+              state={
+                s.headline.status === "ONLINE" ||
+                s.headline.status === "RECOVERED"
+                  ? "steady"
+                  : "dip"
+              }
+            />
             <div>{s.headline.detail}</div>
             {!compact && (
               <>

@@ -18,6 +18,7 @@ const keys = (
   process.argv[3] ?? "interior,repair,saas,restaurant,consultant"
 ).split(",");
 const fontDir = resolve("packages/site-fonts/files");
+const mediaDir = resolve("packages/site-media/files");
 const TYPES: Record<string, string> = {
   ".html": "text/html",
   ".css": "text/css",
@@ -48,6 +49,13 @@ const server = createServer((req, res) => {
     if (existsSync(f))
       return void res
         .writeHead(200, { "content-type": "font/woff2" })
+        .end(readFileSync(f));
+  }
+  if (url.startsWith("/_kora/media/")) {
+    const f = join(mediaDir, url.slice(13));
+    if (existsSync(f))
+      return void res
+        .writeHead(200, { "content-type": "image/webp" })
         .end(readFileSync(f));
   }
   const m = /^\/([a-z0-9]+\/(?:before|after))\/(.*)$/.exec(url);

@@ -30,6 +30,21 @@ every design field is an enum over what exists) and applies it **through the pla
 gate, the offending part is refused (the reason is returned and shown) and the deterministic choice is kept. Prompt-injection in the brief can at worst change a headline that must still
 pass the gate.
 
+## Provider chain
+
+```
+on-device AI in the owner's browser (Chrome built-in Prompt API, opt-in, no key)
+  -> Rumpty / any OpenAI-compatible endpoint (AI_*), ordered fallbacks
+  -> Kora's deterministic designer
+```
+
+Every link produces _text that Kora's server validates_ with `applyIntelligence`; none has authority over publishing, versions or recovery.
+
+**On-device (Chrome Prompt API).** Verified against current Chrome docs (Prompt API shipped for the web in Chrome 148; requires desktop Chrome/ChromeOS Plus, ~22 GB free disk, a GPU with >4 GB VRAM or 16 GB RAM/4 cores; the model downloads separately on first use and needs user activation; not available in Web Workers).
+`apps/web/src/local-ai.ts` feature-detects `LanguageModel.availability()`, shows the option only when it is `available` or `downloadable`, passes Kora's JSON Schema as `responseConstraint`, times out after 60 s, and returns `null` on any error. The generate endpoint accepts the text as `intelligence`, validates it, and falls back to the remote model and then the deterministic designer if it is unusable. English only for now. Tested with a stubbed Prompt API in Playwright (`e2e/local-ai.spec.ts`) and with the real endpoint in `design-v2.integration.test.ts`; it has not been exercised against a real Gemini Nano in CI (CI browsers do not ship the model).
+
+**WebLLM / Transformers.js: not implemented in this release (POST-SUBMISSION).** A multi-GB WebGPU model cannot be tested in headless CI and the mandate forbids risking release for it. The seam is the same `{ text, provider }` shape `runLocalDesign` returns, so adding it later changes only `local-ai.ts`.
+
 ## Configuration (provider-neutral)
 
 | Variable                                                                           | Purpose                                                                                        |

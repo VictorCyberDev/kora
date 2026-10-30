@@ -198,6 +198,33 @@ const LOOK_NAME: Record<string, [string, string]> = {
   ],
 };
 
+/** What a list of the owner's offerings is called, in the words that business would use. */
+const SERVICES_HEADING: Record<string, string> = {
+  restaurant: "On the menu",
+  "cafe-bakery": "What we bake",
+  boutique: "What we make",
+  tailor: "What we make",
+  photography: "What we shoot",
+  florist: "What we arrange",
+  saas: "What it does",
+  education: "What we teach",
+  logistics: "What we move",
+  "electronics-repair": "What we repair",
+  "home-repair": "What we repair",
+  auto: "What we fix",
+  cleaning: "What we clean",
+  "salon-beauty": "Treatments",
+  "spa-wellness": "Treatments",
+  barber: "Cuts & grooming",
+  dental: "Treatments",
+  "medical-clinic": "Care we provide",
+  law: "Areas of practice",
+  accounting: "How we help",
+  "consultant-coach": "How I help",
+  "interior-design": "What we design",
+  architecture: "What we design",
+};
+
 export function recipeFor(brief: DesignBrief): Recipe {
   const first = /^[^.!?]*/.exec(brief.description)?.[0] ?? "";
   return pickRecipe(
@@ -419,9 +446,10 @@ export function planSite(
           ? "list"
           : look.services,
       heading:
-        goal === "show-work" || recipe.traits.includes("visual")
+        SERVICES_HEADING[recipe.id] ??
+        (goal === "show-work" || recipe.traits.includes("visual")
           ? "What we do"
-          : "Services",
+          : "Services"),
       intro: "",
       items: services.slice(0, 8).map((title) => ({
         title,
@@ -594,6 +622,8 @@ export function planSite(
         "bento",
         "portfolio",
         "local-service",
+        "editorial-centered",
+        "luxury",
       ].includes(heroSec.variant)
     )
       heroSec.media = photo;

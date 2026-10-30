@@ -28,6 +28,15 @@ brand colours used as _text_ are pulled to a readable shade (`--accent-text`, `-
 Type: 11 pairings over 14 bundled OFL families (`packages/site-fonts`, licences in `LICENSE-FONTS.md`); a page loads at most five files.
 Shape (sharp/soft/rounded), surface (flat/outlined/raised), buttons (solid/outline/pill/underline), density (compact → editorial), fluid type scale.
 
+## Media strategy (in order)
+
+1. Owner-supplied image (https, alt text, focal point; credit if it is not theirs).
+2. **Curated Kora photograph.** Five Pexels-licensed images (restaurant x2, café, hospitality hall, phone-repair bench), WebP, 640 KB total, in `packages/site-media` with creator/licence/source in `LICENSES.md` and `src/v2/catalog.ts`. Served at `/_kora/media/<exact file>` by the API and the Site Host (not in artifacts, not hot-linked). A photo is used only for businesses it honestly represents; photographs showing another business's signage were rejected.
+3. **Procedural art** from the site's palette (mesh, rings, grid, waves, blocks, arch, planes, orbit, signal), different per slot.
+4. Typography-only composition (several heroes need no image).
+
+Not built (POST-SUBMISSION): customer image upload and storage, additional categories (beauty, fitness, interior, studio currently use procedural art), local image generation.
+
 ## Imagery and icons
 
 The renderer never invents or hot-links a photo. A media slot is either owner-supplied media (https, alt text, focal point; external images need a credit) or

@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api, money } from "../api";
 import { useAuth } from "../auth";
-import { Async, Notice, Status, errText, useLoad } from "../ui";
+import { Async, LevelLine, Notice, Status, errText, useLoad } from "../ui";
 
 const SHOWCASE: Array<[string, string, string]> = [
   ["interior", "Interior design studio", "Lagos"],
@@ -12,37 +12,6 @@ const SHOWCASE: Array<[string, string, string]> = [
   ["barber", "Barbershop", "Yaba"],
   ["boutique", "Fashion boutique", "Ikoyi"],
 ];
-
-/** The brand mark in motion: a level line that holds steady, dips when something breaks, and returns. */
-function LevelLine({ state }: { state: "steady" | "dip" | "recovered" }) {
-  const d =
-    state === "dip"
-      ? "M0 30 H70 L82 30 L90 52 L100 52 L108 30 H220"
-      : "M0 30 H220";
-  return (
-    <svg
-      className={`levelline ${state}`}
-      viewBox="0 0 220 60"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path
-        d={d}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <circle
-        cx={state === "dip" ? 90 : 214}
-        cy={state === "dip" ? 52 : 30}
-        r="5"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
 
 function ProductScene() {
   return (
@@ -184,8 +153,8 @@ export function Landing() {
       </section>
 
       <section className="k-band alt" id="proof">
-        <div className="wrap k-proof">
-          <div className="stack">
+        <div className="wrap stack">
+          <div className="stack" style={{ maxWidth: 640 }}>
             <p className="k-kicker">When something breaks</p>
             <h2>You get the truth, not a guess.</h2>
             <p>
@@ -193,44 +162,63 @@ export function Landing() {
               time and what it still does not know. It only calls a fix
               successful after new checks pass.
             </p>
-            <p className="muted">
-              Developers see the same facts in Proof view: evidence, diagnosis,
-              the policy decision, the approval, and a report you can verify
-              offline.
-            </p>
           </div>
-          <ol className="k-story" aria-label="Example of a recovery">
-            <li>
-              <Status kind="bad">Needs attention</Status>
-              <p>
-                Your website is reachable, but the application is returning an
-                error.
-              </p>
-              <LevelLine state="dip" />
-            </li>
-            <li>
-              <Status kind="warn">Waiting for approval</Status>
-              <p>
-                Recommended: restore the previous version. It changes what
-                customers see, so Kora asks first.
-              </p>
-            </li>
-            <li>
-              <Status kind="info">Checking recovery</Status>
-              <p>
-                The fix is in. Kora is watching for your site to work again.
-              </p>
-            </li>
-            <li>
-              <Status kind="ok">Recovered</Status>
-              <p>Confirmed by new checks. The report is ready to export.</p>
-              <LevelLine state="recovered" />
-            </li>
-          </ol>
+          <div className="shots">
+            <figure>
+              <div className="scene-site">
+                <div className="scene-bar" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <span>Mission Control · Owner view</span>
+                </div>
+                <img
+                  src="/product/incident-approval.webp"
+                  width="1280"
+                  height="720"
+                  loading="lazy"
+                  alt="Kora Mission Control showing a website returning errors, the recommended fix and an approval request"
+                />
+              </div>
+              <figcaption>
+                <Status kind="warn">Waiting for approval</Status> Kora found the
+                problem and has a safe fix ready. It asks before changing what
+                customers see.
+              </figcaption>
+            </figure>
+            <figure>
+              <div className="scene-site">
+                <div className="scene-bar" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <span>Mission Control · Owner view</span>
+                </div>
+                <img
+                  src="/product/incident-recovered.webp"
+                  width="1280"
+                  height="720"
+                  loading="lazy"
+                  alt="Kora Mission Control showing the incident recovered, with every step complete"
+                />
+              </div>
+              <figcaption>
+                <Status kind="ok">Recovered</Status> Confirmed by new checks,
+                not assumed. The Incident Passport is ready to export.
+              </figcaption>
+            </figure>
+          </div>
+          <div className="row">
+            <LevelLine state="dip" />
+            <LevelLine state="recovered" />
+          </div>
+          <p className="small muted">
+            Real screens from Kora, with a fictional laundry business and a
+            controlled test failure. Developers get the same facts in Proof
+            view: evidence, diagnosis, the policy decision, the approval and a
+            report you can verify offline.
+          </p>
         </div>
-        <p className="wrap small muted">
-          Illustration of the flow, not live data.
-        </p>
       </section>
 
       <section className="k-band" id="plans">
