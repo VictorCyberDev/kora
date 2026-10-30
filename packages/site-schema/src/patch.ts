@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parseSiteSpec, type SiteSpec } from "./spec.js";
+import { parseSiteSpecV2, type SiteSpecV2 } from "./v2/spec.js";
 
 const BLOCKED = new Set(["__proto__", "constructor", "prototype"]);
 export const sitePatchSchema = z.object({
@@ -43,7 +44,16 @@ function segments(path: string): string[] {
  * result as a whole. A patch can only ever produce a valid SiteSpec (typed
  * content), never code: the schema is the gate.
  */
-export function applySitePatch(spec: SiteSpec, patch: unknown): SiteSpec {
+export function applySitePatch(spec: SiteSpec, patch: unknown): SiteSpec;
+export function applySitePatch(spec: SiteSpecV2, patch: unknown): SiteSpecV2;
+export function applySitePatch<T extends SiteSpec | SiteSpecV2>(
+  spec: T,
+  patch: unknown,
+): T;
+export function applySitePatch(
+  spec: SiteSpec | SiteSpecV2,
+  patch: unknown,
+): SiteSpec | SiteSpecV2 {
   const { ops } = sitePatchSchema.parse(patch);
   const doc = structuredClone(spec) as unknown as Record<string, unknown>;
   for (const op of ops) {
@@ -92,7 +102,8 @@ export function applySitePatch(spec: SiteSpec, patch: unknown): SiteSpec {
       }
     } else throw new PatchError(`no such path ${op.path}`);
   }
-  return parseSiteSpec(doc);
+  // The version is fixed by the spec being edited: a patch can never change it.
+  return spec.version === 2 ? parseSiteSpecV2(doc) : parseSiteSpec(doc);
 }
 
 /** Structured (non-chat) edits compile to the same patch format. */

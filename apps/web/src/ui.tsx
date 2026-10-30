@@ -68,6 +68,8 @@ export const kindFor = (s: string): Kind =>
     ONLINE: "ok",
     RECOVERED: "ok",
     NEEDS_ATTENTION: "bad",
+    WAITING_APPROVAL: "warn",
+    FIXING: "info",
     VERIFYING: "info",
     UNKNOWN: "wait",
   })[s] as Kind) ?? "wait";
@@ -179,5 +181,40 @@ export function Tabs({ items }: { items: Array<[string, string]> }) {
         </NavLink>
       ))}
     </nav>
+  );
+}
+
+/** The brand mark in motion: a level line that holds steady, dips when something breaks, and returns. */
+export function LevelLine({
+  state,
+}: {
+  state: "steady" | "dip" | "recovered";
+}) {
+  const d =
+    state === "dip"
+      ? "M0 30 H70 L82 30 L90 52 L100 52 L108 30 H220"
+      : "M0 30 H220";
+  return (
+    <svg
+      className={`levelline ${state}`}
+      viewBox="0 0 220 60"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d={d}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle
+        cx={state === "dip" ? 90 : 214}
+        cy={state === "dip" ? 52 : 30}
+        r="5"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

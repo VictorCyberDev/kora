@@ -357,7 +357,7 @@ d("builder: generate, edit, preview, versions, publish", () => {
     const v1 = (
       await h.call("POST", `/api/sites/${site.id}/generate`, {
         cookie: o.cookie,
-        body: brief,
+        body: { ...brief, format: 1 },
       })
     ).json.data.version;
     const pub = await h.call(
@@ -404,7 +404,7 @@ d("builder: generate, edit, preview, versions, publish", () => {
     ).json.data;
     expect(status.headline).toMatchObject({
       status: "ONLINE",
-      title: "Online",
+      title: "Healthy",
     });
     expect(status.version.number).toBe(1);
     // The contact form accepts real submissions with validation and a honeypot.
@@ -536,7 +536,7 @@ d(
           cookie: owner.cookie,
         })
       ).json.data;
-      expect(status1.headline.status).toBe("NEEDS_ATTENTION");
+      expect(status1.headline.status).toBe("WAITING_APPROVAL");
       expect(status1.controlledTest.label).toBe("Controlled test");
 
       const actionId = view.recommendedAction.actionId;
@@ -593,7 +593,7 @@ d(
             cookie: owner.cookie,
           })
         ).json.data.headline.title,
-      ).toBe("Fix applied — verifying");
+      ).toBe("Checking recovery");
       expect((await fetch(live)).status).toBe(200); // the served bytes really changed
 
       // Only new observations can verify recovery.
@@ -624,7 +624,7 @@ d(
             cookie: owner.cookie,
           })
         ).json.data.headline.title,
-      ).toBe("Website restored");
+      ).toBe("Recovered");
 
       // Proof: audit trail, notifications, and a Passport v2 that verifies offline.
       const audit = (

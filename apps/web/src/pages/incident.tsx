@@ -53,22 +53,24 @@ export function IncidentsList() {
   );
 }
 
-const Q = ({
-  n,
-  title,
-  children,
-}: {
-  n: number;
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <section className="card" aria-labelledby={`q${n}`}>
-    <h3 id={`q${n}`}>
-      {n}. {title}
-    </h3>
-    {children}
-  </section>
-);
+const STAGES = [
+  "Detected",
+  "Fix recommended",
+  "Approved",
+  "Fixing",
+  "Checking recovery",
+  "Recovered",
+] as const;
+/** Where the incident is on the one path every incident takes, from durable state only. */
+function stageOf(v: J, a: J | null | undefined): number {
+  if (v.verification.state === "RECOVERY_VERIFIED") return 5;
+  if (v.verification.state === "VERIFYING") return 4;
+  if (!a) return 0;
+  if (a.state === "EXECUTING" || a.state === "READY") return 3;
+  if (a.state === "AWAITING_APPROVAL") return 1;
+  if (a.state === "EXECUTED") return 4;
+  return 2;
+}
 
 export function IncidentPage() {
   const { id: siteId, incidentId } = useParams();
@@ -101,206 +103,291 @@ export function IncidentPage() {
         {(v: J) => {
           const a = v.recommendedAction;
           const resolved = Boolean(v.incident.resolvedAt);
+          const stage = stageOf(v, a);
           return (
             <>
               <div
-                className={`hero-status ${v.verification.state === "RECOVERY_VERIFIED" ? "ok recovered" : v.verification.state === "VERIFYING" ? "info" : resolved ? "ok" : "bad"}`}
+                className={`hero-status ${v.verification.state === "RECOVERY_VERIFIED" ? "ok recovered" : v.verification.state === "VERIFYING" ? "info" : a?.state === "AWAITING_APPROVAL" ? "warn" : resolved ? "ok" : "bad"}`}
                 aria-live="polite"
               >
-                {v.verification.state === "RECOVERY_VERIFIED" ? (
-                  <Status kind="ok">Website restored</Status>
-                ) : v.verification.state === "VERIFYING" ? (
-                  <Status kind="info">Fix applied — verifying</Status>
-                ) : resolved ? (
-                  <Status kind="ok">Resolved</Status>
-                ) : (
-                  <Status kind="bad">Needs attention</Status>
-                )}
+                <Status
+                  kind={
+                    v.verification.state === "RECOVERY_VERIFIED"
+                      ? "ok"
+                      : v.verification.state === "VERIFYING"
+                        ? "info"
+                        : a?.state === "AWAITING_APPROVAL"
+                          ? "warn"
+                          : resolved
+                            ? "ok"
+                            : "bad"
+                  }
+                >
+                  {v.verification.state === "RECOVERY_VERIFIED"
+                    ? "Recovered"
+                    : v.verification.state === "VERIFYING"
+                      ? "Checking recovery"
+                      : a?.state === "AWAITING_APPROVAL"
+                        ? "Waiting for approval"
+                        : a?.state === "EXECUTING" || a?.state === "READY"
+                          ? "Fixing"
+                          : resolved
+                            ? "Resolved"
+                            : "Needs attention"}
+                </Status>
                 <div className="big">{v.whatHappened}</div>
               </div>
-              <Q n={1} title="What happened?">
-                <p>{v.whatHappened}</p>
-                {v.explanation.text !== v.whatHappened && (
-                  <p className="small muted">
-                    {v.explanation.text}{" "}
-                    <em>
-                      (
-                      {v.explanation.source === "MODEL"
-                        ? "AI explanation"
-                        : "Generated from the evidence by rules"}
-                      )
-                    </em>
-                  </p>
-                )}
-              </Q>
-              <Q n={2} title="Is the website currently affected?">
-                {v.affected.websiteAffectedNow ? (
-                  <Status kind="bad">Yes</Status>
-                ) : (
-                  <Status kind="ok">No — checks are passing</Status>
-                )}
-                <ul>
-                  {v.affected.notes.map((n: string) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
-              </Q>
-              <Q n={3} title="When did it begin?">
-                <p>
-                  {when(v.began)}{" "}
-                  <span className="muted">({ago(v.began)})</span>
-                </p>
-              </Q>
-              <Q n={4} title="What changed?">
-                {v.whatChanged.length === 0 ? (
-                  <p className="muted">
-                    Kora recorded no change in the minutes before the first
-                    failure.
-                  </p>
-                ) : (
-                  <ul>
-                    {v.whatChanged.map((c: J) => (
-                      <li key={c.at + c.kind}>{c.text}</li>
-                    ))}
-                  </ul>
-                )}
-              </Q>
-              <Q n={5} title="What does Kora know?">
-                <ul>
-                  {v.whatWeKnow.length ? (
-                    v.whatWeKnow.map((k: string) => <li key={k}>{k}</li>)
-                  ) : (
-                    <li className="muted">Not enough evidence yet.</li>
-                  )}
-                </ul>
-              </Q>
-              <Q n={6} title="What is still unknown?">
-                <ul>
-                  {v.whatWeDoNotKnow.map((k: string) => (
-                    <li key={k}>{k}</li>
-                  ))}
-                </ul>
-              </Q>
-              <Q n={7} title="Recommended action">
-                {!a ? (
-                  <p className="muted">
-                    {resolved
-                      ? "No action is needed."
-                      : "Kora has no safe action to recommend yet."}
-                  </p>
-                ) : (
-                  <>
-                    <p>
-                      <strong>{a.text}</strong>
-                    </p>
-                    <p className="muted">{a.reason}</p>
-                    {a.policy && (
-                      <p className="small">
-                        Policy:{" "}
-                        <strong>
-                          {a.policy.decision === "ALLOW"
-                            ? "allowed automatically"
-                            : a.policy.decision === "DENY"
-                              ? "not allowed"
-                              : "needs your approval"}
-                        </strong>{" "}
-                        — {a.policy.reason}
+
+              <ol className="track" aria-label="Where this incident is">
+                {STAGES.map((label, i) => (
+                  <li
+                    key={label}
+                    data-s={i < stage ? "done" : i === stage ? "now" : "next"}
+                    aria-current={i === stage ? "step" : undefined}
+                  >
+                    <span className="pip" aria-hidden="true" />
+                    {label}
+                  </li>
+                ))}
+              </ol>
+
+              <div className="inc-grid">
+                <div className="stack">
+                  <section className="card stack" aria-labelledby="q-story">
+                    <h2 id="q-story" style={{ fontSize: "1.5rem", margin: 0 }}>
+                      What happened
+                    </h2>
+                    <p>{v.whatHappened}</p>
+                    {v.explanation.text !== v.whatHappened && (
+                      <p className="small muted">
+                        {v.explanation.text}{" "}
+                        <em>
+                          (
+                          {v.explanation.source === "MODEL"
+                            ? "AI explanation"
+                            : "Generated from the evidence by rules"}
+                          )
+                        </em>
                       </p>
                     )}
-                    {a.state === "DENIED" && (
-                      <Notice kind="warn">
-                        Kora cannot do this itself. It may need a manual step
-                        with your hosting provider.
-                      </Notice>
+                    <dl className="facts">
+                      <div>
+                        <dt>Impact</dt>
+                        <dd>
+                          {v.affected.websiteAffectedNow ? (
+                            <Status kind="bad">Customers are affected</Status>
+                          ) : (
+                            <Status kind="ok">Checks are passing</Status>
+                          )}
+                          {v.affected.websiteAffectedNow && (
+                            <ul>
+                              {v.affected.notes.map((n: string) => (
+                                <li key={n}>{n}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>When</dt>
+                        <dd>
+                          {when(v.began)}
+                          <div className="small muted">{ago(v.began)}</div>
+                        </dd>
+                      </div>
+                    </dl>
+                  </section>
+
+                  <section className="card stack" aria-labelledby="q-changed">
+                    <h2
+                      id="q-changed"
+                      style={{ fontSize: "1.25rem", margin: 0 }}
+                    >
+                      What Kora observed and what changed
+                    </h2>
+                    {v.whatChanged.length === 0 ? (
+                      <p className="muted">
+                        Kora recorded no change in the minutes before the first
+                        failure.
+                      </p>
+                    ) : (
+                      <ol className="timeline">
+                        {v.whatChanged.map((c: J) => (
+                          <li key={c.at + c.kind}>{c.text}</li>
+                        ))}
+                      </ol>
                     )}
-                  </>
-                )}
-              </Q>
-              <Q n={8} title="Approval">
-                {a?.state === "AWAITING_APPROVAL" ? (
-                  <div className="stack">
-                    <Notice kind="warn">
-                      This changes what your customers see. Kora will not do it
-                      without your approval
-                      {a.approvalExpiresAt
-                        ? ` (request expires ${when(a.approvalExpiresAt)})`
-                        : ""}
-                      .
-                    </Notice>
-                    {err && <Notice kind="bad">{err}</Notice>}
-                    <div className="row">
-                      <button
-                        className="btn"
-                        disabled={busy}
-                        onClick={() =>
-                          act(async () => {
-                            await api(
-                              "POST",
-                              `/api/actions/${a.actionId}/approve`,
-                              {},
-                            );
-                            await api(
-                              "POST",
-                              `/api/actions/${a.actionId}/execute`,
-                            );
-                          })
-                        }
+                  </section>
+
+                  <div className="know">
+                    <section className="card" aria-labelledby="q-know">
+                      <h2
+                        id="q-know"
+                        style={{ fontSize: "1.15rem", margin: "0 0 8px" }}
                       >
-                        {busy ? "Working…" : "Approve and apply"}
-                      </button>
-                      <button
-                        className="btn quiet"
-                        disabled={busy}
-                        onClick={() =>
-                          act(() =>
-                            api(
-                              "POST",
-                              `/api/actions/${a.actionId}/reject`,
-                              {},
-                            ),
-                          )
-                        }
+                        What Kora knows
+                      </h2>
+                      <ul>
+                        {v.whatWeKnow.length ? (
+                          v.whatWeKnow.map((k: string) => <li key={k}>{k}</li>)
+                        ) : (
+                          <li className="muted">Not enough evidence yet.</li>
+                        )}
+                      </ul>
+                    </section>
+                    <section className="card" aria-labelledby="q-unknown">
+                      <h2
+                        id="q-unknown"
+                        style={{ fontSize: "1.15rem", margin: "0 0 8px" }}
                       >
-                        Decline
-                      </button>
-                    </div>
+                        What Kora does not know
+                      </h2>
+                      <ul>
+                        {v.whatWeDoNotKnow.map((k: string) => (
+                          <li key={k}>{k}</li>
+                        ))}
+                      </ul>
+                    </section>
                   </div>
-                ) : (
-                  <p className="muted">
-                    {a
-                      ? `Status: ${a.state.toLowerCase().replaceAll("_", " ")}.`
-                      : "No approval is needed."}
-                  </p>
-                )}
-                {!a && !resolved && (
-                  <button
-                    className="btn quiet"
-                    disabled={busy}
-                    onClick={() =>
-                      act(() =>
-                        api("POST", `/api/incidents/${incidentId}/reason`),
-                      )
-                    }
-                  >
-                    Ask Kora to re-check the evidence
-                  </button>
-                )}
-              </Q>
-              <Q n={9} title="Verification">
-                {v.verification.state === "VERIFYING" && (
-                  <Spinner label="Watching for your website to work again" />
-                )}
-                <p>{v.verification.text}</p>
-                {v.verification.recoverySeconds != null && (
-                  <p className="small muted">
-                    Down for about {Math.round(v.verification.recoverySeconds)}{" "}
-                    seconds in total.
-                  </p>
-                )}
-              </Q>
-              <Q n={10} title="Technical evidence">
-                <Proof incidentId={incidentId!} open={proof} />
-              </Q>
+
+                  <section className="card" aria-labelledby="q-evidence">
+                    <h2
+                      id="q-evidence"
+                      style={{ fontSize: "1.15rem", margin: "0 0 8px" }}
+                    >
+                      Technical evidence
+                    </h2>
+                    <Proof incidentId={incidentId!} open={proof} />
+                  </section>
+                </div>
+
+                <aside
+                  className="card stack side-action"
+                  aria-labelledby="q-action"
+                >
+                  <h2 id="q-action" style={{ fontSize: "1.25rem", margin: 0 }}>
+                    Recommended action
+                  </h2>
+                  {!a ? (
+                    <p className="muted">
+                      {resolved
+                        ? "No action is needed."
+                        : "Kora has no safe action to recommend yet."}
+                    </p>
+                  ) : (
+                    <>
+                      <p style={{ margin: 0 }}>
+                        <strong>{a.text}</strong>
+                      </p>
+                      <p className="muted" style={{ margin: 0 }}>
+                        {a.reason}
+                      </p>
+                      {a.policy && (
+                        <p className="small" style={{ margin: 0 }}>
+                          Policy:{" "}
+                          <strong>
+                            {a.policy.decision === "ALLOW"
+                              ? "allowed automatically"
+                              : a.policy.decision === "DENY"
+                                ? "not allowed"
+                                : "needs your approval"}
+                          </strong>{" "}
+                          — {a.policy.reason}
+                        </p>
+                      )}
+                      {a.state === "DENIED" && (
+                        <Notice kind="warn">
+                          Kora cannot do this itself. It may need a manual step
+                          with your hosting provider.
+                        </Notice>
+                      )}
+                    </>
+                  )}
+                  {a?.state === "AWAITING_APPROVAL" ? (
+                    <div className="stack">
+                      <Notice kind="warn">
+                        This changes what your customers see. Kora will not do
+                        it without your approval
+                        {a.approvalExpiresAt
+                          ? ` (request expires ${when(a.approvalExpiresAt)})`
+                          : ""}
+                        .
+                      </Notice>
+                      {err && <Notice kind="bad">{err}</Notice>}
+                      <div className="row">
+                        <button
+                          className="btn"
+                          disabled={busy}
+                          onClick={() =>
+                            act(async () => {
+                              await api(
+                                "POST",
+                                `/api/actions/${a.actionId}/approve`,
+                                {},
+                              );
+                              await api(
+                                "POST",
+                                `/api/actions/${a.actionId}/execute`,
+                              );
+                            })
+                          }
+                        >
+                          {busy ? "Working…" : "Approve and apply"}
+                        </button>
+                        <button
+                          className="btn quiet"
+                          disabled={busy}
+                          onClick={() =>
+                            act(() =>
+                              api(
+                                "POST",
+                                `/api/actions/${a.actionId}/reject`,
+                                {},
+                              ),
+                            )
+                          }
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="muted small" style={{ margin: 0 }}>
+                      {a
+                        ? `Status: ${a.state.toLowerCase().replaceAll("_", " ")}.`
+                        : "No approval is needed."}
+                    </p>
+                  )}
+                  {!a && !resolved && (
+                    <button
+                      className="btn quiet"
+                      disabled={busy}
+                      onClick={() =>
+                        act(() =>
+                          api("POST", `/api/incidents/${incidentId}/reason`),
+                        )
+                      }
+                    >
+                      Ask Kora to re-check the evidence
+                    </button>
+                  )}
+                  <hr />
+                  <h3 style={{ margin: 0, fontSize: "1.05rem" }}>
+                    Recovery check
+                  </h3>
+                  {v.verification.state === "VERIFYING" && (
+                    <Spinner label="Watching for your website to work again" />
+                  )}
+                  <p style={{ margin: 0 }}>{v.verification.text}</p>
+                  {v.verification.recoverySeconds != null && (
+                    <p className="small muted" style={{ margin: 0 }}>
+                      Down for about{" "}
+                      {Math.round(v.verification.recoverySeconds)} seconds in
+                      total.
+                    </p>
+                  )}
+                </aside>
+              </div>
             </>
           );
         }}

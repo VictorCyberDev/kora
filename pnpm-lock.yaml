@@ -7,6 +7,9 @@ settings:
 importers:
   .:
     devDependencies:
+      "@axe-core/playwright":
+        specifier: ^4.14.0
+        version: 4.14.0(playwright-core@1.63.0)
       "@eslint/js":
         specifier: ^9.37.0
         version: 9.39.5
@@ -52,6 +55,12 @@ importers:
       "@kora/runtime-claim":
         specifier: workspace:*
         version: link:../../packages/runtime-claim
+      "@kora/site-fonts":
+        specifier: workspace:*
+        version: link:../../packages/site-fonts
+      "@kora/site-media":
+        specifier: workspace:*
+        version: link:../../packages/site-media
       "@kora/site-schema":
         specifier: workspace:*
         version: link:../../packages/site-schema
@@ -117,6 +126,12 @@ importers:
       "@kora/runtime-claim":
         specifier: workspace:*
         version: link:../../packages/runtime-claim
+      "@kora/site-fonts":
+        specifier: workspace:*
+        version: link:../../packages/site-fonts
+      "@kora/site-media":
+        specifier: workspace:*
+        version: link:../../packages/site-media
       "@kora/site-schema":
         specifier: workspace:*
         version: link:../../packages/site-schema
@@ -197,6 +212,24 @@ importers:
         version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
 
   packages/runtime-claim:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  packages/site-fonts:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  packages/site-media:
     devDependencies:
       typescript:
         specifier: ^5.9.3
@@ -290,6 +323,15 @@ packages:
       {
         integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==,
       }
+
+  "@axe-core/playwright@4.14.0":
+    resolution:
+      {
+        integrity: sha512-SGUhG5PIHd2eMdpgBF2PyQLOhX+qyDR2PT4cmoS4Qk2ak+jX/rrSvst9l0PGv5WTHolKpUMvVmoHpr4cZgf1RQ==,
+      }
+    engines: { node: ">=22.12.0" }
+    peerDependencies:
+      playwright-core: ">= 1.0.0"
 
   "@babel/code-frame@7.29.7":
     resolution:
@@ -1429,6 +1471,13 @@ packages:
       {
         integrity: sha512-g2tQ7LE7oOSqDfwEm3M+ZCMTJc7KiZCdJ4UwyZJb5ckTKyYu50OYmvv0mCFXPuYXoM4zkSt8zM9XQ9KCvxA74A==,
       }
+
+  axe-core@4.14.0:
+    resolution:
+      {
+        integrity: sha512-9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ==,
+      }
+    engines: { node: ">=4" }
 
   balanced-match@1.0.2:
     resolution:
@@ -2902,6 +2951,11 @@ snapshots:
       "@csstools/css-tokenizer": 3.0.4
       lru-cache: 10.4.3
 
+  "@axe-core/playwright@4.14.0(playwright-core@1.63.0)":
+    dependencies:
+      axe-core: 4.14.0
+      playwright-core: 1.63.0
+
   "@babel/code-frame@7.29.7":
     dependencies:
       "@babel/helper-validator-identifier": 7.29.7
@@ -3546,6 +3600,8 @@ snapshots:
     dependencies:
       "@fastify/error": 4.2.0
       fastq: 1.20.3
+
+  axe-core@4.14.0: {}
 
   balanced-match@1.0.2: {}
 

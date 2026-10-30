@@ -1,6 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /** Screenshots are captured only when asked for (E2E_SCREENSHOTS=dir). */
+/** Viewport (not full-page) captures used for the Kora homepage; written only when E2E_PRODUCT_SHOTS=dir. */
+const productShot = async (page: Page, name: string) => {
+  if (!process.env.E2E_PRODUCT_SHOTS) return;
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({
+    path: `${process.env.E2E_PRODUCT_SHOTS}/${name}.png`,
+  });
+};
 const shot = async (page: Page, name: string) => {
   if (process.env.E2E_SCREENSHOTS)
     await page.screenshot({
@@ -18,7 +26,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   // 1. Landing communicates the product, then sign up.
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Build your website/ }),
+    page.getByRole("heading", { name: /made for you/ }),
   ).toBeVisible();
   await shot(page, "01-landing");
   await page.getByRole("link", { name: "Build my website" }).first().click();
@@ -38,22 +46,34 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
     .fill(
       "Modern laundry in Lagos. We provide pickup and delivery, dry cleaning and ironing.",
     );
+  await page.getByText("Add contact details (optional)").click();
   await page.getByLabel(/WhatsApp number/).fill("+2348012345678");
-  await page.getByRole("button", { name: "Create my website" }).click();
+  await page.getByRole("button", { name: "Show me three designs" }).click();
+
+  // 2b. Three genuinely different directions; the owner picks one.
+  await expect(
+    page.getByRole("heading", { name: /Pick a direction/ }),
+  ).toBeVisible({ timeout: 20_000 });
+  await expect(
+    page.getByRole("button", { name: "Use this direction" }),
+  ).toHaveCount(3);
+  await shot(page, "01b-directions");
+  await page.getByRole("button", { name: "Choose for me" }).click();
 
   // 3. Preview is the stored artifact; edit by asking.
   const preview = page.frameLocator('iframe[title="Website preview"]');
-  await expect(
-    preview.getByRole("heading", { name: "Victor Laundry" }).first(),
-  ).toBeVisible({ timeout: 20_000 });
+  await expect(preview.getByText("Victor Laundry").first()).toBeVisible({
+    timeout: 20_000,
+  });
   await shot(page, "02-build-preview");
   await page.getByRole("button", { name: "Tablet" }).click();
   await page.getByRole("button", { name: "Phone" }).click();
   await page.getByLabel("Your request").fill("Make the primary colour red");
   await page.getByRole("button", { name: "Apply change" }).click();
-  await expect(page.getByText(/saved as version 2/)).toBeVisible();
+  await expect(page.getByText(/Saved as version 2/)).toBeVisible();
 
   // 4. Publish version 1, then the edited version 2: a real URL appears.
+  await page.getByRole("tab", { name: "Versions" }).click();
   await page.getByRole("button", { name: "v1", exact: true }).click();
   await page.getByRole("button", { name: "Publish this version" }).click();
   await expect(page.getByText(/Published: http/)).toBeVisible({
@@ -75,7 +95,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
     .getByRole("link", { name: "Overview", exact: true })
     .nth(1)
     .click();
-  await expect(page.getByText("Online", { exact: true }).first()).toBeVisible({
+  await expect(page.getByText("Healthy", { exact: true }).first()).toBeVisible({
     timeout: 30_000,
   });
 
@@ -83,7 +103,9 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   await shot(page, "03-online");
   await expect(page.getByText("Controlled test").first()).toBeVisible();
   await page.getByRole("button", { name: "Start HTTP 500 test" }).click();
-  await expect(page.getByText("Needs attention").first()).toBeVisible({
+  await expect(
+    page.getByText(/Needs attention|Waiting for approval/).first(),
+  ).toBeVisible({
     timeout: 40_000,
   });
   await page.getByRole("link", { name: "See what happened" }).click();
@@ -97,7 +119,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
       .first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "6. What is still unknown?" }),
+    page.getByRole("heading", { name: "What Kora does not know" }),
   ).toBeVisible();
   await expect(page.getByText(/does not prove/).first()).toBeVisible();
   await expect(
@@ -109,12 +131,15 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
 
   // 8. Approval is required; approve and apply.
   await shot(page, "04-incident-approval");
+  await productShot(page, "incident-approval");
   await page.getByRole("button", { name: "Approve and apply" }).click();
   // 9. Not "fixed" yet: verifying, then restored only after new checks pass.
   await expect(
-    page.getByText(/Fix applied — verifying|Website restored/).first(),
+    page.getByText(/Checking recovery|Recovered/).first(),
   ).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByText("Website restored").first()).toBeVisible({
+  await expect(
+    page.getByText("Recovered", { exact: true }).first(),
+  ).toBeVisible({
     timeout: 45_000,
   });
   await expect(
@@ -126,6 +151,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   ).toBeVisible();
 
   await shot(page, "05-restored");
+  await productShot(page, "incident-recovered");
   // 10. Proof mode shows the full chain of evidence.
   await page.getByRole("button", { name: "Proof", exact: true }).click();
   // Proof mode opens the technical evidence by default.

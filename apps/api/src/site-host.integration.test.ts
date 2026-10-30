@@ -123,6 +123,30 @@ d("independent Site Host", () => {
     expect((await fetch(`${hostBase}/s/does-not-exist/`)).status).toBe(404);
   });
 
+  it("serves a v2 design's bundled fonts from the independent host, and only exact bundled files", async () => {
+    const { pub1 } = await publishedSite("sh-fonts@example.com", "Font Host");
+    const css = await (
+      await fetch(`${pub1.json.data.publicUrl}styles.css`)
+    ).text();
+    const fonts = [
+      ...css.matchAll(/url\((\/_kora\/fonts\/[a-z0-9-]+\.woff2)\)/g),
+    ].map((m) => m[1]!);
+    expect(fonts.length).toBeGreaterThan(0);
+    expect(fonts.length).toBeLessThanOrEqual(5);
+    for (const f of fonts) {
+      const r = await fetch(`${hostBase}${f}`);
+      expect(r.status).toBe(200);
+      expect(r.headers.get("content-type")).toBe("font/woff2");
+      expect(r.headers.get("cache-control")).toContain("immutable");
+    }
+    for (const bad of [
+      "/_kora/fonts/nope.woff2",
+      "/_kora/fonts/..%2fpackage.json",
+      "/_kora/fonts/inter-latin-400-normal.woff2/x",
+    ])
+      expect((await fetch(`${hostBase}${bad}`)).status).toBe(404);
+  });
+
   it("starts without SITE_HOST_PUBLIC_URL (first-deploy case) and derives absolute URLs from the request", async () => {
     const { site } = await publishedSite("sh-nourl@example.com", "No Url Host");
     const port = await freePort();

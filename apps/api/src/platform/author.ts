@@ -1,12 +1,22 @@
 import {
   applySitePatch,
+  applyIntelligence,
+  applyStructuredEditV2,
   briefSchema,
+  designBriefSchema,
+  designQuality,
   generateSpecFromBrief,
+  intelligencePrompt,
   parseSiteSpec,
+  planSite,
+  readableOn,
+  ruleBasedEditV2,
   sitePatchSchema,
   structuredEditToPatch,
+  type AnySiteSpec,
   type SitePatch,
   type SiteSpec,
+  type SiteSpecV2,
   type StructuredEdit,
 } from "@kora/site-schema";
 import type { LlmClient } from "@kora/reasoner";
@@ -15,12 +25,16 @@ import { sanitizeUntrusted } from "@kora/reasoner";
 export type GenerationSource =
   "MODEL" | "DETERMINISTIC" | "EDIT_MODEL" | "EDIT_STRUCTURED";
 export interface Authored {
-  spec: SiteSpec;
+  spec: AnySiteSpec;
   source: GenerationSource;
   inputTokens: number | null;
   outputTokens: number | null;
   /** Why the model path was not used, when it was not. */
   note: string | null;
+  /** Which provider answered, when a model was used. */
+  provider?: string | null;
+  /** Why this design, from the model, shown to the owner. Never trusted for anything but display. */
+  rationale?: { layout: string; palette: string } | null;
 }
 export class EditNotUnderstood extends Error {
   constructor(message: string) {
@@ -134,6 +148,82 @@ export function ruleBasedEdit(
 export class SiteAuthor {
   constructor(private readonly llm: LlmClient | null) {}
 
+  /**
+   * v2 design generation. The model (when configured) only chooses among registered looks,
+   * palettes and art and may polish a headline; the deterministic planner builds the spec
+   * and the quality gate vets every word. Any failure keeps the deterministic design.
+   */
+  async generateV2(
+    rawBrief: unknown,
+    direction: 0 | 1 | 2 = 0,
+    /** Text produced by an on-device model in the owner's browser. Untrusted exactly like remote output. */
+    onDevice?: { text: string; provider: string },
+  ): Promise<Authored> {
+    const brief = designBriefSchema.parse(rawBrief);
+    if (onDevice) {
+      const r = applyIntelligence(brief, onDevice.text, direction);
+      if (r.applied.length > 0)
+        return {
+          spec: r.spec,
+          source: "MODEL",
+          inputTokens: null,
+          outputTokens: null,
+          provider: onDevice.provider,
+          rationale: r.rationale,
+          note: r.rejected.length
+            ? `On-device AI design applied; ${r.rejected.length} suggestion(s) were refused by the quality check`
+            : null,
+        };
+      // unusable on-device answer: continue down the chain (remote model, then Kora's designer)
+    }
+    if (this.llm) {
+      try {
+        const res = await this.llm.complete({
+          system: intelligencePrompt(),
+          user: JSON.stringify({
+            brief: Object.fromEntries(
+              Object.entries(brief).map(([k, v]) => [
+                k,
+                typeof v === "string" ? sanitizeUntrusted(v, 2000) : v,
+              ]),
+            ),
+          }),
+          maxOutputTokens: 1500,
+        });
+        const r = applyIntelligence(brief, res.text, direction);
+        const used = r.applied.length > 0;
+        return {
+          spec: r.spec,
+          source: used ? "MODEL" : "DETERMINISTIC",
+          inputTokens: res.inputTokens,
+          outputTokens: res.outputTokens,
+          provider: res.provider ?? this.llm.provider ?? null,
+          rationale: r.rationale,
+          note: used
+            ? r.rejected.length
+              ? `AI design applied; ${r.rejected.length} suggestion(s) were refused by the quality check`
+              : null
+            : `AI answer was not usable; used Kora's designer. ${r.rejected[0] ?? ""}`.trim(),
+        };
+      } catch (error) {
+        return {
+          spec: planSite(brief, { direction }),
+          source: "DETERMINISTIC",
+          inputTokens: null,
+          outputTokens: null,
+          note: `AI unavailable (${error instanceof Error ? error.name : "error"}); used Kora's designer`,
+        };
+      }
+    }
+    return {
+      spec: planSite(brief, { direction }),
+      source: "DETERMINISTIC",
+      inputTokens: null,
+      outputTokens: null,
+      note: "AI is not configured; designed by Kora from exactly what you provided",
+    };
+  }
+
   async generate(rawBrief: unknown): Promise<Authored> {
     const brief = briefSchema.parse(rawBrief);
     if (this.llm) {
@@ -178,13 +268,15 @@ export class SiteAuthor {
   }
 
   async edit(
-    spec: SiteSpec,
+    spec: AnySiteSpec,
     input: {
       instruction?: string | undefined;
       edit?: StructuredEdit | undefined;
+      designEdit?: unknown;
       patch?: unknown;
     },
   ): Promise<Authored> {
+    if (spec.version === 2) return this.editV2(spec, input);
     if (input.edit)
       return {
         spec: applySitePatch(spec, structuredEditToPatch(input.edit)),
@@ -241,6 +333,90 @@ export class SiteAuthor {
         note: null,
       };
     } catch {
+      throw new EditNotUnderstood(
+        "The AI suggested a change that is not allowed for this website. Nothing was changed.",
+      );
+    }
+  }
+
+  private async editV2(
+    spec: SiteSpecV2,
+    input: {
+      instruction?: string | undefined;
+      designEdit?: unknown;
+      patch?: unknown;
+    },
+  ): Promise<Authored> {
+    const done = (
+      next: SiteSpecV2,
+      source: GenerationSource,
+      note: string | null,
+      r?: { inputTokens: number | null; outputTokens: number | null },
+    ): Authored => ({
+      spec: next,
+      source,
+      inputTokens: r?.inputTokens ?? null,
+      outputTokens: r?.outputTokens ?? null,
+      note,
+    });
+    if (input.designEdit) {
+      try {
+        return done(
+          applyStructuredEditV2(spec, input.designEdit),
+          "EDIT_STRUCTURED",
+          null,
+        );
+      } catch (e) {
+        throw new EditNotUnderstood(
+          e instanceof Error && e.name === "EditV2Error"
+            ? e.message
+            : "That design change is not available. Nothing was changed.",
+        );
+      }
+    }
+    if (input.patch)
+      return done(
+        applySitePatch(spec, sitePatchSchema.parse(input.patch)),
+        "EDIT_STRUCTURED",
+        null,
+      );
+    const instruction = (input.instruction ?? "").trim();
+    if (!instruction) throw new EditNotUnderstood("Tell Kora what to change.");
+    const rule = ruleBasedEditV2(spec, instruction, readableOn);
+    if (rule) return done(rule, "EDIT_STRUCTURED", "applied as a simple edit");
+    if (!this.llm)
+      throw new EditNotUnderstood(
+        "That edit needs the AI model, which is not configured on this Kora. Use the design controls (colours, fonts, layouts) or the text fields instead.",
+      );
+    const res = await this.llm.complete({
+      system: `${EDIT_SYSTEM}\nThe spec is SiteSpec version 2. Design fields are enums over fixed components; colours must stay readable. Never change "version".`,
+      user: JSON.stringify({
+        instruction: sanitizeUntrusted(instruction, 1000),
+        spec,
+      }),
+      maxOutputTokens: 3000,
+    });
+    let patch: unknown;
+    try {
+      patch = JSON.parse(res.text);
+    } catch {
+      throw new EditNotUnderstood(
+        "The AI did not return a usable edit. Nothing was changed.",
+      );
+    }
+    try {
+      const next = applySitePatch(spec, patch);
+      // Facts may only come from the owner: the existing site plus what they just asked for.
+      const findings = designQuality(next, {
+        text: `${JSON.stringify(spec)} ${instruction}`,
+      });
+      if (findings.length)
+        throw new EditNotUnderstood(
+          `The AI suggested copy that Kora refused (${findings[0]!.message}). Nothing was changed.`,
+        );
+      return done(next, "EDIT_MODEL", null, res);
+    } catch (e) {
+      if (e instanceof EditNotUnderstood) throw e;
       throw new EditNotUnderstood(
         "The AI suggested a change that is not allowed for this website. Nothing was changed.",
       );

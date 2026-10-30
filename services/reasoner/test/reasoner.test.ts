@@ -3,6 +3,7 @@ import {
   OpenAiCompatibleClient,
   deterministicReasoning,
   llmFromEnv,
+  FallbackLlmClient,
   ownerHeadline,
   projectInput,
   reason,
@@ -319,9 +320,20 @@ describe("owner headline and client", () => {
     expect(
       ownerHeadline({ ...base, openIncident: true, actionState: "VERIFYING" })
         .title,
-    ).toBe("Fix applied — verifying");
+    ).toBe("Checking recovery");
+    expect(
+      ownerHeadline({
+        ...base,
+        openIncident: true,
+        actionState: "AWAITING_APPROVAL",
+      }).title,
+    ).toBe("Waiting for approval");
+    expect(
+      ownerHeadline({ ...base, openIncident: true, actionState: "EXECUTING" })
+        .title,
+    ).toBe("Fixing");
     expect(ownerHeadline({ ...base, recoveryVerified: true }).title).toBe(
-      "Website restored",
+      "Recovered",
     );
     expect(ownerHeadline({ ...base, hasObservations: false }).status).toBe(
       "UNKNOWN",
@@ -345,5 +357,63 @@ describe("owner headline and client", () => {
     await c
       .complete({ system: "s", user: "u" })
       .catch((e: Error) => expect(e.message).not.toContain("SECRETSECRET"));
+  });
+});
+
+describe("provider-neutral AI configuration", () => {
+  const ok = (text: string) => () =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: text } }],
+          usage: { prompt_tokens: 3, completion_tokens: 2 },
+        }),
+      ),
+    );
+  it("AI_* wins over INFERENCE_* and INFERENCE_* alone still works", () => {
+    const legacy = llmFromEnv({
+      INFERENCE_BASE_URL: "https://old.test/v1",
+      INFERENCE_API_KEY: "k",
+      INFERENCE_MODEL: "old",
+    });
+    expect(legacy?.model).toBe("old");
+    const neutral = llmFromEnv({
+      INFERENCE_BASE_URL: "https://old.test/v1",
+      INFERENCE_API_KEY: "k",
+      INFERENCE_MODEL: "old",
+      AI_PROVIDER: "openrouter",
+      AI_BASE_URL: "https://new.test/v1",
+      AI_API_KEY: "k2",
+      AI_MODEL: "new",
+    });
+    expect(neutral?.model).toBe("new");
+    expect(neutral?.provider).toBe("openrouter");
+    expect(llmFromEnv({ AI_BASE_URL: "https://x.test/v1" })).toBeNull();
+  });
+  it("falls through the ordered providers, labels who answered, and fails closed when all fail", async () => {
+    const down = new OpenAiCompatibleClient({
+      baseUrl: "https://a.test/v1",
+      apiKey: "k",
+      model: "a",
+      fetchImpl: () => Promise.resolve(new Response("no", { status: 503 })),
+    });
+    const up = new OpenAiCompatibleClient({
+      baseUrl: "https://b.test/v1",
+      apiKey: "k",
+      model: "b",
+      fetchImpl: ok("{}"),
+    });
+    const chain = new FallbackLlmClient([
+      Object.assign(down, { provider: "rumpty" }),
+      Object.assign(up, { provider: "openrouter" }),
+    ]);
+    const r = await chain.complete({ system: "s", user: "u" });
+    expect(r.provider).toBe("openrouter");
+    expect(r.inputTokens).toBe(3);
+    await expect(
+      new FallbackLlmClient([
+        Object.assign(down, { provider: "rumpty" }),
+      ]).complete({ system: "s", user: "u" }),
+    ).rejects.toThrow(/all inference providers failed/);
   });
 });

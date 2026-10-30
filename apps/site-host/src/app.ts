@@ -1,5 +1,7 @@
 import Fastify from "fastify";
 import { createRuntimeClaim } from "@kora/runtime-claim";
+import { FONT_CACHE_CONTROL, readFontFile } from "@kora/site-fonts";
+import { MEDIA_CACHE_CONTROL, readMediaFile } from "@kora/site-media";
 import { finalizeForPublish } from "@kora/site-schema";
 import { serveArtifact, type SiteFiles } from "@kora/site-serving";
 import { SiteHostStore, type HostedSite } from "./store.js";
@@ -78,6 +80,26 @@ export function buildSiteHost(o: SiteHostOptions) {
     }
     return serveArtifact(files, sub, basePath, ifNoneMatch);
   }
+
+  // Bundled, licensed fonts that v2 sites reference by absolute path. Fixed file names only.
+  app.get("/_kora/fonts/:file", async (req, reply) => {
+    const data = await readFontFile((req.params as { file: string }).file);
+    if (!data) return reply.code(404).type("text/plain").send("Not found");
+    return reply
+      .header("cache-control", FONT_CACHE_CONTROL)
+      .header("access-control-allow-origin", "*")
+      .type("font/woff2")
+      .send(data);
+  });
+
+  app.get("/_kora/media/:file", async (req, reply) => {
+    const data = await readMediaFile((req.params as { file: string }).file);
+    if (!data) return reply.code(404).type("text/plain").send("Not found");
+    return reply
+      .header("cache-control", MEDIA_CACHE_CONTROL)
+      .type("image/webp")
+      .send(data);
+  });
 
   app.get("/s/:slug", (req, reply) =>
     reply.redirect(`${req.url.split("?")[0]}/`, 301),

@@ -1,0 +1,16 @@
+{
+  "inter": [400, 600, 700],
+  "manrope": [400, 600, 800],
+  "playfair-display": [400, 600, 700],
+  "dm-serif-display": [400],
+  "lora": [400, 600],
+  "dm-sans": [400, 500, 700],
+  "space-grotesk": [400, 600],
+  "outfit": [400, 600],
+  "nunito": [400, 700],
+  "jetbrains-mono": [400],
+  "cormorant-garamond": [400, 600],
+  "syne": [700],
+  "plus-jakarta-sans": [400, 600, 700],
+  "bricolage-grotesque": [400, 700]
+}

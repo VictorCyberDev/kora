@@ -32,8 +32,19 @@ export const ownerCategoryText = (category: string | null) =>
   (category && CATEGORY[category]) ||
   "Your website is not responding to Kora's checks.";
 
+/**
+ * The seven words Kora uses for a website's state, everywhere: Healthy, Watching,
+ * Needs attention, Waiting for approval, Fixing, Checking recovery, Recovered.
+ * (A site that was never published has no health to report: "Not published yet".)
+ */
 export type OwnerHeadline =
-  "ONLINE" | "NEEDS_ATTENTION" | "VERIFYING" | "RECOVERED" | "UNKNOWN";
+  | "ONLINE"
+  | "NEEDS_ATTENTION"
+  | "WAITING_APPROVAL"
+  | "FIXING"
+  | "VERIFYING"
+  | "RECOVERED"
+  | "UNKNOWN";
 export interface OwnerStatusInput {
   hasLiveUrl: boolean;
   hasObservations: boolean;
@@ -54,8 +65,25 @@ export function ownerHeadline(i: OwnerStatusInput): {
   )
     return {
       status: "VERIFYING",
-      title: "Fix applied — verifying",
-      detail: "Kora is checking that customers can reach your website again.",
+      title: "Checking recovery",
+      detail:
+        "The fix is in. Kora is watching to confirm customers can reach your website again.",
+    };
+  if (i.openIncident && i.actionState === "AWAITING_APPROVAL")
+    return {
+      status: "WAITING_APPROVAL",
+      title: "Waiting for approval",
+      detail:
+        "Kora has a safe fix ready and is waiting for your go-ahead before changing anything.",
+    };
+  if (
+    i.openIncident &&
+    (i.actionState === "READY" || i.actionState === "EXECUTING")
+  )
+    return {
+      status: "FIXING",
+      title: "Fixing",
+      detail: "Kora is applying the approved fix.",
     };
   if (i.openIncident)
     return {
@@ -66,7 +94,7 @@ export function ownerHeadline(i: OwnerStatusInput): {
   if (i.recoveryVerified && i.latestHealthy)
     return {
       status: "RECOVERED",
-      title: "Website restored",
+      title: "Recovered",
       detail: "Recovery verified by new observations.",
     };
   if (!i.hasLiveUrl)
@@ -78,13 +106,13 @@ export function ownerHeadline(i: OwnerStatusInput): {
   if (!i.hasObservations || i.latestHealthy === null)
     return {
       status: "UNKNOWN",
-      title: "Checking",
+      title: "Watching",
       detail: "Kora has not completed a health check yet.",
     };
   return i.latestHealthy
     ? {
         status: "ONLINE",
-        title: "Online",
+        title: "Healthy",
         detail: "Customers can reach your website.",
       }
     : {

@@ -2,134 +2,230 @@ import { useState, type FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { api, money } from "../api";
 import { useAuth } from "../auth";
-import { Async, Notice, Status, errText, useLoad } from "../ui";
+import { Async, LevelLine, Notice, Status, errText, useLoad } from "../ui";
+
+const SHOWCASE: Array<[string, string, string]> = [
+  ["interior", "Interior design studio", "Lagos"],
+  ["repair", "Appliance repair", "Ikeja"],
+  ["saas", "Invoicing software", "Remote"],
+  ["restaurant", "Family restaurant", "Surulere"],
+  ["barber", "Barbershop", "Yaba"],
+  ["boutique", "Fashion boutique", "Ikoyi"],
+];
+
+function ProductScene() {
+  return (
+    <figure className="scene" aria-label="Kora building a site and watching it">
+      <div className="scene-site">
+        <div className="scene-bar" aria-hidden="true">
+          <i />
+          <i />
+          <i />
+          <span>nkeminteriors.example</span>
+        </div>
+        <img
+          src="/showcase/interior.jpg"
+          width="1000"
+          height="625"
+          alt="A website Kora generated for an interior design studio"
+        />
+      </div>
+      <div className="scene-card scene-status">
+        <Status kind="ok">Healthy</Status>
+        <LevelLine state="steady" />
+        <span className="small muted">Last check 40 seconds ago</span>
+      </div>
+      <div className="scene-card scene-incident">
+        <Status kind="warn">Waiting for approval</Status>
+        <p>Restore the previous version?</p>
+        <span className="small muted">
+          Changes what customers see, so Kora asks first.
+        </span>
+      </div>
+      <figcaption className="small muted">
+        Illustration of the product. Not live data.
+      </figcaption>
+    </figure>
+  );
+}
 
 export function Landing() {
   const plans = useLoad(() => api("GET", "/api/billing/plans"));
   return (
     <>
-      <section className="landing-hero">
-        <div className="wrap stack">
-          <h1>
-            Build your website.
-            <br />
-            Kora keeps it running.
-          </h1>
-          <p className="lead">
-            Build and launch your business website with AI. Kora stays after
-            launch — monitoring it, explaining problems, safely recovering from
-            failures and verifying that customers can reach you again.
-          </p>
-          <div className="row">
-            <Link className="btn" to="/signup">
-              Build my website
-            </Link>
-            <a className="btn ghost" href="#recovery">
-              See how recovery works
-            </a>
-          </div>
-        </div>
-      </section>
-      <section className="band alt" id="how">
-        <div className="wrap">
-          <h2>One system, from first draft to a website that stays up</h2>
-          <div className="grid">
-            {[
-              [
-                "Build",
-                "Describe your business in plain words. Kora writes the pages, you preview them on desktop, tablet and phone, and change anything by asking.",
-              ],
-              [
-                "Launch",
-                "Publish to a real address in one click. Every publish is a saved version, so going back is always one step.",
-              ],
-              [
-                "Operate",
-                "Kora checks your website around the clock and tells you in plain language whether customers can reach it.",
-              ],
-              [
-                "Recover",
-                "When something breaks, Kora explains what it knows and what it doesn't, suggests a safe fix, and asks before it changes anything that matters.",
-              ],
-              [
-                "Proof",
-                "A fix only counts once Kora has watched your website work again. Every step is recorded, and you can export a tamper-evident report.",
-              ],
-            ].map(([t, d], i) => (
-              <div className="card step" key={t}>
-                <span className="n">{i + 1}</span>
-                <h3>{t}</h3>
-                <p className="muted">{d}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="band" id="recovery">
-        <div className="wrap grid" style={{ alignItems: "center" }}>
+      <section className="k-hero">
+        <div className="wrap k-hero-grid">
           <div className="stack">
-            <h2>When something breaks, you get the truth — not a guess</h2>
-            <p>
-              Kora never claims a cause the evidence does not show. It tells you
-              what happened, when it began, what changed around that time, and
-              what it still doesn't know. It only calls a fix successful after
-              new checks pass.
+            <p className="k-kicker">Website builder and operator</p>
+            <h1>
+              A website that looks made for you, <em>and stays up.</em>
+            </h1>
+            <p className="lead">
+              Tell Kora what your business does. It designs the website, puts it
+              online, and then keeps watching it, so you hear about a problem
+              from Kora, not from a customer.
             </p>
-            <p className="muted">
-              Developers get the same facts in Proof view: evidence, diagnosis,
-              the policy decision, the approval, and a report you can verify
-              offline.
+            <div className="row">
+              <Link className="btn lg" to="/signup">
+                Build my website
+              </Link>
+              <a className="btn ghost lg" href="#proof">
+                See how recovery works
+              </a>
+            </div>
+            <p className="small muted">
+              Two lines about your business is enough to start.
             </p>
           </div>
-          <div
-            className="card stack"
-            aria-label="Example of a recovery timeline"
-          >
-            <Status kind="bad">Needs attention</Status>
-            <p className="small muted" style={{ margin: 0 }}>
-              Illustration of the flow, not live data.
-            </p>
-            <ol className="timeline">
-              <li>
-                <strong>Kora saw repeated errors</strong>
-                <div className="small muted">
-                  Your website is reachable, but the application is returning an
-                  internal error.
-                </div>
-              </li>
-              <li>
-                <strong>Recommended: restore the previous version</strong>
-                <div className="small muted">
-                  Approval required — it changes what customers see.
-                </div>
-              </li>
-              <li>
-                <strong>Fix applied — verifying</strong>
-              </li>
-              <li>
-                <Status kind="ok">Website restored</Status>
-                <div className="small muted">
-                  Recovery verified by new checks.
-                </div>
-              </li>
-            </ol>
-          </div>
+          <ProductScene />
         </div>
       </section>
-      <section className="band alt">
+
+      <section className="k-band" id="work" aria-labelledby="work-h">
+        <div className="wrap">
+          <p className="k-kicker">Not one template</p>
+          <h2 id="work-h">Six businesses. Six different websites.</h2>
+          <p className="lead">
+            Each of these was generated by Kora from a short description.
+            Layout, typography and colour are chosen for the kind of business,
+            not filled into one skeleton.
+          </p>
+          <ul className="showcase">
+            {SHOWCASE.map(([id, label, place]) => (
+              <li key={id}>
+                <img
+                  src={`/showcase/${id}.jpg`}
+                  width="1000"
+                  height="625"
+                  loading="lazy"
+                  alt={`Generated website: ${label}`}
+                />
+                <span>
+                  {label} <em>· {place}</em>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="small muted">
+            Example sites generated from short briefs. The businesses are
+            fictional.
+          </p>
+        </div>
+      </section>
+
+      <section className="k-band dark" id="calm">
+        <div className="wrap k-calm">
+          <LevelLine state="steady" />
+          <h2>Calm control.</h2>
+          <p className="lead">
+            Kora does not make noise to look busy. It watches quietly, tells you
+            in plain words when something needs you, and never changes anything
+            important without asking.
+          </p>
+        </div>
+      </section>
+
+      <section className="k-band" id="how">
+        <div className="wrap k-steps">
+          {[
+            [
+              "Build",
+              "Describe the business. Pick one of three directions, or let Kora choose. Change anything by asking, or with simple controls for colour, type and layout.",
+            ],
+            [
+              "Launch",
+              "Publish to a real address. Every publish is a saved version, so going back is always one step.",
+            ],
+            [
+              "Keep it running",
+              "Kora checks your site around the clock and says, in plain language, whether customers can reach you.",
+            ],
+          ].map(([t, d], i) => (
+            <div key={t} className="k-step">
+              <span className="k-num" aria-hidden="true">
+                0{i + 1}
+              </span>
+              <h3>{t}</h3>
+              <p className="muted">{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="k-band alt" id="proof">
+        <div className="wrap stack">
+          <div className="stack" style={{ maxWidth: 640 }}>
+            <p className="k-kicker">When something breaks</p>
+            <h2>You get the truth, not a guess.</h2>
+            <p>
+              Kora says what happened, when it began, what changed around that
+              time and what it still does not know. It only calls a fix
+              successful after new checks pass.
+            </p>
+          </div>
+          <div className="shots">
+            <figure>
+              <div className="scene-site">
+                <div className="scene-bar" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <span>Mission Control · Owner view</span>
+                </div>
+                <img
+                  src="/product/incident-approval.webp"
+                  width="1280"
+                  height="720"
+                  loading="lazy"
+                  alt="Kora Mission Control showing a website returning errors, the recommended fix and an approval request"
+                />
+              </div>
+              <figcaption>
+                <Status kind="warn">Waiting for approval</Status> Kora found the
+                problem and has a safe fix ready. It asks before changing what
+                customers see.
+              </figcaption>
+            </figure>
+            <figure>
+              <div className="scene-site">
+                <div className="scene-bar" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <span>Mission Control · Owner view</span>
+                </div>
+                <img
+                  src="/product/incident-recovered.webp"
+                  width="1280"
+                  height="720"
+                  loading="lazy"
+                  alt="Kora Mission Control showing the incident recovered, with every step complete"
+                />
+              </div>
+              <figcaption>
+                <Status kind="ok">Recovered</Status> Confirmed by new checks,
+                not assumed. The Incident Passport is ready to export.
+              </figcaption>
+            </figure>
+          </div>
+          <div className="row">
+            <LevelLine state="dip" />
+            <LevelLine state="recovered" />
+          </div>
+          <p className="small muted">
+            Real screens from Kora, with a fictional laundry business and a
+            controlled test failure. Developers get the same facts in Proof
+            view: evidence, diagnosis, the policy decision, the approval and a
+            report you can verify offline.
+          </p>
+        </div>
+      </section>
+
+      <section className="k-band" id="plans">
         <div className="wrap stack">
           <h2>Plans</h2>
           <Async state={plans}>
-            {(
-              rows: Array<{
-                code: string;
-                name: string;
-                amountMinor: number;
-                currency: string;
-                interval: string;
-                capabilities: Record<string, number | boolean>;
-              }>,
-            ) => (
+            {(rows: Plan[]) => (
               <div className="grid">
                 {rows.map((p) => (
                   <PlanCard key={p.code} p={p} />

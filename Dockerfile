@@ -22,6 +22,8 @@ COPY packages/runtime-claim/package.json packages/runtime-claim/package.json
 COPY packages/passport/package.json packages/passport/package.json
 COPY packages/site-schema/package.json packages/site-schema/package.json
 COPY packages/site-serving/package.json packages/site-serving/package.json
+COPY packages/site-fonts/package.json packages/site-fonts/package.json
+COPY packages/site-media/package.json packages/site-media/package.json
 COPY services/incident-engine/package.json services/incident-engine/package.json
 COPY services/reasoner/package.json services/reasoner/package.json
 COPY services/policy-engine/package.json services/policy-engine/package.json
@@ -59,6 +61,10 @@ COPY --from=build /app/packages/runtime-claim/dist packages/runtime-claim/dist
 COPY --from=build /app/packages/passport/dist packages/passport/dist
 COPY --from=build /app/packages/site-schema/dist packages/site-schema/dist
 COPY --from=build /app/packages/site-serving/dist packages/site-serving/dist
+COPY --from=build /app/packages/site-fonts/dist packages/site-fonts/dist
+COPY --from=build /app/packages/site-fonts/files packages/site-fonts/files
+COPY --from=build /app/packages/site-media/dist packages/site-media/dist
+COPY --from=build /app/packages/site-media/files packages/site-media/files
 COPY --from=build /app/services/incident-engine/dist services/incident-engine/dist
 COPY --from=build /app/services/reasoner/dist services/reasoner/dist
 COPY --from=build /app/services/policy-engine/dist services/policy-engine/dist
