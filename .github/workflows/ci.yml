@@ -46,6 +46,8 @@ jobs:
           test -f packages/topology/dist/index.js
           test -f packages/site-schema/dist/src/index.js
           test -f packages/site-serving/dist/src/index.js
+          test -f packages/growth/dist/src/index.js
+          test -f apps/api/dist/db/migrations/013_presence.sql
           test -f packages/site-fonts/dist/index.js
           test -f packages/site-media/dist/index.js
           test -f packages/site-media/files/restaurant-timber-ceiling.webp
@@ -54,7 +56,7 @@ jobs:
           test -f apps/api/dist/db/migrations/012_tenant_integrity_site_host.sql
           test -f apps/web/dist/index.html
           test -f apps/api/dist/db/migrations/011_site_faults.sql
-          pnpm --filter @kora/api exec node -e "Promise.all([import('@kora/event-schema'), import('@kora/incident-engine'), import('@kora/site-schema'), import('@kora/reasoner'), import('@kora/policy-engine'), import('@kora/action-executor')])"
+          pnpm --filter @kora/api exec node -e "Promise.all([import('@kora/event-schema'), import('@kora/incident-engine'), import('@kora/site-schema'), import('@kora/growth'), import('@kora/reasoner'), import('@kora/policy-engine'), import('@kora/action-executor')])"
       - name: Secret scan (high-signal patterns, tracked files only)
         run: |
           if git grep -nEI '(sk_(live|test)_[A-Za-z0-9]{16,}|rmp_[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{30,}|-----BEGIN (RSA |EC )?PRIVATE KEY-----)' -- . ':!apps/api/test-fixtures' ':!*.test.ts' ':!*/test/*'; then

@@ -46,6 +46,7 @@ export default tseslint.config(
     // HTTP-level integration tests read untyped JSON responses.
     files: [
       "apps/api/src/*.integration.test.ts",
+      "apps/api/src/growth/*.integration.test.ts",
       "apps/api/src/test-support/platform-harness.ts",
     ],
     rules: {

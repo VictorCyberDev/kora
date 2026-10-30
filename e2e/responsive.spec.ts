@@ -179,6 +179,11 @@ test.beforeAll(async ({ browser }) => {
   await api.post(`/api/sites/${site.id}/versions/${edit.version.id}/publish`, {
     headers: H,
   });
+  await api.post(`/api/sites/${site.id}/presence/import`, { headers: H });
+  await api.post(`/api/sites/${site.id}/brand-kit`, {
+    headers: H,
+    data: { from: "site" },
+  });
   await api.post(`/api/sites/${site.id}/chaos`, {
     headers: H,
     data: { mode: "http_500" },
@@ -215,6 +220,8 @@ for (const w of WIDTHS) {
       ["sites", "/app/sites"],
       ["new-site", "/app/sites/new"],
       ["site-overview", `/app/sites/${siteId}`],
+      ["presence", `/app/sites/${siteId}/presence`],
+      ["brand", `/app/sites/${siteId}/brand`],
       ["builder", `/app/sites/${siteId}/build`],
       ["deployments", `/app/sites/${siteId}/deployments`],
       ["incidents", `/app/sites/${siteId}/incidents`],
