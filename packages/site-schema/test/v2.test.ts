@@ -1,9 +1,11 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   applySitePatch,
   artifactHash,
   checkMedia,
+  catalogMediaFor,
+  MEDIA_CATALOG,
   designQuality,
   designSignature,
   finalizeForPublish,
@@ -424,11 +426,43 @@ describe("edge briefs", () => {
 });
 
 describe("media", () => {
-  it("never emits a photo the owner did not supply; any imagery is abstract art", () => {
-    for (const { d } of all.slice(0, 12)) {
+  it("any photograph is a catalogued, licensed, existing file with alt text; never anything else", () => {
+    const ids = new Set(MEDIA_CATALOG.map((e) => e.file));
+    for (const { d } of all) {
       const html = renderSiteV2(d.spec)["index.html"]!;
-      expect(html).not.toMatch(/<img\b/);
+      for (const m of html.matchAll(/<img\b[^>]*>/g)) {
+        const src = /src="([^"]+)"/.exec(m[0])![1]!;
+        expect(src.startsWith("/_kora/media/"), src).toBe(true);
+        expect(ids.has(src.slice("/_kora/media/".length)), src).toBe(true);
+        expect(m[0]).toMatch(/alt="[^"]+"/);
+      }
     }
+  });
+  it("the catalogue is complete: files exist, licensed, small, no brand signage claims", () => {
+    const dir = new URL("../../site-media/files/", import.meta.url);
+    expect(MEDIA_CATALOG.length).toBeGreaterThanOrEqual(3);
+    for (const e of MEDIA_CATALOG) {
+      expect(existsSync(new URL(e.file, dir)), e.file).toBe(true);
+      expect(statSync(new URL(e.file, dir)).size, e.file).toBeLessThan(260_000);
+      expect(e.license).toBe("Pexels License");
+      expect(e.sourceUrl).toMatch(/^https:\/\/www\.pexels\.com\/photo\//);
+      expect(e.alt.length).toBeGreaterThan(20);
+    }
+  });
+  it("photographs are only used for businesses they honestly represent", () => {
+    const fits = (recipe: string) => catalogMediaFor(recipe, "light");
+    expect(fits("restaurant")).toBeDefined();
+    expect(fits("electronics-repair")?.url).toContain("repair-bench");
+    for (const r of [
+      "law",
+      "saas",
+      "interior-design",
+      "barber",
+      "salon-beauty",
+      "consultant-coach",
+      "fitness-gym",
+    ])
+      expect(fits(r), r).toBeUndefined();
   });
   it("owner media must be https, described and credited when external", () => {
     expect(

@@ -14,3 +14,4 @@ export * from "./upgrade.js";
 export * from "./edit.js";
 export * from "./preview.js";
 export * from "./media.js";
+export * from "./catalog.js";

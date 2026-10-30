@@ -5,6 +5,8 @@ import {
   artifactHash,
   briefSchema,
   designBriefSchema,
+  designIntelligenceSchema,
+  intelligencePrompt,
   hashSpec,
   lintArtifact,
   missingBlockingDetails,
@@ -469,6 +471,9 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
           .union([z.literal(0), z.literal(1), z.literal(2)])
           .optional(),
         format: z.union([z.literal(1), z.literal(2)]).optional(),
+        // Output of an on-device model (Chrome built-in AI). Validated like any model output.
+        intelligence: z.string().max(20_000).optional(),
+        intelligenceProvider: z.string().max(40).optional(),
       })
       .parse(req.body ?? {});
     // New sites are v2 designs. `format: 1` keeps the legacy generator reachable.
@@ -478,6 +483,12 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         : await author.generateV2(
             { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
             extra.direction ?? 0,
+            extra.intelligence
+              ? {
+                  text: extra.intelligence,
+                  provider: extra.intelligenceProvider ?? "on-device",
+                }
+              : undefined,
           );
     const version = await buildVersion(
       site,
@@ -533,6 +544,16 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         rationale: authored.rationale ?? null,
       },
     });
+  });
+  // What an on-device model needs: the art-director prompt and the JSON Schema of the only answer Kora accepts.
+  app.get("/api/design/intelligence", (req) => {
+    requireUser(req);
+    return {
+      data: {
+        prompt: intelligencePrompt(),
+        schema: z.toJSONSchema(designIntelligenceSchema, { io: "input" }),
+      },
+    };
   });
   const directionPreviews = new Map<
     string,

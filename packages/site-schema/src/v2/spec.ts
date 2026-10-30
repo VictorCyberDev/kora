@@ -157,7 +157,7 @@ export const mediaSchema = z.object({
   url: z
     .string()
     .max(500)
-    .regex(/^https:\/\/[^\s"'<>]+$/),
+    .regex(/^(?:https:\/\/[^\s"'<>]+|\/_kora\/media\/[a-z0-9-]+\.webp)$/),
   alt: text(200).default(""),
   width: z.number().int().min(1).max(8000).optional(),
   height: z.number().int().min(1).max(8000).optional(),

@@ -89,6 +89,9 @@ function hero(s: Sec<"hero">, c: Ctx): string {
       : "";
   const text = (extra = "") =>
     `${s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : ""}<h1 id="${id}"${s.heading.length > 78 ? ' class="h-xl"' : s.heading.length > 44 ? ' class="h-long"' : ""}>${esc(s.heading)}</h1>${s.subheading ? `<p class="lead">${esc(s.subheading)}</p>` : ""}${extra}${ctas}`;
+  const banner = s.media
+    ? `<div class="banner">${visual(c, s.media, 1)}</div>`
+    : "";
   const wrapOpen = `<section class="sec hero v-${s.variant}" aria-labelledby="${id}">`;
   switch (s.variant) {
     case "split-art":
@@ -117,6 +120,9 @@ function hero(s: Sec<"hero">, c: Ctx): string {
           ? `<span class="qrow soft">${icon("clock")}${esc(b.hours[0].days)}: ${esc(b.hours[0].hours)}</span>`
           : "",
       ].filter(Boolean);
+      if (s.media)
+        // A real photograph leads; the contact card moves under the headline so it is never hidden.
+        return `${wrapOpen}<div class="wrap split"><div class="rv">${text()}${quick.length ? `<div class="quick rv">${quick.join("")}</div>` : ""}</div><div class="art-slot rv">${visual(c, s.media, 1)}</div></div></section>`;
       return `${wrapOpen}<div class="wrap split"><div class="rv">${text()}${hl}</div>${quick.length ? `<div class="quick rv">${quick.join("")}</div>` : `<div class="art-slot rv">${visual(c, s.media, 1)}</div>`}</div></section>`;
     }
     case "portfolio":
@@ -124,14 +130,14 @@ function hero(s: Sec<"hero">, c: Ctx): string {
     case "product":
       return `${wrapOpen}<div class="wrap"><div class="rv narrow">${text()}</div><div class="shot"><div class="chrome"><i></i><i></i><i></i></div><div class="body">${visual(c, s.media, 2)}</div></div></div></section>`;
     case "luxury":
-      return `${wrapOpen}<div class="wrap"><div class="rule"></div>${text()}</div></section>`;
+      return `${wrapOpen}<div class="wrap"><div class="rule"></div>${text()}${banner}</div></section>`;
     case "minimal-statement":
       return `${wrapOpen}<div class="wrap">${s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : ""}<h1 id="${id}">${esc(s.heading)}</h1><div class="row">${s.subheading ? `<p class="lead">${esc(s.subheading)}</p>` : "<span></span>"}<div class="cta-row flush">${a(s.primaryCta, "btn", c.from)}${a(s.secondaryCta, "btn alt", c.from, false)}</div></div></div></section>`;
     case "stacked-story":
       return `${wrapOpen}<div class="wrap">${text()}${s.highlights.length ? `<div class="rail">${s.highlights.map((h, n) => `<div><span class="num">${num(n)}</span><span>${esc(h)}</span></div>`).join("")}</div>` : ""}</div></section>`;
     case "editorial-centered":
     default:
-      return `${wrapOpen}<div class="wrap rv">${text()}${hl}</div></section>`;
+      return `${wrapOpen}<div class="wrap rv">${text()}${hl}${banner}</div></section>`;
   }
 }
 

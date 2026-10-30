@@ -126,6 +126,74 @@ d("SiteSpec v2 through the real API", () => {
       expect((await fetch(`${h.base}${bad}`)).status).toBe(404);
   });
 
+  it("accepts on-device AI output, validates it like any model's, and falls back when it is unusable", async () => {
+    const { o, site } = await newSite(h, "v2-ondevice@example.com");
+    const good = JSON.stringify({
+      understanding: {
+        industry: "Interior design",
+        audience: "Homeowners",
+        offering: "Planning",
+        tone: "calm",
+      },
+      strategy: {
+        positioning: "Considered homes",
+        keyMessage: "Rooms that fit",
+      },
+      architecture: {
+        lookId: "gallery-editorial",
+        rationale: "Calm and editorial",
+      },
+      design: {
+        paletteStrategy: "sage-linen",
+        personality: ["editorial"],
+        rationale: "Sage and linen",
+      },
+      content: {},
+      media: { art: "arch" },
+    });
+    const ok = await h.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: { ...brief, intelligence: good, intelligenceProvider: "on-device" },
+    });
+    expect(ok.status).toBe(201);
+    expect(ok.json.data.source).toBe("MODEL");
+    expect(ok.json.data.provider).toBe("on-device");
+    const v = (
+      await h.call(
+        "GET",
+        `/api/sites/${site.id}/versions/${ok.json.data.version.id}`,
+        { cookie: o.cookie },
+      )
+    ).json.data;
+    expect(v.spec.design.paletteStrategy).toBe("sage-linen");
+    const bad = await h.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: { ...brief, intelligence: "<script>alert(1)</script> not json" },
+    });
+    expect(bad.status).toBe(201);
+    expect(bad.json.data.source).toBe("DETERMINISTIC");
+    const spec = await h.call("GET", "/api/design/intelligence", {
+      cookie: o.cookie,
+    });
+    expect(spec.json.data.prompt).toContain("art director");
+    expect(JSON.stringify(spec.json.data.schema)).toContain("lookId");
+  });
+
+  it("serves curated photographs from exact catalogue file names only", async () => {
+    const r = await fetch(
+      `${h.base}/_kora/media/restaurant-timber-ceiling.webp`,
+    );
+    expect(r.status).toBe(200);
+    expect(r.headers.get("content-type")).toBe("image/webp");
+    expect((await r.arrayBuffer()).byteLength).toBeGreaterThan(20_000);
+    for (const bad of [
+      "/_kora/media/nope.webp",
+      "/_kora/media/..%2fpackage.json",
+      "/_kora/media/restaurant-timber-ceiling.jpg",
+    ])
+      expect((await fetch(`${h.base}${bad}`)).status).toBe(404);
+  });
+
   it("offers three genuinely different directions without saving anything", async () => {
     const { o, site } = await newSite(h, "v2-dir@example.com");
     const r = await h.call("POST", `/api/sites/${site.id}/design/directions`, {

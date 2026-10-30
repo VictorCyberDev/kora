@@ -156,8 +156,26 @@ export class SiteAuthor {
   async generateV2(
     rawBrief: unknown,
     direction: 0 | 1 | 2 = 0,
+    /** Text produced by an on-device model in the owner's browser. Untrusted exactly like remote output. */
+    onDevice?: { text: string; provider: string },
   ): Promise<Authored> {
     const brief = designBriefSchema.parse(rawBrief);
+    if (onDevice) {
+      const r = applyIntelligence(brief, onDevice.text, direction);
+      if (r.applied.length > 0)
+        return {
+          spec: r.spec,
+          source: "MODEL",
+          inputTokens: null,
+          outputTokens: null,
+          provider: onDevice.provider,
+          rationale: r.rationale,
+          note: r.rejected.length
+            ? `On-device AI design applied; ${r.rejected.length} suggestion(s) were refused by the quality check`
+            : null,
+        };
+      // unusable on-device answer: continue down the chain (remote model, then Kora's designer)
+    }
     if (this.llm) {
       try {
         const res = await this.llm.complete({

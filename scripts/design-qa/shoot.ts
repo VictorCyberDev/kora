@@ -15,23 +15,29 @@ const root = resolve(process.argv[2] ?? "out/design-qa");
 const shots = resolve(process.argv[3] ?? join(root, "..", "design-qa-shots"));
 const only = process.argv[4]; // optional fixture key
 const fontDir = resolve("packages/site-fonts/files");
+const mediaDir = resolve("packages/site-media/files");
 const TYPES: Record<string, string> = {
   ".html": "text/html",
   ".css": "text/css",
   ".js": "text/javascript",
   ".svg": "image/svg+xml",
   ".woff2": "font/woff2",
+  ".webp": "image/webp",
 };
 
 const server = createServer((req, res) => {
   const url = decodeURIComponent((req.url ?? "/").split("?")[0]!);
   let file = url.startsWith("/_kora/fonts/")
     ? join(fontDir, url.slice(13))
-    : join(root, url);
+    : url.startsWith("/_kora/media/")
+      ? join(mediaDir, url.slice(13))
+      : join(root, url);
   if (existsSync(file) && statSync(file).isDirectory())
     file = join(file, "index.html");
   if (
-    (!file.startsWith(root) && !file.startsWith(fontDir)) ||
+    (!file.startsWith(root) &&
+      !file.startsWith(fontDir) &&
+      !file.startsWith(mediaDir)) ||
     !existsSync(file)
   ) {
     res.writeHead(404).end("nf");

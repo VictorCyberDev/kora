@@ -58,6 +58,9 @@ importers:
       "@kora/site-fonts":
         specifier: workspace:*
         version: link:../../packages/site-fonts
+      "@kora/site-media":
+        specifier: workspace:*
+        version: link:../../packages/site-media
       "@kora/site-schema":
         specifier: workspace:*
         version: link:../../packages/site-schema
@@ -126,6 +129,9 @@ importers:
       "@kora/site-fonts":
         specifier: workspace:*
         version: link:../../packages/site-fonts
+      "@kora/site-media":
+        specifier: workspace:*
+        version: link:../../packages/site-media
       "@kora/site-schema":
         specifier: workspace:*
         version: link:../../packages/site-schema
@@ -215,6 +221,15 @@ importers:
         version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
 
   packages/site-fonts:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  packages/site-media:
     devDependencies:
       typescript:
         specifier: ^5.9.3

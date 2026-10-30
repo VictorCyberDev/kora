@@ -109,6 +109,41 @@ export const BRIEFS: Record<string, DesignBrief> = {
     goal: "visits",
     feel: "friendly",
   },
+  phones: {
+    name: "Fix Hub Phone & Laptop Repair",
+    description:
+      "Same-day phone and laptop repair. We repair cracked screens, batteries, charging ports and water-damaged phones.",
+    location: "Computer Village, Ikeja",
+    whatsapp: "+2348033330101",
+    hours: [{ days: "Mon–Sat", hours: "9am – 7pm" }],
+    goal: "calls",
+  },
+  salon: {
+    name: "Ayo Beauty Lounge",
+    description:
+      "A hair and beauty salon for women. We offer braiding, silk press, wash and set, makeup and nails.",
+    location: "Victoria Island, Lagos",
+    whatsapp: "+2348044440202",
+    hours: [{ days: "Tue–Sun", hours: "10am – 8pm" }],
+    goal: "bookings",
+  },
+  studio: {
+    name: "Studio Okwu Architects",
+    description:
+      "Architecture and interior architecture studio for private houses and small commercial spaces. We provide concept design, planning drawings, interior architecture and site supervision.",
+    location: "Abuja",
+    email: "studio@okwu.example",
+  },
+  fine: {
+    name: "Ọkọ Dining",
+    description:
+      "A fine dining restaurant serving modern West African tasting menus. We serve a seven-course tasting menu, a wine pairing and a private dining room.",
+    location: "Victoria Island, Lagos",
+    phone: "+234 1 555 0199",
+    hours: [{ days: "Wed–Sun", hours: "6pm – 11pm" }],
+    goal: "bookings",
+    feel: "dark and refined",
+  },
   construction: {
     name: "Okoro Build & Renovate",
     description:

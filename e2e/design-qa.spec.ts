@@ -12,6 +12,7 @@ import { expect, test } from "@playwright/test";
  */
 const root = resolve(__dirname, "..");
 const FONT_DIR = join(root, "packages/site-fonts/files");
+const MEDIA_DIR = join(root, "packages/site-media/files");
 const WIDTHS = [375, 390, 768, 1024, 1440] as const;
 const TYPES: Record<string, string> = {
   ".html": "text/html",
@@ -53,6 +54,15 @@ test.beforeAll(async () => {
       if (f.startsWith(FONT_DIR) && existsSync(f)) {
         res
           .writeHead(200, { "content-type": "font/woff2" })
+          .end(readFileSync(f));
+        return;
+      }
+    }
+    if (url.startsWith("/_kora/media/")) {
+      const f = join(MEDIA_DIR, url.slice(13));
+      if (f.startsWith(MEDIA_DIR) && existsSync(f)) {
+        res
+          .writeHead(200, { "content-type": "image/webp" })
           .end(readFileSync(f));
         return;
       }

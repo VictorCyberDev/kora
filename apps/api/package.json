@@ -19,6 +19,7 @@
     "@kora/reasoner": "workspace:*",
     "@kora/runtime-claim": "workspace:*",
     "@kora/site-fonts": "workspace:*",
+    "@kora/site-media": "workspace:*",
     "@kora/site-schema": "workspace:*",
     "@kora/site-serving": "workspace:*",
     "@kora/topology": "workspace:*",

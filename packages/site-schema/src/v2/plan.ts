@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { catalogMediaFor } from "./catalog.js";
 import { buildPalette, type PaletteStrategy } from "./palette.js";
 import {
   LOOKS,
@@ -54,8 +55,8 @@ export function fnv(s: string): number {
 }
 
 const FEEL_LOOK: Array<[RegExp, string]> = [
-  [/dark|night|moody/, "dark-premium"],
   [/luxur|elegan|upscale|refined|high.?end/, "luxe-centered"],
+  [/dark|night|moody/, "dark-premium"],
   [/bold|loud|strong|energ|confident/, "bold-grotesk"],
   [/play|fun|colou?rful|creative|vibrant/, "creative-collage"],
   [/minimal|clean|simple|quiet|calm|airy/, "portfolio-reel"],
@@ -577,6 +578,28 @@ export function planSite(
       : ["name", "phone", "email", "message"],
     submitLabel: recipe.submit,
   });
+
+  // Curated photography when an honest one exists; otherwise the page keeps its art/typography.
+  const photo = catalogMediaFor(recipe.id, mode);
+  if (photo) {
+    const heroSec = sections[0];
+    const aboutSec = sections.find((x) => x.type === "about");
+    if (
+      heroSec?.type === "hero" &&
+      [
+        "split-art",
+        "media-left",
+        "full-bleed",
+        "collage",
+        "bento",
+        "portfolio",
+        "local-service",
+      ].includes(heroSec.variant)
+    )
+      heroSec.media = photo;
+    else if (aboutSec?.type === "about" && aboutSec.variant === "image-text")
+      aboutSec.media = photo;
+  }
 
   const spec = {
     version: 2 as const,

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, ago, ApiError, when, type J } from "../api";
 import { useAuth } from "../auth";
 import { FEELS, GOALS } from "../design-labels";
+import { localAiState, runLocalDesign, type LocalAiState } from "../local-ai";
 import { Async, Empty, Notice, Status, errText, kindFor, useLoad } from "../ui";
 
 export function SiteStatusCard({
@@ -268,6 +269,15 @@ export function NewSite() {
   const [dirs, setDirs] = useState<Direction[] | null>(null);
   const [stage, setStage] = useState(0);
   const [picked, setPicked] = useState<number | null>(null);
+  const [ai, setAi] = useState<LocalAiState>("unsupported");
+  const [useAi, setUseAi] = useState(false);
+  const [aiNote, setAiNote] = useState<string | null>(null);
+  useEffect(() => {
+    void localAiState().then((st) => {
+      setAi(st);
+      setUseAi(st === "available");
+    });
+  }, []);
 
   const describe = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -319,9 +329,28 @@ export function NewSite() {
     setErr(null);
     setStage(3);
     try {
+      // Optional: ask the on-device model first. Kora validates whatever it says; failure is silent.
+      let local: { text: string; provider: string } | null = null;
+      if (useAi && (ai === "available" || ai === "downloadable")) {
+        setAiNote(
+          ai === "downloadable"
+            ? "Preparing AI on this device…"
+            : "Using on-device AI…",
+        );
+        try {
+          const spec = await api("GET", "/api/design/intelligence");
+          local = await runLocalDesign(brief, spec);
+        } catch {
+          local = null;
+        }
+        setAiNote(null);
+      }
       await api("POST", `/api/sites/${siteId}/generate`, {
         ...brief,
         direction,
+        ...(local
+          ? { intelligence: local.text, intelligenceProvider: local.provider }
+          : {}),
       });
       setStage(4);
       nav(`/app/sites/${siteId}/build`);
@@ -352,6 +381,7 @@ export function NewSite() {
             aria-live="polite"
           >
             <h2 style={{ fontSize: "1.4rem" }}>Building your website</h2>
+            {aiNote && <p className="small muted">{aiNote}</p>}
             <ol className="stages">
               {STAGES.map((l, i) => (
                 <li
@@ -401,6 +431,24 @@ export function NewSite() {
               ))}
             </div>
             {err && <Notice kind="bad">{err}</Notice>}
+            {(ai === "available" || ai === "downloadable") && (
+              <label className="row" style={{ gap: 8 }}>
+                <input
+                  style={{ width: 20, minHeight: 20 }}
+                  type="checkbox"
+                  checked={useAi}
+                  onChange={(e) => setUseAi(e.target.checked)}
+                />
+                <span>
+                  Use AI on this device
+                  <span className="small muted">
+                    {ai === "downloadable"
+                      ? " (one-time download; nothing is sent to a server for this step)"
+                      : " (private; nothing is sent to a server for this step)"}
+                  </span>
+                </span>
+              </label>
+            )}
             <div className="row">
               <button
                 className="btn ghost"
