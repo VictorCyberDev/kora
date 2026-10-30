@@ -8,6 +8,7 @@ export default tseslint.config(
       "**/coverage/**",
       "**/node_modules/**",
       "e2e/**",
+      "scripts/design-qa/**",
       "playwright.config.ts",
       "test-results/**",
       "eslint.config.mjs",

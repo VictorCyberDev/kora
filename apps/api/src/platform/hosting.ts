@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { finalizeForPublish, type SiteSpec } from "@kora/site-schema";
+import { FONT_CACHE_CONTROL, readFontFile } from "@kora/site-fonts";
 import { serveArtifact, type SiteFiles } from "@kora/site-serving";
 import type { OpsStore } from "./ops-store.js";
 import type { PlatformStore } from "./store.js";
@@ -37,6 +38,15 @@ export function registerHosting(
   },
 ) {
   const cache = new Map<string, SiteFiles>();
+  app.get("/_kora/fonts/:file", async (req, reply) => {
+    const data = await readFontFile((req.params as { file: string }).file);
+    if (!data) return reply.code(404).type("text/plain").send("Not found");
+    return reply
+      .header("cache-control", FONT_CACHE_CONTROL)
+      .header("access-control-allow-origin", "*")
+      .type("font/woff2")
+      .send(data);
+  });
   app.get("/s/:slug", (req, reply) =>
     reply.redirect(`${req.url.split("?")[0]}/`, 301),
   );

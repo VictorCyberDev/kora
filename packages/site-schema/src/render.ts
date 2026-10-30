@@ -75,7 +75,7 @@ footer.site ul{list-style:none;display:flex;gap:16px;padding:0;margin:8px 0 0;fl
 `;
 }
 
-const SITE_JS = `(function(){
+export const SITE_JS = `(function(){
   var forms=document.querySelectorAll('form[data-kora-form]');
   Array.prototype.forEach.call(forms,function(form){
     form.addEventListener('submit',function(ev){
@@ -95,9 +95,9 @@ const SITE_JS = `(function(){
 const FAVICON = (spec: SiteSpec) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="${spec.brand.primaryColor}"/><text x="32" y="43" font-family="sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="${contrastOn(spec.brand.primaryColor)}">${esc((spec.business.name.trim()[0] ?? "K").toUpperCase())}</text></svg>\n`;
 
-const pagePath = (slug: string) =>
+export const pagePath = (slug: string) =>
   slug === "home" ? "index.html" : `${slug}/index.html`;
-const relFrom = (fromSlug: string, toSlug: string) =>
+export const relFrom = (fromSlug: string, toSlug: string) =>
   `${fromSlug === "home" ? "" : "../"}${pagePath(toSlug)}`;
 
 function link(l: { label: string; href: string }, cls = "btn", from = "home") {
@@ -180,7 +180,7 @@ function renderSection(
   }
 }
 
-function origin(url: string | undefined): string {
+export function origin(url: string | undefined): string {
   if (!url) return "'none'";
   try {
     return new URL(url).origin;
@@ -250,7 +250,7 @@ export function renderSite(spec: SiteSpec, ctx: RenderContext = {}): SiteFiles {
 /** Adds the host-specific files (sitemap, robots) once the public base URL is known. */
 export function finalizeForPublish(
   files: SiteFiles,
-  spec: SiteSpec,
+  spec: { pages: ReadonlyArray<{ slug: string }> },
   baseUrl: string,
 ): SiteFiles {
   const base = baseUrl.replace(/\/+$/, "");
@@ -283,6 +283,18 @@ export function lintArtifact(files: SiteFiles): string[] {
         problems.push(`${path}: event-handler attribute`);
       if (/<iframe|<object|<embed/i.test(content))
         problems.push(`${path}: embedded content`);
+      // The page CSP is style-src 'self': an inline style attribute would be silently dropped by browsers.
+      if (
+        tags.some((t) => /\sstyle\s*=/i.test(t.replace(/"[^"]*"/g, '""'))) ||
+        /<style[\s>]/i.test(content)
+      )
+        problems.push(`${path}: inline style`);
+      if (
+        /<(?:script|link|img|source)[^>]+(?:src|href)=["']http:\/\//i.test(
+          content,
+        )
+      )
+        problems.push(`${path}: insecure subresource`);
       if (/javascript:/i.test(content))
         problems.push(`${path}: javascript: URL`);
       if (!/<title>[^<]+<\/title>/.test(content))
