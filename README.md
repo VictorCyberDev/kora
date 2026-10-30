@@ -2,161 +2,141 @@
 
 **Build your website. Kora keeps it running.**
 
-**Live:** product https://kora-api.rumptycloud.app · customer sites https://kora-site-host.rumptycloud.app · recorded recovery and Passport in [`LIVE-ACCEPTANCE.md`](LIVE-ACCEPTANCE.md) and [`docs/live/`](docs/live/README.md) · demo [`DEMO.md`](DEMO.md) · submission [`SUBMISSION.md`](SUBMISSION.md).
+Kora is a business website builder that stays after launch. It creates and publishes a site, watches the live customer experience, explains failures from evidence, proposes safe typed fixes, asks for approval when a change needs the owner, and counts recovery only after new health observations pass.
 
-Kora builds a business website from a plain-language description, publishes it, then watches it, explains problems from evidence, safely recovers what it is allowed to recover, and proves recovery from new observations. Underneath is an evidence-first reliability kernel:
+**Live product:** https://kora-api.rumptycloud.app  
+**Live customer-site host:** https://kora-site-host.rumptycloud.app  
+**Authoritative production proof:** [`LIVE-ACCEPTANCE.md`](LIVE-ACCEPTANCE.md)  
+**Demo:** [`DEMO.md`](DEMO.md)  
+**Submission package:** [`SUBMISSION.md`](SUBMISSION.md)
+
+## The product in one line
+
+`BUILD → PUBLISH → WATCH → EXPLAIN → AUTHORIZE → FIX → VERIFY → PROVE`
+
+Under the owner experience is an evidence-first reliability kernel:
 
 `OBSERVE → DETECT → CORRELATE → DIAGNOSE → PROPOSE → AUTHORIZE → EXECUTE → VERIFY → AUDIT`
 
-The AI explains and proposes typed actions. A deterministic policy engine decides (`DENY | REQUIRE_APPROVAL | ALLOW`), a typed executor acts, and only **new health observations** can produce `RecoveryVerified`. An action returning success is never recovery.
+AI is optional and never the authority boundary. Model output is validated input. A deterministic policy engine decides `DENY | REQUIRE_APPROVAL | ALLOW`, a typed executor performs approved changes, and only new observations can produce `RecoveryVerified`.
 
-## What is implemented
+## What is real today
 
-| Area                                                                                                                                                      | Status                                                                                                                                                                                                                                                                                          |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Reliability kernel (monitor, incidents, evidence, diagnosis, Deployment Verification, Passport v1)                                                        | implemented, unchanged                                                                                                                                                                                                                                                                          |
-| Auth, organizations, roles, tenant isolation, audit log                                                                                                   | implemented                                                                                                                                                                                                                                                                                     |
-| SiteSpec builder: generate, edit (rule-based; model-assisted when inference is configured), immutable versions, preview, publish, rollback, contact forms | implemented                                                                                                                                                                                                                                                                                     |
-| Publishing: Kora-hosted (from PostgreSQL) and Rumpty bucket (`rumpty sync`)                                                                               | implemented; Rumpty path needs real credentials to run                                                                                                                                                                                                                                          |
-| Change intelligence, system graph, Owner-language status                                                                                                  | implemented                                                                                                                                                                                                                                                                                     |
-| Reasoner (OpenAI-compatible, validated, deterministic fallback)                                                                                           | implemented; no model is configured in production (deterministic fallback in use)                                                                                                                                                                                                               |
-| Policy engine, typed actions, approval, closed-loop verification, Passport v2                                                                             | implemented                                                                                                                                                                                                                                                                                     |
-| Custom domains (connect an existing domain, DNS/HTTPS observed)                                                                                           | implemented                                                                                                                                                                                                                                                                                     |
-| Domain purchase / registrars (Entri, Openprovider)                                                                                                        | contract + scaffold only; returns "not configured"                                                                                                                                                                                                                                              |
-| Billing (Paystack, grace model, entitlements, usage events)                                                                                               | implemented and contract-tested; not run against live Paystack                                                                                                                                                                                                                                  |
-| Email delivery                                                                                                                                            | not implemented; in-app notifications only                                                                                                                                                                                                                                                      |
-| Rumpty VM restart (`vm reboot`), redeploy, deployment rollback                                                                                            | **not implemented as Kora actions.** The CLI documents `vm reboot` (and start/stop), but Kora has no typed, policy-gated executor for it yet; redeploy and deployment rollback are console-only. A future `restart_vm` would be a fixed typed action decided by policy, never free-form `exec`. |
-| Mission Control web app (`apps/web`)                                                                                                                      | implemented; served by the API                                                                                                                                                                                                                                                                  |
+| Area | State |
+| --- | --- |
+| SiteSpec v2 website generation, three design directions, editing, preview and immutable versions | Implemented |
+| Independent Site Host and verified publishing | Implemented and live on RumptyCloud |
+| Continuous monitoring, incidents, evidence and deterministic diagnosis | Implemented |
+| Owner-language Mission Control plus technical Proof mode | Implemented |
+| Typed rollback, deterministic policy, approval and closed-loop recovery verification | Implemented |
+| Incident Passport v2 and offline integrity verification | Implemented |
+| Authentication, organizations, roles, tenant isolation and audit | Implemented |
+| Existing-domain connection with DNS/HTTPS observation | Implemented |
+| Paystack billing model, entitlements and webhook contract | Implemented and tested; live Paystack is not configured |
+| Remote/on-device AI art director and Reasoner paths | Implemented with validation/fallback; no production model endpoint is configured |
+| Registrar-backed domain purchase | Scaffold only; not claimed |
+| Email delivery | Not implemented; notifications are in-app |
+| Provider VM restart/redeploy/deployment rollback as Kora actions | Not implemented; Kora's proven recovery action is its own immutable site rollback |
 
-See `docs/architecture/overview.md`, ADR-012 to ADR-017, `docs/execution/FULL-PLATFORM-BASELINE.md`, `LIVE-ACCEPTANCE.md` and `SECURITY.md`.
+## Production acceptance is complete
 
-## Design system (SiteSpec v2)
+On **October 30, 2026**, Kora's real RumptyCloud deployment was exercised end to end on commit `cb871bf`:
 
-Closed component library, 32 industry recipes, three directions, bundled fonts, five curated licensed photographs, procedural art, optional on-device/remote AI art director behind a validation and fact gate. Details: [`docs/design/`](docs/design/README.md), ADR-019.
+1. A SiteSpec v2 customer site was published and its live bytes matched the stored artifact.
+2. Five consecutive healthy observations were recorded.
+3. A controlled HTTP 500 was applied to the live customer site; the public Site Host genuinely returned 500.
+4. Kora detected the failure itself and opened exactly one incident.
+5. The owner view moved to **Waiting for approval** and explained what Kora knew and did not know.
+6. The Reasoner proposed `republish_site_version`; deterministic policy returned `REQUIRE_APPROVAL`.
+7. After owner approval, Kora restored the previous immutable version and verified the deployed bytes.
+8. Execution did **not** count as recovery. Kora waited for new observations.
+9. Three new healthy observations produced `RECOVERY_VERIFIED` after about 35 seconds.
+10. The exported Incident Passport v2 verified **PASS** offline.
 
-## Quick start
+IDs, server timestamps, evidence JSON and deployed screenshots are recorded in [`LIVE-ACCEPTANCE.md`](LIVE-ACCEPTANCE.md) and [`docs/live/`](docs/live/README.md).
 
-Requires Node.js 22+, pnpm 10+, Docker Compose and PostgreSQL 17 for the supplied local environment.
+## Design intelligence
+
+SiteSpec v2 is a closed design system rather than free-form model HTML. It currently includes:
+
+- 14 section types and multiple registered variants
+- 12 hero compositions and 6 navigation patterns
+- 32 industry recipes
+- bundled OFL fonts and curated licensed photography
+- procedural art for categories without appropriate photography
+- deterministic generation plus optional model-assisted direction selection
+- fact, cliché and contrast gates
+- browser QA across generated businesses and mobile/desktop widths
+- axe WCAG 2.1 A/AA checks in the design QA suite
+
+Details: [`docs/design/`](docs/design/README.md) and [`ADR-019`](docs/adr/ADR-019-design-intelligence-and-site-spec-v2.md).
+
+## Kora Presence v3
+
+The next product layer is being developed as an **Africa-first Trusted Presence OS** rather than another generic storefront or POS product.
+
+The thesis is simple: the website is the owned home, while Google, WhatsApp and social channels are distribution surfaces. Kora should become the control plane that keeps a business's public identity accurate, reachable, discoverable and operational — while turning real inbound/search data into grounded next actions.
+
+The research, competitive analysis, mobile contract, visual-system decisions, pricing hypotheses and build order are locked in [`docs/research/AFRICA-PRESENCE-OS-2026.md`](docs/research/AFRICA-PRESENCE-OS-2026.md).
+
+This direction is **not** presented as already shipped functionality. It is the post-hackathon company roadmap built on top of the proven website + reliability core.
+
+## Architecture
+
+- `apps/api` — Fastify control plane, auth, builder APIs, monitoring and operations
+- `apps/web` — React Mission Control
+- `apps/site-host` — independent customer-site runtime
+- `packages/site-schema` — SiteSpec v1/v2, deterministic designer, renderer and quality gates
+- `packages/site-fonts` / `packages/site-media` — bundled licensed assets
+- `services/incident-engine` — deterministic incident rules
+- `services/reasoner` — validated reasoning with deterministic fallback
+- `services/policy-engine` — `DENY | REQUIRE_APPROVAL | ALLOW`
+- `services/action-executor` — typed execution boundary
+- `packages/passport` — offline Incident Passport verifier
+- `integrations/rumptycloud` — provider boundary and documented capability model
+
+The Site Host is intentionally separate from the control plane. Kora monitors the customer-serving runtime over its public URL, so the recorded failure/recovery is across a real service boundary rather than an in-process simulation.
+
+## Run locally
+
+Requires Node.js 22+, pnpm 10+, Docker Compose and PostgreSQL 17.
 
 ```bash
 pnpm install
 cp .env.example .env
 docker compose up -d postgres
-# export .env values into your shell
+# export the .env values into your shell
 pnpm db:migrate
-pnpm --filter @kora/demo-service dev
-# separate terminal
-pnpm --filter @kora/api dev
+pnpm build
+KORA_PUBLIC_URL=http://localhost:3000 KORA_CHAOS_ENABLED=true node apps/api/dist/server.js
 ```
 
-For a controlled local incident set `DEMO_FAILURE_INJECTION_ENABLED=true` before starting the demo service, then follow `docs/runbooks/local-incident-demo.md`. Never enable it casually in production.
+The app is then available at `http://localhost:3000`.
 
-Common gates: `pnpm build`, `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm format:check`.
-
-## Provider-aware configuration
-
-`.env.example` is the contract. `DATABASE_URL` must be PostgreSQL. To bind a monitored endpoint to a real RumptyCloud resource, set all of `RUMPTY_WORKSPACE`, `RUMPTY_REGION`, `RUMPTY_RESOURCE_TYPE`, and `RUMPTY_RESOURCE_ID`. Partial provider identity is rejected. `RUMPTY_RESOURCE_NAME` is display metadata only.
-
-### Container image and Rumpty Cloud
-
-The root `Dockerfile` builds one image for both services (default command: the API; the demo service runs with `node apps/demo-service/dist/server.js`). Both servers bind `0.0.0.0` and read the platform-injected `PORT` (`API_PORT`/`DEMO_PORT` win if set). Both services serve `GET /__kora`, an unauthenticated read-only self-report (`kora.runtime-claim/v1`: service, environment, commit, build time, start time, uptime). It is a claim, not proof or attestation; see ADR-009. The image records its commit from the `GIT_SHA` build argument or the build context's `.git`; `KORA_COMMIT_SHA` is the runtime fallback; otherwise the commit is `null`. See `docs/runbooks/rumpty-deploy.md` for console settings, environment variable names, database strings, migrations over `sslmode=require` and a smoke-test checklist.
-
-### Running tests
-
-PostgreSQL-backed tests are destructive (they delete rows) and run serially. They only start when `DATABASE_URL` names a database ending in `_test`; the name is parsed from the URL, so anything else is refused. With the compose database running:
+Common gates:
 
 ```bash
-docker compose exec postgres createdb -U kora kora_test
-export DATABASE_URL=postgresql://kora:kora@localhost:5432/kora_test
-pnpm db:migrate && pnpm test
+pnpm format:check
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm test
 ```
 
-Without `DATABASE_URL` the PostgreSQL suites are skipped.
+PostgreSQL-backed test suites are destructive and intentionally refuse to run unless `DATABASE_URL` names a database ending in `_test`.
 
-The current adapter does not require `RUMPTY_API_KEY`; it intentionally avoids guessing undocumented machine-readable provider APIs. Future credentialed calls must obtain credentials from secret storage and must never persist or return them.
+## Security and truthfulness
 
-## Provider model
+Kora separates **fact, inference, diagnosis and hypothesis**. An HTTP 500 proves an unhealthy HTTP observation; it does not prove a VM crash or memory exhaustion. Missing provider status, logs or metrics remain explicit gaps rather than invented explanations.
 
-Provider resource identity is:
+Cloud credentials never belong in evidence or model context. Arbitrary shell execution is outside the Kora remediation boundary. Changes are typed and policy-gated. Incident Passports are integrity-evident, not signed attestations: they prove the exported content has not changed without claiming who produced it.
 
-`provider + provider account/workspace + region + resource type + provider resource ID`
+The owner product uses authenticated sessions and tenant isolation. A legacy evidence API/UI remains intentionally available for compatibility and demo evidence; do not treat those legacy routes as the authorization model for the Mission Control product.
 
-Display names are not identity. The common capability vocabulary includes discovery, status, health, logs, metrics, deployment metadata and future remediation operations. RumptyCloud currently advertises only `HEALTH_OBSERVATION`, because that is the capability implemented without fabricating an API response contract.
+See [`SECURITY.md`](SECURITY.md), [`docs/architecture/overview.md`](docs/architecture/overview.md) and the ADRs in [`docs/adr/`](docs/adr/).
 
-Kora keeps **fact**, **inference**, **diagnosis**, and **hypothesis** separate. An HTTP 503 proves an unhealthy HTTP observation; repeated 5xx evidence supports a service-endpoint diagnosis; neither proves a VM crash or memory exhaustion.
+## Honest limits
 
-## Deterministic diagnosis
+The production acceptance used the deterministic designer and Reasoner because no Rumpty Inference endpoint is configured. A real Gemini Nano browser model was not available in CI; the documented Chrome Prompt API path is exercised with a stub. Customer image uploads, local image generation and WebLLM/Transformers.js are post-submission work. Live Paystack, registrar purchasing and email delivery are not claimed. A real-owner usability study and field Lighthouse/LCP data are still needed before making product-market-fit claims.
 
-Milestone 3 correlates evidence by exact incident/service/resource identity and deterministic time ordering. Findings use machine-readable codes such as `SERVICE_HTTP_5XX`, `SERVICE_TIMEOUT`, `DNS_RESOLUTION_FAILURE`, `TLS_HANDSHAKE_FAILURE`, `CONNECTION_REFUSED`, and `RECOVERY_VERIFIED`. The codes `RESOURCE_REPORTED_STOPPED` and `PROVIDER_UNAVAILABLE` are defined but not yet emitted by any monitor path.
-
-Confidence is finite and rule-based (`CONFIRMED`, `STRONGLY_SUPPORTED`, `SUPPORTED`; `INSUFFICIENT_EVIDENCE` is defined but not yet emitted), never a fabricated percentage. Provider `RUNNING` plus failed service health is preserved as a contradiction. Missing metrics, logs, provider status or deployment context are represented as explicit evidence gaps. Root cause is always `UNKNOWN` today (`IDENTIFIED` and `SUSPECTED` are defined, not yet emitted).
-
-Diagnostic snapshots are deterministically serialized, SHA-256 hashed, persisted in PostgreSQL and immutable after creation. Equivalent evidence produces equivalent diagnostic content; diagnostically relevant changes alter the hash. See `docs/architecture/deterministic-diagnosis.md`.
-
-An incident can be exported as an **Incident Passport** (`GET /incidents/:id/passport`) and checked offline with `pnpm kora:verify <file>`. The Passport is integrity-evident only: a SHA-256 shows the file was not changed after export, not who produced it. It is not signed (future work). See `docs/architecture/incident-passport.md` and ADR-011.
-
-The API also serves a read-only evidence page at `GET /ui` (services, Deployment Verification, incidents, diagnosis, gaps, Passport download). It has no authentication, like the API. See `docs/architecture/evidence-ui.md`.
-
-## Failure classification
-
-A failed health check is classified from the HTTP status or, for transport failures, from stable error **codes** found by walking the `fetch()` error's `cause` chain and any `AggregateError` members. Error messages are never pattern-matched.
-
-| Category                                   | Source                                                                                                                     |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `HTTP_5XX`, `HTTP_4XX`, `INVALID_RESPONSE` | HTTP status of a received response (`>=500`, `>=400`, other non-OK)                                                        |
-| `DNS_FAILURE`                              | `ENOTFOUND`, `EAI_AGAIN`                                                                                                   |
-| `CONNECTION_REFUSED`                       | `ECONNREFUSED`                                                                                                             |
-| `TLS_FAILURE`                              | `CERT_*`, `DEPTH_ZERO_SELF_SIGNED_CERT`, `UNABLE_TO_*CERT*`, `UNABLE_TO_VERIFY_LEAF_SIGNATURE`, `ERR_TLS_*`, `ERR_SSL_*`   |
-| `TIMEOUT`                                  | `TimeoutError` (the monitor's timeout), `UND_ERR_CONNECT_TIMEOUT`, `UND_ERR_HEADERS_TIMEOUT`, `UND_ERR_BODY_TIMEOUT`       |
-| `UNKNOWN`                                  | anything else, including a bare `AbortError` ("health check aborted"). The reason carries the underlying code and message. |
-
-`failureReason` includes the matched code and cause message with URL credentials and secret-like values redacted. `PROVIDER_UNAVAILABLE` and `RESOURCE_STOPPED` are defined, not yet emitted: the schema accepts them but the health monitor never produces them. Legacy Milestone 1 category values remain accepted for persisted compatibility.
-
-## API
-
-`GET /health`, `/services`, `/services/:id`, `/incidents`, `/incidents/:id`, `/incidents/:id/events`, `/incidents/:id/evidence`, `/services/:id/verification` (Deployment Verification, not cryptographic; see ADR-010), `/incidents/:id/timeline`, `/incidents/:id/diagnosis` (read-only, computes the current diagnosis), `/incidents/:id/snapshots`, `/incidents/:id/snapshots/:snapshotId`, and `POST /incidents/:id/diagnosis/snapshots` (persists an immutable snapshot; `201` created, `200` already exists).
-
-Responses are JSON with `data` for resource endpoints. Unknown resources return 404; invalid boundary inputs are rejected. Requests receive request IDs and logs are structured. Service and incident responses resolve provider/resource context when a binding exists.
-
-## Persistence and reliability semantics
-
-PostgreSQL stores services, provider resources, service/resource bindings, telemetry observations, incidents, evidence, versioned domain events, lightweight dependencies and immutable diagnostic snapshots. A partial unique index continues to enforce one unresolved incident for the Milestone 1 deduplication key. Observations reference provider resources rather than copying mutable provider metadata into every row. Evidence remains concrete and recovery remains an observed threshold, never an action/provider success code.
-
-## Repository
-
-- `apps/api` — API, monitor runtime, provider adapter boundary, deterministic diagnosis and PostgreSQL access/migrations.
-- `apps/demo-service` — controlled workload.
-- `services/incident-engine` — deterministic pure reliability rules.
-- `packages/event-schema` — event/action contracts and runtime validation.
-- `packages/topology` — provider-neutral identity, capabilities and topology relationships.
-- `integrations/rumptycloud` — verified provider documentation and integration boundary.
-- `docs` — architecture, ADRs, security and runbooks.
-
-## Security philosophy
-
-Deterministic facts precede reasoning; cloud credentials never belong in evidence or an AI context; arbitrary shell execution is out of scope; future actions are typed and policy-gated. Development failure controls fail closed. SQL values are parameterized. Provider metadata is allow-listed and provider error text is redacted. Diagnostic provenance is redacted before snapshot hashing/persistence. The current API has no authentication and therefore is not suitable for unrestricted public exposure.
-
-## RumptyCloud status
-
-Official RumptyCloud documentation was reviewed before implementing the adapter. The documented CLI covers VM operations and non-interactive API-key authentication; GitHub deployment uses a unique VM ID and token. The currently available docs do not define a stable machine-readable discovery/status response schema, so Kora does not parse guessed CLI output or invent REST endpoints.
-
-Credentialless CI verifies the provider contract, identity mapping, error normalization/redaction, PostgreSQL resource persistence, provider-aware incident lifecycle, timeline, deterministic diagnosis and recovery. A true RumptyCloud acceptance run remains a **DEFERRED PRE-SUBMISSION ACCEPTANCE GATE** requiring account-scoped resource identity and a deployed public test workload.
-
-See `integrations/rumptycloud/README.md`, `docs/architecture/provider-observation.md`, and `docs/architecture/deterministic-diagnosis.md`.
-
-## Running the full product locally
-
-```bash
-pnpm install && docker compose up -d postgres
-export DATABASE_URL=postgresql://kora:kora@localhost:5432/kora
-pnpm db:migrate && pnpm build
-KORA_PUBLIC_URL=http://localhost:3000 KORA_CHAOS_ENABLED=true node apps/api/dist/server.js   # app at http://localhost:3000
-```
-
-End-to-end tests: `PLAYWRIGHT_BROWSERS_PATH=... DATABASE_URL=.../kora_test npx playwright test` (creates and drops its own database).
-
-Architecture: `docs/architecture/overview.md`. Decisions: `docs/adr/`. Licensed under Apache-2.0.
-
-## Design intelligence
-
-Site design (SiteSpec v2, the component library, the deterministic designer, the optional AI art director, visual QA) is documented in [docs/design](docs/design/README.md) and [ADR-019](docs/adr/ADR-019-design-intelligence-and-site-spec-v2.md).
+Licensed under Apache-2.0.
