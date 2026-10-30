@@ -17,3 +17,26 @@ export async function applyMigrations(
     onApplied(name);
   }
 }
+
+const MIGRATION_LOCK_KEY = 746_100_001;
+/**
+ * Applies every migration while holding a PostgreSQL advisory lock, so several
+ * processes starting together migrate exactly once and the rest wait. Safe to
+ * run on every start because migrations are re-runnable.
+ */
+export async function migrateWithLock(
+  sql: postgres.Sql,
+  onApplied: (name: string) => void = () => undefined,
+) {
+  const conn = await sql.reserve();
+  try {
+    await conn`SELECT pg_advisory_lock(${MIGRATION_LOCK_KEY})`;
+    try {
+      await applyMigrations(conn, onApplied);
+    } finally {
+      await conn`SELECT pg_advisory_unlock(${MIGRATION_LOCK_KEY})`;
+    }
+  } finally {
+    conn.release();
+  }
+}

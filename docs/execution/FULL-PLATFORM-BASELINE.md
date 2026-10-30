@@ -54,3 +54,7 @@ Recorded before any behaviour change.
 - `rumpty sync <folder> <bucket>[/prefix] [--public] [--delete]` uploads a folder to object storage incrementally. The public URL format of a bucket is not documented.
 
 Consequences for Kora (enforced in code, not just prose): provider deploy/rollback/redeploy report `REQUIRES_MANUAL_PROVIDER_ACTION`; VM restart is attempted only through an allow-listed argument-array invocation and its result is never treated as recovery; site rollback is Kora-owned (republish the previous immutable version).
+
+## Correction (2026-10-30, later)
+
+The Rumpty docs list **Inference** as a product (inference projects with an OpenAI-compatible endpoint and API key for hosted models; Billing documents a free token pool per cycle and opt-in overage). The CLI reference also documents `vm start|stop|reboot|delete`, `copy`, `exec` and `expose`; only their argument syntax is unpublished. Earlier statements in this document that deny these were incomplete.

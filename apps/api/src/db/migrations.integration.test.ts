@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 import { afterAll, describe, expect, it } from "vitest";
-import { applyMigrations } from "./apply-migrations.js";
+import { applyMigrations, migrateWithLock } from "./apply-migrations.js";
 
 const base = process.env.DATABASE_URL;
 const d = base ? describe : describe.skip;
@@ -110,6 +110,28 @@ d("migrations", () => {
     for (const f of files) digest.update(await readFile(new URL(f, dir)));
     // Recorded from main at c38e34b; any edit to a deployed migration fails here.
     expect(digest.digest("hex")).toBe(EXPECTED_001_006);
+  });
+});
+
+d("startup migration", () => {
+  it("several processes starting together migrate exactly once, without errors", async () => {
+    const { url, sql } = await freshDb();
+    const peers = [1, 2, 3].map(() =>
+      postgres(url, { max: 2, onnotice: () => {} }),
+    );
+    const applied: string[] = [];
+    await Promise.all(
+      peers.map((p) => migrateWithLock(p, (n) => applied.push(n))),
+    );
+    // Each process walks the (re-runnable) list, but never concurrently and never failing.
+    expect(applied.length).toBe(peers.length * 12);
+    expect(
+      (
+        await sql`SELECT COUNT(*)::int AS n FROM information_schema.tables WHERE table_name IN ('sites','users','audit_log')`
+      )[0]!.n,
+    ).toBe(3);
+    await Promise.all(peers.map((p) => p.end()));
+    await sql.end();
   });
 });
 

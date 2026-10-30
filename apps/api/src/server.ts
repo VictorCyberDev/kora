@@ -1,6 +1,7 @@
 import postgres from "postgres";
 import { EVENT_SCHEMA_VERSION } from "@kora/event-schema";
 import { loadConfig } from "./config.js";
+import { migrateWithLock } from "./db/apply-migrations.js";
 import { buildApi } from "./app.js";
 import { KoraStore } from "./store.js";
 import { HealthMonitor } from "./monitor.js";
@@ -11,6 +12,11 @@ import { loadPlatformConfig } from "./platform/config.js";
 
 const config = loadConfig();
 const sql = postgres(config.DATABASE_URL);
+if (process.env.KORA_AUTO_MIGRATE === "true") {
+  await migrateWithLock(sql, (name) =>
+    console.log(`migration applied: ${name}`),
+  );
+}
 const store = new KoraStore(sql);
 const service = await store.ensureService(
   config.MONITOR_SERVICE_NAME,
@@ -85,7 +91,8 @@ app.addHook("onClose", async () => {
 });
 await app.listen({ host: config.API_HOST, port: config.API_PORT });
 if (config.MONITOR_ENABLED) {
-  monitor.start();
+  // The original single-service demo monitor can be switched off; per-site monitors are separate.
+  if (process.env.KORA_LEGACY_MONITOR !== "false") monitor.start();
   verifier?.start();
   await platform?.startBackground();
 }
