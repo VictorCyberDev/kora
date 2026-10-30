@@ -185,6 +185,10 @@ const LOOK_NAME: Record<string, [string, string]> = {
   ],
   "warm-craft": ["Crafted & warm", "Earthy, tactile, handmade in feel."],
   "bento-modern": ["Modern bento", "Modular tiles, rounded, energetic."],
+  "trade-solid": [
+    "Solid & practical",
+    "Sharp edges, tiles of proof, built for trades.",
+  ],
   "corporate-calm": ["Calm professional", "Structured, steady, easy to trust."],
   "dark-tech": ["Dark technical", "Graphite surfaces with a sharp accent."],
   "pop-local": [

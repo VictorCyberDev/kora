@@ -13,3 +13,4 @@ export * from "./intelligence.js";
 export * from "./upgrade.js";
 export * from "./edit.js";
 export * from "./preview.js";
+export * from "./media.js";

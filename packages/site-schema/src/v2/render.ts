@@ -31,8 +31,11 @@ export function icon(name: string | undefined, fallback = "check"): string {
 const hasIcon = (it: { icon?: string | undefined }) =>
   Boolean(it.icon && ICONS[it.icon]);
 /** A matched pictogram when the title says what it is; otherwise a quiet index mark, never a random symbol. */
-const mark = (it: { icon?: string | undefined }, n: number) =>
-  hasIcon(it) ? icon(it.icon) : `<span class="mk">${num(n)}</span>`;
+/** One consistent mark per set: pictograms only when every item has a real match, else index numbers. */
+const markFor =
+  (items: Array<{ icon?: string | undefined }>) =>
+  (it: { icon?: string | undefined }, n: number) =>
+    items.every(hasIcon) ? icon(it.icon) : `<span class="mk">${num(n)}</span>`;
 
 function href(h: string, from: string): string {
   return h.startsWith("/") ? relFrom(from, h === "/" ? "home" : h.slice(1)) : h;
@@ -155,7 +158,7 @@ function services(s: Sec<"services">, c: Ctx): string {
       return `${o}<div class="wrap">${hd}<div class="acc rv">${s.items.map((it, n) => `<details${n === 0 ? " open" : ""}><summary>${esc(it.title)}</summary><p>${esc(it.text)}</p></details>`).join("")}</div></div></section>`;
     case "grid":
     default:
-      return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><div class="ico">${mark(it, n)}</div><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`).join("")}</div></div></section>`;
+      return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><div class="ico">${markFor(s.items)(it, n)}</div><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`).join("")}</div></div></section>`;
   }
 }
 
@@ -173,12 +176,12 @@ function features(s: Sec<"features">, c: Ctx): string {
         .slice(0, 5)
         .map(
           (it, n) =>
-            `<article class="card"><div class="ico">${mark(it, n)}</div><h3 class="mt">${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`,
+            `<article class="card"><div class="ico">${markFor(s.items)(it, n)}</div><h3 class="mt">${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`,
         )
         .join("")}</div></div></section>`;
     case "icon-led":
     default:
-      return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><div class="ico">${mark(it, n)}</div><h3 class="mt">${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`).join("")}</div></div></section>`;
+      return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><div class="ico">${markFor(s.items)(it, n)}</div><h3 class="mt">${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`).join("")}</div></div></section>`;
   }
 }
 

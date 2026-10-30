@@ -150,3 +150,7 @@ KORA_PUBLIC_URL=http://localhost:3000 KORA_CHAOS_ENABLED=true node apps/api/dist
 End-to-end tests: `PLAYWRIGHT_BROWSERS_PATH=... DATABASE_URL=.../kora_test npx playwright test` (creates and drops its own database).
 
 Architecture: `docs/architecture/overview.md`. Decisions: `docs/adr/`. Licensed under Apache-2.0.
+
+## Design intelligence
+
+Site design (SiteSpec v2, the component library, the deterministic designer, the optional AI art director, visual QA) is documented in [docs/design](docs/design/README.md) and [ADR-019](docs/adr/ADR-019-design-intelligence-and-site-spec-v2.md).

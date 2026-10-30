@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   applySitePatch,
   artifactHash,
+  checkMedia,
   designQuality,
   designSignature,
   finalizeForPublish,
@@ -419,5 +420,62 @@ describe("edge briefs", () => {
         [],
       );
     }
+  });
+});
+
+describe("media", () => {
+  it("never emits a photo the owner did not supply; any imagery is abstract art", () => {
+    for (const { d } of all.slice(0, 12)) {
+      const html = renderSiteV2(d.spec)["index.html"]!;
+      expect(html).not.toMatch(/<img\b/);
+    }
+  });
+  it("owner media must be https, described and credited when external", () => {
+    expect(
+      checkMedia({
+        url: "https://x.example/a.jpg",
+        alt: "A kitchen",
+        source: "upload",
+      }).ok,
+    ).toBe(true);
+    expect(
+      checkMedia({
+        url: "https://x.example/a.jpg",
+        alt: "",
+        source: "upload",
+      }).problems.join(),
+    ).toContain("alt");
+    expect(
+      checkMedia({
+        url: "https://x.example/a.jpg",
+        alt: "A kitchen",
+        source: "external",
+      }).ok,
+    ).toBe(false);
+  });
+  it("supplied media renders with alt text, lazy loading and a focal class instead of an inline style", () => {
+    const s = structuredClone<SiteSpecV2>(planSite(BRIEFS.interior!));
+    (s.pages[0]!.sections[0] as { media?: unknown }).media = {
+      url: "https://cdn.example/room.jpg",
+      alt: "A lit living room",
+      source: "upload",
+      focalPoint: { x: 0.9, y: 0.1 },
+    };
+    const html = renderSiteV2(s)["index.html"]!;
+    expect(html).toMatch(
+      /<img src="https:\/\/cdn.example\/room.jpg" alt="A lit living room"[^>]*loading="lazy"[^>]*class="fp-rt"/,
+    );
+    expect(lintArtifact(renderSiteV2(s))).toEqual([]);
+  });
+});
+
+describe("no look dominates the fixtures", () => {
+  it("no single look is used by more than two of the fixture sites in direction A", () => {
+    const count = new Map<string, number>();
+    for (const b of Object.values(BRIEFS)) {
+      const d = planDirections(b)[0]!;
+      count.set(d.look, (count.get(d.look) ?? 0) + 1);
+    }
+    for (const [look, n] of count) expect(n, look).toBeLessThanOrEqual(2);
   });
 });
