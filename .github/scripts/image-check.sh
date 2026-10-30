@@ -10,7 +10,7 @@ FAKE_SHA="0123456789abcdef0123456789abcdef01234567"
 ENV_SHA="fedcba9876543210fedcba9876543210fedcba98"
 DB_URL="postgresql://kora:kora@localhost:5432/kora_test"
 fail() { echo "image-check FAILED: $*" >&2; exit 1; }
-cleanup() { docker rm -f kora-demo kora-api >/dev/null 2>&1 || true; }
+cleanup() { docker rm -f kora-demo kora-api kora-site-host >/dev/null 2>&1 || true; }
 trap cleanup EXIT
 
 wait_for() { # url
@@ -69,5 +69,16 @@ wait_for http://localhost:18081/health
 [ "$(curl -fsS http://localhost:18081/health | jq -r .status)" = "ok" ] || fail "api /health"
 check_claim http://localhost:18081 kora-api "$HEAD_SHA" build-info
 [ "$(curl -fsS http://localhost:18081/__kora | jq -r .environment)" = "ci" ] || fail "environment"
+echo "== E) Site Host container: same image, own process, own port, served web app absent"
+docker run -d --name kora-site-host --network host -e NODE_ENV=production -e PORT=18082 \
+  -e "DATABASE_URL=$DB_URL" -e SITE_HOST_PUBLIC_URL=http://localhost:18082 -e KORA_ENVIRONMENT=ci \
+  kora:ctx node apps/site-host/dist/server.js >/dev/null
+wait_for http://localhost:18082/health
+[ "$(curl -fsS http://localhost:18082/health | jq -r .database)" = "ok" ] || fail "site-host database"
+check_claim http://localhost:18082 kora-site-host "$HEAD_SHA" build-info
+[ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:18082/api/auth/me)" = "404" ] || fail "site-host exposes API"
+[ "$(docker exec kora-site-host id -u)" != "0" ] || fail "site-host runs as root"
+echo "== F) rumpty CLI is NOT in the image (the CLI-based bucket publisher is experimental and off)"
+! docker run --rm kora:ctx sh -c 'command -v rumpty' >/dev/null 2>&1 || fail "unexpected rumpty binary"
 docker image ls kora:ctx --format 'image size: {{.Size}}'
 echo "image-check OK"

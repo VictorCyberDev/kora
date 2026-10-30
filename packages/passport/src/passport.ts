@@ -1,6 +1,12 @@
 import { CANONICALIZATION } from "./canonical.js";
 
 export const PASSPORT_SCHEMA = "kora.incident-passport/v1";
+export const PASSPORT_SCHEMA_V2 = "kora.incident-passport/v2";
+/** Every schema this verifier understands. */
+export const SUPPORTED_SCHEMAS: readonly string[] = [
+  PASSPORT_SCHEMA,
+  PASSPORT_SCHEMA_V2,
+];
 export const INTEGRITY_ALGORITHM = "sha256";
 export { CANONICALIZATION };
 

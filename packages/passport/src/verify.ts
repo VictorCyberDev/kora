@@ -2,7 +2,8 @@ import { hash } from "./canonical.js";
 import {
   CANONICALIZATION,
   INTEGRITY_ALGORITHM,
-  PASSPORT_SCHEMA,
+  PASSPORT_SCHEMA_V2,
+  SUPPORTED_SCHEMAS,
   diagnosisHashInput,
   passportHashInput,
   type JsonObject,
@@ -26,8 +27,16 @@ const isObject = (v: unknown): v is JsonObject =>
 
 function structureProblem(p: unknown): string | null {
   if (!isObject(p)) return "not a JSON object";
-  if (p.schema !== PASSPORT_SCHEMA)
-    return `unsupported schema ${JSON.stringify(p.schema)}, expected ${PASSPORT_SCHEMA}`;
+  if (typeof p.schema !== "string" || !SUPPORTED_SCHEMAS.includes(p.schema))
+    return `unsupported schema ${JSON.stringify(p.schema)}, expected ${SUPPORTED_SCHEMAS.join(" or ")}`;
+  if (p.schema === PASSPORT_SCHEMA_V2) {
+    const r = p.remediation;
+    if (!isObject(r)) return "remediation is not an object";
+    if (!Array.isArray(r.actions) || !r.actions.every(isObject))
+      return "remediation.actions is not an array of objects";
+  } else if ("remediation" in p) {
+    return "remediation is only valid in schema v2";
+  }
   const integrity = p.integrity;
   if (!isObject(integrity)) return "integrity block missing";
   if (integrity.algorithm !== INTEGRITY_ALGORITHM)
@@ -135,6 +144,16 @@ export function verifyPassport(input: unknown): VerifyResult {
       `${diagnosisEvidence.length} items match their own hash`,
     ),
   ];
+  if (p.schema === PASSPORT_SCHEMA_V2) {
+    const actions = (p.remediation as JsonObject).actions as JsonObject[];
+    checks.push(
+      check(
+        "remediation-hashes",
+        () => itemHashProblems(actions, "remediation.actions"),
+        `${actions.length} actions match their own hash`,
+      ),
+    );
+  }
   const failed = checks.filter((c) => !c.ok);
   return failed.length
     ? { ok: false, reason: `${failed[0]!.name}: ${failed[0]!.detail}`, checks }

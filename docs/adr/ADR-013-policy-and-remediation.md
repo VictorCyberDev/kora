@@ -1,0 +1,9 @@
+# ADR-013: Deterministic policy and verified, typed remediation
+
+**Status:** accepted. Implements ADR-005 and ADR-006.
+
+`services/policy-engine` is a pure function from (org, site, incident, typed action, target identity and capabilities, history, role, time) to `DENY | REQUIRE_APPROVAL | ALLOW` with a policy code, reason, risk and approval expiry. Defaults: health check and an idempotent republish are allowed; switching version, restart, redeploy and rollback require approval (ADMIN+); destructive/unrestricted operations (`delete_*`, `exec`, `shell`, `purchase`, secret rotation, billable infrastructure) are always denied; unknown actions, malformed parameters, incomplete resource identity, missing provider capability, viewers and loops (3 per hour) are denied.
+
+Actions live in `action_proposals` with a compare-and-swap state machine (`PROPOSED → POLICY_EVALUATED → AWAITING_APPROVAL | DENIED | READY → EXECUTING → EXECUTED | EXECUTION_FAILED → VERIFYING → RECOVERY_VERIFIED | RECOVERY_FAILED`). Policy decisions, executions and recovery verifications are append-only tables. **EXECUTED is never success**: only consecutive healthy observations recorded after execution produce `RecoveryVerified`; otherwise the verification window expires into `RecoveryFailed`.
+
+Rumpty provides no documented deployment, rollback or VM-restart interface, so those actions are denied by capability (`REQUIRES_MANUAL_PROVIDER_ACTION`). The real remediation is Kora-owned: republish a previous immutable site version. Incident Passport **v2** adds a hashed `remediation` section; v1 documents are unchanged and both verify offline.

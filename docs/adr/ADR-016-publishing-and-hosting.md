@@ -1,0 +1,5 @@
+# ADR-016: Publishers and failure domains
+
+`SitePublisher` has two implementations. **kora-hosted** serves the published artifact from PostgreSQL at `/s/<slug>/` (and on connected custom domains by Host header); it shares a failure domain with the Kora API. **rumpty-bucket** runs the documented `rumpty sync <folder> <bucket>/<slug> --delete --public` with an argument array, allow-listed executable, validated identifiers, bounded time, a minimal environment and redacted output; it is the separated option. Rumpty does not document a bucket's public URL, so `RUMPTY_SITE_PUBLIC_BASE_URL` is operator-provided and verified by fetching the live `index.html` and comparing it with the published bytes. Unpublishing from Rumpty is reported as a manual provider action.
+
+Controlled tests (Chaos Lab) mark the _published version_ as faulty so the Kora-hosted route really returns 500 or stalls; they are off unless `KORA_CHAOS_ENABLED=true`, only apply to Kora-hosted sites, are audited, and are labelled "Controlled test".

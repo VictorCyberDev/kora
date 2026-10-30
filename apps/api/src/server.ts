@@ -6,6 +6,8 @@ import { KoraStore } from "./store.js";
 import { HealthMonitor } from "./monitor.js";
 import { verifierFromConfig } from "./verification/verifier.js";
 import { RumptyCloudProvider } from "./providers/rumptycloud.js";
+import { createPlatform, type PlatformRuntime } from "./platform/index.js";
+import { loadPlatformConfig } from "./platform/config.js";
 
 const config = loadConfig();
 const sql = postgres(config.DATABASE_URL);
@@ -53,7 +55,19 @@ await store.recordEvent({
     resourceId,
   },
 });
-const app = buildApi(store, config.NODE_ENV, config.LOG_LEVEL);
+const platformConfig = loadPlatformConfig();
+let platform: PlatformRuntime | undefined;
+const app = buildApi(store, config.NODE_ENV, config.LOG_LEVEL, {
+  createPlatform: (log) =>
+    (platform = createPlatform({
+      sql,
+      kora: store,
+      koraConfig: config,
+      config: platformConfig,
+      log,
+      autostartMonitors: config.MONITOR_ENABLED,
+    })),
+});
 const monitor = new HealthMonitor(
   config,
   store,
@@ -66,10 +80,12 @@ const verifier = verifierFromConfig(config, store, String(service.id), app.log);
 app.addHook("onClose", async () => {
   await monitor.stop();
   await verifier?.stop();
+  await platform?.stop();
   await sql.end();
 });
 await app.listen({ host: config.API_HOST, port: config.API_PORT });
 if (config.MONITOR_ENABLED) {
   monitor.start();
   verifier?.start();
+  await platform?.startBackground();
 }

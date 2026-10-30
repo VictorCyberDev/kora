@@ -1,0 +1,5 @@
+# ADR-017: Domains and billing
+
+**Domains.** `DomainProvider` covers search, suggest, purchase, renew and status; Entri and Openprovider are scaffolds that report `NOT_CONFIGURED` because no credentials or sandbox exist here. Connecting a domain you own works for real: Kora observes DNS (CNAME/A) and an HTTPS probe and only then marks it ACTIVE; regressions create `DOMAIN_STATUS_CHANGED` change events and notifications. Purchase is not implemented and returns 501; Kora never registers a domain without recorded payment approval.
+
+**Billing.** `PaymentProvider` with a Paystack implementation written against its documented initialize/verify/webhook shapes (HMAC-SHA512 signature, constant-time compare). Activation happens only after server-side `transaction/verify` with an amount/currency match; webhooks are deduplicated by `(provider, event_key)`. A failed payment moves ACTIVE to PAST_DUE with a 7-day grace; EXPIRED/CANCELED restrict creating, generating and publishing but never take sites offline or delete them, and monitoring continues. Plans come from `KORA_PLANS_JSON`; only a free trial is built in for production. Not yet exercised against live Paystack.
