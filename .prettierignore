@@ -1,0 +1,3 @@
+# Captured evidence is kept byte-for-byte as produced (Passports are hash-verified).
+docs/live/*.json
+docs/live/passport/

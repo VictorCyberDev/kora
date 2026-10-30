@@ -1,10 +1,22 @@
-# Demo (about 4 minutes, all real)
+# Kora demo script (2–4 minutes)
 
-Start: `KORA_PUBLIC_URL=http://localhost:3000 KORA_CHAOS_ENABLED=true KORA_LEGACY_PUBLIC_API=true node apps/api/dist/server.js` (after `pnpm build && pnpm db:migrate`).
+**Story:** most website builders stop when your site goes live. **Kora stays.**
 
-1. Sign up, describe a business, watch the first version appear (no AI key needed: the deterministic builder uses only what you wrote).
-2. Ask for "Make the primary colour red"; publish v1, then publish v2. Open the public URL.
-3. Overview shows **Online**. In _Chaos Lab_ start the **Controlled test** (HTTP 500). The live version really fails.
-4. Within seconds: **Needs attention**. Open the incident: plain-language cause, what changed (timing only), what is unknown, recommended "restore previous version", **approval required**.
-5. Approve. The page says **Fix applied — verifying**, then **Website restored** only after two new healthy checks.
-6. Switch to **Proof**: diagnosis, policy code, approval, executor trace, recovery verification; load the Passport and run `pnpm kora:verify <file>`.
+Live product: https://kora-api.rumptycloud.app · Live customer sites are served by the independent Site Host at https://kora-site-host.rumptycloud.app.
+Free trial plan, no payment is configured. First request after idle can take a few seconds (scale-to-zero): open both URLs a minute before recording.
+
+| #   | Time | Show                                                                                                                                                       | Say                                                                                                                                                             |
+| --- | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 0:00 | Kora landing: "A website that looks made for you, and stays up." Scroll the six generated showcase sites.                                                  | "Kora builds the website and then keeps it running. These six were generated from two-line descriptions: different layouts, type and colour, not one template." |
+| 2   | 0:25 | Sign in → **New website**. Type a name and what the business does (e.g. the fine-dining brief). Pick goal/feel from the dropdowns.                         | "Two lines is enough. Kora only uses what I wrote: no invented reviews, prices or awards."                                                                      |
+| 3   | 0:50 | **Pick a direction**: three real rendered designs. Choose one (or **Choose for me**).                                                                      | "Three genuinely different directions, rendered by the same renderer that publishes."                                                                           |
+| 4   | 1:10 | Builder: Design tab (colours, type), Sections tab (move/layout), preview on Phone. **Publish this version**.                                               | "Every change is a validated edit and a new immutable version. Publishing verifies the live bytes match." Open the public URL.                                  |
+| 5   | 1:40 | Mission Control → site **Overview**: **Healthy**, level line, last check seconds ago.                                                                      | "Kora has been watching since publish. Healthy, and it says when it last checked."                                                                              |
+| 6   | 1:55 | **Start HTTP 500 test** (labelled _Controlled test_). Refresh the public URL: it really returns 500.                                                       | "This breaks the live version on purpose, for real, so we can watch Kora handle it."                                                                            |
+| 7   | 2:10 | Status turns **Waiting for approval**; open **See what happened**. Stage tracker; What happened / Impact / When; _What Kora knows_ vs _does not know_.     | "Kora found it itself from repeated failed checks, opened exactly one incident, and tells me what it knows and, importantly, what it doesn't."                  |
+| 8   | 2:40 | Recommended action: **Restore the previous healthy version**; policy "needs your approval". Click **Approve and apply**.                                   | "It changes what customers see, so it asks. It will not act without me."                                                                                        |
+| 9   | 3:00 | Status **Checking recovery**, then **Recovered**. Public site is back.                                                                                     | "A fix only counts after new health checks pass. Executing the rollback is not the same as recovery."                                                           |
+| 10  | 3:20 | Toggle **Proof** → evidence, policy decision, approval, action trace, verification → **Load Passport**. Run `pnpm kora:verify <passport.json>` → **PASS**. | "Developers get the whole chain, and an Incident Passport anyone can verify offline."                                                                           |
+| 11  | 3:45 | Landing / tagline.                                                                                                                                         | "Build your website. Kora keeps it running."                                                                                                                    |
+
+Fallbacks: if the failure test is not offered, `KORA_CHAOS_ENABLED` is off on that deployment. If a service is cold, wait for the first response and continue.

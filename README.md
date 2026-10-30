@@ -2,6 +2,8 @@
 
 **Build your website. Kora keeps it running.**
 
+**Live:** product https://kora-api.rumptycloud.app · customer sites https://kora-site-host.rumptycloud.app · recorded recovery and Passport in [`LIVE-ACCEPTANCE.md`](LIVE-ACCEPTANCE.md) and [`docs/live/`](docs/live/README.md) · demo [`DEMO.md`](DEMO.md) · submission [`SUBMISSION.md`](SUBMISSION.md).
+
 Kora builds a business website from a plain-language description, publishes it, then watches it, explains problems from evidence, safely recovers what it is allowed to recover, and proves recovery from new observations. Underneath is an evidence-first reliability kernel:
 
 `OBSERVE → DETECT → CORRELATE → DIAGNOSE → PROPOSE → AUTHORIZE → EXECUTE → VERIFY → AUDIT`
@@ -17,7 +19,7 @@ The AI explains and proposes typed actions. A deterministic policy engine decide
 | SiteSpec builder: generate, edit (rule-based; model-assisted when inference is configured), immutable versions, preview, publish, rollback, contact forms | implemented                                                                                                                                                                                                                                                                                     |
 | Publishing: Kora-hosted (from PostgreSQL) and Rumpty bucket (`rumpty sync`)                                                                               | implemented; Rumpty path needs real credentials to run                                                                                                                                                                                                                                          |
 | Change intelligence, system graph, Owner-language status                                                                                                  | implemented                                                                                                                                                                                                                                                                                     |
-| Reasoner (OpenAI-compatible, validated, deterministic fallback)                                                                                           | implemented; no model is configured by default                                                                                                                                                                                                                                                  |
+| Reasoner (OpenAI-compatible, validated, deterministic fallback)                                                                                           | implemented; no model is configured in production (deterministic fallback in use)                                                                                                                                                                                                               |
 | Policy engine, typed actions, approval, closed-loop verification, Passport v2                                                                             | implemented                                                                                                                                                                                                                                                                                     |
 | Custom domains (connect an existing domain, DNS/HTTPS observed)                                                                                           | implemented                                                                                                                                                                                                                                                                                     |
 | Domain purchase / registrars (Entri, Openprovider)                                                                                                        | contract + scaffold only; returns "not configured"                                                                                                                                                                                                                                              |
@@ -27,6 +29,10 @@ The AI explains and proposes typed actions. A deterministic policy engine decide
 | Mission Control web app (`apps/web`)                                                                                                                      | implemented; served by the API                                                                                                                                                                                                                                                                  |
 
 See `docs/architecture/overview.md`, ADR-012 to ADR-017, `docs/execution/FULL-PLATFORM-BASELINE.md`, `LIVE-ACCEPTANCE.md` and `SECURITY.md`.
+
+## Design system (SiteSpec v2)
+
+Closed component library, 32 industry recipes, three directions, bundled fonts, five curated licensed photographs, procedural art, optional on-device/remote AI art director behind a validation and fact gate. Details: [`docs/design/`](docs/design/README.md), ADR-019.
 
 ## Quick start
 
