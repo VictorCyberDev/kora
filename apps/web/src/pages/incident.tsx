@@ -108,9 +108,9 @@ export function IncidentPage() {
                 aria-live="polite"
               >
                 {v.verification.state === "RECOVERY_VERIFIED" ? (
-                  <Status kind="ok">Website restored</Status>
+                  <Status kind="ok">Recovered</Status>
                 ) : v.verification.state === "VERIFYING" ? (
-                  <Status kind="info">Fix applied — verifying</Status>
+                  <Status kind="info">Checking recovery</Status>
                 ) : resolved ? (
                   <Status kind="ok">Resolved</Status>
                 ) : (

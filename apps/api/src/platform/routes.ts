@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import {
@@ -5,7 +6,6 @@ import {
   briefSchema,
   designBriefSchema,
   hashSpec,
-  inlinePreview,
   lintArtifact,
   missingBlockingDetails,
   PAIRINGS,
@@ -534,6 +534,10 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       },
     });
   });
+  const directionPreviews = new Map<
+    string,
+    { userId: string; expires: number; files: Record<string, string>[] }
+  >();
   // Three genuinely different directions, rendered for comparison. Nothing is saved or published.
   app.post("/api/sites/:id/design/directions", async (req) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
@@ -545,8 +549,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       ...body,
       name: body.name ?? site.name,
     });
+    const planned = planDirections(brief);
+    const token = randomBytes(16).toString("hex");
+    for (const [k, v] of directionPreviews)
+      if (v.expires < Date.now()) directionPreviews.delete(k);
+    if (directionPreviews.size >= 200)
+      directionPreviews.delete(directionPreviews.keys().next().value!);
+    directionPreviews.set(token, {
+      userId: requireUser(req).userId,
+      expires: Date.now() + 30 * 60_000,
+      files: planned.map((d) => {
+        const files = renderSiteV2(d.spec);
+        // Previews are internal: direct contact only, never a form that posts to production.
+        files["index.html"] = files["index.html"]!.replace(
+          /<form[\s\S]*?<\/form>/g,
+          "",
+        );
+        return files;
+      }),
+    });
     return {
-      data: planDirections(brief).map((d) => ({
+      data: planned.map((d) => ({
         index: d.index,
         name: d.name,
         summary: d.summary,
@@ -559,9 +582,32 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
           d.spec.design.palette.surfaceMuted,
         ],
         fontPairing: d.spec.design.typography.pairing,
-        previewHtml: inlinePreview(renderSiteV2(d.spec)),
+        previewUrl: `/api/design/previews/${token}/${d.index}/`,
       })),
     };
+  });
+  // The direction previews are real rendered files (same renderer as publish), held briefly in memory.
+  app.get("/api/design/previews/:token/:index/*", async (req, reply) => {
+    const { token, index } = z
+      .object({
+        token: z.string().regex(/^[a-f0-9]{32}$/),
+        index: z.coerce.number().int().min(0).max(2),
+      })
+      .parse(req.params);
+    const held = directionPreviews.get(token);
+    if (
+      !held ||
+      held.userId !== requireUser(req).userId ||
+      held.expires < Date.now()
+    )
+      throw notFound();
+    return sendArtifact(
+      reply,
+      held.files[index]!,
+      (req.params as Record<string, string>)["*"] ?? "",
+      `/api/design/previews/${token}/${index}/`,
+      { "x-frame-options": "SAMEORIGIN" },
+    );
   });
   // What the visual controls offer (friendly names are the UI's job; ids are the contract).
   app.get("/api/design/catalog", (req) => {

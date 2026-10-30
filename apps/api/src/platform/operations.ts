@@ -686,7 +686,7 @@ export class Operations {
               orgId: site.orgId,
               siteId: site.id,
               kind: "RECOVERY_VERIFIED",
-              title: "Website restored",
+              title: "Recovered",
               body: "Recovery verified by new observations.",
               objectType: "action",
               objectId: a.id,

@@ -68,6 +68,8 @@ export const kindFor = (s: string): Kind =>
     ONLINE: "ok",
     RECOVERED: "ok",
     NEEDS_ATTENTION: "bad",
+    WAITING_APPROVAL: "warn",
+    FIXING: "info",
     VERIFYING: "info",
     UNKNOWN: "wait",
   })[s] as Kind) ?? "wait";

@@ -137,15 +137,23 @@ d("SiteSpec v2 through the real API", () => {
       index: number;
       look: string;
       palette: string;
-      previewHtml: string;
+      previewUrl: string;
       swatches: string[];
     }>;
     expect(dirs).toHaveLength(3);
     expect(new Set(dirs.map((x) => x.look)).size).toBe(3);
     expect(new Set(dirs.map((x) => x.palette)).size).toBe(3);
     for (const x of dirs) {
-      expect(x.previewHtml).toContain("<style>");
-      expect(x.previewHtml).not.toContain("<script");
+      const page = await h.call("GET", x.previewUrl, { cookie: o.cookie });
+      expect(page.status).toBe(200);
+      const css = await h.call("GET", `${x.previewUrl}styles.css`, {
+        cookie: o.cookie,
+      });
+      expect(css.status).toBe(200);
+      const stranger = await h.signup(`stranger-${x.index}@example.com`);
+      expect(
+        (await h.call("GET", x.previewUrl, { cookie: stranger.cookie })).status,
+      ).toBe(404);
     }
     const versions = (
       await h.call("GET", `/api/sites/${site.id}/versions`, {

@@ -320,9 +320,20 @@ describe("owner headline and client", () => {
     expect(
       ownerHeadline({ ...base, openIncident: true, actionState: "VERIFYING" })
         .title,
-    ).toBe("Fix applied — verifying");
+    ).toBe("Checking recovery");
+    expect(
+      ownerHeadline({
+        ...base,
+        openIncident: true,
+        actionState: "AWAITING_APPROVAL",
+      }).title,
+    ).toBe("Waiting for approval");
+    expect(
+      ownerHeadline({ ...base, openIncident: true, actionState: "EXECUTING" })
+        .title,
+    ).toBe("Fixing");
     expect(ownerHeadline({ ...base, recoveryVerified: true }).title).toBe(
-      "Website restored",
+      "Recovered",
     );
     expect(ownerHeadline({ ...base, hasObservations: false }).status).toBe(
       "UNKNOWN",
