@@ -25,7 +25,8 @@
   --info: #3558a8;
   --info-soft: #e2e8f8;
   --radius: 18px;
-  --shadow: 0 1px 1px rgba(23, 19, 25, 0.04), 0 12px 36px rgba(23, 19, 25, 0.07);
+  --shadow:
+    0 1px 1px rgba(23, 19, 25, 0.04), 0 12px 36px rgba(23, 19, 25, 0.07);
   --shadow-strong: 0 24px 80px rgba(23, 19, 25, 0.18);
   --ink-2: #262027;
   --canvas: #f7f2e9;
@@ -63,7 +64,11 @@
 
 body {
   background:
-    radial-gradient(circle at 8% -10%, color-mix(in srgb, var(--brand) 9%, transparent), transparent 30rem),
+    radial-gradient(
+      circle at 8% -10%,
+      color-mix(in srgb, var(--brand) 9%, transparent),
+      transparent 30rem
+    ),
     var(--bg);
 }
 
@@ -96,12 +101,17 @@ main.wrap h3 {
   border-radius: 11px;
   border-color: transparent;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 90%, #000 10%);
-  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease,
+    background 150ms ease;
 }
 
 .btn:hover:not([disabled]) {
   transform: translateY(-1px);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 80%, #000 20%), 0 8px 24px color-mix(in srgb, var(--brand) 15%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--brand) 80%, #000 20%),
+    0 8px 24px color-mix(in srgb, var(--brand) 15%, transparent);
 }
 
 .btn.ghost,
@@ -138,7 +148,9 @@ header.top:has(nav[aria-label="Public"]) {
 }
 
 header.top:has(nav[aria-label="Public"]) .logo svg {
-  filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--brand) 18%, transparent));
+  filter: drop-shadow(
+    0 6px 12px color-mix(in srgb, var(--brand) 18%, transparent)
+  );
 }
 
 .k-hero {
@@ -157,7 +169,11 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
   right: -14rem;
   top: -20rem;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(241, 91, 67, 0.30), rgba(241, 91, 67, 0) 68%);
+  background: radial-gradient(
+    circle,
+    rgba(241, 91, 67, 0.3),
+    rgba(241, 91, 67, 0) 68%
+  );
   pointer-events: none;
 }
 
@@ -167,7 +183,9 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
   inset: 0;
   pointer-events: none;
   opacity: 0.16;
-  background-image: linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
   background-size: 72px 72px;
   mask-image: linear-gradient(to bottom, black, transparent 82%);
 }
@@ -207,18 +225,18 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 
 .k-hero .btn.ghost {
   color: #fff9ef;
-  background: rgba(255,255,255,.04);
-  border-color: rgba(255,255,255,.16);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
 }
 
 .k-kicker,
 .k-overline,
 .k-quick-kicker {
   font-family: var(--sans);
-  font-size: .74rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
   line-height: 1.2;
   text-transform: uppercase;
 }
@@ -254,7 +272,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 
 .k-calm h2 {
   font-size: clamp(3rem, 7vw, 6rem);
-  letter-spacing: -.055em;
+  letter-spacing: -0.055em;
 }
 
 .showcase {
@@ -271,7 +289,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 }
 
 .showcase li img {
-  transition: transform 500ms cubic-bezier(.2,.8,.2,1);
+  transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .showcase li:hover img {
@@ -334,7 +352,11 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 .hero-status {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(145deg, var(--paper), color-mix(in srgb, var(--surface-2) 55%, var(--paper)));
+  background: linear-gradient(
+    145deg,
+    var(--paper),
+    color-mix(in srgb, var(--surface-2) 55%, var(--paper))
+  );
   border: 0;
   border-left: 0 !important;
   border-radius: 22px;
@@ -357,7 +379,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 .hero-status .big {
   font-family: var(--sans);
   font-weight: 800;
-  letter-spacing: -.045em;
+  letter-spacing: -0.045em;
 }
 
 .k-quick-grid {
@@ -380,7 +402,10 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
   border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
   color: var(--ink);
   text-decoration: none;
-  transition: transform 170ms ease, border-color 170ms ease, background 170ms ease;
+  transition:
+    transform 170ms ease,
+    border-color 170ms ease,
+    background 170ms ease;
 }
 
 .k-quick:hover {
@@ -391,12 +416,12 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 
 .k-quick > strong {
   font-size: 1.05rem;
-  letter-spacing: -.025em;
+  letter-spacing: -0.025em;
 }
 
 .k-quick > span:not(.k-quick-kicker):not(.k-quick-arrow) {
   color: var(--muted);
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .k-quick-arrow {
@@ -409,7 +434,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 
 .k-home-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
   gap: 16px;
 }
 
@@ -524,17 +549,19 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
   header.top:has(nav[aria-label="Mission Control"]) nav.main a:hover,
   header.top:has(nav[aria-label="Mission Control"]) .navlink-btn:hover {
     color: #fff9ef;
-    background: rgba(255,255,255,.055);
+    background: rgba(255, 255, 255, 0.055);
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) nav.main a[aria-current="page"] {
-    background: rgba(255,114,91,.14);
+  header.top:has(nav[aria-label="Mission Control"])
+    nav.main
+    a[aria-current="page"] {
+    background: rgba(255, 114, 91, 0.14);
     color: #ff8d77;
   }
 
   header.top:has(nav[aria-label="Mission Control"]) .seg {
     margin-top: auto;
-    border-color: rgba(255,255,255,.12);
+    border-color: rgba(255, 255, 255, 0.12);
     border-radius: 10px;
   }
 
@@ -543,15 +570,17 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
     flex: 1;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) .seg button[aria-pressed="true"] {
+  header.top:has(nav[aria-label="Mission Control"])
+    .seg
+    button[aria-pressed="true"] {
     color: #fff9ef;
-    background: rgba(255,255,255,.10);
+    background: rgba(255, 255, 255, 0.1);
   }
 
   header.top:has(nav[aria-label="Mission Control"]) .btn.quiet {
     color: #d8cdd1;
-    background: rgba(255,255,255,.055);
-    border-color: rgba(255,255,255,.10);
+    background: rgba(255, 255, 255, 0.055);
+    border-color: rgba(255, 255, 255, 0.1);
     box-shadow: none;
   }
 
@@ -608,7 +637,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
   }
 
   header.top:has(nav[aria-label="Mission Control"]) nav.main {
-    border-top: 1px solid rgba(255,255,255,.09);
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
   }
 
   header.top:has(nav[aria-label="Mission Control"]) nav.main a,
@@ -617,20 +646,24 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
     border-radius: 9px;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) nav.main a[aria-current="page"] {
+  header.top:has(nav[aria-label="Mission Control"])
+    nav.main
+    a[aria-current="page"] {
     color: #ff8d77;
-    background: rgba(255,114,91,.12);
+    background: rgba(255, 114, 91, 0.12);
   }
 
   header.top:has(nav[aria-label="Mission Control"]) .seg {
-    border-color: rgba(255,255,255,.15);
+    border-color: rgba(255, 255, 255, 0.15);
   }
 
   header.top:has(nav[aria-label="Mission Control"]) .seg button {
     color: #c5bac0;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) .seg button[aria-pressed="true"] {
+  header.top:has(nav[aria-label="Mission Control"])
+    .seg
+    button[aria-pressed="true"] {
     background: #fff9ef;
     color: #171319;
   }

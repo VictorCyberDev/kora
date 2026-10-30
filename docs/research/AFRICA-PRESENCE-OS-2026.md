@@ -216,13 +216,13 @@ Do not optimise price before customer interviews, but position Kora between comm
 
 Suggested test bands:
 
-| Plan | Hypothesis | Core outcome |
-| --- | ---: | --- |
-| Trial | Free | Launch a real Kora site and experience monitoring |
-| Launch | ~₦4,900/month or ~₦49k/year | owned website, Kora address, inbox, basic brand kit, reachability monitoring |
-| Grow | ~₦12,900/month or ~₦129k/year | custom domain, Google connection, Presence Health, growth brief, more brand assets, managed recovery |
-| Pro | ~₦29,900/month or ~₦299k/year | team/multi-presence, advanced discovery/analytics, more automation and priority recovery |
-| Done-for-you setup | one-time ₦25k–₦75k test | Kora sets up the owner's complete starting presence |
+| Plan               |                    Hypothesis | Core outcome                                                                                         |
+| ------------------ | ----------------------------: | ---------------------------------------------------------------------------------------------------- |
+| Trial              |                          Free | Launch a real Kora site and experience monitoring                                                    |
+| Launch             |   ~₦4,900/month or ~₦49k/year | owned website, Kora address, inbox, basic brand kit, reachability monitoring                         |
+| Grow               | ~₦12,900/month or ~₦129k/year | custom domain, Google connection, Presence Health, growth brief, more brand assets, managed recovery |
+| Pro                | ~₦29,900/month or ~₦299k/year | team/multi-presence, advanced discovery/analytics, more automation and priority recovery             |
+| Done-for-you setup |       one-time ₦25k–₦75k test | Kora sets up the owner's complete starting presence                                                  |
 
 Avoid pricing the core experience around abstract "AI credits". Owners buy outcomes. Meter expensive generation behind the scenes if needed.
 

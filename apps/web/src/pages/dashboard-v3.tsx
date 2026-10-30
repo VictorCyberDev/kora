@@ -45,7 +45,9 @@ export function Dashboard() {
       <header className="k-home-head">
         <div>
           <p className="k-overline">Your business, online</p>
-          <h1>Good to see you, {user?.displayName?.split(" ")[0] ?? "there"}.</h1>
+          <h1>
+            Good to see you, {user?.displayName?.split(" ")[0] ?? "there"}.
+          </h1>
           <p className="muted">
             One place to build your presence, see what needs you, and keep
             customers able to reach you.
@@ -132,7 +134,9 @@ export function Dashboard() {
                     <p className="k-overline">Kora signal</p>
                     <Status kind="ok">Watching</Status>
                   </div>
-                  <h2>Quiet when everything is fine. Specific when it is not.</h2>
+                  <h2>
+                    Quiet when everything is fine. Specific when it is not.
+                  </h2>
                   <p>
                     Kora watches the live site, keeps the evidence, and asks
                     before a fix changes what customers see. A repair only
@@ -146,7 +150,11 @@ export function Dashboard() {
 
                 <div className="k-panel">
                   <p className="k-overline">Your presence</p>
-                  <h2>{rows.length === 1 ? "1 website" : `${rows.length} websites`}</h2>
+                  <h2>
+                    {rows.length === 1
+                      ? "1 website"
+                      : `${rows.length} websites`}
+                  </h2>
                   <p className="muted">
                     Keep the public details people use to find and contact your
                     business current in one place.
