@@ -22,21 +22,21 @@ AI is optional and never the authority boundary. Model output is validated input
 
 ## What is real today
 
-| Area | State |
-| --- | --- |
-| SiteSpec v2 website generation, three design directions, editing, preview and immutable versions | Implemented |
-| Independent Site Host and verified publishing | Implemented and live on RumptyCloud |
-| Continuous monitoring, incidents, evidence and deterministic diagnosis | Implemented |
-| Owner-language Mission Control plus technical Proof mode | Implemented |
-| Typed rollback, deterministic policy, approval and closed-loop recovery verification | Implemented |
-| Incident Passport v2 and offline integrity verification | Implemented |
-| Authentication, organizations, roles, tenant isolation and audit | Implemented |
-| Existing-domain connection with DNS/HTTPS observation | Implemented |
-| Paystack billing model, entitlements and webhook contract | Implemented and tested; live Paystack is not configured |
-| Remote/on-device AI art director and Reasoner paths | Implemented with validation/fallback; no production model endpoint is configured |
-| Registrar-backed domain purchase | Scaffold only; not claimed |
-| Email delivery | Not implemented; notifications are in-app |
-| Provider VM restart/redeploy/deployment rollback as Kora actions | Not implemented; Kora's proven recovery action is its own immutable site rollback |
+| Area                                                                                             | State                                                                             |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| SiteSpec v2 website generation, three design directions, editing, preview and immutable versions | Implemented                                                                       |
+| Independent Site Host and verified publishing                                                    | Implemented and live on RumptyCloud                                               |
+| Continuous monitoring, incidents, evidence and deterministic diagnosis                           | Implemented                                                                       |
+| Owner-language Mission Control plus technical Proof mode                                         | Implemented                                                                       |
+| Typed rollback, deterministic policy, approval and closed-loop recovery verification             | Implemented                                                                       |
+| Incident Passport v2 and offline integrity verification                                          | Implemented                                                                       |
+| Authentication, organizations, roles, tenant isolation and audit                                 | Implemented                                                                       |
+| Existing-domain connection with DNS/HTTPS observation                                            | Implemented                                                                       |
+| Paystack billing model, entitlements and webhook contract                                        | Implemented and tested; live Paystack is not configured                           |
+| Remote/on-device AI art director and Reasoner paths                                              | Implemented with validation/fallback; no production model endpoint is configured  |
+| Registrar-backed domain purchase                                                                 | Scaffold only; not claimed                                                        |
+| Email delivery                                                                                   | Not implemented; notifications are in-app                                         |
+| Provider VM restart/redeploy/deployment rollback as Kora actions                                 | Not implemented; Kora's proven recovery action is its own immutable site rollback |
 
 ## Production acceptance is complete
 
