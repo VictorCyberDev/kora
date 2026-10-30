@@ -14,6 +14,8 @@ const root = resolve(__dirname, "..");
 const FONT_DIR = join(root, "packages/site-fonts/files");
 const MEDIA_DIR = join(root, "packages/site-media/files");
 const WIDTHS = [375, 390, 768, 1024, 1440] as const;
+/** Small phones, large phones and in-betweens: checked for every site's first direction. */
+const EXTRA_WIDTHS = [320, 360, 412, 600, 820] as const;
 const TYPES: Record<string, string> = {
   ".html": "text/html",
   ".css": "text/css",
@@ -94,7 +96,7 @@ test.describe("generated sites in a real browser", () => {
     browser,
   }) => {
     for (const s of sites) {
-      for (const w of WIDTHS) {
+      for (const w of s.dir === 0 ? [...WIDTHS, ...EXTRA_WIDTHS] : WIDTHS) {
         const ctx = await browser.newContext({
           viewport: { width: w, height: 900 },
           reducedMotion: "reduce",

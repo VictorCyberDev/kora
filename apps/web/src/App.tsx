@@ -93,7 +93,23 @@ function Bell() {
         aria-label={`Notifications, ${unread.length} unread`}
         onClick={() => setOpen(!open)}
       >
-        Notifications{unread.length ? ` (${unread.length})` : ""}
+        <span className="lbl">Notifications</span>
+        <svg
+          className="bell-ico"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+        {unread.length ? <span className="count">{unread.length}</span> : null}
       </button>
       {open && (
         <div
@@ -203,6 +219,15 @@ function AppLayout() {
             <NavLink to="/app/billing">Billing</NavLink>
             <NavLink to="/app/audit">Activity</NavLink>
             <NavLink to="/app/settings">Settings</NavLink>
+            <button
+              className="navlink-btn"
+              onClick={async () => {
+                await logout();
+                nav("/");
+              }}
+            >
+              Sign out
+            </button>
           </nav>
           <div className="seg" role="group" aria-label="View mode">
             <button aria-pressed={!proof} onClick={() => setProof(false)}>
@@ -214,7 +239,7 @@ function AppLayout() {
           </div>
           <Bell />
           <button
-            className="btn quiet sm"
+            className="btn quiet sm signout"
             onClick={async () => {
               await logout();
               nav("/");

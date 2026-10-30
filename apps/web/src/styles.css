@@ -1203,3 +1203,284 @@ h3 {
 .side-action {
   gap: 12px;
 }
+
+/* ---- Responsive: phones first-class ------------------------------------------ */
+.bell-ico,
+.count,
+.navlink-btn {
+  display: none;
+}
+.count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: var(--brand-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+  align-items: center;
+  justify-content: center;
+}
+/* hero: the brand rules above set margin:0 on children, which beat .stack spacing */
+.k-hero .stack {
+  display: grid;
+  gap: 20px;
+  justify-items: start;
+}
+.k-hero .stack > * {
+  margin: 0;
+}
+img,
+svg,
+video {
+  max-width: 100%;
+}
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+@media (max-width: 720px) {
+  /* header: one slim row (logo, mode, bell) + one scrolling nav strip */
+  header.top .wrap {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "logo mode bell" "nav nav nav";
+    gap: 6px 10px;
+    align-items: center;
+    padding-block: 8px 0;
+    min-height: 0;
+  }
+  header.top .logo {
+    grid-area: logo;
+  }
+  header.top .seg {
+    grid-area: mode;
+    justify-self: end;
+  }
+  header.top .wrap > div:not(.seg) {
+    grid-area: bell;
+  }
+  header.top .signout {
+    display: none;
+  }
+  nav.main {
+    grid-area: nav;
+    order: 0;
+    flex-basis: auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 2px;
+    margin-inline: -4px;
+    padding: 0 4px 8px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  nav.main::-webkit-scrollbar {
+    display: none;
+  }
+  nav.main a,
+  .navlink-btn {
+    flex: none;
+    scroll-snap-align: start;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+  }
+  .navlink-btn {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-weight: 600;
+    color: var(--muted);
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  /* the public header keeps logo + actions on one row */
+  header.top .wrap:has(nav[aria-label="Public"]) {
+    display: flex;
+    flex-wrap: nowrap;
+    padding-block: 8px;
+  }
+  header.top nav[aria-label="Public"] {
+    display: none;
+  }
+  header.top .wrap:has(nav[aria-label="Public"]) .btn {
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  header.top .wrap:has(nav[aria-label="Public"]) .btn + .btn {
+    margin-left: 0;
+  }
+  /* icon-only bell with a count */
+  header.top .btn.quiet .lbl {
+    display: none;
+  }
+  header.top .btn.quiet .bell-ico {
+    display: block;
+  }
+  header.top .btn.quiet .count {
+    display: inline-flex;
+  }
+  header.top .btn.quiet {
+    min-width: 44px;
+    min-height: 44px;
+    justify-content: center;
+    gap: 6px;
+  }
+  /* site sub-navigation: one row, swipe sideways */
+  .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-block: 12px;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs a,
+  .tabs button {
+    flex: none;
+    white-space: nowrap;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    scroll-snap-align: start;
+  }
+  /* touch-sized controls */
+  .btn,
+  .btn.sm,
+  .seg button,
+  select,
+  input:not([type="checkbox"]):not([type="radio"]),
+  summary {
+    min-height: 44px;
+  }
+  .seg button {
+    padding-inline: 12px;
+  }
+  main.wrap {
+    padding-block: 18px !important;
+  }
+  .wrap {
+    padding-inline: 16px;
+  }
+  h1 {
+    overflow-wrap: anywhere;
+  }
+  .k-hero h1 {
+    font-size: clamp(2.1rem, 9.5vw, 3rem);
+  }
+  .k-calm h2 {
+    font-size: clamp(2.2rem, 12vw, 3.6rem);
+  }
+  .scene-status {
+    position: static;
+    margin: 12px 0 0;
+    max-width: none;
+  }
+  .scene figcaption {
+    position: static;
+  }
+  .scene {
+    padding-bottom: 0;
+  }
+  .studio-side {
+    position: static;
+  }
+  .frame.tall {
+    min-height: 420px;
+  }
+  .card {
+    padding: 16px;
+  }
+}
+@media (max-width: 360px) {
+  .logo {
+    font-size: 1.25rem;
+  }
+  .seg button {
+    padding-inline: 9px;
+    font-size: 0.9rem;
+  }
+}
+/* grid items may shrink below their content, so scrollers inside them scroll instead of widening the page */
+.studio > *,
+.studio-side > *,
+.inc-grid > *,
+.dirs > *,
+.grid > *,
+.k-hero-grid > *,
+.k-proof > *,
+.k-steps > *,
+.facts > *,
+.know > *,
+.shots > *,
+.stack > *,
+.card,
+main > * {
+  min-width: 0;
+}
+@media (max-width: 899px) {
+  .studio,
+  .inc-grid,
+  .dirs,
+  .k-hero-grid,
+  .k-proof,
+  .k-steps,
+  .shots {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 899px) {
+  .chip,
+  .seclist select,
+  .seclist .btn.sm,
+  .tabs button {
+    min-height: 44px;
+  }
+}
+/* touch-sized controls on every touch device and on anything narrower than a desktop */
+@media (max-width: 1099px), (pointer: coarse) {
+  .btn,
+  .btn.sm,
+  .seg button,
+  select,
+  input:not([type="checkbox"]):not([type="radio"]),
+  summary,
+  .chip,
+  .tabs a,
+  .tabs button,
+  nav.main a {
+    min-height: 44px;
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+  }
+}
+summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-right: 8px;
+  color: var(--brand);
+}
+details[open] > summary::before {
+  content: "▾";
+}
+/* on a phone the thing being built comes first, its controls second */
+@media (max-width: 1099px) {
+  .studio > .stack {
+    order: -1;
+  }
+}
