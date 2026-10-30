@@ -729,3 +729,29 @@ d(
     }, 30_000);
   },
 );
+
+d("proxy trust", () => {
+  it("in production the client IP comes from exactly one trusted hop, so spoofed chains cannot dodge the limiter", async () => {
+    process.env.KORA_TRUST_PROXY = "true"; // production default, as the real server sees it
+    const prod = await startHarness({
+      env: { NODE_ENV: "production", KORA_COOKIE_SECURE: "false" },
+    });
+    try {
+      const hit = (xff: string, who = "nobody") =>
+        prod.call("POST", "/api/auth/login", {
+          body: { email: `${who}@example.com`, password: "x" },
+          headers: { "x-forwarded-for": xff },
+        });
+      // Same real client (last hop 203.0.113.9), different spoofed leading entries.
+      const statuses: number[] = [];
+      for (let i = 0; i < 30; i++)
+        statuses.push((await hit(`10.0.0.${i}, 203.0.113.9`, `u${i}`)).status);
+      expect(statuses).toContain(429);
+      // A different real client is not affected.
+      expect((await hit("203.0.113.77", "fresh")).status).toBe(401);
+    } finally {
+      delete process.env.KORA_TRUST_PROXY;
+      await prod.close();
+    }
+  }, 60_000);
+});

@@ -113,7 +113,8 @@ export function SiteOverview() {
           {st.data.controlledTest ? (
             <div className="row">
               <Status kind="warn">
-                Test running: {st.data.controlledTest.mode}
+                Test running: {st.data.controlledTest.mode}, ends automatically{" "}
+                {when(st.data.controlledTest.expiresAt)}
               </Status>
               <button className="btn quiet sm" onClick={() => chaos(null)}>
                 End test
@@ -278,6 +279,28 @@ export function DomainsPage() {
                   <Status kind="warn">Action required</Status>
                 )}
               </div>
+              <ul className="small" aria-label="Domain checks">
+                <li>
+                  DNS:{" "}
+                  {dm.dnsState === "CORRECT"
+                    ? "correct"
+                    : dm.dnsState.replaceAll("_", " ").toLowerCase()}
+                </li>
+                <li>
+                  Routing to your website:{" "}
+                  {dm.routingState === "CONFIGURED"
+                    ? "confirmed"
+                    : dm.routingState === "PROVIDER_ROUTING_UNAVAILABLE"
+                      ? "not routed yet"
+                      : "not checked yet"}
+                </li>
+                <li>
+                  Secure connection (HTTPS):{" "}
+                  {dm.sslState === "ACTIVE"
+                    ? "valid"
+                    : dm.sslState.toLowerCase()}
+                </li>
+              </ul>
               {dm.state !== "ACTIVE" && (
                 <>
                   <p>

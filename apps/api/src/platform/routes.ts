@@ -48,6 +48,8 @@ export interface RouteDeps {
   billing: BillingService;
   config: PlatformConfig;
 }
+/** Publishers whose sites are served by a Kora-run host that honours controlled-test faults. */
+const CHAOS_PUBLISHERS = new Set(["kora-hosted", "kora-site-host"]);
 const uuid = z.string().uuid();
 const idParam = z.object({ id: uuid });
 const email = z
@@ -388,10 +390,14 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         site,
         controlledTest:
           fault && fault.versionId === site.publishedVersionId
-            ? { mode: fault.mode, label: "Controlled test" }
+            ? {
+                mode: fault.mode,
+                label: "Controlled test",
+                expiresAt: fault.expiresAt,
+              }
             : null,
         chaosAvailable:
-          config.KORA_CHAOS_ENABLED && publisher.name === "kora-hosted",
+          config.KORA_CHAOS_ENABLED && CHAOS_PUBLISHERS.has(publisher.name),
         publisher: publisher.name,
       },
     };
@@ -900,22 +906,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         "chaos_disabled",
         "Controlled tests are disabled on this Kora.",
       );
-    if (publisher.name !== "kora-hosted")
+    if (!CHAOS_PUBLISHERS.has(publisher.name))
       throw new HttpError(
         409,
         "chaos_unsupported",
-        "Controlled tests only apply to sites hosted by Kora.",
+        "Controlled tests only apply to sites served by a Kora host (the API or the Site Host).",
       );
     if (!site.publishedVersionId)
       throw new HttpError(409, "not_published", "Publish the site first.");
     const body = z
-      .object({ mode: z.enum(["http_500", "timeout"]) })
+      .object({
+        mode: z.enum(["http_500", "timeout"]),
+        // Faults expire on their own; the host stops applying them after this.
+        ttlSeconds: z.number().int().min(30).max(1800).default(600),
+      })
       .parse(req.body);
     await ops.setFault(
       site.id,
       site.publishedVersionId,
       body.mode,
       requireUser(req).userId,
+      body.ttlSeconds,
     );
     await platform.audit({
       orgId: site.orgId,
@@ -924,13 +935,18 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       objectType: "site",
       objectId: site.id,
       requestId: req.id,
-      metadata: { mode: body.mode, versionId: site.publishedVersionId },
+      metadata: {
+        mode: body.mode,
+        versionId: site.publishedVersionId,
+        ttlSeconds: body.ttlSeconds,
+      },
     });
     return {
       data: {
         mode: body.mode,
         label: "Controlled test",
         versionId: site.publishedVersionId,
+        expiresInSeconds: body.ttlSeconds,
       },
     };
   });

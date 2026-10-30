@@ -33,8 +33,14 @@ export const platformConfigSchema = z.object({
   INFERENCE_MODEL: optionalString,
   INFERENCE_TIMEOUT_MS: z.string().optional(),
   INFERENCE_MAX_OUTPUT_TOKENS: z.string().optional(),
+  // Independent Site Host (the production customer-site runtime).
+  SITE_HOST_PUBLIC_URL: z.string().url().optional(),
+  SITE_HOST_PROVIDER: z.string().min(1).optional(),
+  SITE_HOST_RESOURCE_ID: z.string().min(1).optional(),
   // Rumpty static publishing (documented `rumpty sync` to a public bucket).
   RUMPTY_API_KEY: optionalString,
+  /** The bucket publisher needs the `rumpty` CLI, which the stock image does not contain. */
+  KORA_EXPERIMENTAL_RUMPTY_BUCKET: bool,
   RUMPTY_SITE_BUCKET: optionalString,
   RUMPTY_SITE_PUBLIC_BASE_URL: z.string().url().optional(),
   RUMPTY_SITE_REGION: optionalString,
@@ -52,12 +58,14 @@ export type PlatformConfig = Omit<
   | "KORA_CHAOS_ENABLED"
   | "KORA_TRUST_PROXY"
   | "KORA_SIGNUP_ENABLED"
+  | "KORA_EXPERIMENTAL_RUMPTY_BUCKET"
 > & {
   KORA_COOKIE_SECURE: boolean;
   KORA_LEGACY_PUBLIC_API: boolean;
   KORA_CHAOS_ENABLED: boolean;
   KORA_TRUST_PROXY: boolean;
   KORA_SIGNUP_ENABLED: boolean;
+  KORA_EXPERIMENTAL_RUMPTY_BUCKET: boolean;
 };
 
 export function loadPlatformConfig(
@@ -75,5 +83,6 @@ export function loadPlatformConfig(
     KORA_CHAOS_ENABLED: c.KORA_CHAOS_ENABLED ?? false,
     KORA_TRUST_PROXY: c.KORA_TRUST_PROXY ?? prod,
     KORA_SIGNUP_ENABLED: c.KORA_SIGNUP_ENABLED ?? true,
+    KORA_EXPERIMENTAL_RUMPTY_BUCKET: c.KORA_EXPERIMENTAL_RUMPTY_BUCKET ?? false,
   };
 }

@@ -221,19 +221,21 @@ export class OpsStore {
     versionId: string,
     mode: string,
     userId: string,
+    ttlSeconds: number,
   ) {
     await this
-      .sql`INSERT INTO site_faults(site_id,version_id,mode,created_by) VALUES(${siteId},${versionId},${mode},${userId}) ON CONFLICT(site_id) DO UPDATE SET version_id=EXCLUDED.version_id,mode=EXCLUDED.mode,created_by=EXCLUDED.created_by,created_at=now()`;
+      .sql`INSERT INTO site_faults(site_id,version_id,mode,created_by,expires_at) VALUES(${siteId},${versionId},${mode},${userId},now() + ${ttlSeconds} * interval '1 second') ON CONFLICT(site_id) DO UPDATE SET version_id=EXCLUDED.version_id,mode=EXCLUDED.mode,created_by=EXCLUDED.created_by,created_at=now(),expires_at=EXCLUDED.expires_at`;
   }
   async getFault(siteId: string) {
     const r = (
       await this
-        .sql`SELECT version_id,mode FROM site_faults WHERE site_id=${siteId}`
+        .sql`SELECT version_id,mode,expires_at FROM site_faults WHERE site_id=${siteId} AND expires_at > now()`
     )[0];
     return r
       ? {
           versionId: String(r.version_id),
           mode: String(r.mode) as "http_500" | "timeout",
+          expiresAt: new Date(r.expires_at as string).toISOString(),
         }
       : null;
   }

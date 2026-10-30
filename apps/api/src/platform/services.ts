@@ -13,7 +13,7 @@ import { redactSecrets } from "./security.js";
 import { HttpError, notFound } from "./http.js";
 import type { OpsStore } from "./ops-store.js";
 import type { PlatformStore } from "./store.js";
-import { KoraHostedPublisher, type SitePublisher } from "./publisher.js";
+import type { SitePublisher } from "./publisher.js";
 
 type Site = NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>;
 export type Actor = { userId: string | null; requestId?: string | undefined };
@@ -244,11 +244,8 @@ export class PublishService {
         publishedVersionId: versionId,
       });
       let verification = out.verification;
-      if (
-        publisher instanceof KoraHostedPublisher &&
-        verification.status === "NOT_CHECKED"
-      ) {
-        verification = await publisher.verify(monitorUrl, finalized);
+      if (publisher.verifyLive && verification.status === "NOT_CHECKED") {
+        verification = await publisher.verifyLive(monitorUrl, finalized);
       }
       await platform.finishPublishJob(jobId, "SUCCEEDED", {
         deployedHash: out.deployedHash,

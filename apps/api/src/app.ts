@@ -6,6 +6,7 @@ import { buildVerificationReport } from "./verification/report.js";
 import { registerPassportRoutes } from "./passport-routes.js";
 import { registerUiRoutes } from "./ui/ui-routes.js";
 import { HttpError } from "./platform/http.js";
+import { loadPlatformConfig } from "./platform/config.js";
 import { registerPlatform, type PlatformRuntime } from "./platform/index.js";
 
 const idParams = z.object({ id: z.string().uuid() });
@@ -27,11 +28,16 @@ export function buildApi(
 ) {
   const runtimeClaim =
     options.runtimeClaim ?? createRuntimeClaim({ service: "kora-api" });
+  const trustProxy: boolean | ((address: string, hop: number) => boolean) = (
+    options.platform?.config ?? loadPlatformConfig()
+  ).KORA_TRUST_PROXY
+    ? (_address, hop) => hop < 1
+    : false;
   const app = Fastify({
     logger: nodeEnv === "test" ? false : { level: logLevel },
-    trustProxy:
-      options.platform?.config.KORA_TRUST_PROXY ??
-      process.env.KORA_TRUST_PROXY === "true",
+    // Trust exactly one proxy hop (the platform edge): trusting every
+    // X-Forwarded-For entry would let a client spoof its IP past the rate limiters.
+    trustProxy,
     genReqId: (req) =>
       String(req.headers["x-request-id"] ?? crypto.randomUUID()),
     disableRequestLogging: false,

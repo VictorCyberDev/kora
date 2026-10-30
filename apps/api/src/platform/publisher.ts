@@ -52,6 +52,11 @@ export interface SitePublisher {
   status(site: {
     slug: string;
   }): Promise<{ state: "LIVE" | "UNREACHABLE"; detail: string }>;
+  /** Fetches the live site after the publish pointer moved and compares it with the artifact. */
+  verifyLive?(
+    publicUrl: string,
+    files: SiteFiles,
+  ): Promise<PublishOutput["verification"]>;
 }
 
 /** Rejects absolute paths, traversal and odd characters before any file is written. */
@@ -158,7 +163,84 @@ export class KoraHostedPublisher implements SitePublisher {
       return { state: "UNREACHABLE" as const, detail: "request failed" };
     }
   }
-  verify(publicUrl: string, files: SiteFiles) {
+  verifyLive(publicUrl: string, files: SiteFiles) {
+    return verifyLive(publicUrl, files["index.html"] ?? "", this.fetchImpl);
+  }
+}
+
+export interface SiteHostConfig {
+  /** Public base URL of the separately deployed Kora Site Host. */
+  publicBaseUrl: string;
+  provider: string;
+  providerAccount: string;
+  region: string;
+  resourceId: string;
+}
+/**
+ * Publishing to the independent Site Host: the immutable artifact lives in
+ * PostgreSQL and the host (a different process, and normally a different
+ * deployment) serves whatever the published pointer says. Publishing is
+ * therefore a pointer move, and `verifyLive` proves the host actually serves
+ * the new bytes by fetching them over HTTP.
+ */
+export class SiteHostPublisher implements SitePublisher {
+  readonly name = "kora-site-host";
+  readonly capabilities = new Set([
+    "PUBLISH",
+    "REPUBLISH",
+    "UNPUBLISH",
+    "REPUBLISH_PREVIOUS_VERSION",
+    "REPUBLISH_SITE_VERSION",
+  ]);
+  constructor(
+    private readonly cfg: SiteHostConfig,
+    private readonly fetchImpl: typeof fetch = fetch,
+  ) {}
+  resourceFor(site: { id: string; slug: string }) {
+    return {
+      provider: this.cfg.provider,
+      providerAccount: this.cfg.providerAccount,
+      region: this.cfg.region,
+      resourceType: "web_service",
+      providerResourceId: this.cfg.resourceId,
+      displayName: `site-host/${site.slug}`,
+    };
+  }
+  publicUrlFor(slug: string) {
+    return `${this.cfg.publicBaseUrl.replace(/\/+$/, "")}/s/${slug}/`;
+  }
+  publish(input: PublishInput): Promise<PublishOutput> {
+    for (const path of Object.keys(input.files)) safeRelativePath(path);
+    return Promise.resolve({
+      publisher: this.name,
+      publicUrl: this.publicUrlFor(input.site.slug),
+      deployedHash: artifactHash(input.files),
+      location: { siteHost: this.cfg.publicBaseUrl, slug: input.site.slug },
+      verification: {
+        status: "NOT_CHECKED",
+        detail: "checked after activation",
+      },
+    });
+  }
+  republish(input: PublishInput): Promise<PublishOutput> {
+    return this.publish(input);
+  }
+  unpublish(): Promise<void> {
+    return Promise.resolve();
+  }
+  async status(site: { slug: string }) {
+    try {
+      const res = await this.fetchImpl(this.publicUrlFor(site.slug), {
+        signal: AbortSignal.timeout(5000),
+      });
+      return res.ok
+        ? { state: "LIVE" as const, detail: "HTTP 200" }
+        : { state: "UNREACHABLE" as const, detail: `HTTP ${res.status}` };
+    } catch {
+      return { state: "UNREACHABLE" as const, detail: "request failed" };
+    }
+  }
+  verifyLive(publicUrl: string, files: SiteFiles) {
     return verifyLive(publicUrl, files["index.html"] ?? "", this.fetchImpl);
   }
 }

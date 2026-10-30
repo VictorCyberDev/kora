@@ -70,10 +70,11 @@ const resolver: DnsResolver = {
   resolve4: () =>
     Promise.reject(Object.assign(new Error("nx"), { code: "ENOTFOUND" })),
 };
-let httpsUp = false;
+// null = HTTPS unreachable; otherwise the body the domain's HTTPS endpoint returns.
+let httpsBody: string | null = null;
 const domainFetch = (() =>
-  httpsUp
-    ? Promise.resolve(new Response("ok"))
+  httpsBody !== null
+    ? Promise.resolve(new Response(httpsBody))
     : Promise.reject(new Error("tls not ready"))) as unknown as typeof fetch;
 
 let h: Harness;
@@ -472,12 +473,35 @@ d("domains", () => {
       dnsState: "CORRECT",
       sslState: "PENDING",
     });
-    // HTTPS answers: ACTIVE.
-    httpsUp = true;
+    // Valid HTTPS but the answer is NOT this website (provider routing missing):
+    // DNS + an arbitrary HTTPS response must not make the domain ACTIVE.
+    httpsBody = "<html>some parking page</html>";
+    const parked = (
+      await h.call("GET", `/api/domains/${id}/status`, { cookie: o.cookie })
+    ).json.data;
+    expect(parked.domain).toMatchObject({
+      state: "VERIFYING",
+      dnsState: "CORRECT",
+      sslState: "ACTIVE",
+      routingState: "PROVIDER_ROUTING_UNAVAILABLE",
+    });
+    expect(parked.routingNote).toMatch(
+      /CUSTOM_DOMAIN_PROVIDER_ROUTING_UNAVAILABLE/,
+    );
+    // Routed to this site over valid HTTPS: DNS + routing + TLS all observed -> ACTIVE.
+    const [versionRow] =
+      (await h.sql`SELECT artifact FROM site_versions WHERE site_id=${site.id}`) as unknown as Array<{
+        artifact: Record<string, string>;
+      }>;
+    httpsBody = versionRow!.artifact["index.html"]!;
     expect(
       (await h.call("GET", `/api/domains/${id}/status`, { cookie: o.cookie }))
         .json.data.domain,
-    ).toMatchObject({ state: "ACTIVE", sslState: "ACTIVE" });
+    ).toMatchObject({
+      state: "ACTIVE",
+      sslState: "ACTIVE",
+      routingState: "CONFIGURED",
+    });
     // Host-based serving and a change event for the incident timeline.
     const port = Number(new URL(h.base).port);
     const served = await getWithHost(port, "www.dom-shop.com", "/");
@@ -490,7 +514,7 @@ d("domains", () => {
     ).json.data.changes.map((c: { kind: string }) => c.kind);
     expect(changes).toContain("DOMAIN_STATUS_CHANGED");
     // Regression is noticed: DNS moves away -> back to DNS_REQUIRED with a notification.
-    httpsUp = false;
+    httpsBody = null;
     resolverState.cname = ["elsewhere.example."];
     expect(
       (await h.call("GET", `/api/domains/${id}/status`, { cookie: o.cookie }))

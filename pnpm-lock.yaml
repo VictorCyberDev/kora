@@ -55,6 +55,9 @@ importers:
       "@kora/site-schema":
         specifier: workspace:*
         version: link:../../packages/site-schema
+      "@kora/site-serving":
+        specifier: workspace:*
+        version: link:../../packages/site-serving
       "@kora/topology":
         specifier: workspace:*
         version: link:../../packages/topology
@@ -68,6 +71,9 @@ importers:
         specifier: ^4.1.12
         version: 4.6.5
     devDependencies:
+      "@kora/site-host":
+        specifier: workspace:*
+        version: link:../site-host
       "@types/jsdom":
         specifier: ^21.1.7
         version: 21.1.7
@@ -92,6 +98,37 @@ importers:
       fastify:
         specifier: ^5.6.1
         version: 5.12.5
+      zod:
+        specifier: ^4.1.12
+        version: 4.6.5
+    devDependencies:
+      tsx:
+        specifier: ^4.20.6
+        version: 4.23.15
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  apps/site-host:
+    dependencies:
+      "@kora/runtime-claim":
+        specifier: workspace:*
+        version: link:../../packages/runtime-claim
+      "@kora/site-schema":
+        specifier: workspace:*
+        version: link:../../packages/site-schema
+      "@kora/site-serving":
+        specifier: workspace:*
+        version: link:../../packages/site-serving
+      fastify:
+        specifier: ^5.6.1
+        version: 5.12.5
+      postgres:
+        specifier: ^3.4.7
+        version: 3.4.9
       zod:
         specifier: ^4.1.12
         version: 4.6.5
@@ -173,6 +210,15 @@ importers:
       zod:
         specifier: ^4.1.12
         version: 4.6.5
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.7(@types/node@24.19.1)(jsdom@26.1.0)(tsx@4.23.15)
+
+  packages/site-serving:
     devDependencies:
       typescript:
         specifier: ^5.9.3

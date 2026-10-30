@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { OpsStore } from "./ops-store.js";
 import type { PlatformStore } from "./store.js";
 import type { BillingService } from "./billing.js";
+import { sha256Hex } from "./security.js";
 import { HttpError, notFound, requireOrgRole, requireUser } from "./http.js";
 
 export type DomainState =
@@ -17,6 +18,8 @@ export type DomainState =
 export type DnsState =
   "UNKNOWN" | "MISCONFIGURED" | "POINTING_ELSEWHERE" | "CORRECT";
 export type SslState = "UNKNOWN" | "PENDING" | "ACTIVE" | "FAILED";
+export type RoutingState =
+  "UNKNOWN" | "CONFIGURED" | "PROVIDER_ROUTING_UNAVAILABLE";
 
 const NEXT: Record<DomainState, DomainState[]> = {
   REQUESTED: ["AWAITING_PAYMENT", "DNS_REQUIRED", "FAILED"],
@@ -174,6 +177,7 @@ export interface DomainRow {
   registrarState: string;
   dnsState: DnsState;
   sslState: SslState;
+  routingState: RoutingState;
   target: string;
   lastVerifiedAt: string | null;
 }
@@ -188,6 +192,7 @@ const mapDomain = (r: Record<string, unknown>): DomainRow => ({
   registrarState: String(r.registrar_state),
   dnsState: r.dns_state as DnsState,
   sslState: r.ssl_state as SslState,
+  routingState: r.routing_state as RoutingState,
   target: String(r.target),
   lastVerifiedAt: r.last_verified_at
     ? new Date(r.last_verified_at as string).toISOString()
@@ -203,6 +208,8 @@ export class DomainService {
       targetHost: string;
       providers: DomainProvider[];
       fetchImpl?: typeof fetch;
+      /** The published index.html a correctly routed domain must return. */
+      expectedIndex: (siteId: string) => Promise<string | null>;
     },
   ) {}
   providerStatus() {
@@ -279,28 +286,42 @@ export class DomainService {
       domain.target,
     );
     let ssl: SslState = "UNKNOWN";
+    let routing: RoutingState = "UNKNOWN";
+    let probe = "";
     let state: DomainState = domain.state;
     if (dnsResult.dns === "CORRECT") {
+      const expected = await this.d.expectedIndex(domain.siteId);
       try {
+        // fetch validates the certificate, so reaching a response means TLS is valid.
         const res = await (this.d.fetchImpl ?? fetch)(
           `https://${domain.hostname}/`,
           { signal: AbortSignal.timeout(6000), redirect: "manual" },
         );
-        ssl = res.status < 500 ? "ACTIVE" : "FAILED";
+        ssl = "ACTIVE";
+        const body = await res.text();
+        if (
+          expected &&
+          res.status === 200 &&
+          sha256Hex(body) === sha256Hex(expected)
+        )
+          routing = "CONFIGURED";
+        else {
+          routing = "PROVIDER_ROUTING_UNAVAILABLE";
+          probe =
+            " HTTPS works, but the response is not this website: the domain is not routed to Kora's Site Host.";
+        }
       } catch {
         ssl = "PENDING";
+        probe =
+          " HTTPS is not reachable yet (no valid certificate or no route).";
       }
-      state = ssl === "ACTIVE" ? "ACTIVE" : "VERIFYING";
-    } else
+      // ACTIVE needs all three facts: DNS correct, host routing observed, TLS valid.
       state =
-        domain.state === "ACTIVE" || domain.state === "VERIFYING"
-          ? "DNS_REQUIRED"
-          : domain.state === "FAILED"
-            ? "FAILED"
-            : "DNS_REQUIRED";
+        ssl === "ACTIVE" && routing === "CONFIGURED" ? "ACTIVE" : "VERIFYING";
+    } else state = domain.state === "FAILED" ? "FAILED" : "DNS_REQUIRED";
     if (!canMoveDomain(domain.state, state)) state = domain.state;
     await this.d.platform
-      .sql`UPDATE domains SET dns_state=${dnsResult.dns},ssl_state=${ssl},state=${state},last_verified_at=now(),updated_at=now() WHERE id=${domain.id}`;
+      .sql`UPDATE domains SET dns_state=${dnsResult.dns},ssl_state=${ssl},routing_state=${routing},state=${state},last_verified_at=now(),updated_at=now() WHERE id=${domain.id}`;
     if (state !== domain.state) {
       await this.event(domain.id, "STATE_CHANGED", {
         from: domain.state,
@@ -341,7 +362,11 @@ export class DomainService {
     }
     return {
       domain: (await this.get(domain.id))!,
-      detail: dnsResult.detail,
+      detail: dnsResult.detail + probe,
+      routingNote:
+        routing === "CONFIGURED"
+          ? null
+          : "CUSTOM_DOMAIN_PROVIDER_ROUTING_UNAVAILABLE: RumptyCloud documents no custom-domain binding, so Kora cannot route or issue TLS for your domain. It becomes active only once your hosting provider routes it to the Site Host and Kora observes this website over valid HTTPS.",
       record: requiredRecord(domain.hostname, domain.target),
     };
   }

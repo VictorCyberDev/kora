@@ -1,39 +1,11 @@
 import type { FastifyInstance } from "fastify";
-import {
-  finalizeForPublish,
-  type SiteFiles,
-  type SiteSpec,
-} from "@kora/site-schema";
+import { finalizeForPublish, type SiteSpec } from "@kora/site-schema";
+import { serveArtifact, type SiteFiles } from "@kora/site-serving";
 import type { OpsStore } from "./ops-store.js";
 import type { PlatformStore } from "./store.js";
 import type { SitePublisher } from "./publisher.js";
 
-const TYPES: Record<string, string> = {
-  html: "text/html; charset=utf-8",
-  css: "text/css; charset=utf-8",
-  js: "text/javascript; charset=utf-8",
-  svg: "image/svg+xml",
-  xml: "application/xml; charset=utf-8",
-  txt: "text/plain; charset=utf-8",
-};
-export const contentType = (path: string) =>
-  TYPES[path.split(".").pop() ?? ""] ?? "application/octet-stream";
-
-/** Resolves a request sub-path to a file in an artifact; null when absent. */
-export function resolveArtifactPath(
-  files: SiteFiles,
-  subPath: string,
-): { path: string } | { redirect: string } | null {
-  const clean = subPath.replace(/^\/+/, "");
-  if (clean.includes("..") || clean.includes("\0")) return null;
-  if (clean === "") return { path: "index.html" };
-  if (files[clean]) return { path: clean };
-  if (clean.endsWith("/") && files[`${clean}index.html`])
-    return { path: `${clean}index.html` };
-  if (!clean.endsWith("/") && files[`${clean}/index.html`])
-    return { redirect: `${clean}/` };
-  return null;
-}
+export { contentType, resolveArtifactPath } from "@kora/site-serving";
 
 export function sendArtifact(
   reply: import("fastify").FastifyReply,
@@ -41,18 +13,13 @@ export function sendArtifact(
   subPath: string,
   basePath: string,
   extra: Record<string, string> = {},
+  ifNoneMatch?: string,
 ) {
-  const hit = resolveArtifactPath(files, subPath);
-  if (!hit) return reply.code(404).type("text/plain").send("Not found");
-  if ("redirect" in hit)
-    return reply.redirect(`${basePath}${hit.redirect}`, 301);
+  const r = serveArtifact(files, subPath, basePath, ifNoneMatch);
   return reply
-    .header("content-type", contentType(hit.path))
-    .header("x-content-type-options", "nosniff")
-    .header("referrer-policy", "strict-origin-when-cross-origin")
-    .header("cache-control", "no-cache")
-    .headers(extra)
-    .send(files[hit.path]);
+    .code(r.status)
+    .headers({ ...r.headers, ...extra })
+    .send(r.body);
 }
 
 /**

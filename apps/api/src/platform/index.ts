@@ -20,6 +20,7 @@ import { OpsStore } from "./ops-store.js";
 import {
   KoraHostedPublisher,
   RumptyBucketPublisher,
+  SiteHostPublisher,
   type SitePublisher,
 } from "./publisher.js";
 import { registerRoutes } from "./routes.js";
@@ -82,7 +83,21 @@ export function choosePublisher(
   koraConfig: KoraConfig,
   port: number,
 ): SitePublisher {
+  if (config.SITE_HOST_PUBLIC_URL)
+    return new SiteHostPublisher({
+      publicBaseUrl: config.SITE_HOST_PUBLIC_URL,
+      provider:
+        config.SITE_HOST_PROVIDER ??
+        (koraConfig.RUMPTY_WORKSPACE ? "rumptycloud" : "kora"),
+      providerAccount: koraConfig.RUMPTY_WORKSPACE ?? "unspecified",
+      region:
+        koraConfig.RUMPTY_REGION ??
+        config.RUMPTY_SITE_REGION ??
+        koraConfig.KORA_ENVIRONMENT,
+      resourceId: config.SITE_HOST_RESOURCE_ID ?? "kora-site-host",
+    });
   if (
+    config.KORA_EXPERIMENTAL_RUMPTY_BUCKET &&
     config.RUMPTY_API_KEY &&
     config.RUMPTY_SITE_BUCKET &&
     config.RUMPTY_SITE_PUBLIC_BASE_URL &&
@@ -165,6 +180,15 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
     platform,
     ops,
     resolver: o.resolver ?? systemResolver,
+    expectedIndex: async (siteId) => {
+      const site = await platform.getSite(siteId);
+      const row = site?.publishedVersionId
+        ? await platform.getVersionRow(site.id, site.publishedVersionId)
+        : null;
+      return row
+        ? ((row.artifact as Record<string, string>)["index.html"] ?? null)
+        : null;
+    },
     ...(o.domainFetch ? { fetchImpl: o.domainFetch } : {}),
     targetHost,
     providers: [

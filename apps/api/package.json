@@ -19,12 +19,14 @@
     "@kora/reasoner": "workspace:*",
     "@kora/runtime-claim": "workspace:*",
     "@kora/site-schema": "workspace:*",
+    "@kora/site-serving": "workspace:*",
     "@kora/topology": "workspace:*",
     "fastify": "^5.6.1",
     "postgres": "^3.4.7",
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@kora/site-host": "workspace:*",
     "@types/jsdom": "^21.1.7",
     "jsdom": "^26.1.0",
     "tsx": "^4.20.6",

@@ -83,8 +83,12 @@ export class Operations {
       });
       nodes.push({
         id: "resource",
-        kind: binding.provider === "rumptycloud" ? "storage" : "deployment",
-        label: `${binding.provider}:${binding.resource.resourceType}`,
+        kind:
+          binding.resource.resourceType === "bucket" ? "storage" : "deployment",
+        label:
+          binding.resource.resourceType === "web_service"
+            ? "Kora Site Host (web service)"
+            : `${binding.provider}:${binding.resource.resourceType}`,
       });
       edges.push({ from: "workspace", to: "resource", relationship: "HOSTS" });
       edges.push({ from: "resource", to: "health", relationship: "EXPOSES" });
@@ -133,6 +137,17 @@ export class Operations {
         relationship: "ROUTES_TO",
       });
     }
+    // The control plane is a separate service that watches the customer site's public URL.
+    nodes.push({
+      id: "controlplane",
+      kind: "service",
+      label: "Kora Control Plane",
+    });
+    edges.push({
+      from: "controlplane",
+      to: "health",
+      relationship: "MONITORS",
+    });
     edges.push({ from: "health", to: "site", relationship: "MONITORS" });
     const graph = { nodes, edges };
     const problems = validateGraph(graph);
