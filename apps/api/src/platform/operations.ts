@@ -829,7 +829,12 @@ export class Operations {
       hasObservations: latest !== null,
       latestHealthy: latest?.healthy ?? null,
       openIncident: Boolean(open),
-      actionState: open ? (lastAction?.state ?? null) : null,
+      // A read-only "check again" that observed a failure is not progress toward recovery: only a
+      // change action (rollback, restart, ...) may move the owner status past "Needs attention".
+      actionState: open
+        ? (actions.filter((x) => x.type !== "run_health_check").at(-1)?.state ??
+          null)
+        : null,
       recoveryVerified: recovered,
     });
     const version = site.publishedVersionId

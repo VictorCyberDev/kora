@@ -292,6 +292,49 @@ d("SiteSpec v2 through the real API", () => {
     expect(v.spec.meta.generator).toBe("model");
   });
 
+  it("a second failure on the only published version stays 'Needs attention' (a read-only re-check is not recovery)", async () => {
+    const { o, site } = await newSite(h, "v2-second@example.com");
+    const v1 = (
+      await h.call("POST", `/api/sites/${site.id}/generate`, {
+        cookie: o.cookie,
+        body: brief,
+      })
+    ).json.data.version;
+    await h.call("POST", `/api/sites/${site.id}/versions/${v1.id}/publish`, {
+      cookie: o.cookie,
+    });
+    await h.runtime.monitors.checkNow(site.id);
+    expect(
+      (
+        await h.call("POST", `/api/sites/${site.id}/chaos`, {
+          cookie: o.cookie,
+          body: { mode: "http_500" },
+        })
+      ).status,
+    ).toBe(200);
+    await h.runtime.monitors.checkNow(site.id);
+    await h.runtime.monitors.checkNow(site.id);
+    const incidents = (
+      await h.call("GET", `/api/sites/${site.id}/incidents`, {
+        cookie: o.cookie,
+      })
+    ).json.data;
+    expect(incidents).toHaveLength(1);
+    const view = (
+      await h.call("GET", `/api/incidents/${incidents[0].id}`, {
+        cookie: o.cookie,
+      })
+    ).json.data;
+    // there is no earlier healthy version to restore, so the only safe action is a read-only check
+    expect(view.recommendedAction.type).toBe("run_health_check");
+    await h.runtime.monitors.checkNow(site.id);
+    const status = (
+      await h.call("GET", `/api/sites/${site.id}/status`, { cookie: o.cookie })
+    ).json.data;
+    expect(status.headline.status).toBe("NEEDS_ATTENTION");
+    expect(status.headline.title).toBe("Needs attention");
+  });
+
   it("v1 → upgrade → publish v2 → roll back to v1 → v2 again; every step verifies", async () => {
     const { o, site } = await newSite(h, "v2-compat@example.com");
     const v1 = (
