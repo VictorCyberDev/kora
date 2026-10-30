@@ -357,7 +357,7 @@ d("builder: generate, edit, preview, versions, publish", () => {
     const v1 = (
       await h.call("POST", `/api/sites/${site.id}/generate`, {
         cookie: o.cookie,
-        body: brief,
+        body: { ...brief, format: 1 },
       })
     ).json.data.version;
     const pub = await h.call(

@@ -392,3 +392,32 @@ describe("diversity — ten sites must not share a skeleton", () => {
     }
   });
 });
+
+describe("edge briefs", () => {
+  it.each([
+    [
+      "one service only",
+      {
+        name: "Solo",
+        description: "We provide car washing in Abuja and nearby areas.",
+        goal: "show-work" as const,
+      },
+    ],
+    ["no facts at all", { name: "X", description: "A small local shop." }],
+    [
+      "unicode and long names",
+      {
+        name: "Mamá Ñandú's Küche ☕ — Café & Bäckerei der Zukunft",
+        description:
+          "Wir backen Brot und Kuchen. We provide bread, cakes and coffee.",
+      },
+    ],
+  ])("%s still yields a valid, lint-clean site", (_n, brief) => {
+    for (const d of planDirections(brief)) {
+      expect(lintArtifact(renderSiteV2(d.spec))).toEqual([]);
+      expect(designQuality(d.spec, { text: JSON.stringify(brief) })).toEqual(
+        [],
+      );
+    }
+  });
+});

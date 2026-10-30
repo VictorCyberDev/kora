@@ -7,7 +7,13 @@ import {
   type Goal,
   type Recipe,
 } from "./recipes.js";
-import { parseSiteSpecV2, type SectionV2, type SiteSpecV2 } from "./spec.js";
+import {
+  parseSiteSpecV2,
+  type Design,
+  type Personality,
+  type SectionV2,
+  type SiteSpecV2,
+} from "./spec.js";
 
 export const GOALS = [
   "calls",
@@ -114,6 +120,16 @@ export interface PlanOptions {
   lookId?: string;
   /** Override the colourway. */
   paletteStrategy?: PaletteStrategy;
+  /** Model-suggested copy; the caller has already checked it against the owner's facts. */
+  copy?: {
+    eyebrow?: string;
+    heading?: string;
+    subheading?: string;
+    ctaHeading?: string;
+  };
+  art?: Design["imagery"]["art"];
+  personality?: Personality[];
+  generator?: "deterministic" | "model";
 }
 
 export interface DirectionPreview {
@@ -279,6 +295,7 @@ export function planSite(
       ? brief.services
       : extractServicesV2(brief.description)
   ).map((s) => cap(s.trim(), 100));
+  const hasServices = services.length >= 2;
   const sents = sentences(brief.description);
   const first = trimEnd(sents[0] ?? brief.description);
   const rest = sents.slice(1);
@@ -292,24 +309,29 @@ export function planSite(
     "collage",
   ].includes(look.hero);
   const heading = cap(
-    nameLed
-      ? brief.name
-      : first.length <= 100
-        ? first
-        : `${recipe.label}${location ? ` in ${location}` : ""}`,
+    opts.copy?.heading ??
+      (nameLed
+        ? brief.name
+        : first.length <= 100
+          ? first
+          : `${recipe.label}${location ? ` in ${location}` : ""}`),
     110,
   );
   const subheading = cap(
-    nameLed
-      ? first + "."
-      : rest.length
-        ? rest.slice(0, 2).join(" ")
-        : location
-          ? `Based in ${location}.`
-          : "",
+    opts.copy?.subheading ??
+      (nameLed
+        ? first + "."
+        : rest.length
+          ? rest.slice(0, 2).join(" ")
+          : location
+            ? `Based in ${location}.`
+            : ""),
     280,
   );
-  const eyebrow = cap(`${recipe.label}${location ? ` · ${location}` : ""}`, 80);
+  const eyebrow = cap(
+    opts.copy?.eyebrow ?? `${recipe.label}${location ? ` · ${location}` : ""}`,
+    80,
+  );
 
   const wa = whatsapp
     ? `https://wa.me/${whatsapp.replace(/^\+/, "")}`
@@ -321,11 +343,11 @@ export function planSite(
           wa &&
           look.contact === "whatsapp"
         ? { label: "Message us on WhatsApp", href: wa }
-        : goal === "show-work" && services.length
+        : goal === "show-work" && hasServices
           ? { label: recipe.cta["show-work"], href: "#services" }
           : { label: recipe.cta[goal], href: "#contact" };
   const secondaryCta =
-    primaryCta.href === "#contact" && services.length
+    primaryCta.href === "#contact" && hasServices
       ? {
           label:
             recipe.cta["show-work"] === primaryCta.label
@@ -383,7 +405,7 @@ export function planSite(
       items: facts.slice(0, 4),
     });
 
-  if (services.length) {
+  if (services.length >= 2) {
     sections.push({
       type: "services",
       variant:
@@ -528,7 +550,7 @@ export function planSite(
   sections.push({
     type: "cta",
     variant: look.cta,
-    heading: ctaHeading[goal],
+    heading: opts.copy?.ctaHeading ?? ctaHeading[goal],
     body: "",
     button:
       primaryCta.href === "#contact" && look.contact === "whatsapp" && wa
@@ -566,7 +588,9 @@ export function planSite(
       social: [],
     },
     design: {
-      personality: look.personality,
+      personality: opts.personality?.length
+        ? opts.personality
+        : look.personality,
       palette,
       paletteStrategy: strategy,
       mode,
@@ -578,7 +602,7 @@ export function planSite(
       motion: look.motion,
       imagery: {
         style: "abstract" as const,
-        art: look.art,
+        art: opts.art ?? look.art,
         seed: (seed + dir * 17) % 999_999,
       },
       nav: look.nav,
@@ -599,7 +623,7 @@ export function planSite(
     meta: {
       recipe: recipe.id,
       direction: dir,
-      generator: "deterministic" as const,
+      generator: opts.generator ?? ("deterministic" as const),
     },
   };
   return parseSiteSpecV2(spec);

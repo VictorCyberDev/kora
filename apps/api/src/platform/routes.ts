@@ -3,11 +3,20 @@ import { z } from "zod";
 import {
   artifactHash,
   briefSchema,
+  designBriefSchema,
   hashSpec,
+  inlinePreview,
   lintArtifact,
   missingBlockingDetails,
-  renderSite,
-  type SiteSpec,
+  PAIRINGS,
+  PALETTE_STRATEGIES,
+  planDirections,
+  renderAnySite,
+  renderSiteV2,
+  upgradeV1ToV2,
+  VARIANTS,
+  parseSiteSpec,
+  type AnySiteSpec,
   type StructuredEdit,
 } from "@kora/site-schema";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
@@ -406,12 +415,12 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   // ---- builder ----------------------------------------------------------------
   const buildVersion = async (
     site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
-    spec: SiteSpec,
+    spec: AnySiteSpec,
     source: "MODEL" | "DETERMINISTIC" | "EDIT_MODEL" | "EDIT_STRUCTURED",
     createdBy: string,
     parentId: string | null,
   ) => {
-    const files = renderSite(spec, {
+    const files = renderAnySite(spec, {
       siteId: site.id,
       ...(formEndpointFor(config, site.id)
         ? { formEndpoint: formEndpointFor(config, site.id)! }
@@ -454,7 +463,22 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         ),
         requestId: req.id,
       });
-    const authored = await author.generate(brief);
+    const extra = z
+      .object({
+        direction: z
+          .union([z.literal(0), z.literal(1), z.literal(2)])
+          .optional(),
+        format: z.union([z.literal(1), z.literal(2)]).optional(),
+      })
+      .parse(req.body ?? {});
+    // New sites are v2 designs. `format: 1` keeps the legacy generator reachable.
+    const authored =
+      extra.format === 1
+        ? await author.generate(brief)
+        : await author.generateV2(
+            { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
+            extra.direction ?? 0,
+          );
     const version = await buildVersion(
       site,
       authored.spec,
@@ -501,7 +525,113 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       metadata: { source: authored.source },
     });
     return reply.code(201).send({
-      data: { version, source: authored.source, note: authored.note },
+      data: {
+        version,
+        source: authored.source,
+        note: authored.note,
+        provider: authored.provider ?? null,
+        rationale: authored.rationale ?? null,
+      },
+    });
+  });
+  // Three genuinely different directions, rendered for comparison. Nothing is saved or published.
+  app.post("/api/sites/:id/design/directions", async (req) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
+    await entitled(site.orgId, "canGenerate");
+    const body = designBriefSchema
+      .partial({ name: true })
+      .parse(req.body ?? {});
+    const brief = designBriefSchema.parse({
+      ...body,
+      name: body.name ?? site.name,
+    });
+    return {
+      data: planDirections(brief).map((d) => ({
+        index: d.index,
+        name: d.name,
+        summary: d.summary,
+        look: d.look,
+        palette: d.palette,
+        swatches: [
+          d.spec.design.palette.background,
+          d.spec.design.palette.primary,
+          d.spec.design.palette.accent,
+          d.spec.design.palette.surfaceMuted,
+        ],
+        fontPairing: d.spec.design.typography.pairing,
+        previewHtml: inlinePreview(renderSiteV2(d.spec)),
+      })),
+    };
+  });
+  // What the visual controls offer (friendly names are the UI's job; ids are the contract).
+  app.get("/api/design/catalog", (req) => {
+    requireUser(req);
+    return {
+      data: {
+        palettes: Object.entries(PALETTE_STRATEGIES).map(([id, p]) => ({
+          id,
+          mode: p.mode,
+          swatches: [p.bg, p.primary, p.secondary, p.accent],
+        })),
+        fonts: Object.values(PAIRINGS).map((f) => ({
+          id: f.id,
+          display: f.display.family,
+          body: f.body.family,
+        })),
+        variants: VARIANTS,
+      },
+    };
+  });
+  // "Upgrade design": a NEW v2 draft from a v1 version's own content. Never published automatically.
+  app.post("/api/sites/:id/versions/:versionId/upgrade", async (req, reply) => {
+    const { id, versionId } = z
+      .object({ id: uuid, versionId: uuid })
+      .parse(req.params);
+    const { site } = await siteFor(req, id, "MEMBER");
+    await entitled(site.orgId, "canGenerate");
+    const a = requireUser(req);
+    const row = await platform.getVersionRow(site.id, versionId);
+    if (!row) throw notFound();
+    const parsed = z
+      .object({
+        direction: z
+          .union([z.literal(0), z.literal(1), z.literal(2)])
+          .optional(),
+        goal: designBriefSchema.shape.goal,
+        feel: designBriefSchema.shape.feel,
+      })
+      .parse(req.body ?? {});
+    if ((row.spec as { version?: number }).version === 2)
+      throw new HttpError(
+        409,
+        "already_v2",
+        "This version already uses the new design system.",
+      );
+    const result = upgradeV1ToV2(parseSiteSpec(row.spec), {
+      ...(parsed.direction !== undefined
+        ? { direction: parsed.direction }
+        : {}),
+      ...(parsed.goal ? { goal: parsed.goal } : {}),
+      ...(parsed.feel ? { feel: parsed.feel } : {}),
+    });
+    const version = await buildVersion(
+      site,
+      result.spec,
+      "EDIT_STRUCTURED",
+      a.userId,
+      String(row.id),
+    );
+    await platform.audit({
+      orgId: site.orgId,
+      actorUserId: a.userId,
+      action: "site.design_upgraded",
+      objectType: "site_version",
+      objectId: version.id,
+      requestId: req.id,
+      metadata: { from: String(row.id) },
+    });
+    return reply.code(201).send({
+      data: { version, carried: result.carried, notCarried: result.notCarried },
     });
   });
   app.post("/api/sites/:id/edit", async (req, reply) => {
@@ -515,6 +645,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         edit: z
           .custom<StructuredEdit>((v) => typeof v === "object" && v !== null)
           .optional(),
+        designEdit: z.unknown().optional(),
         patch: z.unknown().optional(),
       })
       .parse(req.body);
@@ -527,7 +658,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         "Create a first version before editing.",
       );
     try {
-      const authored = await author.edit(base.spec as SiteSpec, body);
+      const authored = await author.edit(base.spec as AnySiteSpec, body);
       const version = await buildVersion(
         site,
         authored.spec,
@@ -894,10 +1025,10 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
 
   app.get("/api/notifications/channels", (req) => {
     requireUser(req);
+    const aiBase = config.AI_BASE_URL ?? config.INFERENCE_BASE_URL;
+    const aiModel = config.AI_MODEL ?? config.INFERENCE_MODEL;
     const aiOn = Boolean(
-      config.INFERENCE_BASE_URL &&
-      config.INFERENCE_API_KEY &&
-      config.INFERENCE_MODEL,
+      aiBase && (config.AI_API_KEY ?? config.INFERENCE_API_KEY) && aiModel,
     );
     return {
       data: {
@@ -905,8 +1036,9 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         ai: aiOn
           ? {
               available: true,
-              model: config.INFERENCE_MODEL,
-              host: new URL(config.INFERENCE_BASE_URL!).hostname,
+              model: aiModel,
+              provider: config.AI_PROVIDER ?? null,
+              host: new URL(aiBase!).hostname,
             }
           : {
               available: false,

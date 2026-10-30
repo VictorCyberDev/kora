@@ -9,3 +9,7 @@ export * from "./palette.js";
 export * from "./recipes.js";
 export * from "./plan.js";
 export * from "./quality.js";
+export * from "./intelligence.js";
+export * from "./upgrade.js";
+export * from "./edit.js";
+export * from "./preview.js";
