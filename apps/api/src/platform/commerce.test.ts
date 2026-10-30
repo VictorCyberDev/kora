@@ -111,7 +111,12 @@ describe("subscription state machine", () => {
     expect(entitlementsFor(null, null, 0).canPublish).toBe(false);
   });
   it("loads production plans from configuration and has no built-in production prices", () => {
-    expect(loadPlanCatalog({ NODE_ENV: "production" })).toEqual([]);
+    expect(
+      loadPlanCatalog({ NODE_ENV: "production" }).map((p) => [
+        p.code,
+        p.amountMinor,
+      ]),
+    ).toEqual([["trial", 0]]);
     expect(
       loadPlanCatalog({ NODE_ENV: "development" }).every(
         (p) => p.name.includes("development") || p.code === "trial",

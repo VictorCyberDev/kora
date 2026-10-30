@@ -67,7 +67,7 @@ export function deterministicReasoning(input: ReasonerInput): ReasonerOutput {
   const known = s.findings.map((f) => f.statement);
   if (newestChange)
     known.push(
-      `The failure began ${newestChange.secondsBeforeFailure} seconds after a recorded change (${newestChange.kind}). This is a timing correlation, not proof the change caused the failure.`,
+      `The failure began ${newestChange.secondsBeforeFailure} second${newestChange.secondsBeforeFailure === 1 ? "" : "s"} after a recorded change (${newestChange.kind}). This is a timing correlation, not proof the change caused the failure.`,
     );
   const unknown = [
     s.rootCause.statement,

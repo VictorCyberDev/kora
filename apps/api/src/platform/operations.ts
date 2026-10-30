@@ -886,7 +886,7 @@ export class Operations {
           at: c.occurredAt,
           secondsBeforeFailure: c.secondsBeforeFailure,
           revision: c.revision ?? null,
-          text: `${c.kind === "VERSION_PUBLISHED" ? "A new version was published" : "A change was recorded"} ${c.secondsBeforeFailure} seconds before the first failed check. This is timing only; it does not prove the change caused the problem.`,
+          text: describeChange(c),
         })),
       whatWeKnow: reasoning.whatWeKnow,
       whatWeDoNotKnow: reasoning.whatWeDoNotKnow,
@@ -1000,4 +1000,29 @@ export class Operations {
       }),
     ) as Record<string, unknown>;
   }
+}
+
+const plural = (n: number, unit: string) => `${n} ${unit}${n === 1 ? "" : "s"}`;
+/** "37 seconds", "4 minutes": never "1 seconds". */
+export function humanDuration(seconds: number): string {
+  if (seconds < 120) return plural(Math.max(0, Math.round(seconds)), "second");
+  return plural(Math.round(seconds / 60), "minute");
+}
+/** Owner-facing sentence for a recorded change. Timing only; never causation. */
+export function describeChange(c: ChangeLike): string {
+  const before = humanDuration(c.secondsBeforeFailure ?? 0);
+  const version = c.revision?.replace(/^v/, "");
+  const what =
+    c.kind === "VERSION_PUBLISHED"
+      ? `Version ${version ?? "?"} was published`
+      : c.kind === "DEPLOYMENT_REVISION_CHANGED"
+        ? `The live version was switched${version ? ` to version ${version}` : ""}`
+        : c.kind === "DOMAIN_STATUS_CHANGED"
+          ? "Your domain's status changed"
+          : c.kind === "DEPLOYMENT_FAILED"
+            ? "A publish attempt failed"
+            : c.kind === "ACTION_EXECUTED"
+              ? "Kora applied an action"
+              : "A change was recorded";
+  return `${what} ${before} before the first failed check. This is timing only; it does not prove the change caused the problem.`;
 }

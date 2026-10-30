@@ -1,0 +1,30 @@
+# Live acceptance record
+
+Honest status as of this branch. "Verified" means executed and observed; nothing here is inferred.
+
+## Verified in the build environment (real server, real PostgreSQL 16, real HTTP, real browser)
+
+| Claim                                                                                                                                                                                                   | Evidence                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Sign-up, login, logout, hashed sessions, org roles                                                                                                                                                      | `apps/api/src/platform.integration.test.ts`              |
+| Cross-tenant isolation on 18 routes                                                                                                                                                                     | same file, "tenant isolation"                            |
+| Build, edit, immutable versions (DB-enforced), preview of stored bytes, publish to a reachable URL, live-bytes verification (`MATCH`)                                                                   | same file, "builder"                                     |
+| Controlled failure observed by the real monitor, exactly one incident, owner explanation, policy `REQUIRE_APPROVAL`, approval, typed action, `VERIFYING`, `RECOVERY_VERIFIED` from two new observations | same file, "closed loop"                                 |
+| Passport v2 exports and verifies offline with the CLI; tampering detected                                                                                                                               | same test                                                |
+| Same flow through the browser UI (Playwright), plus mobile no-overflow and anonymous 401                                                                                                                | `e2e/critical-flow.spec.ts`                              |
+| Paystack contract: signature, verify-before-activate, idempotent webhooks, grace without taking sites offline                                                                                           | `commerce.integration.test.ts` (against a fake Paystack) |
+| Domain connect via observed DNS/HTTPS; regression noticed                                                                                                                                               | same file (fake resolver)                                |
+| Production-mode start: `/health`, `/__kora`, SPA served, legacy evidence routes return 401                                                                                                              | manual smoke test                                        |
+
+## NOT verified (external blockers)
+
+| Item                                               | Why                                                                                                                                                | Single manual action                                                                    |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| LIVE-0B Rumpty read-only bridge                    | No `RUMPTY_API_KEY`/`RUMPTY_WORKSPACE` secret exists in this environment; the workflow was not on the default branch so it could not be dispatched | add the two repository secrets, merge `rumpty-live-0b.yml`, run it. No PASS is claimed. |
+| Deployment of Kora and the demo workload on Rumpty | no credentials; deploying would also be an unapproved external change                                                                              | deploy the image per `docs/runbooks/rumpty-deploy.md`                                   |
+| `rumpty sync` publisher against a real bucket      | needs the CLI, a key, a public bucket and its public URL (undocumented)                                                                            | set `RUMPTY_*`, then publish a site                                                     |
+| Docker image build / `image-check.sh`              | no Docker daemon in this environment                                                                                                               | runs in CI (`docker-image` job)                                                         |
+| Reasoner with a real model                         | no inference endpoint/key                                                                                                                          | set `INFERENCE_*`                                                                       |
+| Paystack against the real API                      | no test key                                                                                                                                        | set `PAYSTACK_SECRET_KEY` (test mode)                                                   |
+| Domain purchase                                    | no registrar credentials; purchase also needs explicit approval                                                                                    | out of scope until approved                                                             |
+| Email delivery                                     | no provider                                                                                                                                        | not implemented                                                                         |

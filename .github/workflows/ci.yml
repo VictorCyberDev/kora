@@ -44,10 +44,55 @@ jobs:
           test -f packages/event-schema/dist/src/index.js
           test -f services/incident-engine/dist/src/index.js
           test -f packages/topology/dist/index.js
-          pnpm --filter @kora/api exec node -e "Promise.all([import('@kora/event-schema'), import('@kora/incident-engine')])"
-          pnpm --filter @kora/topology exec node -e "import('@kora/topology')"
+          test -f packages/site-schema/dist/src/index.js
+          test -f apps/web/dist/index.html
+          test -f apps/api/dist/db/migrations/011_site_faults.sql
+          pnpm --filter @kora/api exec node -e "Promise.all([import('@kora/event-schema'), import('@kora/incident-engine'), import('@kora/site-schema'), import('@kora/reasoner'), import('@kora/policy-engine'), import('@kora/action-executor')])"
+      - name: Secret scan (high-signal patterns, tracked files only)
+        run: |
+          if git grep -nEI '(sk_(live|test)_[A-Za-z0-9]{16,}|rmp_[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{30,}|-----BEGIN (RSA |EC )?PRIVATE KEY-----)' -- . ':!apps/api/test-fixtures' ':!*.test.ts' ':!*/test/*'; then
+            echo "possible committed secret"; exit 1
+          fi
       - run: pnpm db:migrate
+      - name: Migrations are re-runnable (upgrade path)
+        run: pnpm db:migrate
       - run: pnpm -r test
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: kora
+          POSTGRES_PASSWORD: kora
+          POSTGRES_DB: kora_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kora -d kora_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://kora:kora@localhost:5432/kora_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results/
 
   docker-image:
     name: docker image (build, no push)

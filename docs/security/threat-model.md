@@ -47,3 +47,19 @@ When `GITHUB_REPO` is set, kora-api makes outbound requests to the configured Gi
 ## Redaction scope
 
 Redaction in diagnostic snapshots currently covers only the `provenance` field, whose value is the constant `kora:health-monitor`, so in practice nothing is redacted. Other snapshot fields (`type`, `failureCategory`, `providerStatus`, resource identifiers) are not passed through redaction. Health-check `failureReason` text is redacted separately when the observation is recorded (URL credentials and secret-like values), but `failureReason` is not part of snapshots. Do not store secrets in any observed or provider-supplied field.
+
+## Addendum: platform threats
+
+| Threat                                    | Control                                                                                                         | Test                                            |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Cross-tenant read/write (IDOR)            | org membership checked on the owning org; non-members get 404                                                   | `platform.integration.test.ts` probes 18 routes |
+| Session theft/fixation                    | random token, only its SHA-256 stored, HttpOnly, SameSite=Lax, Secure in production, revocation                 | auth tests                                      |
+| CSRF                                      | request marker header + same-host Origin check                                                                  | auth tests                                      |
+| Prompt injection via logs/site text/forms | data envelope, sanitisation, validated output, no tools, policy gate                                            | `reasoner.test.ts`, loop test                   |
+| Model proposes destructive action         | action vocabulary + referential validation + deterministic DENY list                                            | reasoner and policy tests                       |
+| Command injection via provider CLI        | argument arrays, no shell, allow-listed executable, validated identifiers, minimal env                          | `executor.test.ts`                              |
+| Stored XSS in generated sites             | escaping, schema-restricted links, CSP, no inline JS, artifact lint                                             | `site-schema.test.ts`                           |
+| Path traversal in publish/serve           | `safeRelativePath`, artifact path resolution                                                                    | publish test                                    |
+| Forged payment webhook                    | HMAC-SHA512 + server-side transaction verification + amount check + idempotency                                 | `commerce.integration.test.ts`                  |
+| Secret leakage                            | redaction at logs/events/process output; secrets only from environment                                          | `security.test.ts`                              |
+| SSRF                                      | health/claim fetches use the existing safe-fetch; domain HTTPS probe only after DNS resolves to Kora's own host | partial: documented limit                       |

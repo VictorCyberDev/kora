@@ -135,3 +135,9 @@ After both deployments are Active:
 - The API is unauthenticated, including `POST /incidents/:id/diagnosis/snapshots`. Hosted-demo mitigation: **none yet**. Do not store real tenant data until authentication exists (see `docs/security/threat-model.md`).
 - `GET /__kora` is a self-reported runtime claim (ADR-009), not proof or attestation. Rumpty documents no such endpoint; the shape is defined by Kora.
 - The image build and container start could not be run where this was authored (no Docker). CI now builds the root Dockerfile on every pull request (job `docker image`) in three situations (context with `.git`, `GIT_SHA` build argument, no `.git` and no argument), starts containers, and checks `/health`, `/__kora`, the non-root user and the in-image migration.
+
+## Full platform deployment (addendum)
+
+Run the same image. Additional environment: see `.env.example` ("Kora platform"). Required for a public deployment: `KORA_PUBLIC_URL`, `DATABASE_URL`, `NODE_ENV=production`. Migrations 001-011 are applied with `node apps/api/dist/db/migrate.js` (re-runnable). For customer sites on Rumpty object storage set `RUMPTY_WORKSPACE`, `RUMPTY_API_KEY`, `RUMPTY_SITE_BUCKET`, `RUMPTY_SITE_PUBLIC_BASE_URL` (the `rumpty` CLI must exist in the image; the stock image does not include it, so the bucket publisher needs a derived image that installs it). Without them Kora hosts sites itself.
+
+LIVE-0B: add repository secrets `RUMPTY_API_KEY` and `RUMPTY_WORKSPACE`, merge `.github/workflows/rumpty-live-0b.yml` to the default branch, then run it manually. It is read-only (`workspaces`, `vm ls`).

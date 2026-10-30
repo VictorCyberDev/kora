@@ -51,3 +51,20 @@ Unreachable/DNS/timeout checks become failed observations with categories. Malfo
 ## Current limitations
 
 Single configured monitored service per API process; in-memory threshold counters; no authentication/RBAC; no AI, executor, policy implementation, provider API client, console or autonomous remediation. These are deliberate scope boundaries.
+
+## Platform layer (added after the kernel)
+
+```
+Mission Control (apps/web) ──► Kora API (apps/api) ──► Kora Core (monitor, incidents, diagnosis, verification)
+                                   │                          │
+            Builder (packages/site-schema) + Publisher        ▼
+                                   │               Reasoner (services/reasoner)  ── validated JSON only
+                                   ▼                          ▼
+                       Rumpty bucket / Kora-hosted   Policy (services/policy-engine) ─► DENY | REQUIRE_APPROVAL | ALLOW
+                                                              ▼
+                                            Typed executor ─► publisher/provider ─► observe again ─► RecoveryVerified | RecoveryFailed
+```
+
+Per-site monitors reuse the original `HealthMonitor`: each site is a `service` with its own durable incident state, bound to a provider resource identity. Change events are append-only and expose timing only; the diagnostic snapshot format is unchanged (hash-stable), and change context travels beside it into the Reasoner, the Owner view and Passport v2. The system graph is computed on demand from relationships Kora actually holds (workspace/resource/version/domain/forms) and propagates failures along documented directions.
+
+Limits: single API node (in-memory rate limits, per-process monitors); Kora-hosted sites share the API's failure domain; no email, no password reset, no registrar purchase flow.

@@ -103,7 +103,10 @@ export function loadPlanCatalog(
     return z
       .array(planSchema)
       .parse(JSON.parse(env.KORA_PLANS_JSON)) as PlanSeed[];
-  return env.NODE_ENV === "production" ? [] : DEVELOPMENT_PLANS;
+  // Production always has the free trial (it carries no price); paid plans must be configured.
+  return env.NODE_ENV === "production"
+    ? DEVELOPMENT_PLANS.filter((p) => p.amountMinor === 0)
+    : DEVELOPMENT_PLANS;
 }
 
 // ---- state machine ---------------------------------------------------------

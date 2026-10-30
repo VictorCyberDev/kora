@@ -1,27 +1,32 @@
 # Kora
 
-**The reliability control plane for cloud infrastructure.**
+**Build your website. Kora keeps it running.**
 
-Kora observes running systems, records deterministic telemetry, turns repeated failures into evidence-backed incidents, correlates exact evidence and infrastructure context, produces deterministic symptom-level diagnoses, and verifies recovery. Generative AI is deliberately outside the source-of-truth path.
+Kora builds a business website from a plain-language description, publishes it, then watches it, explains problems from evidence, safely recovers what it is allowed to recover, and proves recovery from new observations. Underneath is an evidence-first reliability kernel:
 
-## What works now
+`OBSERVE → DETECT → CORRELATE → DIAGNOSE → PROPOSE → AUTHORIZE → EXECUTE → VERIFY → AUDIT`
 
-A Fastify demo workload exposes `/health`; failure injection is disabled by default. Kora periodically checks a configured endpoint, persists observations in PostgreSQL, creates one incident after a configurable consecutive-failure threshold (default 3), retains structured evidence, and resolves only after a configurable consecutive-success threshold (default 3).
+The AI explains and proposes typed actions. A deterministic policy engine decides (`DENY | REQUIRE_APPROVAL | ALLOW`), a typed executor acts, and only **new health observations** can produce `RecoveryVerified`. An action returning success is never recovery.
 
-A monitored service can be bound to a durable provider resource. Incident/service/evidence API responses expose that infrastructure context, `/incidents/:id/timeline` returns a deterministic chronological evidence timeline, and Milestone 3 adds immutable diagnostic snapshots that distinguish facts, supported symptom diagnoses, contradictions, evidence gaps and unknown root cause.
+## What is implemented
 
-```mermaid
-flowchart TD
-  C[Cloud / Workload] --> O[Observation]
-  O --> I[Incident Detection]
-  I --> E[Evidence Store]
-  E --> R[Correlation Engine]
-  R --> D[Deterministic Diagnosis]
-  D --> S[Diagnostic Snapshot]
-  S -. structured immutable input .-> AI[Future AI Reasoning — NOT IMPLEMENTED]
-```
+| Area                                                                                                                                                      | Status                                                                       |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Reliability kernel (monitor, incidents, evidence, diagnosis, Deployment Verification, Passport v1)                                                        | implemented, unchanged                                                       |
+| Auth, organizations, roles, tenant isolation, audit log                                                                                                   | implemented                                                                  |
+| SiteSpec builder: generate, edit (rule-based; model-assisted when inference is configured), immutable versions, preview, publish, rollback, contact forms | implemented                                                                  |
+| Publishing: Kora-hosted (from PostgreSQL) and Rumpty bucket (`rumpty sync`)                                                                               | implemented; Rumpty path needs real credentials to run                       |
+| Change intelligence, system graph, Owner-language status                                                                                                  | implemented                                                                  |
+| Reasoner (OpenAI-compatible, validated, deterministic fallback)                                                                                           | implemented; no model is configured by default                               |
+| Policy engine, typed actions, approval, closed-loop verification, Passport v2                                                                             | implemented                                                                  |
+| Custom domains (connect an existing domain, DNS/HTTPS observed)                                                                                           | implemented                                                                  |
+| Domain purchase / registrars (Entri, Openprovider)                                                                                                        | contract + scaffold only; returns "not configured"                           |
+| Billing (Paystack, grace model, entitlements, usage events)                                                                                               | implemented and contract-tested; not run against live Paystack               |
+| Email delivery                                                                                                                                            | not implemented; in-app notifications only                                   |
+| Rumpty VM restart / redeploy / deployment rollback                                                                                                        | **unavailable**: no documented interface; reported as manual provider action |
+| Mission Control web app (`apps/web`)                                                                                                                      | implemented; served by the API                                               |
 
-Not implemented: frontend, generative AI reasoning, automatic remediation, policy evaluation, authentication/RBAC, Kubernetes, multi-cloud, distributed monitoring, or undocumented RumptyCloud discovery/status APIs.
+See `docs/architecture/overview.md`, ADR-012 to ADR-017, `docs/execution/FULL-PLATFORM-BASELINE.md`, `LIVE-ACCEPTANCE.md` and `SECURITY.md`.
 
 ## Quick start
 
@@ -133,16 +138,15 @@ Credentialless CI verifies the provider contract, identity mapping, error normal
 
 See `integrations/rumptycloud/README.md`, `docs/architecture/provider-observation.md`, and `docs/architecture/deterministic-diagnosis.md`.
 
-## Roadmap
+## Running the full product locally
 
-1. Deterministic reliability kernel — complete.
-2. Provider-aware cloud observation foundation — complete; real RumptyCloud acceptance remains deferred pre-submission.
-3. **Current PR:** evidence correlation and deterministic diagnosis.
-4. Evidence-based AI reasoning over explicit diagnostic snapshots.
-5. Blast-radius/policy engine.
-6. Human-approved typed remediation.
-7. Rich verification and Chaos Lab.
-8. Benchmarking/evaluation.
-9. Console, polish, demo and technical article.
+```bash
+pnpm install && docker compose up -d postgres
+export DATABASE_URL=postgresql://kora:kora@localhost:5432/kora
+pnpm db:migrate && pnpm build
+KORA_PUBLIC_URL=http://localhost:3000 KORA_CHAOS_ENABLED=true node apps/api/dist/server.js   # app at http://localhost:3000
+```
 
-Architecture detail: `docs/architecture/overview.md`. Decisions: `docs/adr/`. Licensed under Apache-2.0.
+End-to-end tests: `PLAYWRIGHT_BROWSERS_PATH=... DATABASE_URL=.../kora_test npx playwright test` (creates and drops its own database).
+
+Architecture: `docs/architecture/overview.md`. Decisions: `docs/adr/`. Licensed under Apache-2.0.
