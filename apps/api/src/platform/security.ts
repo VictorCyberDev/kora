@@ -36,19 +36,32 @@ export async function verifyPassword(
 ): Promise<boolean> {
   const [scheme, n, r, p, salt, hash] = stored.split("$");
   if (scheme !== "scrypt" || !n || !r || !p || !salt || !hash) return false;
-  const expected = Buffer.from(hash, "base64url");
-  const key = await scrypt(
-    password,
-    Buffer.from(salt, "base64url"),
-    expected.length,
-    {
-      N: Number(n),
-      r: Number(r),
-      p: Number(p),
-      maxmem: 128 * Number(n) * Number(r) * 2,
-    },
-  );
-  return key.length === expected.length && timingSafeEqual(key, expected);
+  const cost = Number(n);
+  const block = Number(r);
+  const parallel = Number(p);
+  // Only costs this server could have produced; also bounds the work a crafted hash can demand.
+  if (
+    !Number.isInteger(Math.log2(cost)) ||
+    cost < 2 ** 14 ||
+    cost > 2 ** 17 ||
+    block < 1 ||
+    block > 16 ||
+    parallel < 1 ||
+    parallel > 4
+  )
+    return false;
+  try {
+    const expected = Buffer.from(hash, "base64url");
+    const key = await scrypt(
+      password,
+      Buffer.from(salt, "base64url"),
+      expected.length,
+      { N: cost, r: block, p: parallel, maxmem: 128 * cost * block * 2 },
+    );
+    return key.length === expected.length && timingSafeEqual(key, expected);
+  } catch {
+    return false;
+  }
 }
 
 export const sha256Hex = (value: string) =>

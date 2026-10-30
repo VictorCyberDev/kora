@@ -8,7 +8,12 @@ import type { KoraConfig } from "../config.js";
 import { KoraStore } from "../store.js";
 import { SiteAuthor } from "./author.js";
 import { loadPlatformConfig, type PlatformConfig } from "./config.js";
-import { registerHosting } from "./hosting.js";
+import { registerHosting, sendArtifact } from "./hosting.js";
+import {
+  finalizeForPublish,
+  type SiteFiles,
+  type SiteSpec,
+} from "@kora/site-schema";
 import { HttpError, ROLE_RANK, requireOrgRole } from "./http.js";
 import { Operations } from "./operations.js";
 import { OpsStore } from "./ops-store.js";
@@ -21,6 +26,22 @@ import { registerRoutes } from "./routes.js";
 import { SESSION_COOKIE, readCookie, sha256Hex } from "./security.js";
 import { PublishService, SiteMonitors } from "./services.js";
 import { PlatformStore } from "./store.js";
+import {
+  BillingService,
+  PaystackProvider,
+  loadPlanCatalog,
+  registerBillingRoutes,
+  unconfiguredPayments,
+  type PaymentProvider,
+} from "./billing.js";
+import {
+  DomainService,
+  entriProvider,
+  openproviderProvider,
+  registerDomainRoutes,
+  systemResolver,
+  type DnsResolver,
+} from "./domains.js";
 
 export interface PlatformRuntime {
   platform: PlatformStore;
@@ -31,6 +52,8 @@ export interface PlatformRuntime {
   monitors: SiteMonitors;
   publisher: SitePublisher;
   author: SiteAuthor;
+  billing: BillingService;
+  domains: DomainService;
   config: PlatformConfig;
   llm: LlmClient | null;
   extensions: Array<(app: FastifyInstance) => void>;
@@ -49,6 +72,9 @@ export interface CreatePlatformOptions {
   /** Start site monitors on their own schedule. Tests drive them explicitly. */
   autostartMonitors?: boolean;
   now?: () => Date;
+  payments?: PaymentProvider;
+  resolver?: DnsResolver;
+  domainFetch?: typeof fetch;
 }
 
 export function choosePublisher(
@@ -121,7 +147,36 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
     if (effect.type === "recovery_verified")
       await operations.onRecovered(siteId, effect.incident.id);
   };
+  const payments =
+    o.payments ??
+    (config.PAYSTACK_SECRET_KEY
+      ? new PaystackProvider(config.PAYSTACK_SECRET_KEY)
+      : unconfiguredPayments);
+  const billing = new BillingService({
+    platform,
+    payments,
+    publicUrl: config.KORA_PUBLIC_URL,
+    ...(o.now ? { now: o.now } : {}),
+  });
+  const targetHost = new URL(
+    config.KORA_PUBLIC_URL ?? `http://127.0.0.1:${o.koraConfig.API_PORT}`,
+  ).hostname;
+  const domains = new DomainService({
+    platform,
+    ops,
+    resolver: o.resolver ?? systemResolver,
+    ...(o.domainFetch ? { fetchImpl: o.domainFetch } : {}),
+    targetHost,
+    providers: [
+      entriProvider(config.ENTRI_APPLICATION_ID),
+      openproviderProvider(
+        config.OPENPROVIDER_USERNAME,
+        config.OPENPROVIDER_PASSWORD,
+      ),
+    ],
+  });
   let timer: NodeJS.Timeout | undefined;
+  let domainTimer: NodeJS.Timeout | undefined;
   return {
     platform,
     ops,
@@ -131,10 +186,20 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
     monitors,
     publisher,
     author: new SiteAuthor(llm),
+    billing,
+    domains,
     config,
     llm,
     extensions: [],
     async startBackground() {
+      await billing.seedPlans(loadPlanCatalog(process.env));
+      domainTimer = setInterval(
+        () =>
+          void domains
+            .recheckActive()
+            .catch((err) => o.log.error({ err }, "domain recheck failed")),
+        300_000,
+      );
       for (const site of await platform.listPublishedSites()) {
         const resource = publisher.resourceFor(site);
         const url = publishing.monitorUrlFor(
@@ -160,6 +225,7 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
     },
     async stop() {
       if (timer) clearInterval(timer);
+      if (domainTimer) clearInterval(domainTimer);
       await monitors.stopAll();
     },
   };
@@ -249,8 +315,15 @@ export function registerPlatform(
     publishing: rt.publishing,
     publisher: rt.publisher,
     author: rt.author,
+    billing: rt.billing,
     config,
   });
+  registerDomainRoutes(app, {
+    domains: rt.domains,
+    platform,
+    billing: rt.billing,
+  });
+  registerBillingRoutes(app, { billing: rt.billing, platform });
   registerHosting(app, {
     platform,
     ops: rt.ops,
@@ -262,6 +335,31 @@ export function registerPlatform(
   const webDir = resolve(options.webDir ?? defaultWebDir());
   app.setNotFoundHandler(async (req, reply) => {
     const path = (req.url.split("?")[0] ?? "/") || "/";
+    // A connected custom domain serves its site at the root of that hostname.
+    const host = (req.headers.host ?? "").split(":")[0]?.toLowerCase() ?? "";
+    if (req.method === "GET" && host && !API_LIKE.test(path)) {
+      const custom = await rt.domains.byHostname(host);
+      if (custom) {
+        const site = await platform.getSite(custom.siteId);
+        if (site?.status === "PUBLISHED" && site.publishedVersionId) {
+          const row = await platform.getVersionRow(
+            site.id,
+            site.publishedVersionId,
+          );
+          if (row)
+            return sendArtifact(
+              reply,
+              finalizeForPublish(
+                row.artifact as SiteFiles,
+                row.spec as SiteSpec,
+                `https://${host}/`,
+              ),
+              path.slice(1),
+              "/",
+            );
+        }
+      }
+    }
     if (req.method === "GET" && !API_LIKE.test(path)) {
       const rel = normalize(decodeURIComponent(path)).replace(/^[/\\]+/, "");
       const file = resolve(join(webDir, rel));

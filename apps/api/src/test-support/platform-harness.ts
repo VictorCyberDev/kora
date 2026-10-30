@@ -8,6 +8,11 @@ import { loadPlatformConfig } from "../platform/config.js";
 import type { SitePublisher } from "../platform/publisher.js";
 import { KoraHostedPublisher } from "../platform/publisher.js";
 import { KoraStore } from "../store.js";
+import {
+  DEVELOPMENT_PLANS,
+  type PaymentProvider,
+} from "../platform/billing.js";
+import type { DnsResolver } from "../platform/domains.js";
 
 async function freePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -51,6 +56,10 @@ export async function startHarness(
     env?: Record<string, string>;
     llm?: LlmClient | null;
     publisher?: (base: string) => SitePublisher;
+    payments?: PaymentProvider;
+    resolver?: DnsResolver;
+    domainFetch?: typeof fetch;
+    now?: () => Date;
   } = {},
 ): Promise<Harness> {
   const databaseUrl = process.env.DATABASE_URL!;
@@ -84,6 +93,10 @@ export async function startHarness(
         config,
         log,
         autostartMonitors: false,
+        ...(o.payments ? { payments: o.payments } : {}),
+        ...(o.resolver ? { resolver: o.resolver } : {}),
+        ...(o.domainFetch ? { domainFetch: o.domainFetch } : {}),
+        ...(o.now ? { now: o.now } : {}),
         llm: o.llm ?? null,
         publisher: o.publisher
           ? o.publisher(base)
@@ -91,6 +104,7 @@ export async function startHarness(
       })),
     webDir: "/nonexistent",
   });
+  await runtime.billing.seedPlans(DEVELOPMENT_PLANS);
   await app.listen({ host: "127.0.0.1", port });
   const call: Harness["call"] = async (method, path, opts = {}) => {
     const res = await fetch(`${base}${path}`, {

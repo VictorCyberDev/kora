@@ -24,6 +24,7 @@ import {
 import type { Operations, Principal } from "./operations.js";
 import type { OpsStore } from "./ops-store.js";
 import type { PublishService } from "./services.js";
+import type { BillingService } from "./billing.js";
 import type { PlatformStore } from "./store.js";
 import {
   RateLimiter,
@@ -35,6 +36,7 @@ import {
   verifyPassword,
 } from "./security.js";
 import type { SitePublisher } from "./publisher.js";
+import { describeChannels, noEmailProvider } from "./notifications.js";
 
 export interface RouteDeps {
   platform: PlatformStore;
@@ -43,6 +45,7 @@ export interface RouteDeps {
   publishing: PublishService;
   publisher: SitePublisher;
   author: SiteAuthor;
+  billing: BillingService;
   config: PlatformConfig;
 }
 const uuid = z.string().uuid();
@@ -71,8 +74,29 @@ export function formEndpointFor(
 }
 
 export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
-  const { platform, ops, operations, publishing, publisher, author, config } =
-    d;
+  const {
+    platform,
+    ops,
+    operations,
+    publishing,
+    publisher,
+    author,
+    billing,
+    config,
+  } = d;
+  const entitled = async (
+    orgId: string,
+    key: "canCreateSite" | "canGenerate" | "canPublish",
+  ) => {
+    const { entitlements } = await billing.entitlements(orgId);
+    if (!entitlements[key])
+      throw new HttpError(
+        402,
+        "plan_restriction",
+        entitlements.restrictedReason ??
+          "Your plan does not include this. Choose a plan to continue.",
+      );
+  };
   const authLimiter = new RateLimiter(20, 60_000);
   const formLimiter = new RateLimiter(5, 60_000);
   const principal = (req: FastifyRequest, role: Role): Principal => ({
@@ -150,6 +174,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       body.displayName,
       body.orgName,
     );
+    await billing.startTrial(orgId);
     const token = newSessionToken();
     await platform.createSession(userId, sha256Hex(token), SESSION_TTL_SECONDS);
     await platform.audit({
@@ -239,6 +264,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       .object({ name: z.string().trim().min(1).max(120) })
       .parse(req.body);
     const id = await platform.createOrg(a.userId, body.name);
+    await billing.startTrial(id);
     await platform.audit({
       orgId: id,
       actorUserId: a.userId,
@@ -311,6 +337,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       })
       .parse(req.body);
     requireOrgRole(req, body.orgId, "MEMBER");
+    await entitled(body.orgId, "canCreateSite");
     const site = await platform.createSite({
       orgId: body.orgId,
       name: body.name,
@@ -401,6 +428,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   };
   app.post("/api/sites/:id/generate", async (req, reply) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
+    await entitled(site.orgId, "canGenerate");
     const a = requireUser(req);
     const body = briefSchema.partial({ name: true }).parse(req.body);
     const brief = {
@@ -472,6 +500,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   });
   app.post("/api/sites/:id/edit", async (req, reply) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
+    await entitled(site.orgId, "canGenerate");
     const a = requireUser(req);
     const body = z
       .object({
@@ -605,6 +634,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       .object({ id: uuid, versionId: uuid })
       .parse(req.params);
     const { site } = await siteFor(req, id, "MEMBER");
+    await entitled(site.orgId, "canPublish");
     return {
       data: await publishing.publish(site, versionId, {
         userId: requireUser(req).userId,
@@ -617,6 +647,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       .object({ id: uuid, versionId: uuid })
       .parse(req.params);
     const { site } = await siteFor(req, id, "ADMIN");
+    await entitled(site.orgId, "canPublish");
     const target = await platform.getVersionRow(site.id, versionId);
     const live = await platform.getPublishedVersionRow(site.id);
     if (!target) throw notFound();
@@ -853,6 +884,11 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     )
       throw notFound();
     return { data: { id, read: true } };
+  });
+
+  app.get("/api/notifications/channels", (req) => {
+    requireUser(req);
+    return { data: describeChannels(noEmailProvider) };
   });
 
   // ---- controlled tests (Chaos Lab) ----------------------------------------------------
