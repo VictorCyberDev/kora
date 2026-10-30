@@ -123,6 +123,29 @@ d("independent Site Host", () => {
     expect((await fetch(`${hostBase}/s/does-not-exist/`)).status).toBe(404);
   });
 
+  it("starts without SITE_HOST_PUBLIC_URL (first-deploy case) and derives absolute URLs from the request", async () => {
+    const { site } = await publishedSite("sh-nourl@example.com", "No Url Host");
+    const port = await freePort();
+    const sql2 = postgres(process.env.DATABASE_URL!, {
+      max: 2,
+      onnotice: () => {},
+    });
+    const app2 = buildSiteHost({ store: new SiteHostStore(sql2) });
+    await app2.listen({ host: "127.0.0.1", port });
+    try {
+      const sitemap = await fetch(
+        `http://127.0.0.1:${port}/s/${site.slug}/sitemap.xml`,
+      );
+      expect(sitemap.status).toBe(200);
+      expect(await sitemap.text()).toContain(
+        `http://127.0.0.1:${port}/s/${site.slug}/`,
+      );
+    } finally {
+      await app2.close();
+      await sql2.end();
+    }
+  });
+
   it("exposes only health, claim and site content: no accounts, sessions, billing or API", async () => {
     for (const p of [
       "/api/auth/me",

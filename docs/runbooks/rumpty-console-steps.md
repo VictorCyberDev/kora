@@ -36,7 +36,7 @@ Open **Compute → Deployments**. If a deployment named `kora-api` (or similar) 
 
 - **Compute → Deployments → New deployment**. Name: `kora-site-host`. Same repository, branch `main`, **Web Service/Backend**, **Dockerfile**, **Tiny**.
 - Start command: `node apps/site-host/dist/server.js`. Readiness path: `/health`.
-- Environment variables: `NODE_ENV` = `production`; `DATABASE_URL` = the same internal string; `SITE_HOST_PUBLIC_URL` empty for now.
+- Environment variables: `NODE_ENV` = `production`; `DATABASE_URL` = the same internal string; `SITE_HOST_PUBLIC_URL` may stay unset (it only affects sitemap URLs).
 - Create. Wait for **Active**. Copy its **public URL**.
 
 ## 4. Inference project (hosted AI for explanations)

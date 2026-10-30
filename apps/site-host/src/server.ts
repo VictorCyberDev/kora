@@ -9,7 +9,8 @@ const env = z
     SITE_HOST_HOST: z.string().default("0.0.0.0"),
     SITE_HOST_PORT: z.coerce.number().int().min(1).max(65535).optional(),
     PORT: z.coerce.number().int().min(1).max(65535).optional(),
-    SITE_HOST_PUBLIC_URL: z.string().url(),
+    // Optional: only used for absolute sitemap/robots URLs; derived from the request when unset.
+    SITE_HOST_PUBLIC_URL: z.string().url().optional(),
     SITE_HOST_FAULT_DELAY_MS: z.coerce
       .number()
       .int()
