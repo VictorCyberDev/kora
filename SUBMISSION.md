@@ -26,7 +26,7 @@ The AI is never the source of truth and never has authority. Model output (remot
 
 - **RumptyCloud Web Services:** two services from one image, deployed from `main` by the GitHub integration — the **control plane** (`kora-api`: API, Mission Control, monitors) and an **independent Site Host** (`kora-site-host`: serves customer sites, read-only database role, no auth/billing/API routes). The monitor observes the Site Host over the public internet, so a Site Host failure is a real, separately observed failure.
 - **RumptyCloud PostgreSQL** as the system of record (immutable versions, incidents, evidence, audit).
-- Both services expose a signed-off runtime claim (`/__kora`) with the deployed commit; production reports `cb871bf`.
+- Both services expose a runtime claim (`/__kora`) with the deployed commit. The authoritative acceptance run was recorded on `cb871bf`; newer UI-only commits may be deployed afterward, so use `/__kora` for the current runtime SHA rather than treating the acceptance SHA as the latest build.
 - Inference: Kora speaks any OpenAI-compatible endpoint (`AI_*`), including Rumpty Inference. **Not configured in the current production deployment** (needs console access); production runs the deterministic designer and reasoner.
 
 ## Live URLs
