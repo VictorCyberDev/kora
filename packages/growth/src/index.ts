@@ -18,3 +18,4 @@ export * from "./analytics.js";
 export * from "./reviews.js";
 export * from "./memory.js";
 export * from "./intent.js";
+export * from "./truth.js";
