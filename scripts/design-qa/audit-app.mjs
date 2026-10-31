@@ -7,9 +7,16 @@ const out = process.argv[2] ?? "docs/design/audit-before/app";
 mkdirSync(out, { recursive: true });
 const port = 3210;
 const base = `http://127.0.0.1:${port}`;
-const server = spawn("node", ["e2e/serve.mjs"], { stdio: "ignore", env: process.env });
+const server = spawn("node", ["e2e/serve.mjs"], {
+  stdio: "ignore",
+  env: process.env,
+});
 for (let i = 0; i < 80; i++) {
-  try { if ((await fetch(base + "/health")).ok) break; } catch { /* starting */ }
+  try {
+    if ((await fetch(base + "/health")).ok) break;
+  } catch {
+    /* starting */
+  }
   await new Promise((r) => setTimeout(r, 500));
 }
 const browser = await chromium.launch();
@@ -26,22 +33,67 @@ const api = seed.request;
 const H = { "x-requested-with": "kora" };
 const me = await (await api.get(base + "/api/auth/me")).json();
 const orgId = me.data.orgs[0].id;
-const site = (await (await api.post(base + "/api/sites", { headers: H, data: { orgId, name: "Crumb & Co" } })).json()).data;
-const gen = (await (await api.post(`${base}/api/sites/${site.id}/generate`, { headers: H, data: { name: "Crumb & Co", description: "A neighbourhood bakery making bread and cakes daily. We bake sourdough, croissants, celebration cakes and cupcakes.", whatsapp: "+2348075550120", hours: [{ days: "Daily", hours: "7am - 7pm" }] } })).json()).data;
-await api.post(`${base}/api/sites/${site.id}/versions/${gen.version.id}/publish`, { headers: H });
+const site = (
+  await (
+    await api.post(base + "/api/sites", {
+      headers: H,
+      data: { orgId, name: "Crumb & Co" },
+    })
+  ).json()
+).data;
+const gen = (
+  await (
+    await api.post(`${base}/api/sites/${site.id}/generate`, {
+      headers: H,
+      data: {
+        name: "Crumb & Co",
+        description:
+          "A neighbourhood bakery making bread and cakes daily. We bake sourdough, croissants, celebration cakes and cupcakes.",
+        whatsapp: "+2348075550120",
+        hours: [{ days: "Daily", hours: "7am - 7pm" }],
+      },
+    })
+  ).json()
+).data;
+await api.post(
+  `${base}/api/sites/${site.id}/versions/${gen.version.id}/publish`,
+  { headers: H },
+);
 await api.post(`${base}/api/sites/${site.id}/presence/import`, { headers: H });
-await api.post(`${base}/api/sites/${site.id}/brand-kit`, { headers: H, data: { from: "site" } });
+await api.post(`${base}/api/sites/${site.id}/brand-kit`, {
+  headers: H,
+  data: { from: "site" },
+});
 const state = await seed.storageState();
 await seed.close();
-const pages = [["landing", "/"], ["dashboard", "/app"], ["presence", `/app/sites/${site.id}/presence`], ["create", `/app/sites/${site.id}/create`], ["calendar", `/app/sites/${site.id}/calendar`], ["today", `/app/sites/${site.id}/today`]];
+const pages = [
+  ["landing", "/"],
+  ["dashboard", "/app"],
+  ["presence", `/app/sites/${site.id}/presence`],
+  ["create", `/app/sites/${site.id}/create`],
+  ["calendar", `/app/sites/${site.id}/calendar`],
+  ["today", `/app/sites/${site.id}/today`],
+];
 for (const scheme of ["light", "dark"])
-  for (const [w, h] of [[375, 812], [768, 1024], [1440, 900]]) {
-    const ctx = await browser.newContext({ viewport: { width: w, height: h }, colorScheme: scheme, storageState: state, reducedMotion: "reduce" });
+  for (const [w, h] of [
+    [375, 812],
+    [768, 1024],
+    [1440, 900],
+  ]) {
+    const ctx = await browser.newContext({
+      viewport: { width: w, height: h },
+      colorScheme: scheme,
+      storageState: state,
+      reducedMotion: "reduce",
+    });
     const p = await ctx.newPage();
     for (const [name, url] of pages) {
       await p.goto(base + url, { waitUntil: "networkidle" });
       await p.waitForTimeout(700);
-      await p.screenshot({ path: `${out}/${name}-${w}-${scheme}.png`, fullPage: name === "landing" });
+      await p.screenshot({
+        path: `${out}/${name}-${w}-${scheme}.png`,
+        fullPage: name === "landing",
+      });
     }
     await ctx.close();
   }

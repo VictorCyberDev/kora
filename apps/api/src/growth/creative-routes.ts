@@ -45,6 +45,8 @@ import { recentItems } from "./calendar-store.js";
 import { requireFeature } from "./entitlements.js";
 import { UnsafeUrl, safeFetchHtml } from "./safe-fetch.js";
 
+const toJson = (v: unknown) =>
+  JSON.parse(JSON.stringify(v)) as postgres.JSONValue;
 const idParam = z.object({ id: z.string().uuid() });
 const uuid = z.string().uuid();
 
@@ -107,8 +109,8 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     });
     const id = randomUUID();
     await sql`INSERT INTO campaign_briefs (id, site_id, org_id, brief, directions, blocked, created_by)
-      VALUES (${id}, ${site.id}, ${site.orgId}, ${sql.json(body.brief)}, ${sql.json(JSON.parse(JSON.stringify(feasible)))},
-        ${sql.json(blocked)}, ${requireUser(req).userId})`;
+      VALUES (${id}, ${site.id}, ${site.orgId}, ${sql.json(toJson(body.brief))}, ${sql.json(toJson(feasible))},
+        ${sql.json(toJson(blocked))}, ${requireUser(req).userId})`;
     return reply.code(201).send({
       data: {
         id,
@@ -286,7 +288,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       note: "Checked one public page. Kora read only what the page itself says.",
     };
     await sql`INSERT INTO public_audits (id, url, final_url, result)
-      VALUES (${id}, ${withScheme}, ${page.finalUrl}, ${sql.json(JSON.parse(JSON.stringify(stored)))})`;
+      VALUES (${id}, ${withScheme}, ${page.finalUrl}, ${sql.json(toJson(stored))})`;
     const token = signShare(d.shareSecret, {
       kind: "audit",
       id,
@@ -391,7 +393,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       }
       await t`UPDATE managed_requests SET state=${to}, updated_at=now() WHERE id=${rid}`;
       await t`INSERT INTO managed_request_events (id, request_id, event, from_state, to_state, actor_user_id)
-        VALUES (${randomUUID()}, ${rid}, ${b.event}, ${r.state}, ${to}, ${user.userId})`;
+        VALUES (${randomUUID()}, ${rid}, ${b.event}, ${String(r.state)}, ${to}, ${user.userId})`;
       return { data: { id: rid, state: to } };
     });
   });

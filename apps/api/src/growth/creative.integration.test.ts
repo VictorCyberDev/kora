@@ -198,6 +198,10 @@ d("creative loop over the API", () => {
     expect(list.json.data[0].state).toBe("ACCEPTED");
     const trail =
       await h.sql`SELECT event FROM managed_request_events WHERE request_id=${rid} ORDER BY created_at`;
-    expect(trail.map((t) => t.event)).toEqual(["start", "deliver", "accept"]);
+    expect(trail.map((t) => String(t.event))).toEqual([
+      "start",
+      "deliver",
+      "accept",
+    ]);
   });
 });

@@ -182,10 +182,7 @@ describe("M17 today", () => {
 
 describe("M18/M22 discovery and audit", () => {
   it("builds structured data only from owner facts", () => {
-    const ld = localBusinessJsonLd(facts, "https://ada.example") as Record<
-      string,
-      unknown
-    >;
+    const ld = localBusinessJsonLd(facts, "https://ada.example");
     expect(ld["@type"]).toBe("LocalBusiness");
     expect(ld.telephone).toBe("+2348012345678");
     const spec = (

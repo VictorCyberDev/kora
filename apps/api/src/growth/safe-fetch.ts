@@ -84,7 +84,7 @@ function once(
     const lookup: net.LookupFunction = (hostname, opts, cb) => {
       dns.lookup(hostname, { ...opts, all: true }, (err, addrs) => {
         if (err) return (cb as (e: Error) => void)(err);
-        const list = addrs as dns.LookupAddress[];
+        const list = addrs;
         const ok = o.allowPrivate
           ? list
           : list.filter((a) => !isPrivateAddress(a.address));

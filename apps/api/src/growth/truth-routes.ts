@@ -23,6 +23,8 @@ import type { BillingService } from "../platform/billing.js";
 import type { GrowthStore } from "./store.js";
 import { requireFeature } from "./entitlements.js";
 
+const toJson = (v: unknown) =>
+  JSON.parse(JSON.stringify(v)) as postgres.JSONValue;
 const idParam = z.object({ id: z.string().uuid() });
 const claim = z
   .object({
@@ -95,7 +97,7 @@ export function registerTruthRoutes(
     await sql`
       INSERT INTO claim_ledgers (id, site_id, org_id, subject, claims, result, publishable, created_by)
       VALUES (${id}, ${site.id}, ${site.orgId}, ${body.subject},
-        ${sql.json(body.claims)}, ${sql.json(JSON.parse(JSON.stringify(ledger)))},
+        ${sql.json(toJson(body.claims))}, ${sql.json(toJson(ledger))},
         ${ledger.publishable}, ${requireUser(req).userId})`;
     return reply.code(201).send({ data: { id, ...ledger } });
   });
@@ -158,7 +160,7 @@ export function registerTruthRoutes(
     await sql`
       INSERT INTO brand_genomes (id, site_id, org_id, version, genome, created_by)
       VALUES (${randomUUID()}, ${site.id}, ${site.orgId}, ${g.version},
-        ${sql.json(JSON.parse(JSON.stringify(g)))}, ${requireUser(req).userId})`;
+        ${sql.json(toJson(g))}, ${requireUser(req).userId})`;
     return reply.code(201).send({ data: { current: g, gaps: genomeGaps(g) } });
   });
 }
