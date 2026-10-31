@@ -1,0 +1,217 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Ayo Beauty Lounge",
+    "description": "A hair and beauty salon for women. We offer braiding, silk press, wash and set, makeup and nails.",
+    "industry": "Beauty salon",
+    "location": "Victoria Island, Lagos",
+    "whatsapp": "+2348044440202",
+    "hours": [
+      {
+        "days": "Tue–Sun",
+        "hours": "10am – 8pm"
+      }
+    ],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "approachable",
+      "warm"
+    ],
+    "palette": {
+      "background": "#fbf1f1",
+      "foreground": "#2a1420",
+      "surface": "#fdf9f9",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#f0e2e6",
+      "primary": "#5b1f4d",
+      "primaryForeground": "#ffffff",
+      "secondary": "#e8b4c3",
+      "secondaryForeground": "#111827",
+      "accent": "#d94f5e",
+      "accentForeground": "#000000",
+      "muted": "#938389",
+      "mutedForeground": "#6d5e64",
+      "border": "#ded2d4",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "plum-blush",
+    "mode": "light",
+    "typography": {
+      "pairing": "soft-rounded",
+      "scale": "balanced"
+    },
+    "density": "balanced",
+    "shape": "rounded",
+    "surface": "flat",
+    "buttons": "pill",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "planes",
+      "seed": 359972
+    },
+    "nav": "classic",
+    "footer": "local"
+  },
+  "seo": {
+    "title": "Ayo Beauty Lounge | Victoria Island, Lagos",
+    "description": "A hair and beauty salon for women",
+    "keywords": [
+      "Ayo Beauty Lounge",
+      "Beauty salon",
+      "Victoria Island, Lagos",
+      "Braiding",
+      "Silk press",
+      "Wash and set",
+      "Makeup"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "media-left",
+          "eyebrow": "Beauty salon · Victoria Island, Lagos",
+          "heading": "A hair and beauty salon for women",
+          "subheading": "We offer braiding, silk press, wash and set, makeup and nails.",
+          "primaryCta": {
+            "label": "Message us on WhatsApp",
+            "href": "https://wa.me/2348044440202"
+          },
+          "secondaryCta": {
+            "label": "Book an appointment",
+            "href": "#contact"
+          },
+          "highlights": [
+            "Based in Victoria Island, Lagos",
+            "Tue–Sun: 10am – 8pm",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "trust",
+          "variant": "strip",
+          "heading": "",
+          "items": [
+            "Based in Victoria Island, Lagos",
+            "Tue–Sun: 10am – 8pm",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "image-cards",
+          "heading": "Treatments",
+          "intro": "",
+          "items": [
+            {
+              "title": "Braiding",
+              "text": "",
+              "icon": "scissors"
+            },
+            {
+              "title": "Silk press",
+              "text": ""
+            },
+            {
+              "title": "Wash and set",
+              "text": "",
+              "icon": "sparkles"
+            },
+            {
+              "title": "Makeup",
+              "text": ""
+            },
+            {
+              "title": "Nails",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "horizontal",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Choose a time",
+              "text": "Tell us what you would like and when suits you."
+            },
+            {
+              "title": "We confirm",
+              "text": "We reply to confirm the details."
+            },
+            {
+              "title": "Come in",
+              "text": "Visit us at the agreed time."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or message us on WhatsApp. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Victoria Island, Lagos."
+            },
+            {
+              "question": "When are you open?",
+              "answer": "Tue–Sun: 10am – 8pm."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Braiding, Silk press, Wash and set, Makeup, Nails."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "band",
+          "heading": "Ready to book?",
+          "body": "",
+          "button": {
+            "label": "Get in touch",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "whatsapp",
+          "heading": "Book an appointment",
+          "intro": "Tell us what you would like done and your preferred day.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Request appointment"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Ayo Beauty Lounge",
+    "links": []
+  },
+  "meta": {
+    "recipe": "salon-beauty",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

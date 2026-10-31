@@ -1,0 +1,216 @@
+{
+  "version": 2,
+  "business": {
+    "name": "BrightSmile Dental",
+    "description": "A family dental clinic with a gentle approach. We provide check-ups, cleaning, fillings, whitening and braces.",
+    "industry": "Dental clinic",
+    "location": "Abuja",
+    "phone": "+234 809 555 0190",
+    "hours": [
+      {
+        "days": "Mon–Fri",
+        "hours": "8am – 5pm"
+      }
+    ],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "corporate",
+      "trustworthy"
+    ],
+    "palette": {
+      "background": "#f4f8fb",
+      "foreground": "#0d2236",
+      "surface": "#fafcfd",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#e4eaf0",
+      "primary": "#12355b",
+      "primaryForeground": "#ffffff",
+      "secondary": "#7fb3d5",
+      "secondaryForeground": "#111827",
+      "accent": "#ff7a59",
+      "accentForeground": "#111827",
+      "muted": "#818d99",
+      "mutedForeground": "#5b6874",
+      "border": "#d4dadf",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "coastal-navy",
+    "mode": "light",
+    "typography": {
+      "pairing": "humanist",
+      "scale": "balanced"
+    },
+    "density": "balanced",
+    "shape": "soft",
+    "surface": "outlined",
+    "buttons": "solid",
+    "motion": "none",
+    "imagery": {
+      "style": "abstract",
+      "art": "waves",
+      "seed": 706356
+    },
+    "nav": "classic",
+    "footer": "columns"
+  },
+  "seo": {
+    "title": "BrightSmile Dental | Abuja",
+    "description": "A family dental clinic with a gentle approach",
+    "keywords": [
+      "BrightSmile Dental",
+      "Dental clinic",
+      "Abuja",
+      "Check-ups",
+      "Cleaning",
+      "Fillings",
+      "Whitening"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "split-art",
+          "eyebrow": "Dental clinic · Abuja",
+          "heading": "A family dental clinic with a gentle approach",
+          "subheading": "We provide check-ups, cleaning, fillings, whitening and braces.",
+          "primaryCta": {
+            "label": "Book a visit",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "Our treatments",
+            "href": "#services"
+          },
+          "highlights": [
+            "Based in Abuja",
+            "Mon–Fri: 8am – 5pm",
+            "Call +234 809 555 0190"
+          ]
+        },
+        {
+          "type": "trust",
+          "variant": "credentials",
+          "heading": "",
+          "items": [
+            "Based in Abuja",
+            "Mon–Fri: 8am – 5pm",
+            "Call +234 809 555 0190"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "split",
+          "heading": "Treatments",
+          "intro": "",
+          "items": [
+            {
+              "title": "Check-ups",
+              "text": ""
+            },
+            {
+              "title": "Cleaning",
+              "text": "",
+              "icon": "sparkles"
+            },
+            {
+              "title": "Fillings",
+              "text": ""
+            },
+            {
+              "title": "Whitening",
+              "text": ""
+            },
+            {
+              "title": "Braces",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "numbered",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Choose a time",
+              "text": "Tell us what you would like and when suits you."
+            },
+            {
+              "title": "We confirm",
+              "text": "We reply to confirm the details."
+            },
+            {
+              "title": "Come in",
+              "text": "Visit us at the agreed time."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "split",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or call +234 809 555 0190. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Abuja."
+            },
+            {
+              "question": "When are you open?",
+              "answer": "Mon–Fri: 8am – 5pm."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Check-ups, Cleaning, Fillings, Whitening, Braces."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "band",
+          "heading": "Ready to book?",
+          "body": "",
+          "button": {
+            "label": "Book a visit",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Book an appointment",
+          "intro": "Tell us what you need and when suits you.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Request appointment"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© BrightSmile Dental",
+    "links": []
+  },
+  "meta": {
+    "recipe": "dental",
+    "direction": 1,
+    "generator": "deterministic"
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Crumb & Co",
+    "description": "A neighbourhood bakery making bread and cakes daily. We bake sourdough, croissants, celebration cakes and cupcakes.",
+    "industry": "Café & bakery",
+    "location": "Enugu",
+    "phone": "+234 807 555 0120",
+    "hours": [
+      {
+        "days": "Daily",
+        "hours": "7am – 7pm"
+      }
+    ],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "approachable",
+      "warm"
+    ],
+    "palette": {
+      "background": "#fffaf0",
+      "foreground": "#26210f",
+      "surface": "#fffdf8",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#faeddf",
+      "primary": "#b84300",
+      "primaryForeground": "#ffffff",
+      "secondary": "#ffd8b0",
+      "secondaryForeground": "#111827",
+      "accent": "#14696c",
+      "accentForeground": "#ffffff",
+      "muted": "#938e80",
+      "mutedForeground": "#6c685b",
+      "border": "#e1dcd1",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "sunrise",
+    "mode": "light",
+    "typography": {
+      "pairing": "soft-rounded",
+      "scale": "balanced"
+    },
+    "density": "balanced",
+    "shape": "rounded",
+    "surface": "flat",
+    "buttons": "pill",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "planes",
+      "seed": 534435
+    },
+    "nav": "classic",
+    "footer": "local"
+  },
+  "seo": {
+    "title": "Crumb & Co | Enugu",
+    "description": "A neighbourhood bakery making bread and cakes daily",
+    "keywords": [
+      "Crumb & Co",
+      "Café & bakery",
+      "Enugu"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "media-left",
+          "eyebrow": "Café & bakery · Enugu",
+          "heading": "A neighbourhood bakery making bread and cakes daily",
+          "subheading": "We bake sourdough, croissants, celebration cakes and cupcakes.",
+          "primaryCta": {
+            "label": "Come by",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "Call us",
+            "href": "tel:+234 807 555 0120"
+          },
+          "highlights": [
+            "Based in Enugu",
+            "Daily: 7am – 7pm",
+            "Call +234 807 555 0120"
+          ],
+          "media": {
+            "url": "/_kora/media/cafe-minimal-daylight.webp",
+            "alt": "A minimal café with wooden tables and benches in soft daylight",
+            "width": 1600,
+            "height": 1067,
+            "source": "bundled",
+            "attribution": "Photo: Orlova Maria / Pexels",
+            "license": "Pexels License"
+          }
+        },
+        {
+          "type": "trust",
+          "variant": "strip",
+          "heading": "",
+          "items": [
+            "Based in Enugu",
+            "Daily: 7am – 7pm",
+            "Call +234 807 555 0120"
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "horizontal",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Find us",
+              "text": "See where we are and when we are open."
+            },
+            {
+              "title": "Come by",
+              "text": "Drop in or get in touch first."
+            },
+            {
+              "title": "Enjoy",
+              "text": "Take your time."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or call +234 807 555 0120. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Enugu."
+            },
+            {
+              "question": "When are you open?",
+              "answer": "Daily: 7am – 7pm."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "band",
+          "heading": "Come and see us.",
+          "body": "",
+          "button": {
+            "label": "Come by",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Order or visit",
+          "intro": "Tell us what you would like and when you need it.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "email",
+            "message"
+          ],
+          "submitLabel": "Send order request"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Crumb & Co",
+    "links": []
+  },
+  "meta": {
+    "recipe": "cafe-bakery",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

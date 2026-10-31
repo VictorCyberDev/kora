@@ -1,0 +1,175 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Adeyemi & Partners",
+    "description": "A commercial law firm advising businesses and founders. We advise on contracts, company formation, employment and property.",
+    "industry": "Law firm",
+    "location": "Victoria Island, Lagos",
+    "phone": "+234 1 555 0111",
+    "hours": [],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "luxury",
+      "elegant",
+      "premium"
+    ],
+    "palette": {
+      "background": "#fbf8f1",
+      "foreground": "#1a1630",
+      "surface": "#fdfcf9",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#edeae8",
+      "primary": "#382a6b",
+      "primaryForeground": "#ffffff",
+      "secondary": "#c9c18a",
+      "secondaryForeground": "#111827",
+      "accent": "#a2662b",
+      "accentForeground": "#ffffff",
+      "muted": "#8b8791",
+      "mutedForeground": "#6a6773",
+      "border": "#dcd8d6",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "royal-ivory",
+    "mode": "light",
+    "typography": {
+      "pairing": "luxury-serif",
+      "scale": "balanced"
+    },
+    "density": "editorial",
+    "shape": "sharp",
+    "surface": "outlined",
+    "buttons": "outline",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "rings",
+      "seed": 864667
+    },
+    "nav": "centered",
+    "footer": "brand-heavy"
+  },
+  "seo": {
+    "title": "Adeyemi & Partners | Victoria Island, Lagos",
+    "description": "A commercial law firm advising businesses and founders",
+    "keywords": [
+      "Adeyemi & Partners",
+      "Law firm",
+      "Victoria Island, Lagos"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "luxury",
+          "eyebrow": "Law firm · Victoria Island, Lagos",
+          "heading": "Adeyemi & Partners",
+          "subheading": "A commercial law firm advising businesses and founders.",
+          "primaryCta": {
+            "label": "Request a consultation",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "Call us",
+            "href": "tel:+234 1 555 0111"
+          },
+          "highlights": []
+        },
+        {
+          "type": "trust",
+          "variant": "strip",
+          "heading": "",
+          "items": [
+            "Based in Victoria Island, Lagos",
+            "Call +234 1 555 0111"
+          ]
+        },
+        {
+          "type": "about",
+          "variant": "mission",
+          "heading": "Adeyemi & Partners",
+          "body": [
+            "We advise on contracts, company formation, employment and property."
+          ],
+          "values": []
+        },
+        {
+          "type": "process",
+          "variant": "timeline",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": "Share the details through the form or contact us directly."
+            },
+            {
+              "title": "We agree the plan",
+              "text": "We discuss options and agree how to proceed."
+            },
+            {
+              "title": "We get to work",
+              "text": "We start once the details are settled."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "minimal",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or call +234 1 555 0111. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Victoria Island, Lagos."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "outline",
+          "heading": "Have something in mind?",
+          "body": "",
+          "button": {
+            "label": "Request a consultation",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "conversion",
+          "heading": "Request a consultation",
+          "intro": "Describe your matter briefly. Everything you send is treated in confidence.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "email",
+            "message"
+          ],
+          "submitLabel": "Send enquiry"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Adeyemi & Partners",
+    "links": []
+  },
+  "meta": {
+    "recipe": "law",
+    "direction": 1,
+    "generator": "deterministic"
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Zuri Atelier",
+    "description": "Contemporary African womenswear made in small batches. We design dresses, co-ords, headwraps and bespoke pieces.",
+    "industry": "Fashion boutique",
+    "location": "Ikoyi, Lagos",
+    "whatsapp": "+2348025550188",
+    "email": "hello@zuriatelier.example",
+    "hours": [],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "editorial",
+      "elegant"
+    ],
+    "palette": {
+      "background": "#0f1420",
+      "foreground": "#f2efe8",
+      "surface": "#191d29",
+      "surfaceRaised": "#222732",
+      "surfaceMuted": "#232627",
+      "primary": "#d4c46a",
+      "primaryForeground": "#111827",
+      "secondary": "#3a406b",
+      "secondaryForeground": "#ffffff",
+      "accent": "#e8bf9a",
+      "accentForeground": "#111827",
+      "muted": "#818284",
+      "mutedForeground": "#9c9c9c",
+      "border": "#3c4048",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "midnight-brass",
+    "mode": "dark",
+    "typography": {
+      "pairing": "editorial-serif",
+      "scale": "balanced"
+    },
+    "density": "spacious",
+    "shape": "sharp",
+    "surface": "flat",
+    "buttons": "underline",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "arch",
+      "seed": 293439
+    },
+    "nav": "minimal",
+    "footer": "columns"
+  },
+  "seo": {
+    "title": "Zuri Atelier | Ikoyi, Lagos",
+    "description": "Contemporary African womenswear made in small batches",
+    "keywords": [
+      "Zuri Atelier",
+      "Fashion boutique",
+      "Ikoyi, Lagos"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "split-art",
+          "eyebrow": "Fashion boutique · Ikoyi, Lagos",
+          "heading": "Contemporary African womenswear made in small batches",
+          "subheading": "We design dresses, co-ords, headwraps and bespoke pieces.",
+          "primaryCta": {
+            "label": "Visit the boutique",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "WhatsApp us",
+            "href": "https://wa.me/2348025550188"
+          },
+          "highlights": [
+            "Based in Ikoyi, Lagos",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "trust",
+          "variant": "credentials",
+          "heading": "",
+          "items": [
+            "Based in Ikoyi, Lagos",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "numbered",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Find us",
+              "text": "See where we are and when we are open."
+            },
+            {
+              "title": "Come by",
+              "text": "Drop in or get in touch first."
+            },
+            {
+              "title": "Enjoy",
+              "text": "Take your time."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "split",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or message us on WhatsApp, email hello@zuriatelier.example. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Ikoyi, Lagos."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "big-type",
+          "heading": "Come and see us.",
+          "body": "",
+          "button": {
+            "label": "Visit the boutique",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Visit or enquire",
+          "intro": "Ask about a piece, sizing or an order.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "email",
+            "message"
+          ],
+          "submitLabel": "Send enquiry"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Zuri Atelier",
+    "links": []
+  },
+  "meta": {
+    "recipe": "boutique",
+    "direction": 2,
+    "generator": "deterministic"
+  }
+}

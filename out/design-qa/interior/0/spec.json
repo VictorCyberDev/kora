@@ -1,0 +1,200 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Nkem Interiors",
+    "description": "We design homes and small offices in Lagos. We provide space planning, furnishing, lighting and styling. Every project starts with a conversation about how you live.",
+    "industry": "Interior design studio",
+    "location": "Lekki, Lagos",
+    "email": "hello@nkeminteriors.example",
+    "hours": [],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "minimal",
+      "editorial"
+    ],
+    "palette": {
+      "background": "#f7efe6",
+      "foreground": "#2b1d14",
+      "surface": "#fbf8f4",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#eee1d8",
+      "primary": "#7a2922",
+      "primaryForeground": "#ffffff",
+      "secondary": "#b8775a",
+      "secondaryForeground": "#111827",
+      "accent": "#d9a52b",
+      "accentForeground": "#111827",
+      "muted": "#91867d",
+      "mutedForeground": "#6d635a",
+      "border": "#dad2c9",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "terracotta-sand",
+    "mode": "light",
+    "typography": {
+      "pairing": "geometric",
+      "scale": "balanced"
+    },
+    "density": "spacious",
+    "shape": "sharp",
+    "surface": "flat",
+    "buttons": "underline",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "rings",
+      "seed": 904623
+    },
+    "nav": "minimal",
+    "footer": "minimal"
+  },
+  "seo": {
+    "title": "Nkem Interiors | Lekki, Lagos",
+    "description": "We design homes and small offices in Lagos",
+    "keywords": [
+      "Nkem Interiors",
+      "Interior design studio",
+      "Lekki, Lagos",
+      "Space planning",
+      "Furnishing",
+      "Lighting",
+      "Styling"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "portfolio",
+          "eyebrow": "Interior design studio · Lekki, Lagos",
+          "heading": "Nkem Interiors",
+          "subheading": "We design homes and small offices in Lagos.",
+          "primaryCta": {
+            "label": "Start a project",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See our work",
+            "href": "#services"
+          },
+          "highlights": [
+            "Based in Lekki, Lagos"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "image-cards",
+          "heading": "What we design",
+          "intro": "",
+          "items": [
+            {
+              "title": "Space planning",
+              "text": "",
+              "icon": "calendar-check"
+            },
+            {
+              "title": "Furnishing",
+              "text": ""
+            },
+            {
+              "title": "Lighting",
+              "text": ""
+            },
+            {
+              "title": "Styling",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "about",
+          "variant": "mission",
+          "heading": "Nkem Interiors",
+          "body": [
+            "Every project starts with a conversation about how you live."
+          ],
+          "values": []
+        },
+        {
+          "type": "process",
+          "variant": "horizontal",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": "Share the details through the form or contact us directly."
+            },
+            {
+              "title": "We agree the plan",
+              "text": "We discuss options and agree how to proceed."
+            },
+            {
+              "title": "We get to work",
+              "text": "We start once the details are settled."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "minimal",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or email hello@nkeminteriors.example. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Lekki, Lagos."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Space planning, Furnishing, Lighting, Styling."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "outline",
+          "heading": "Have something in mind?",
+          "body": "",
+          "button": {
+            "label": "Start a project",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Tell us about your space",
+          "intro": "A few lines about the space and what you have in mind is enough to begin.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Send enquiry"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Nkem Interiors",
+    "links": []
+  },
+  "meta": {
+    "recipe": "interior-design",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

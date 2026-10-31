@@ -1,0 +1,183 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Ledgerly",
+    "description": "Invoicing and cash-flow software for small agencies. We provide invoicing, payment reminders, expense tracking and monthly reports.",
+    "industry": "Software product",
+    "email": "team@ledgerly.example",
+    "hours": [],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "technical",
+      "bold",
+      "futuristic"
+    ],
+    "palette": {
+      "background": "#101113",
+      "foreground": "#f3f4f0",
+      "surface": "#1a1b1c",
+      "surfaceRaised": "#232426",
+      "surfaceMuted": "#1f2819",
+      "primary": "#a5f24e",
+      "primaryForeground": "#111827",
+      "secondary": "#2b2c33",
+      "secondaryForeground": "#ffffff",
+      "accent": "#ff4a4d",
+      "accentForeground": "#111827",
+      "muted": "#828382",
+      "mutedForeground": "#9d9e9c",
+      "border": "#3d3e3f",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "graphite-lime",
+    "mode": "dark",
+    "typography": {
+      "pairing": "technical",
+      "scale": "dramatic"
+    },
+    "density": "balanced",
+    "shape": "soft",
+    "surface": "outlined",
+    "buttons": "solid",
+    "motion": "expressive",
+    "imagery": {
+      "style": "abstract",
+      "art": "orbit",
+      "seed": 361030
+    },
+    "nav": "dark",
+    "footer": "columns"
+  },
+  "seo": {
+    "title": "Ledgerly",
+    "description": "Invoicing and cash-flow software for small agencies",
+    "keywords": [
+      "Ledgerly",
+      "Software product",
+      "Invoicing",
+      "Payment reminders",
+      "Expense tracking",
+      "Monthly reports"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "bento",
+          "eyebrow": "Software product",
+          "heading": "Invoicing and cash-flow software for small agencies",
+          "subheading": "We provide invoicing, payment reminders, expense tracking and monthly reports.",
+          "primaryCta": {
+            "label": "Get early access",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See how it works",
+            "href": "#services"
+          },
+          "highlights": []
+        },
+        {
+          "type": "services",
+          "variant": "grid",
+          "heading": "What it does",
+          "intro": "",
+          "items": [
+            {
+              "title": "Invoicing",
+              "text": ""
+            },
+            {
+              "title": "Payment reminders",
+              "text": ""
+            },
+            {
+              "title": "Expense tracking",
+              "text": ""
+            },
+            {
+              "title": "Monthly reports",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "timeline",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": "Share the details through the form or contact us directly."
+            },
+            {
+              "title": "We agree the plan",
+              "text": "We discuss options and agree how to proceed."
+            },
+            {
+              "title": "We get to work",
+              "text": "We start once the details are settled."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or email team@ledgerly.example. Tell us what you need and we will reply."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Invoicing, Payment reminders, Expense tracking, Monthly reports."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "big-type",
+          "heading": "Have something in mind?",
+          "body": "",
+          "button": {
+            "label": "Get early access",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "conversion",
+          "heading": "Talk to the team",
+          "intro": "Tell us what you want to solve and we will show you how it fits.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Request a demo"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Ledgerly",
+    "links": []
+  },
+  "meta": {
+    "recipe": "saas",
+    "direction": 1,
+    "generator": "deterministic"
+  }
+}

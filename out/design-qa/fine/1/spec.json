@@ -1,0 +1,218 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Ọkọ Dining",
+    "description": "A fine dining restaurant serving modern West African tasting menus. We serve a seven-course tasting menu, a wine pairing and a private dining room.",
+    "industry": "Restaurant",
+    "location": "Victoria Island, Lagos",
+    "phone": "+234 1 555 0199",
+    "hours": [
+      {
+        "days": "Wed–Sun",
+        "hours": "6pm – 11pm"
+      }
+    ],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "premium",
+      "bold"
+    ],
+    "palette": {
+      "background": "#f4f8fb",
+      "foreground": "#0d2236",
+      "surface": "#fafcfd",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#e4eaf0",
+      "primary": "#122b5b",
+      "primaryForeground": "#ffffff",
+      "secondary": "#7fa8d5",
+      "secondaryForeground": "#111827",
+      "accent": "#ff6459",
+      "accentForeground": "#111827",
+      "muted": "#818d99",
+      "mutedForeground": "#5b6874",
+      "border": "#d4dadf",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "coastal-navy",
+    "mode": "light",
+    "typography": {
+      "pairing": "high-contrast-serif",
+      "scale": "dramatic"
+    },
+    "density": "spacious",
+    "shape": "soft",
+    "surface": "outlined",
+    "buttons": "pill",
+    "motion": "expressive",
+    "imagery": {
+      "style": "abstract",
+      "art": "mesh",
+      "seed": 941172
+    },
+    "nav": "minimal",
+    "footer": "brand-heavy"
+  },
+  "seo": {
+    "title": "Ọkọ Dining | Victoria Island, Lagos",
+    "description": "A fine dining restaurant serving modern West African tasting menus",
+    "keywords": [
+      "Ọkọ Dining",
+      "Restaurant",
+      "Victoria Island, Lagos",
+      "A seven-course tasting menu",
+      "A wine pairing",
+      "A private dining room"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "full-bleed",
+          "eyebrow": "Restaurant · Victoria Island, Lagos",
+          "heading": "A fine dining restaurant serving modern West African tasting menus",
+          "subheading": "We serve a seven-course tasting menu, a wine pairing and a private dining room.",
+          "primaryCta": {
+            "label": "Reserve a table",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See the menu",
+            "href": "#services"
+          },
+          "highlights": [
+            "Based in Victoria Island, Lagos",
+            "Wed–Sun: 6pm – 11pm",
+            "Call +234 1 555 0199"
+          ],
+          "media": {
+            "url": "/_kora/media/restaurant-bright-chic.webp",
+            "alt": "A bright restaurant with cream banquette seating and set tables",
+            "width": 1600,
+            "height": 1067,
+            "source": "bundled",
+            "attribution": "Photo: Misbaa Eri / Pexels",
+            "license": "Pexels License"
+          }
+        },
+        {
+          "type": "trust",
+          "variant": "strip",
+          "heading": "",
+          "items": [
+            "Based in Victoria Island, Lagos",
+            "Wed–Sun: 6pm – 11pm",
+            "Call +234 1 555 0199"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "editorial-list",
+          "heading": "On the menu",
+          "intro": "",
+          "items": [
+            {
+              "title": "A seven-course tasting menu",
+              "text": "",
+              "icon": "utensils"
+            },
+            {
+              "title": "A wine pairing",
+              "text": "",
+              "icon": "gem"
+            },
+            {
+              "title": "A private dining room",
+              "text": "",
+              "icon": "utensils"
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "horizontal",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Choose a time",
+              "text": "Tell us what you would like and when suits you."
+            },
+            {
+              "title": "We confirm",
+              "text": "We reply to confirm the details."
+            },
+            {
+              "title": "Come in",
+              "text": "Visit us at the agreed time."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "minimal",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or call +234 1 555 0199. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Victoria Island, Lagos."
+            },
+            {
+              "question": "When are you open?",
+              "answer": "Wed–Sun: 6pm – 11pm."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "A seven-course tasting menu, A wine pairing, A private dining room."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "big-type",
+          "heading": "Ready to book?",
+          "body": "",
+          "button": {
+            "label": "Reserve a table",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Reserve a table",
+          "intro": "Tell us when you would like to come and how many of you there will be.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Request a table"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Ọkọ Dining",
+    "links": []
+  },
+  "meta": {
+    "recipe": "restaurant",
+    "direction": 1,
+    "generator": "deterministic"
+  }
+}

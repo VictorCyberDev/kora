@@ -1,0 +1,207 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Okoro Build & Renovate",
+    "description": "Residential building and renovation. We provide extensions, roofing, tiling, painting and kitchen refits.",
+    "industry": "Construction & building",
+    "location": "Benin City",
+    "phone": "+234 805 555 0133",
+    "hours": [],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "minimal",
+      "editorial"
+    ],
+    "palette": {
+      "background": "#fff8ec",
+      "foreground": "#111111",
+      "surface": "#fffcf6",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#eee8dd",
+      "primary": "#111111",
+      "primaryForeground": "#ffffff",
+      "secondary": "#fff83f",
+      "secondaryForeground": "#111827",
+      "accent": "#ff363a",
+      "accentForeground": "#111827",
+      "muted": "#88857f",
+      "mutedForeground": "#66645f",
+      "border": "#ded8cd",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "contrast-pop",
+    "mode": "light",
+    "typography": {
+      "pairing": "geometric",
+      "scale": "balanced"
+    },
+    "density": "spacious",
+    "shape": "sharp",
+    "surface": "flat",
+    "buttons": "underline",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "rings",
+      "seed": 267530
+    },
+    "nav": "minimal",
+    "footer": "minimal"
+  },
+  "seo": {
+    "title": "Okoro Build & Renovate | Benin City",
+    "description": "Residential building and renovation",
+    "keywords": [
+      "Okoro Build & Renovate",
+      "Construction & building",
+      "Benin City",
+      "Extensions",
+      "Roofing",
+      "Tiling",
+      "Painting"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "portfolio",
+          "eyebrow": "Construction & building · Benin City",
+          "heading": "Okoro Build & Renovate",
+          "subheading": "Residential building and renovation.",
+          "primaryCta": {
+            "label": "Request a quote",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See our work",
+            "href": "#services"
+          },
+          "highlights": [
+            "Based in Benin City",
+            "Call +234 805 555 0133"
+          ]
+        },
+        {
+          "type": "trust",
+          "variant": "credentials",
+          "heading": "",
+          "items": [
+            "Based in Benin City",
+            "Call +234 805 555 0133"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "image-cards",
+          "heading": "What we do",
+          "intro": "",
+          "items": [
+            {
+              "title": "Extensions",
+              "text": ""
+            },
+            {
+              "title": "Roofing",
+              "text": "",
+              "icon": "building-2"
+            },
+            {
+              "title": "Tiling",
+              "text": ""
+            },
+            {
+              "title": "Painting",
+              "text": "",
+              "icon": "palette"
+            },
+            {
+              "title": "Kitchen refits",
+              "text": "",
+              "icon": "utensils"
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "horizontal",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": "Share the details through the form or contact us directly."
+            },
+            {
+              "title": "We agree the plan",
+              "text": "We discuss options and agree how to proceed."
+            },
+            {
+              "title": "We get to work",
+              "text": "We start once the details are settled."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "minimal",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or call +234 805 555 0133. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Benin City."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Extensions, Roofing, Tiling, Painting, Kitchen refits."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "outline",
+          "heading": "Have something in mind?",
+          "body": "",
+          "button": {
+            "label": "Request a quote",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Request a quote",
+          "intro": "Describe the job and where it is. We will come back to you.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Request a quote"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Okoro Build & Renovate",
+    "links": []
+  },
+  "meta": {
+    "recipe": "construction",
+    "direction": 2,
+    "generator": "deterministic"
+  }
+}

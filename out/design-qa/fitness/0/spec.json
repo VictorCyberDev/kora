@@ -1,0 +1,215 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Iron Row Gym",
+    "description": "A strength-focused gym with coaching. We offer personal training, small group classes, strength programmes and nutrition guidance.",
+    "industry": "Gym & fitness",
+    "location": "Wuse, Abuja",
+    "whatsapp": "+2348065550166",
+    "hours": [
+      {
+        "days": "Mon–Sat",
+        "hours": "5am – 10pm"
+      }
+    ],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "technical",
+      "bold",
+      "futuristic"
+    ],
+    "palette": {
+      "background": "#101113",
+      "foreground": "#f3f4f0",
+      "surface": "#1a1b1c",
+      "surfaceRaised": "#232426",
+      "surfaceMuted": "#222819",
+      "primary": "#c6f24e",
+      "primaryForeground": "#111827",
+      "secondary": "#2b2e33",
+      "secondaryForeground": "#ffffff",
+      "accent": "#ff6b4a",
+      "accentForeground": "#111827",
+      "muted": "#828382",
+      "mutedForeground": "#9d9e9c",
+      "border": "#3d3e3f",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "graphite-lime",
+    "mode": "dark",
+    "typography": {
+      "pairing": "technical",
+      "scale": "dramatic"
+    },
+    "density": "balanced",
+    "shape": "soft",
+    "surface": "outlined",
+    "buttons": "solid",
+    "motion": "expressive",
+    "imagery": {
+      "style": "abstract",
+      "art": "orbit",
+      "seed": 696283
+    },
+    "nav": "dark",
+    "footer": "columns"
+  },
+  "seo": {
+    "title": "Iron Row Gym | Wuse, Abuja",
+    "description": "A strength-focused gym with coaching",
+    "keywords": [
+      "Iron Row Gym",
+      "Gym & fitness",
+      "Wuse, Abuja",
+      "Personal training",
+      "Small group classes",
+      "Strength programmes",
+      "Nutrition guidance"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "bento",
+          "eyebrow": "Gym & fitness · Wuse, Abuja",
+          "heading": "A strength-focused gym with coaching",
+          "subheading": "We offer personal training, small group classes, strength programmes and nutrition guidance.",
+          "primaryCta": {
+            "label": "Join us",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See classes",
+            "href": "#services"
+          },
+          "highlights": [
+            "Based in Wuse, Abuja",
+            "Mon–Sat: 5am – 10pm",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "trust",
+          "variant": "credentials",
+          "heading": "",
+          "items": [
+            "Based in Wuse, Abuja",
+            "Mon–Sat: 5am – 10pm",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "grid",
+          "heading": "Services",
+          "intro": "",
+          "items": [
+            {
+              "title": "Personal training",
+              "text": "",
+              "icon": "dumbbell"
+            },
+            {
+              "title": "Small group classes",
+              "text": "",
+              "icon": "graduation-cap"
+            },
+            {
+              "title": "Strength programmes",
+              "text": "",
+              "icon": "dumbbell"
+            },
+            {
+              "title": "Nutrition guidance",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "timeline",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": "Share the details through the form or contact us directly."
+            },
+            {
+              "title": "We agree the plan",
+              "text": "We discuss options and agree how to proceed."
+            },
+            {
+              "title": "We get to work",
+              "text": "We start once the details are settled."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or message us on WhatsApp. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Wuse, Abuja."
+            },
+            {
+              "question": "When are you open?",
+              "answer": "Mon–Sat: 5am – 10pm."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Personal training, Small group classes, Strength programmes, Nutrition guidance."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "big-type",
+          "heading": "Have something in mind?",
+          "body": "",
+          "button": {
+            "label": "Join us",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "conversion",
+          "heading": "Start training",
+          "intro": "Tell us your goals and we will point you to the right place to start.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Get started"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Iron Row Gym",
+    "links": []
+  },
+  "meta": {
+    "recipe": "fitness-gym",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

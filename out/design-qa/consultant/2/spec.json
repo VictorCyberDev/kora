@@ -1,0 +1,135 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Adaeze Okafor",
+    "description": "Independent operations consultant for growing businesses. I provide process reviews, hiring plans and quarterly planning workshops.",
+    "industry": "Consultancy & coaching",
+    "email": "adaeze@okafor.example",
+    "hours": [],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "approachable",
+      "warm"
+    ],
+    "palette": {
+      "background": "#fbf8f1",
+      "foreground": "#1a1630",
+      "surface": "#fdfcf9",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#edeae8",
+      "primary": "#332a6b",
+      "primaryForeground": "#ffffff",
+      "secondary": "#c9bd8a",
+      "secondaryForeground": "#111827",
+      "accent": "#a26e2b",
+      "accentForeground": "#000000",
+      "muted": "#8b8791",
+      "mutedForeground": "#6a6773",
+      "border": "#dcd8d6",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "royal-ivory",
+    "mode": "light",
+    "typography": {
+      "pairing": "soft-rounded",
+      "scale": "balanced"
+    },
+    "density": "balanced",
+    "shape": "rounded",
+    "surface": "flat",
+    "buttons": "pill",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "planes",
+      "seed": 662103
+    },
+    "nav": "classic",
+    "footer": "local"
+  },
+  "seo": {
+    "title": "Adaeze Okafor",
+    "description": "Independent operations consultant for growing businesses",
+    "keywords": [
+      "Adaeze Okafor",
+      "Consultancy & coaching"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "media-left",
+          "eyebrow": "Consultancy & coaching",
+          "heading": "Independent operations consultant for growing businesses",
+          "subheading": "I provide process reviews, hiring plans and quarterly planning workshops.",
+          "primaryCta": {
+            "label": "Work with me",
+            "href": "#contact"
+          },
+          "highlights": []
+        },
+        {
+          "type": "process",
+          "variant": "horizontal",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": "Share the details through the form or contact us directly."
+            },
+            {
+              "title": "We agree the plan",
+              "text": "We discuss options and agree how to proceed."
+            },
+            {
+              "title": "We get to work",
+              "text": "We start once the details are settled."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "band",
+          "heading": "Have something in mind?",
+          "body": "",
+          "button": {
+            "label": "Work with me",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "split",
+          "heading": "Let's talk",
+          "intro": "Tell me about your situation and what you want to change.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "email",
+            "message"
+          ],
+          "submitLabel": "Send message"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Adaeze Okafor",
+    "links": []
+  },
+  "meta": {
+    "recipe": "consultant-coach",
+    "direction": 2,
+    "generator": "deterministic"
+  }
+}

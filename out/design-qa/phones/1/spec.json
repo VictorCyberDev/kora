@@ -1,0 +1,225 @@
+{
+  "version": 2,
+  "business": {
+    "name": "Fix Hub Phone & Laptop Repair",
+    "description": "Same-day phone and laptop repair. We repair cracked screens, batteries, charging ports and water-damaged phones.",
+    "industry": "Phone & electronics repair",
+    "location": "Computer Village, Ikeja",
+    "whatsapp": "+2348033330101",
+    "hours": [
+      {
+        "days": "Mon–Sat",
+        "hours": "9am – 7pm"
+      }
+    ],
+    "social": []
+  },
+  "design": {
+    "personality": [
+      "trustworthy",
+      "bold",
+      "local"
+    ],
+    "palette": {
+      "background": "#fffaf0",
+      "foreground": "#26210f",
+      "surface": "#fffdf8",
+      "surfaceRaised": "#ffffff",
+      "surfaceMuted": "#faefdf",
+      "primary": "#b85c00",
+      "primaryForeground": "#ffffff",
+      "secondary": "#ffe3b0",
+      "secondaryForeground": "#111827",
+      "accent": "#146c63",
+      "accentForeground": "#ffffff",
+      "muted": "#938e80",
+      "mutedForeground": "#726d60",
+      "border": "#e1dcd1",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "paletteStrategy": "sunrise",
+    "mode": "light",
+    "typography": {
+      "pairing": "expressive",
+      "scale": "balanced"
+    },
+    "density": "balanced",
+    "shape": "sharp",
+    "surface": "raised",
+    "buttons": "solid",
+    "motion": "subtle",
+    "imagery": {
+      "style": "abstract",
+      "art": "blocks",
+      "seed": 618422
+    },
+    "nav": "dark",
+    "footer": "local"
+  },
+  "seo": {
+    "title": "Fix Hub Phone & Laptop Repair | Computer Village, Ikeja",
+    "description": "Same-day phone and laptop repair",
+    "keywords": [
+      "Fix Hub Phone & Laptop Repair",
+      "Phone & electronics repair",
+      "Computer Village, Ikeja",
+      "Cracked screens",
+      "Batteries",
+      "Charging ports",
+      "Water-damaged phones"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Home",
+      "sections": [
+        {
+          "type": "hero",
+          "variant": "bento",
+          "eyebrow": "Phone & electronics repair · Computer Village, Ikeja",
+          "heading": "Same-day phone and laptop repair",
+          "subheading": "We repair cracked screens, batteries, charging ports and water-damaged phones.",
+          "primaryCta": {
+            "label": "Call the shop",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "What we repair",
+            "href": "#services"
+          },
+          "highlights": [
+            "Based in Computer Village, Ikeja",
+            "Mon–Sat: 9am – 7pm",
+            "Reach us on WhatsApp"
+          ],
+          "media": {
+            "url": "/_kora/media/repair-bench-microscope.webp",
+            "alt": "A technician repairing a smartphone under a microscope at a workbench",
+            "width": 1600,
+            "height": 1067,
+            "focalPoint": {
+              "x": 0.3,
+              "y": 0.5
+            },
+            "source": "bundled",
+            "attribution": "Photo: Tima Miroshnichenko / Pexels",
+            "license": "Pexels License"
+          }
+        },
+        {
+          "type": "trust",
+          "variant": "checklist",
+          "heading": "",
+          "items": [
+            "Based in Computer Village, Ikeja",
+            "Mon–Sat: 9am – 7pm",
+            "Reach us on WhatsApp"
+          ]
+        },
+        {
+          "type": "services",
+          "variant": "numbered",
+          "heading": "What we repair",
+          "intro": "",
+          "items": [
+            {
+              "title": "Cracked screens",
+              "text": ""
+            },
+            {
+              "title": "Batteries",
+              "text": ""
+            },
+            {
+              "title": "Charging ports",
+              "text": ""
+            },
+            {
+              "title": "Water-damaged phones",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "variant": "steps",
+          "heading": "How it works",
+          "intro": "",
+          "items": [
+            {
+              "title": "Call us",
+              "text": "Tell us what you need."
+            },
+            {
+              "title": "We confirm the details",
+              "text": "We agree what is needed before anything starts."
+            },
+            {
+              "title": "We get it done",
+              "text": "We carry out the work and check it with you."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "variant": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How do I get started?",
+              "answer": "Use the form below or message us on WhatsApp. Tell us what you need and we will reply."
+            },
+            {
+              "question": "Where are you based?",
+              "answer": "We are based in Computer Village, Ikeja."
+            },
+            {
+              "question": "When are you open?",
+              "answer": "Mon–Sat: 9am – 7pm."
+            },
+            {
+              "question": "What do you offer?",
+              "answer": "Cracked screens, Batteries, Charging ports, Water-damaged phones."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "variant": "band",
+          "heading": "Need help? Call us.",
+          "body": "",
+          "button": {
+            "label": "Call the shop",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "variant": "booking",
+          "heading": "Get it fixed",
+          "intro": "Tell us the device, what is wrong, and when you can bring it in.",
+          "form": true,
+          "formFields": [
+            "name",
+            "phone",
+            "service",
+            "message"
+          ],
+          "submitLabel": "Request a repair"
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Fix Hub Phone & Laptop Repair",
+    "links": []
+  },
+  "meta": {
+    "recipe": "electronics-repair",
+    "direction": 1,
+    "generator": "deterministic"
+  }
+}
