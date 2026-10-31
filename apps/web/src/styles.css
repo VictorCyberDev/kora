@@ -1484,3 +1484,30 @@ details[open] > summary::before {
     order: -1;
   }
 }
+
+.gtabs .tabs.groups a {
+  font-weight: 700;
+}
+.gtabs .tabs.groups a.active {
+  color: var(--ink);
+  border-color: var(--brand);
+}
+.gtabs .tabs.sub {
+  margin: 0 0 18px;
+  border-bottom: 0;
+  gap: 2px;
+}
+.gtabs .tabs.sub a {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border-bottom: 0;
+  font-weight: 500;
+  font-size: 0.92rem;
+}
+.gtabs .tabs.sub a[aria-current="page"] {
+  background: var(--brand-soft);
+  color: var(--brand-text, var(--ink));
+}
+.gtabs .tabs.groups {
+  margin-bottom: 8px;
+}

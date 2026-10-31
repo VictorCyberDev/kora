@@ -8,7 +8,15 @@ import {
 } from "react-router-dom";
 import { api, ago, money, when, type J } from "../api";
 import { useAuth } from "../auth";
-import { Async, Empty, Notice, Status, Tabs, errText, useLoad } from "../ui";
+import {
+  Async,
+  Empty,
+  GroupedTabs,
+  Notice,
+  Status,
+  errText,
+  useLoad,
+} from "../ui";
 import { PlanCard } from "./public";
 import { SiteStatusCard } from "./sites";
 
@@ -36,26 +44,56 @@ export function SiteShell() {
           </div>
         )}
       </Async>
-      <Tabs
-        items={[
-          [base, "Overview"],
-          [`${base}/presence`, "Presence"],
-          [`${base}/brand`, "Brand"],
-          [`${base}/today`, "Today"],
-          [`${base}/campaigns`, "Campaigns"],
-          [`${base}/create`, "Create"],
-          [`${base}/calendar`, "Calendar"],
-          [`${base}/results`, "Results"],
-          [`${base}/reviews`, "Reviews"],
-          [`${base}/memory`, "Memory"],
-          [`${base}/channels`, "Channels"],
-          [`${base}/customers`, "Customers"],
-          [`${base}/build`, "Build"],
-          [`${base}/deployments`, "Deployments"],
-          [`${base}/incidents`, "Incidents"],
-          [`${base}/domains`, "Domain"],
-          [`${base}/forms`, "Messages"],
-          [`${base}/settings`, "Settings"],
+      <GroupedTabs
+        groups={[
+          {
+            label: "Today",
+            items: [
+              [base, "Overview"],
+              [`${base}/today`, "Today"],
+            ],
+          },
+          {
+            label: "Presence",
+            items: [
+              [`${base}/presence`, "Presence"],
+              [`${base}/brand`, "Brand"],
+              [`${base}/channels`, "Channels"],
+              [`${base}/memory`, "Memory"],
+            ],
+          },
+          {
+            label: "Customers",
+            items: [
+              [`${base}/customers`, "Customers"],
+              [`${base}/forms`, "Messages"],
+              [`${base}/reviews`, "Reviews"],
+            ],
+          },
+          {
+            label: "Grow",
+            items: [
+              [`${base}/campaigns`, "Campaigns"],
+              [`${base}/calendar`, "Calendar"],
+              [`${base}/results`, "Results"],
+            ],
+          },
+          {
+            label: "Studio",
+            items: [
+              [`${base}/create`, "Create"],
+              [`${base}/build`, "Build"],
+            ],
+          },
+          {
+            label: "Health",
+            items: [
+              [`${base}/incidents`, "Incidents"],
+              [`${base}/deployments`, "Deployments"],
+              [`${base}/domains`, "Domain"],
+              [`${base}/settings`, "Settings"],
+            ],
+          },
         ]}
       />
       <Outlet context={ctx} />

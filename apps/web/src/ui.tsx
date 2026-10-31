@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { ApiError, type J } from "./api";
 
 type Kind = "ok" | "warn" | "bad" | "info" | "wait";
@@ -181,6 +181,46 @@ export function Tabs({ items }: { items: Array<[string, string]> }) {
         </NavLink>
       ))}
     </nav>
+  );
+}
+
+export type TabGroup = { label: string; items: Array<[string, string]> };
+
+/** Two-level site navigation: six groups, and one short row of tabs for the group you are in. */
+export function GroupedTabs({ groups }: { groups: TabGroup[] }) {
+  const loc = useLocation();
+  const path = loc.pathname.replace(/\/$/, "");
+  const match = (to: string, end: boolean) =>
+    end ? path === to : path === to || path.startsWith(`${to}/`);
+  const active =
+    groups.find((g) =>
+      g.items.some(([to], i) => match(to, i === 0 && g === groups[0])),
+    ) ?? groups[0]!;
+  return (
+    <div className="gtabs">
+      <nav className="tabs groups" aria-label="Site areas">
+        {groups.map((g) => (
+          <NavLink
+            key={g.label}
+            to={g.items[0]![0]}
+            end
+            aria-current={g === active ? "page" : undefined}
+            className={g === active ? "active" : ""}
+          >
+            {g.label}
+          </NavLink>
+        ))}
+      </nav>
+      {active.items.length > 1 && (
+        <nav className="tabs sub" aria-label={`${active.label} sections`}>
+          {active.items.map(([to, label], i) => (
+            <NavLink key={to} to={to} end={i === 0 && active === groups[0]}>
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+      )}
+    </div>
   );
 }
 
