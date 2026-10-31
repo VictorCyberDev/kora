@@ -134,7 +134,16 @@ async function a11y(page: Page, label: string, w: number, problems: string[]) {
             violations: Array<{
               id: string;
               impact: string;
-              nodes: Array<{ target: string[] }>;
+              nodes: Array<{
+                target: string[];
+                any: Array<{
+                  data?: {
+                    fgColor?: string;
+                    bgColor?: string;
+                    contrastRatio?: number;
+                  };
+                }>;
+              }>;
             }>;
           }>;
         };
@@ -148,7 +157,10 @@ async function a11y(page: Page, label: string, w: number, problems: string[]) {
     return r.violations.map((v) => ({
       id: v.id,
       impact: v.impact,
-      targets: v.nodes.slice(0, 2).map((n) => n.target.join(" ")),
+      targets: v.nodes.slice(0, 2).map((n) => {
+        const d = n.any[0]?.data;
+        return `${n.target.join(" ")}${d?.fgColor ? ` [${d.fgColor} on ${d.bgColor} = ${d.contrastRatio}]` : ""}`;
+      }),
     }));
   });
   for (const v of violations)
@@ -263,6 +275,8 @@ for (const w of WIDTHS) {
       isMobile: w < 700,
       hasTouch: w < 900,
       storageState: state,
+      // only so the accessibility scan can inject axe-core; the app's own CSP is covered by other tests
+      bypassCSP: true,
     });
     const page = await ctx.newPage();
     const pages: Array<[string, string]> = [
