@@ -281,3 +281,24 @@ describe("applyFactsToSpec", () => {
     expect(out.pages).toEqual(spec.pages);
   });
 });
+
+describe("one business, one truth", () => {
+  it("flags an ended offer that is still on the website or in queued posts", () => {
+    const i = base({
+      staleness: { websiteMentions: ["Eid platter"], scheduledPosts: 2 },
+    });
+    const cs = evaluatePresenceHealth(i);
+    expect(byId(cs, "offer.on_website")?.status).toBe("WARN");
+    expect(byId(cs, "offer.on_website")?.koraCanFix).toBe("with_approval");
+    expect(byId(cs, "offer.scheduled_stale")?.status).toBe("FAIL");
+    const clean = evaluatePresenceHealth(
+      base({ staleness: { websiteMentions: [], scheduledPosts: 0 } }),
+    );
+    expect(byId(clean, "offer.on_website")?.status).toBe("OK");
+    expect(byId(clean, "offer.scheduled_stale")?.status).toBe("OK");
+    // when Kora has not checked, it says nothing rather than reporting OK
+    expect(
+      byId(evaluatePresenceHealth(base()), "offer.on_website"),
+    ).toBeUndefined();
+  });
+});

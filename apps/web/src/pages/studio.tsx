@@ -52,13 +52,11 @@ export function StudioPage() {
           Everything is made from your business details and Brand Kit. Kora
           never invents a price, time or phone number.
         </p>
-        <div className="chips" role="tablist" aria-label="What to make">
+        <div className="chips" role="group" aria-label="What to make">
           {TABS.map(([v, t]) => (
             <button
               key={v}
-              role="tab"
               className="chip"
-              aria-selected={tab === v}
               aria-pressed={tab === v}
               onClick={() => setTab(v)}
             >

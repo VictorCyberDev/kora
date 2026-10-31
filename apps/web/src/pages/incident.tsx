@@ -20,7 +20,7 @@ export function IncidentsList() {
               Kora will open one only after repeated failed checks.
             </Empty>
           ) : (
-            <table>
+            <table tabIndex={0}>
               <thead>
                 <tr>
                   <th>Started</th>

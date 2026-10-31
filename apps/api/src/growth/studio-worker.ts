@@ -14,6 +14,12 @@ export class StudioWorker {
       raster: () => Promise<Rasterizer>;
       bin: string;
       log?: { warn: (o: object, m: string) => void };
+      meter?: (
+        orgId: string,
+        siteId: string,
+        dimension: string,
+        quantity: number,
+      ) => Promise<void>;
     },
   ) {}
   /** Renders at most one job. Returns whether a job was processed. */
@@ -57,6 +63,7 @@ export class StudioWorker {
         userId: null,
       });
       await this.d.studio.finish(job.id, asset.id);
+      await this.d.meter?.(job.orgId, job.siteId, "VIDEO_RENDER", 1);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "render failed";
       this.d.log?.warn(

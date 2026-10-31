@@ -7,6 +7,7 @@ import {
 import type { PlatformStore } from "../platform/store.js";
 import type { OpsStore } from "../platform/ops-store.js";
 import type { GrowthStore } from "./store.js";
+import { recentItems } from "./calendar-store.js";
 import type { IntelStore } from "./intel-store.js";
 import type { ChannelsStore } from "./channels-store.js";
 import type { CustomersStore } from "./customers-store.js";
@@ -67,10 +68,37 @@ export const createGatherer = (d: GatherDeps) => async (site: Site) => {
     ? await ops.incidentsForService(serviceId, 20)
     : [];
   const t = now();
+  // One business, one truth: where does an ended offer still show up?
+  const today = t.toISOString().slice(0, 10);
+  const expired = profile
+    ? profile.facts.offer.offers.filter(
+        (o) => o.endsOn !== undefined && o.endsOn < today,
+      )
+    : [];
+  const liveText = pubRow ? JSON.stringify(pubRow.spec).toLowerCase() : "";
+  const queued = expired.length
+    ? (
+        await recentItems(
+          platform.sql,
+          site.id,
+          new Date(t.getTime() - 120 * 86_400_000),
+        )
+      ).filter((r) =>
+        ["APPROVAL_NEEDED", "APPROVED", "SCHEDULED"].includes(r.state),
+      )
+    : [];
   const inputs: PresenceInputs | null = profile
     ? {
         now: t,
         facts: profile.facts,
+        staleness: {
+          websiteMentions: expired
+            .filter((o) => liveText.includes(o.title.toLowerCase()))
+            .map((o) => o.title),
+          scheduledPosts: queued.filter((r) =>
+            expired.some((o) => r.text.includes(o.title.toLowerCase())),
+          ).length,
+        },
         site: {
           exists: true,
           published: site.status === "PUBLISHED",

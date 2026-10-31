@@ -9,6 +9,7 @@ export default tseslint.config(
       "**/node_modules/**",
       "e2e/**",
       "scripts/design-qa/**",
+      "scripts/live-presence-check.mjs",
       "playwright.config.ts",
       "test-results/**",
       "eslint.config.mjs",

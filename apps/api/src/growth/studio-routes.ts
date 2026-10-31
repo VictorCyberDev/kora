@@ -153,6 +153,13 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
           channel: body.channel,
         },
       });
+      await platform.recordUsage(
+        site.orgId,
+        site.id,
+        "CONTENT_DRAFT",
+        saved.length,
+        { source: out.source },
+      );
       return reply.code(201).send({
         data: {
           drafts: saved,
@@ -237,6 +244,9 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
       objectId: asset.id,
       requestId: req.id,
       metadata: { format: spec.format, brandVersion: kit.version },
+    });
+    await platform.recordUsage(site.orgId, site.id, "IMAGE_RENDER", 1, {
+      format: spec.format,
     });
     return reply.code(201).send({ data: { asset, issues } });
   });

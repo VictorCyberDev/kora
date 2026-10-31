@@ -114,7 +114,7 @@ p {
   margin: 0 0 1em;
 }
 a {
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 code,
 pre {
@@ -213,7 +213,7 @@ pre {
 }
 .btn.ghost {
   background: transparent;
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 .btn.quiet {
   background: var(--surface-2);
@@ -410,7 +410,7 @@ nav.main a {
 }
 nav.main a[aria-current="page"] {
   background: var(--brand-soft);
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 nav.main a:hover {
   color: var(--ink);
@@ -533,7 +533,7 @@ section.band.alt {
 .step .n {
   font-family: var(--display);
   font-size: 2rem;
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 footer.site {
   border-top: 1px solid var(--line);
@@ -616,7 +616,7 @@ h3 {
   letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 800;
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
   margin: 0;
 }
 .k-hero {
@@ -640,7 +640,7 @@ h3 {
 }
 .k-hero h1 em {
   font-style: normal;
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 .k-hero .lead {
   font-size: 1.2rem;
@@ -726,7 +726,7 @@ h3 {
   width: 100%;
   max-width: 220px;
   height: auto;
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 .levelline.dip {
   color: var(--bad);
@@ -827,7 +827,7 @@ h3 {
 }
 .k-num {
   font: 400 3.6rem var(--display);
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
   line-height: 1;
   display: block;
 }
@@ -1473,7 +1473,7 @@ summary::before {
   content: "▸";
   display: inline-block;
   margin-right: 8px;
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 details[open] > summary::before {
   content: "▾";

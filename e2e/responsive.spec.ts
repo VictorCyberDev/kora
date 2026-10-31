@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+import { dirname } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -111,6 +113,62 @@ async function check(page: Page, label: string, w: number, problems: string[]) {
   if (bad.length) problems.push(`${label} @${w}px: ${bad.join(" // ")}`);
 }
 
+/**
+ * Automated WCAG 2.1 A/AA checks on the pages an owner actually uses, at a phone and a desktop width. axe-core is injected
+ * straight into the page: @axe-core/playwright opens a second page, which touch-emulating contexts do not allow.
+ */
+const req = createRequire(__filename);
+const axeSource = req.resolve("axe-core/axe.min.js", {
+  paths: [dirname(req.resolve("@axe-core/playwright"))],
+});
+async function a11y(page: Page, label: string, w: number, problems: string[]) {
+  await page.addScriptTag({ path: axeSource });
+  const violations = await page.evaluate(async () => {
+    const r = await (
+      window as unknown as {
+        axe: {
+          run: (
+            c: unknown,
+            o: unknown,
+          ) => Promise<{
+            violations: Array<{
+              id: string;
+              impact: string;
+              nodes: Array<{
+                target: string[];
+                any: Array<{
+                  data?: {
+                    fgColor?: string;
+                    bgColor?: string;
+                    contrastRatio?: number;
+                  };
+                }>;
+              }>;
+            }>;
+          }>;
+        };
+      }
+    ).axe.run(document, {
+      runOnly: {
+        type: "tag",
+        values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
+      },
+    });
+    return r.violations.map((v) => ({
+      id: v.id,
+      impact: v.impact,
+      targets: v.nodes.slice(0, 2).map((n) => {
+        const d = n.any[0]?.data;
+        return `${n.target.join(" ")}${d?.fgColor ? ` [${d.fgColor} on ${d.bgColor} = ${d.contrastRatio}]` : ""}`;
+      }),
+    }));
+  });
+  for (const v of violations)
+    problems.push(
+      `${label} @${w}px a11y ${v.id} (${v.impact}): ${v.targets.join(" | ")}`,
+    );
+}
+
 let state: Awaited<
   ReturnType<import("@playwright/test").BrowserContext["storageState"]>
 >;
@@ -217,6 +275,8 @@ for (const w of WIDTHS) {
       isMobile: w < 700,
       hasTouch: w < 900,
       storageState: state,
+      // only so the accessibility scan can inject axe-core; the app's own CSP is covered by other tests
+      bypassCSP: true,
     });
     const page = await ctx.newPage();
     const pages: Array<[string, string]> = [
@@ -260,10 +320,10 @@ for (const w of WIDTHS) {
           await check(page, `builder/${tab}`, w, problems);
         }
       if (label === "create") {
-        await page.getByRole("tab", { name: "Images" }).click();
+        await page.getByRole("button", { name: "Images", exact: true }).click();
         await page.getByRole("img", { name: /Preview/ }).waitFor();
         await check(page, "create/images", w, problems);
-        await page.getByRole("tab", { name: "Video" }).click();
+        await page.getByRole("button", { name: "Video", exact: true }).click();
         await page
           .getByRole("img", { name: /Preview at/ })
           .first()
@@ -285,6 +345,11 @@ for (const w of WIDTHS) {
         await page.getByRole("button", { name: "Owner", exact: true }).click();
       }
       await check(page, label, w, problems);
+      if (
+        (w === 390 || w === 1280) &&
+        !/^(landing|pricing|login|signup)$/.test(label)
+      )
+        await a11y(page, label, w, problems);
       if (process.env.RESP_SHOTS)
         await page.screenshot({
           path: `${process.env.RESP_SHOTS}/${w}-${label}.png`,

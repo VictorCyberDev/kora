@@ -7,6 +7,7 @@ import {
   NotEnoughFacts,
   buildContentContext,
   buildGrowthBrief,
+  interpretIntent,
   summarizeAttribution,
   trackedUrl,
   buildPresenceGraph,
@@ -174,6 +175,17 @@ export function registerMarketingRoutes(
       hasBrandKit: g.kit !== null,
     };
   };
+
+  // ---- voice-first foundation ------------------------------------------------
+  /** Text in, structured intent out. It only routes; it never runs anything. */
+  app.post("/api/sites/:id/intent", async (req) => {
+    await siteFor(req);
+    const b = z
+      .object({ text: z.string().trim().max(300) })
+      .strict()
+      .parse(req.body);
+    return { data: interpretIntent(b.text) };
+  });
 
   // ---- recommendations --------------------------------------------------
   app.post("/api/sites/:id/marketing/refresh", async (req) => {
@@ -565,6 +577,12 @@ export function registerMarketingRoutes(
         userId: a.userId,
       });
     }
+    await platform.recordUsage(
+      site.orgId,
+      site.id,
+      "CAMPAIGN_BUNDLE",
+      slots.length,
+    );
     await platform.audit({
       orgId: site.orgId,
       actorUserId: a.userId,

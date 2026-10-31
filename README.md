@@ -1,14 +1,28 @@
 # Kora
 
-**Build your website. Kora keeps it running.**
+**Build your presence. Kora keeps it working — and helps it grow.**
 
-Kora is a business website builder that stays after launch. It creates and publishes a site, watches the live customer experience, explains failures from evidence, proposes safe typed fixes, asks for approval when a change needs the owner, and counts recovery only after new health observations pass.
+Kora is the presence and marketing execution system for small businesses. It starts where most tools stop: it creates and publishes a website, then stays after launch. It creates and publishes a site, watches the live customer experience, explains failures from evidence, proposes safe typed fixes, asks for approval when a change needs the owner, and counts recovery only after new health observations pass.
 
 **Live product:** https://kora-api.rumptycloud.app  
 **Live customer-site host:** https://kora-site-host.rumptycloud.app  
 **Authoritative production proof:** [`LIVE-ACCEPTANCE.md`](LIVE-ACCEPTANCE.md)  
 **Demo:** [`DEMO.md`](DEMO.md)  
 **Submission package:** [`SUBMISSION.md`](SUBMISSION.md)
+
+## From website to presence
+
+Everything customers see about a business (website, contact details, hours, offers, Google and social profiles, messages, reviews, posts) is read from **one factual business profile**. Kora checks it, keeps it consistent, helps the owner create and schedule content in their own brand, and tells them honestly what it can and cannot measure. The recovery story below is unchanged and is the reason an owner can trust the rest: Kora will not send customers to a site that is down, and it proves its fixes.
+
+| Area (owner navigation)                                       | What exists                                                                                                                                                      |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Presence**: profile, health, Brand Kit, channels            | Business profile with revisions, decomposable health checks (no score), versioned Brand Kit, channel connections with typed capability matrix                    |
+| **Customers**: inbox, follow-ups, reviews, memory             | Website and WhatsApp enquiries become leads exactly once; waiting-for-reply counts; follow-ups; reviews (sensitive ones are never auto-drafted); business memory |
+| **Marketing**: today, create, calendar, campaigns, results    | Evidence-based suggestions, fact-bound post writing, branded images, short videos, approvals, scheduling, tracked links, campaign bundles, weekly brief          |
+| **Health**: website monitoring, incidents, recovery, Passport | The reliability kernel below                                                                                                                                     |
+| **More**: websites, billing, activity, settings               | Plans and feature entitlements, audit trail                                                                                                                      |
+
+What is **not** claimed: live posting to Instagram, Facebook, Google or TikTok (adapters need approved apps and credentials; posts are handed off with a copy-ready package), live social metrics or Google reviews (tested with a sandbox provider only), WhatsApp Status or bulk messaging (unsupported by design), ad spend (never automatic), revenue or sales attribution (Kora does not see sales). See [`docs/architecture/PRESENCE-OS.md`](docs/architecture/PRESENCE-OS.md) and [`docs/integrations/CHANNELS.md`](docs/integrations/CHANNELS.md).
 
 ## The product in one line
 
