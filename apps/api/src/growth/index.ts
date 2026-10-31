@@ -22,6 +22,7 @@ import { registerIntelRoutes } from "./intel-routes.js";
 import { MarketingStore } from "./marketing-store.js";
 import { registerMarketingRoutes } from "./marketing-routes.js";
 import { registerStudioRoutes } from "./studio-routes.js";
+import { registerTruthRoutes } from "./truth-routes.js";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
 
 export function registerGrowth(
@@ -72,6 +73,13 @@ export function registerGrowth(
     raster,
     ffmpeg,
     contentModel: null,
+  });
+  registerTruthRoutes(app, {
+    platform,
+    billing,
+    growth,
+    sql: platform.sql,
+    ...(now ? { now } : {}),
   });
   const calendar = new CalendarStore(platform.sql);
   const marketing = new MarketingStore(platform.sql);
