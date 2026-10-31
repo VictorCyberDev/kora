@@ -41,6 +41,8 @@ export function SiteShell() {
           [base, "Overview"],
           [`${base}/presence`, "Presence"],
           [`${base}/brand`, "Brand"],
+          [`${base}/today`, "Today"],
+          [`${base}/campaigns`, "Campaigns"],
           [`${base}/create`, "Create"],
           [`${base}/calendar`, "Calendar"],
           [`${base}/channels`, "Channels"],

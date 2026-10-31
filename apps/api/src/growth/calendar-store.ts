@@ -346,3 +346,24 @@ export class CalendarStore {
 function sql_now(sql: postgres.Sql) {
   return sql`now()`;
 }
+
+export interface RecentItem {
+  id: string;
+  state: string;
+  text: string;
+  at: string | null;
+}
+export async function recentItems(
+  sql: postgres.Sql,
+  siteId: string,
+  since: Date,
+): Promise<RecentItem[]> {
+  return (
+    await sql`SELECT id,state,caption,COALESCE(scheduled_for,created_at) AS at FROM calendar_items WHERE site_id=${siteId} AND state IN ('APPROVAL_NEEDED','APPROVED','SCHEDULED','PUBLISHING','PUBLISHED','PARTIALLY_PUBLISHED') AND COALESCE(scheduled_for,created_at) >= ${since.toISOString()}`
+  ).map((r) => ({
+    id: String(r.id),
+    state: String(r.state),
+    text: `${(r.caption as Caption).headline} ${(r.caption as Caption).body}`.toLowerCase(),
+    at: r.at ? new Date(r.at as string).toISOString() : null,
+  }));
+}

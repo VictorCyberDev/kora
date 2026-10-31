@@ -53,7 +53,8 @@ const PRO: Feature[] = [
 ];
 
 export const TIER_FEATURES: Record<Tier, ReadonlySet<Feature>> = {
-  TRIAL: new Set(PLUS),
+  // A trial shows everything, so an owner can judge the product before choosing a plan.
+  TRIAL: new Set(PRO),
   LAUNCH: new Set(LAUNCH),
   PLUS: new Set(PLUS),
   PRO: new Set(PRO),

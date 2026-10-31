@@ -231,6 +231,8 @@ for (const w of WIDTHS) {
       ["site-overview", `/app/sites/${siteId}`],
       ["presence", `/app/sites/${siteId}/presence`],
       ["brand", `/app/sites/${siteId}/brand`],
+      ["today", `/app/sites/${siteId}/today`],
+      ["campaigns", `/app/sites/${siteId}/campaigns`],
       ["create", `/app/sites/${siteId}/create`],
       ["calendar", `/app/sites/${siteId}/calendar`],
       ["channels", `/app/sites/${siteId}/channels`],

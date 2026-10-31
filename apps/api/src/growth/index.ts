@@ -17,6 +17,8 @@ import { StudioWorker } from "./studio-worker.js";
 import { CalendarStore } from "./calendar-store.js";
 import { PublishWorker } from "./publish-worker.js";
 import { registerCalendarRoutes } from "./calendar-routes.js";
+import { MarketingStore } from "./marketing-store.js";
+import { registerMarketingRoutes } from "./marketing-routes.js";
 import { registerStudioRoutes } from "./studio-routes.js";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
 
@@ -68,6 +70,22 @@ export function registerGrowth(
     contentModel: null,
   });
   const calendar = new CalendarStore(platform.sql);
+  const marketing = new MarketingStore(platform.sql);
+  registerMarketingRoutes(app, {
+    platform,
+    ops,
+    billing,
+    growth,
+    marketing,
+    calendar,
+    channels,
+    customers,
+    studio,
+    providers,
+    gather,
+    raster,
+    ...(now ? { now } : {}),
+  });
   registerCalendarRoutes(app, {
     platform,
     billing,
