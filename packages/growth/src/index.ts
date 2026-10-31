@@ -20,3 +20,5 @@ export * from "./memory.js";
 export * from "./intent.js";
 export * from "./truth.js";
 export * from "./artdirection.js";
+export * from "./genome.js";
+export * from "./campaign.js";
