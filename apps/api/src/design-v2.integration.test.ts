@@ -78,6 +78,22 @@ const newSite = async (harness: Harness, email: string) => {
 };
 
 d("SiteSpec v2 through the real API", () => {
+  it("grades a generated version for creative quality, and only for its owner", async () => {
+    const { o, site } = await newSite(h, "v2-quality@example.com");
+    const gen = await h.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: brief,
+    });
+    const url = `/api/sites/${site.id}/versions/${gen.json.data.version.id}/quality`;
+    const q = await h.call("GET", url, { cookie: o.cookie });
+    expect(q.status).toBe(200);
+    expect(q.json.data.supported).toBe(true);
+    expect(["K0", "K1", "K2", "K3", "K4", "K5"]).toContain(q.json.data.grade);
+    expect(Array.isArray(q.json.data.findings)).toBe(true);
+    const other = await h.signup("v2-quality-other@example.com");
+    const denied = await h.call("GET", url, { cookie: other.cookie });
+    expect(denied.status).toBeGreaterThanOrEqual(403);
+  });
   it("generates a v2 design with no AI, publishes it, serves bundled fonts and verifies the bytes", async () => {
     const { o, site } = await newSite(h, "v2-pub@example.com");
     const gen = await h.call("POST", `/api/sites/${site.id}/generate`, {
