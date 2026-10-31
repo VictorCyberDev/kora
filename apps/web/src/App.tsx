@@ -23,6 +23,7 @@ import {
 import { NewSite, SitesList } from "./pages/sites";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
+import { CampaignsPage, TodayPage } from "./pages/today";
 import { CalendarPage } from "./pages/calendar";
 import { MarketingEntry, StudioPage } from "./pages/studio";
 import { ChannelsPage } from "./pages/channels";
@@ -330,6 +331,8 @@ export function App() {
           <Route index element={<SiteOverview />} />
           <Route path="presence" element={<PresencePage />} />
           <Route path="brand" element={<BrandPage />} />
+          <Route path="today" element={<TodayPage />} />
+          <Route path="campaigns" element={<CampaignsPage />} />
           <Route path="create" element={<StudioPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="channels" element={<ChannelsPage />} />

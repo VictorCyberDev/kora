@@ -249,7 +249,7 @@ d("feature entitlements", () => {
     expect(r.status).toBe(200);
     expect(r.json.data.tier).toBe("TRIAL");
     expect(r.json.data.features["presence.graph"]).toBe(true);
-    expect(r.json.data.features["marketing.agent"]).toBe(false);
+    expect(r.json.data.features["marketing.agent"]).toBe(true);
   });
   it("blocks growth writes once the plan has ended, while reads keep working", async () => {
     const { a, site } = await siteWithVersion("f2@example.com");

@@ -9,7 +9,7 @@ export function MarketingEntry() {
     <Async state={sites}>
       {(rows) =>
         rows.length ? (
-          <Navigate to={`/app/sites/${rows[0].id}/create`} replace />
+          <Navigate to={`/app/sites/${rows[0].id}/today`} replace />
         ) : (
           <Empty title="Nothing to market yet">
             Create your website first, then Kora can help you promote it.
