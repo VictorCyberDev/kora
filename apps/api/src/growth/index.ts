@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import type { PlatformStore } from "../platform/store.js";
 import type { OpsStore } from "../platform/ops-store.js";
@@ -23,6 +24,7 @@ import { MarketingStore } from "./marketing-store.js";
 import { registerMarketingRoutes } from "./marketing-routes.js";
 import { registerStudioRoutes } from "./studio-routes.js";
 import { registerTruthRoutes } from "./truth-routes.js";
+import { registerCreativeRoutes } from "./creative-routes.js";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
 
 export function registerGrowth(
@@ -79,6 +81,20 @@ export function registerGrowth(
     billing,
     growth,
     sql: platform.sql,
+    ...(now ? { now } : {}),
+  });
+  registerCreativeRoutes(app, {
+    platform,
+    billing,
+    growth,
+    gather,
+    sql: platform.sql,
+    shareSecret:
+      config.KORA_SECRETS_KEY ??
+      (config.NODE_ENV === "production"
+        ? randomBytes(32).toString("base64")
+        : "dev-share-secret"),
+    allowPrivateAudit: config.NODE_ENV === "test",
     ...(now ? { now } : {}),
   });
   const calendar = new CalendarStore(platform.sql);

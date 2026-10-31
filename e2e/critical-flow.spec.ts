@@ -184,6 +184,10 @@ test("public pages render and protected pages require sign-in", async ({
 }) => {
   await page.goto("/pricing");
   await expect(page.getByRole("heading", { name: "Pricing" })).toBeVisible();
+  await page.goto("/audit");
+  await expect(
+    page.getByRole("heading", { name: /How does your website look/ }),
+  ).toBeVisible();
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { name: "Privacy" })).toBeVisible();
   await page.goto("/app/sites");

@@ -1,4 +1,5 @@
 import { IdentityPage } from "./pages/identity";
+import { PublicAuditPage, SharedAuditPage } from "./pages/audit";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -56,6 +57,7 @@ function PublicLayout() {
         <div className="wrap">
           <Logo />
           <nav className="main" aria-label="Public">
+            <NavLink to="/audit">Free website check</NavLink>
             <NavLink to="/pricing">Pricing</NavLink>
           </nav>
           {user ? (
@@ -320,6 +322,8 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/audit" element={<PublicAuditPage />} />
+        <Route path="/audit/shared" element={<SharedAuditPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/privacy" element={<Privacy />} />

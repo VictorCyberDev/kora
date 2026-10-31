@@ -135,6 +135,10 @@ export function TodayPage() {
     [id],
   );
   const cal = useLoad(() => api<J>("GET", `/api/sites/${id}/calendar`), [id]);
+  const actions = useLoad(
+    () => api<J>("GET", `/api/sites/${id}/today-actions`),
+    [id],
+  );
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   // Suggestions are recomputed from current facts whenever the owner opens Today.
@@ -194,6 +198,28 @@ export function TodayPage() {
   return (
     <div className="stack">
       <TellKora id={id!} />
+      <Async state={actions}>
+        {(a) =>
+          a.actions.length === 0 ? null : (
+            <section className="card stack" aria-labelledby="do-h">
+              <p className="k-overline">Do next</p>
+              <h2 id="do-h" style={{ margin: 0 }}>
+                What needs you today
+              </h2>
+              <ul className="k-checks">
+                {a.actions.map((x: J) => (
+                  <li key={x.id} className="k-check">
+                    <Link className="k-lead" to={`/app/sites/${id}/${x.to}`}>
+                      <strong>{x.title}</strong>
+                      <span className="muted">{x.why}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+      </Async>
       <Async state={brief}>
         {(b) => (
           <section className="card stack" aria-labelledby="today-h">
