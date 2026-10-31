@@ -14,6 +14,115 @@ const AUTH: Record<string, string> = {
   DENY: "Kora will not do this for you.",
 };
 
+type Rec = {
+  start(): void;
+  stop(): void;
+  onresult:
+    | ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void)
+    | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  lang: string;
+  interimResults: boolean;
+};
+const speechCtor = (): (new () => Rec) | null => {
+  const w = window as unknown as {
+    SpeechRecognition?: new () => Rec;
+    webkitSpeechRecognition?: new () => Rec;
+  };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
+};
+
+/** Say or type what you need. Kora restates it and only goes there after you agree; it never acts on its own. */
+function TellKora({ id }: { id: string }) {
+  const nav = useNavigate();
+  const [text, setText] = useState("");
+  const [intent, setIntent] = useState<J | null>(null);
+  const [listening, setListening] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const Speech = speechCtor();
+  const ask = async (t: string) => {
+    setErr(null);
+    try {
+      setIntent(await api<J>("POST", `/api/sites/${id}/intent`, { text: t }));
+    } catch (e) {
+      setErr(errText(e));
+    }
+  };
+  const listen = () => {
+    if (!Speech) return;
+    const r = new Speech();
+    r.lang = "en-NG";
+    r.interimResults = false;
+    r.onresult = (e) => {
+      const t = e.results[0]?.[0]?.transcript ?? "";
+      setText(t);
+      if (t) void ask(t);
+    };
+    r.onerror = () => setErr("Kora could not hear that. You can type instead.");
+    r.onend = () => setListening(false);
+    setListening(true);
+    r.start();
+  };
+  const go = () => {
+    if (!intent) return;
+    const to =
+      intent.route === "today"
+        ? `/app/sites/${id}/today`
+        : `/app/sites/${id}/${intent.route}`;
+    nav(to === `/app/sites/${id}/health` ? "/app/operations" : to);
+  };
+  return (
+    <section className="card stack" aria-labelledby="tell-h">
+      <h2 id="tell-h">Tell Kora what you need</h2>
+      <form
+        className="row"
+        onSubmit={(e: FormEvent) => {
+          e.preventDefault();
+          if (text.trim()) void ask(text);
+        }}
+      >
+        <label className="grow">
+          <span className="sr-only">What do you need?</span>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={300}
+            placeholder="For example: who is waiting for a reply?"
+          />
+        </label>
+        <button className="btn">Ask</button>
+        {Speech && (
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={listen}
+            aria-pressed={listening}
+          >
+            {listening ? "Listening…" : "Speak"}
+          </button>
+        )}
+      </form>
+      {err && <Notice kind="bad">{err}</Notice>}
+      {intent && (
+        <div className="stack" role="status">
+          <p>{intent.summary}</p>
+          {intent.intent !== "unknown" && (
+            <div className="row">
+              <button className="btn sm" onClick={go}>
+                Yes, take me there
+              </button>
+              <button className="btn sm quiet" onClick={() => setIntent(null)}>
+                No
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function TodayPage() {
   const { id } = useParams();
   const nav = useNavigate();
@@ -84,6 +193,7 @@ export function TodayPage() {
     .slice(0, 4);
   return (
     <div className="stack">
+      <TellKora id={id!} />
       <Async state={brief}>
         {(b) => (
           <section className="card stack" aria-labelledby="today-h">

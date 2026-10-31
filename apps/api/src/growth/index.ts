@@ -126,7 +126,13 @@ export function registerGrowth(
     pw.start(Number(process.env.KORA_PUBLISH_TICK_MS) || 5000);
     app.addHook("onClose", () => pw.stop());
 
-    const w = new StudioWorker({ studio, growth, raster, bin });
+    const w = new StudioWorker({
+      studio,
+      growth,
+      raster,
+      bin,
+      meter: (o, si, dim, q) => platform.recordUsage(o, si, dim, q),
+    });
     w.start();
     app.addHook("onClose", () => w.stop());
   }

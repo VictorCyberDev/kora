@@ -517,6 +517,26 @@ export function OperationsPage() {
   );
 }
 
+const FEATURE_LABEL: Record<string, string> = {
+  "presence.graph": "Your business profile",
+  "presence.health": "Presence health checks",
+  "brand.kit": "Brand Kit",
+  "channels.connect": "Connect social and Google accounts",
+  "customers.hub": "Customer inbox and follow-ups",
+  "content.studio": "Write posts",
+  "brand.studio": "Branded images and flyers",
+  "motion.studio": "Short videos",
+  calendar: "Content calendar",
+  publishing: "Approvals and scheduled posting",
+  "marketing.agent": "Marketing suggestions",
+  "growth.brief": "Weekly growth brief",
+  campaigns: "Campaign bundles",
+  attribution: "Tracked links and results",
+  analytics: "Channel results",
+  reviews: "Reviews",
+  "team.members": "Team members",
+};
+
 export function BillingPage() {
   const { orgs } = useAuth();
   const orgId = orgs[0]?.id as string | undefined;
@@ -526,6 +546,10 @@ export function BillingPage() {
     [orgId],
   );
   const plans = useLoad(() => api("GET", "/api/billing/plans"));
+  const feats = useLoad(
+    () => api("GET", `/api/orgs/${orgId}/features`),
+    [orgId],
+  );
   const tx = useLoad(() => api("GET", `/api/orgs/${orgId}/billing`), [orgId]);
   const [msg, setMsg] = useState<string | null>(null);
   const reference = params.get("reference");
@@ -556,6 +580,29 @@ export function BillingPage() {
     <div className="stack">
       <h1 style={{ fontSize: "2rem" }}>Billing</h1>
       {msg && <Notice>{msg}</Notice>}
+      <Async state={feats}>
+        {(f: J) => (
+          <section className="card stack" aria-labelledby="inc-h">
+            <h3 id="inc-h">What your plan includes</h3>
+            <ul className="k-feat">
+              {Object.entries(f.features as Record<string, boolean>).map(
+                ([k, on]) => (
+                  <li key={k} data-on={String(on)}>
+                    <span aria-hidden="true">{on ? "✓" : "–"}</span>{" "}
+                    {FEATURE_LABEL[k] ?? k}
+                    <span className="sr-only">
+                      {on ? " (included)" : " (not included)"}
+                    </span>
+                  </li>
+                ),
+              )}
+            </ul>
+            {f.restricted && f.reason && (
+              <Notice kind="warn">{f.reason}</Notice>
+            )}
+          </section>
+        )}
+      </Async>
       <Async state={sub}>
         {(s: J) => (
           <div className="card">

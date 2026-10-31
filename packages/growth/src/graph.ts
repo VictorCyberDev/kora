@@ -52,6 +52,8 @@ export interface PresenceInputs {
     lastCheckAt: string | null;
     openIncidents: number;
   };
+  /** Where an ended offer is still visible. Absent when Kora has not checked. */
+  staleness?: { websiteMentions: string[]; scheduledPosts: number };
   demand: {
     enquiries30d: number;
     waiting: number;

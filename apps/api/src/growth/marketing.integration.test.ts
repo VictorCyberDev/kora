@@ -343,3 +343,80 @@ d("campaign bundles", () => {
       ).toBe(404);
   });
 });
+
+d("voice-first intent and one-truth checks", () => {
+  it("interprets text into a confirmable route and flags queued posts about an ended offer", async () => {
+    const { a, s } = await ready("mk4@example.com");
+    const r = await h.call("POST", `/api/sites/${s.id}/intent`, {
+      cookie: a.cookie,
+      body: { text: "who is waiting for a reply?" },
+    });
+    expect(r.json.data).toMatchObject({
+      intent: "customers_waiting",
+      route: "customers",
+      requiresConfirmation: true,
+    });
+    expect(
+      (
+        await h.call("POST", `/api/sites/${s.id}/intent`, {
+          cookie: a.cookie,
+          body: { text: "spend 50000 on ads" },
+        })
+      ).json.data.intent,
+    ).toBe("unknown");
+    expect(
+      (
+        await h.call("POST", `/api/sites/${s.id}/intent`, {
+          cookie: a.cookie,
+          body: { text: "x".repeat(400) },
+        })
+      ).status,
+    ).toBe(400);
+
+    const before = (
+      await h.call("GET", `/api/sites/${s.id}/presence`, { cookie: a.cookie })
+    ).json.data.health.checks.find(
+      (c: { id: string }) => c.id === "offer.scheduled_stale",
+    );
+    expect(before.status).toBe("OK");
+    await h.call("POST", `/api/sites/${s.id}/calendar/items`, {
+      cookie: a.cookie,
+      body: {
+        title: "Old",
+        caption: {
+          headline: "Eid platter",
+          body: "Order our Eid platter now",
+          cta: "",
+          hashtags: [],
+        },
+        channels: ["facebook"],
+      },
+    });
+    // a draft is not queued; submitting it for approval puts it in the queue
+    const list = (
+      await h.call("GET", `/api/sites/${s.id}/calendar`, { cookie: a.cookie })
+    ).json.data.items as Array<{ id: string }>;
+    await h.call(
+      "POST",
+      `/api/sites/${s.id}/calendar/items/${list[0]!.id}/submit`,
+      { cookie: a.cookie },
+    );
+    const after = (
+      await h.call("GET", `/api/sites/${s.id}/presence`, { cookie: a.cookie })
+    ).json.data.health.checks.find(
+      (c: { id: string }) => c.id === "offer.scheduled_stale",
+    );
+    expect(after.status).toBe("FAIL");
+    expect(after.observed).toMatch(/1 post is waiting/);
+
+    const b = await h.signup("mk4b@example.com", "B");
+    expect(
+      (
+        await h.call("POST", `/api/sites/${s.id}/intent`, {
+          cookie: b.cookie,
+          body: { text: "hi" },
+        })
+      ).status,
+    ).toBe(404);
+  });
+});

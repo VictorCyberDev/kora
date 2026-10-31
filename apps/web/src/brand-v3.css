@@ -871,3 +871,23 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 .k-frames li {
   min-width: 0;
 }
+
+.k-feat {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 6px 16px;
+}
+.k-feat li[data-on="false"] {
+  color: var(--muted);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

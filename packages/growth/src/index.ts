@@ -17,3 +17,4 @@ export * from "./attribution.js";
 export * from "./analytics.js";
 export * from "./reviews.js";
 export * from "./memory.js";
+export * from "./intent.js";

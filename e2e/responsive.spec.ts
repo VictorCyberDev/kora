@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -109,6 +110,20 @@ async function check(page: Page, label: string, w: number, problems: string[]) {
   if (r.clippedText.length)
     bad.push(`clipped text: ${r.clippedText.join(" | ")}`);
   if (bad.length) problems.push(`${label} @${w}px: ${bad.join(" // ")}`);
+}
+
+/** Automated WCAG 2.1 A/AA checks on the pages an owner actually uses, at a phone and a desktop width. */
+async function a11y(page: Page, label: string, w: number, problems: string[]) {
+  const r = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  for (const v of r.violations)
+    problems.push(
+      `${label} @${w}px a11y ${v.id} (${v.impact}): ${v.nodes
+        .slice(0, 2)
+        .map((n) => n.target.join(" "))
+        .join(" | ")}`,
+    );
 }
 
 let state: Awaited<
@@ -285,6 +300,11 @@ for (const w of WIDTHS) {
         await page.getByRole("button", { name: "Owner", exact: true }).click();
       }
       await check(page, label, w, problems);
+      if (
+        (w === 390 || w === 1280) &&
+        !/^(landing|pricing|login|signup)$/.test(label)
+      )
+        await a11y(page, label, w, problems);
       if (process.env.RESP_SHOTS)
         await page.screenshot({
           path: `${process.env.RESP_SHOTS}/${w}-${label}.png`,

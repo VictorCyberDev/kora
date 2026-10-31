@@ -181,6 +181,47 @@ export function evaluatePresenceHealth(i: PresenceInputs): PresenceCheck[] {
         : ok("offer.stale", "offer", "No offers have ended."),
     );
 
+  // one business, one truth: an ended offer must not linger on the website or in queued posts
+  if (i.staleness) {
+    const m = i.staleness.websiteMentions;
+    push(
+      m.length
+        ? {
+            id: "offer.on_website",
+            area: "offer",
+            status: "WARN",
+            observed: `Your website still mentions ${m.map((x) => `"${x}"`).join(", ")}, which has ended.`,
+            why: "Customers may ask for an offer you no longer honour.",
+            fix: "Edit the website text and publish the new version.",
+            koraCanFix: "with_approval",
+            authorization: "Owner approves the change and publishing.",
+          }
+        : ok(
+            "offer.on_website",
+            "offer",
+            "No ended offer appears on your website.",
+          ),
+    );
+    push(
+      i.staleness.scheduledPosts > 0
+        ? {
+            id: "offer.scheduled_stale",
+            area: "offer",
+            status: "FAIL",
+            observed: `${i.staleness.scheduledPosts} post${i.staleness.scheduledPosts === 1 ? " is" : "s are"} waiting to go out about an offer that has ended.`,
+            why: "Posting it would advertise something you no longer offer.",
+            fix: "Cancel or rewrite those posts in the Calendar.",
+            koraCanFix: "no",
+            authorization: "Owner cancels or edits and re-approves each post.",
+          }
+        : ok(
+            "offer.scheduled_stale",
+            "offer",
+            "No queued post is about an ended offer.",
+          ),
+    );
+  }
+
   // brand
   push(
     i.brand
