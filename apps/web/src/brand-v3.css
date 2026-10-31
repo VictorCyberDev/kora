@@ -822,3 +822,52 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 .k-thread li[data-dir="OUT"] {
   background: color-mix(in srgb, var(--brand) 8%, var(--paper));
 }
+
+/* Studios */
+.k-studio {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) {
+  .k-studio {
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+.k-preview {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+.k-preview img,
+.k-gallery img,
+.k-gallery video,
+.k-frames img,
+.k-check video {
+  max-width: 100%;
+  height: auto;
+  max-height: 70vh;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  object-fit: contain;
+}
+.k-gallery {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+.k-frames {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 10px;
+}
+.k-frames li {
+  min-width: 0;
+}

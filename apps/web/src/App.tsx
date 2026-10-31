@@ -23,6 +23,7 @@ import {
 import { NewSite, SitesList } from "./pages/sites";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
+import { MarketingEntry, StudioPage } from "./pages/studio";
 import { ChannelsPage } from "./pages/channels";
 import { CustomersEntry, CustomersPage } from "./pages/customers";
 import { BrandPage, PresenceEntry, PresencePage } from "./pages/presence";
@@ -221,6 +222,7 @@ function AppLayout() {
             <NavLink to="/app/sites">Websites</NavLink>
             <NavLink to="/app/presence">Presence</NavLink>
             <NavLink to="/app/customers">Customers</NavLink>
+            <NavLink to="/app/marketing">Marketing</NavLink>
             <NavLink to="/app/operations">Health</NavLink>
             <NavLink to="/app/billing">Billing</NavLink>
             <NavLink to="/app/audit">Activity</NavLink>
@@ -281,6 +283,7 @@ export function App() {
           <Route index element={<SiteOverview />} />
           <Route path="presence" element={<PresencePage />} />
           <Route path="brand" element={<BrandPage />} />
+          <Route path="create" element={<StudioPage />} />
           <Route path="channels" element={<ChannelsPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="build" element={<Build />} />
@@ -293,6 +296,7 @@ export function App() {
         </Route>
         <Route path="presence" element={<PresenceEntry />} />
         <Route path="customers" element={<CustomersEntry />} />
+        <Route path="marketing" element={<MarketingEntry />} />
         <Route path="operations" element={<OperationsPage />} />
         <Route path="billing" element={<BillingPage />} />
         <Route path="settings" element={<SettingsPage />} />
