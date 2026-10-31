@@ -1,3 +1,4 @@
+import { IdentityPage } from "./pages/identity";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -332,6 +333,7 @@ export function App() {
           <Route index element={<SiteOverview />} />
           <Route path="presence" element={<PresencePage />} />
           <Route path="brand" element={<BrandPage />} />
+          <Route path="identity" element={<IdentityPage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="memory" element={<MemoryPage />} />

@@ -58,6 +58,7 @@ export function SiteShell() {
             items: [
               [`${base}/presence`, "Presence"],
               [`${base}/brand`, "Brand"],
+              [`${base}/identity`, "Identity"],
               [`${base}/channels`, "Channels"],
               [`${base}/memory`, "Memory"],
             ],

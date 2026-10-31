@@ -96,6 +96,20 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
     timeout: 30_000,
   });
 
+  // 5b. Business identity: Kora shows what it knows and what it still needs to ask.
+  await page
+    .getByRole("link", { name: "Presence", exact: true })
+    .first()
+    .click();
+  await page.getByRole("link", { name: "Identity", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "What Kora knows" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Your brand in your words" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Today", exact: true }).click();
+
   // 6. Controlled test: the live version fails for real; Kora notices.
   await shot(page, "03-online");
   await expect(page.getByText("Controlled test").first()).toBeVisible();
