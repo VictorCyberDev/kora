@@ -117,7 +117,7 @@ async function check(page: Page, label: string, w: number, problems: string[]) {
  * Automated WCAG 2.1 A/AA checks on the pages an owner actually uses, at a phone and a desktop width. axe-core is injected
  * straight into the page: @axe-core/playwright opens a second page, which touch-emulating contexts do not allow.
  */
-const req = createRequire(import.meta.url);
+const req = createRequire(__filename);
 const axeSource = req.resolve("axe-core/axe.min.js", {
   paths: [dirname(req.resolve("@axe-core/playwright"))],
 });
