@@ -13,3 +13,7 @@ export * from "./calendar.js";
 export * from "./agent.js";
 export * from "./brief.js";
 export * from "./bundle.js";
+export * from "./attribution.js";
+export * from "./analytics.js";
+export * from "./reviews.js";
+export * from "./memory.js";

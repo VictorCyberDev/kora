@@ -301,6 +301,8 @@ export function validateDraft(
 ): DraftIssue[] {
   const issues: DraftIssue[] = [];
   const text = `${d.headline}\n${d.body}\n${d.cta}`;
+  // Links (including tracking codes) are not claims about prices, times or phone numbers.
+  const claimText = text.replace(/https?:\/\/\S+/gi, " ");
   const lim = CHANNEL_LIMITS[channel];
   if (text.length > lim.chars)
     issues.push({
@@ -341,7 +343,7 @@ export function validateDraft(
         .match(/\d[\d,]*(?:\.\d+)?/g) ?? []
     ).map((n) => n.replace(/,/g, "")),
   );
-  for (const m of text.match(MONEY) ?? []) {
+  for (const m of claimText.match(MONEY) ?? []) {
     const n = (m.match(/\d[\d,]*(?:\.\d+)?/)?.[0] ?? "").replace(/,/g, "");
     if (!corpusNumbers.has(n))
       issues.push({
@@ -350,14 +352,14 @@ export function validateDraft(
         message: `The price "${m}" is not in your profile.`,
       });
   }
-  for (const m of text.match(TIME) ?? [])
+  for (const m of claimText.match(TIME) ?? [])
     if (!corpus.includes(compact(m)))
       issues.push({
         code: "unsupported_claim",
         severity: "block",
         message: `The time "${m}" is not in your opening hours.`,
       });
-  for (const m of text.match(PHONE) ?? []) {
+  for (const m of claimText.match(PHONE) ?? []) {
     const dg = digits(m);
     if (
       dg.length >= 7 &&

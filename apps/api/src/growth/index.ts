@@ -17,6 +17,8 @@ import { StudioWorker } from "./studio-worker.js";
 import { CalendarStore } from "./calendar-store.js";
 import { PublishWorker } from "./publish-worker.js";
 import { registerCalendarRoutes } from "./calendar-routes.js";
+import { IntelStore } from "./intel-store.js";
+import { registerIntelRoutes } from "./intel-routes.js";
 import { MarketingStore } from "./marketing-store.js";
 import { registerMarketingRoutes } from "./marketing-routes.js";
 import { registerStudioRoutes } from "./studio-routes.js";
@@ -51,12 +53,14 @@ export function registerGrowth(
   const ffmpeg = () => (encoder ??= ffmpegAvailable(bin));
   let rasterP: Promise<Rasterizer> | null = null;
   const raster = () => (rasterP ??= Rasterizer.create());
+  const intel = new IntelStore(platform.sql);
   const gather = createGatherer({
     platform,
     ops,
     growth,
     channels,
     customers,
+    intel,
     now: now ?? (() => new Date()),
   });
   registerStudioRoutes(app, {
@@ -71,12 +75,24 @@ export function registerGrowth(
   });
   const calendar = new CalendarStore(platform.sql);
   const marketing = new MarketingStore(platform.sql);
+  registerIntelRoutes(app, {
+    platform,
+    billing,
+    intel,
+    calendar,
+    channels,
+    providers,
+    secrets,
+    gather,
+    ...(now ? { now } : {}),
+  });
   registerMarketingRoutes(app, {
     platform,
     ops,
     billing,
     growth,
     marketing,
+    intel,
     calendar,
     channels,
     customers,

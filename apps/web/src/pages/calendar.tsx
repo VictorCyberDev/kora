@@ -372,6 +372,40 @@ function ItemDetail({
                       I posted it on {h.label}
                     </button>
                   ))}
+              {["DRAFT", "APPROVAL_NEEDED"].includes(it.state) &&
+                it.channels.length > 0 &&
+                !it.caption.body.includes("k=") && (
+                  <button
+                    className="btn sm ghost"
+                    onClick={async () => {
+                      try {
+                        const r = await api<J>(
+                          "POST",
+                          `/api/sites/${id}/calendar/items/${itemId}/tracked-link`,
+                        );
+                        await api(
+                          "PATCH",
+                          `/api/sites/${id}/calendar/items/${itemId}`,
+                          {
+                            caption: {
+                              ...it.caption,
+                              body: `${it.caption.body}\n\n${r.url}`.slice(
+                                0,
+                                2200,
+                              ),
+                            },
+                          },
+                        );
+                        d.reload();
+                        onChanged();
+                      } catch (x) {
+                        setErr(errText(x));
+                      }
+                    }}
+                  >
+                    Add a link Kora can track
+                  </button>
+                )}
               <button
                 className="btn sm ghost"
                 onClick={async () => {

@@ -930,12 +930,14 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       if (typeof raw.website === "string" && raw.website.length > 0)
         return reply.code(200).send({ data: { received: true } });
       const fields: Record<string, string> = {};
-      for (const key of ["name", "email", "phone", "message", "service"]) {
+      for (const key of ["name", "email", "phone", "message", "service", "k"]) {
         const v = raw[key];
         if (typeof v === "string" && v.trim())
           fields[key] = v.trim().slice(0, 2000);
       }
-      if (!Object.keys(fields).length)
+      // A tracking code is only kept if it has the exact shape Kora issues.
+      if (fields.k && !/^[a-z]{8}$/.test(fields.k)) delete fields.k;
+      if (!Object.keys(fields).filter((f) => f !== "k").length)
         throw new HttpError(422, "empty_submission");
       if (fields.email && !z.string().email().safeParse(fields.email).success)
         throw new HttpError(422, "invalid_email");

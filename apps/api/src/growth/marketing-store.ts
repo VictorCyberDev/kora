@@ -211,7 +211,7 @@ export class MarketingStore {
   async campaigns(siteId: string) {
     return (
       await this
-        .sql`SELECT c.*, (SELECT COUNT(*)::int FROM calendar_items i WHERE i.campaign_id=c.id) AS items,
+        .sql`SELECT c.*, to_char(c.starts_on,'YYYY-MM-DD') AS starts_s, to_char(c.ends_on,'YYYY-MM-DD') AS ends_s, (SELECT COUNT(*)::int FROM calendar_items i WHERE i.campaign_id=c.id) AS items,
         (SELECT COUNT(*)::int FROM calendar_items i WHERE i.campaign_id=c.id AND i.state='PUBLISHED') AS published,
         (SELECT COUNT(*)::int FROM calendar_items i WHERE i.campaign_id=c.id AND i.state='APPROVAL_NEEDED') AS needs_approval,
         (SELECT COUNT(*)::int FROM calendar_items i WHERE i.campaign_id=c.id AND i.state IN ('FAILED','PARTIALLY_PUBLISHED')) AS problems
@@ -222,8 +222,8 @@ export class MarketingStore {
       objective: String(r.objective),
       offerId: String(r.offer_id),
       offerTitle: String(r.offer_title),
-      startsOn: String(r.starts_on).slice(0, 10),
-      endsOn: String(r.ends_on).slice(0, 10),
+      startsOn: String(r.starts_s),
+      endsOn: String(r.ends_s),
       status: String(r.status),
       brandVersion: Number(r.brand_version),
       items: Number(r.items),
