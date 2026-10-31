@@ -11,9 +11,11 @@
   --surface: #fffaf2;
   --surface-2: #eae2d6;
   --ink: #171319;
-  --muted: #6c6469;
+  --muted: #5f575c;
   --line: #d5cbbd;
   --brand: #f15b43;
+  /* Ember is a fill colour. As text on paper it is only 3.2:1, so text uses a darker ember (5.8:1, AA). */
+  --brand-text: #b8321c;
   --brand-ink: #1b1010;
   --brand-soft: #ffe0d7;
   --ok: #13745b;
@@ -45,6 +47,7 @@
     --muted: #b8aeb4;
     --line: #393139;
     --brand: #ff725b;
+    --brand-text: #ff725b;
     --brand-ink: #1a0d0a;
     --brand-soft: #47221c;
     --ok: #68d0aa;
@@ -307,7 +310,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 }
 
 .k-num {
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
 }
 
 /* --- Business-first Mission Control ----------------------------------------- */
@@ -336,7 +339,7 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 
 .k-overline,
 .k-quick-kicker {
-  color: var(--brand);
+  color: var(--brand-text, var(--brand));
   margin: 0 0 8px;
 }
 

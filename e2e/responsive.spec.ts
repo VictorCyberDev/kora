@@ -320,10 +320,10 @@ for (const w of WIDTHS) {
           await check(page, `builder/${tab}`, w, problems);
         }
       if (label === "create") {
-        await page.getByRole("tab", { name: "Images" }).click();
+        await page.getByRole("button", { name: "Images", exact: true }).click();
         await page.getByRole("img", { name: /Preview/ }).waitFor();
         await check(page, "create/images", w, problems);
-        await page.getByRole("tab", { name: "Video" }).click();
+        await page.getByRole("button", { name: "Video", exact: true }).click();
         await page
           .getByRole("img", { name: /Preview at/ })
           .first()

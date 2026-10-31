@@ -441,7 +441,7 @@ export function Build() {
           {tab === "versions" && (
             <Async state={versions}>
               {(rows: J[]) => (
-                <table>
+                <table tabIndex={0}>
                   <tbody>
                     {rows.map((v) => (
                       <tr key={v.id}>

@@ -171,7 +171,7 @@ export function DeploymentsPage() {
             {x.jobs.length === 0 ? (
               <p className="muted">Nothing published yet.</p>
             ) : (
-              <table>
+              <table tabIndex={0}>
                 <thead>
                   <tr>
                     <th>When</th>
@@ -321,7 +321,7 @@ export function DomainsPage() {
                         ? "DNS is right; waiting for the secure connection."
                         : "Create this record at your DNS provider:"}
                   </p>
-                  <table>
+                  <table tabIndex={0}>
                     <tbody>
                       <tr>
                         <th>Type</th>
@@ -673,7 +673,7 @@ export function BillingPage() {
             rows.length === 0 ? (
               <p className="muted">No payments yet.</p>
             ) : (
-              <table>
+              <table tabIndex={0}>
                 <tbody>
                   {rows.map((t) => (
                     <tr key={t.reference}>
@@ -729,7 +729,7 @@ export function SettingsPage() {
         <h3>Team</h3>
         <Async state={o}>
           {(x: J) => (
-            <table>
+            <table tabIndex={0}>
               <tbody>
                 {x.members.map((m: J) => (
                   <tr key={m.userId}>
@@ -779,7 +779,7 @@ export function AuditPage() {
       </p>
       <Async state={a}>
         {(rows: J[]) => (
-          <table>
+          <table tabIndex={0}>
             <thead>
               <tr>
                 <th>When</th>
