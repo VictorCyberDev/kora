@@ -4,7 +4,6 @@ import {
   origin,
   pagePath,
   relFrom,
-  SITE_JS,
   type RenderContext,
 } from "../render.js";
 import { artSvg } from "./art.js";
@@ -551,7 +550,7 @@ export function renderPageV2(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="${esc(csp)}">
-<title>${esc(title)}</title>
+${rc.formEndpoint ? `<meta name="kora-events" content="${esc(rc.formEndpoint.replace(/\/forms$/, "/events"))}">\n` : ""}<title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 ${spec.seo.keywords.length ? `<meta name="keywords" content="${esc(spec.seo.keywords.join(", "))}">\n` : ""}<meta property="og:type" content="website">
 <meta property="og:title" content="${esc(title)}">
@@ -576,6 +575,37 @@ ${sticky}
 `;
 }
 
+/**
+ * v2 sites only (v1 output stays byte-identical). Measures nothing about visitors in general: it acts only when a
+ * visitor arrived through a Kora-tracked link (?k=<8 letters>), remembers that code for the tab session, and reports
+ * three things to Kora: the landing, a tap on a call or WhatsApp link, and that code on an enquiry form.
+ */
+export const SITE_JS_V2 = `(function(){
+  var m=document.querySelector('meta[name="kora-events"]'),ev=m&&m.getAttribute('content');
+  var q=null;try{q=new URLSearchParams(location.search).get('k')}catch(e){}
+  if(q&&!/^[a-z]{8}$/.test(q))q=null;
+  try{if(q)sessionStorage.setItem('kora_k',q)}catch(e){}
+  var k=q;try{k=k||sessionStorage.getItem('kora_k')}catch(e){}
+  function send(t){if(!ev||!k)return;try{navigator.sendBeacon(ev,JSON.stringify({k:k,t:t}))}catch(e){}}
+  if(q)send('visit');
+  document.addEventListener('click',function(e){var a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'';if(/^tel:/i.test(h))send('call');else if(/(^|\\/\\/)(wa\\.me|api\\.whatsapp\\.com|wa\\.link)/i.test(h))send('whatsapp')},true);
+  var forms=document.querySelectorAll('form[data-kora-form]');
+  Array.prototype.forEach.call(forms,function(form){
+    form.addEventListener('submit',function(ev2){
+      ev2.preventDefault();
+      var status=form.querySelector('.form-status');
+      var data={};
+      new FormData(form).forEach(function(v,key){data[key]=String(v)});
+      if(k)data.k=k;
+      status.textContent='Sending\\u2026';
+      fetch(form.getAttribute('data-endpoint'),{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)})
+        .then(function(r){if(!r.ok)throw new Error('failed');status.textContent=form.getAttribute('data-success');form.reset();})
+        .catch(function(){status.textContent=form.getAttribute('data-failure');});
+    });
+  });
+})();
+`;
+
 const faviconV2 = (spec: SiteSpecV2) => {
   const p = spec.design.palette;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="${spec.design.shape === "sharp" ? 0 : 16}" fill="${p.primary}"/><circle cx="46" cy="18" r="6" fill="${p.accent}"/><text x="30" y="46" font-family="sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="${p.primaryForeground}">${esc((spec.business.name.trim()[0] ?? "K").toUpperCase())}</text></svg>\n`;
@@ -587,7 +617,7 @@ export function renderSiteV2(
 ): SiteFiles {
   const files: SiteFiles = {
     "styles.css": renderCssV2(spec.design),
-    "site.js": SITE_JS,
+    "site.js": SITE_JS_V2,
     "favicon.svg": faviconV2(spec),
   };
   for (const page of spec.pages)

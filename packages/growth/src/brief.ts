@@ -16,6 +16,14 @@ export interface BriefNumbers {
     openIncidents: number;
   };
   presence: { open: number; failing: number } | null;
+  /** Results of links Kora created. Null when no tracked link exists yet. */
+  tracked?: {
+    links: number;
+    visits: number;
+    whatsapp: number;
+    calls: number;
+    enquiries: number;
+  } | null;
 }
 
 export interface BriefItem {
@@ -25,7 +33,7 @@ export interface BriefItem {
   source: string;
 }
 export interface BriefSection {
-  id: "customers" | "posting" | "website" | "presence";
+  id: "customers" | "posting" | "website" | "presence" | "tracked";
   title: string;
   items: BriefItem[];
 }
@@ -148,6 +156,18 @@ export function buildGrowthBrief(
         },
       ],
     });
+  if (n.tracked)
+    sections.push({
+      id: "tracked",
+      title: "From your posts' links",
+      items: [
+        {
+          text: `${plural(n.tracked.visits, "visit")} from links Kora created, ${plural(n.tracked.whatsapp, "WhatsApp tap")}, ${plural(n.tracked.calls, "call tap")} and ${plural(n.tracked.enquiries, "enquiry", "enquiries")}.`,
+          value: String(n.tracked.visits),
+          source: "Tracked links",
+        },
+      ],
+    });
   const unavailable = [
     {
       topic: "Reach and engagement on social",
@@ -155,7 +175,11 @@ export function buildGrowthBrief(
         ? "No data came back for this period."
         : "Connect Instagram or Facebook; Kora reports results only from what the platforms return.",
     },
-    { topic: "Website visitors", reason: "Kora does not track visitors yet." },
+    {
+      topic: "All website visitors",
+      reason:
+        "Kora only counts visits that arrive through links it created; it does not track visitors in general.",
+    },
     {
       topic: "Sales and revenue",
       reason:

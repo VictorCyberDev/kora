@@ -23,6 +23,7 @@ import {
 import { NewSite, SitesList } from "./pages/sites";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
+import { MemoryPage, ResultsPage, ReviewsPage } from "./pages/intel";
 import { CampaignsPage, TodayPage } from "./pages/today";
 import { CalendarPage } from "./pages/calendar";
 import { MarketingEntry, StudioPage } from "./pages/studio";
@@ -331,6 +332,9 @@ export function App() {
           <Route index element={<SiteOverview />} />
           <Route path="presence" element={<PresencePage />} />
           <Route path="brand" element={<BrandPage />} />
+          <Route path="results" element={<ResultsPage />} />
+          <Route path="reviews" element={<ReviewsPage />} />
+          <Route path="memory" element={<MemoryPage />} />
           <Route path="today" element={<TodayPage />} />
           <Route path="campaigns" element={<CampaignsPage />} />
           <Route path="create" element={<StudioPage />} />

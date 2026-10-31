@@ -1,8 +1,13 @@
 import { parseAnySiteSpec } from "@kora/site-schema";
-import { factsFromSpec, type PresenceInputs } from "@kora/growth";
+import {
+  factsFromSpec,
+  voiceFromMemory,
+  type PresenceInputs,
+} from "@kora/growth";
 import type { PlatformStore } from "../platform/store.js";
 import type { OpsStore } from "../platform/ops-store.js";
 import type { GrowthStore } from "./store.js";
+import type { IntelStore } from "./intel-store.js";
 import type { ChannelsStore } from "./channels-store.js";
 import type { CustomersStore } from "./customers-store.js";
 
@@ -12,6 +17,7 @@ export interface GatherDeps {
   growth: GrowthStore;
   channels: ChannelsStore;
   customers: CustomersStore;
+  intel?: IntelStore;
   now: () => Date;
 }
 type Site = NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>;
@@ -20,7 +26,30 @@ type Site = NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>;
 export const createGatherer = (d: GatherDeps) => async (site: Site) => {
   const { platform, ops, growth, channels, customers, now } = d;
   const profile = await growth.getProfile(site.id);
-  const kit = await growth.latestBrandKit(site.id);
+  const rawKit = await growth.latestBrandKit(site.id);
+  // The owner's remembered word preferences apply to everything written or checked from here on.
+  const mem = d.intel
+    ? voiceFromMemory(await d.intel.memory(site.id))
+    : { avoid: [], use: [] };
+  const kit =
+    rawKit && (mem.avoid.length || mem.use.length)
+      ? {
+          ...rawKit,
+          kit: {
+            ...rawKit.kit,
+            voice: {
+              ...rawKit.kit.voice,
+              avoid: [
+                ...new Set([...rawKit.kit.voice.avoid, ...mem.avoid]),
+              ].slice(0, 12),
+              use: [...new Set([...rawKit.kit.voice.use, ...mem.use])].slice(
+                0,
+                12,
+              ),
+            },
+          },
+        }
+      : rawKit;
   const pubRow = await platform.getPublishedVersionRow(site.id);
   let liveFacts: PresenceInputs["site"]["liveFacts"] = null;
   if (pubRow) {

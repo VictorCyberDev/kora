@@ -1,4 +1,8 @@
-import { CHANNEL_MATRIX, type ChannelProvider } from "@kora/growth";
+import {
+  CHANNEL_MATRIX,
+  type ChannelProvider,
+  type RawMetric,
+} from "@kora/growth";
 import type { PlatformConfig } from "../platform/config.js";
 
 export interface TokenSet {
@@ -37,6 +41,17 @@ export interface ProviderAdapter {
    * provider is handoff-only; nothing pretends to post.
    */
   publish?(tokens: TokenSet, post: PublishInput): Promise<PublishResult>;
+  /** Optional: raw account metrics since a date. Providers without this are reported as "no data", never faked. */
+  metrics?(tokens: TokenSet, sinceIso: string): Promise<RawMetric[]>;
+  /** Optional: recent reviews. */
+  reviews?(tokens: TokenSet): Promise<RawReview[]>;
+}
+export interface RawReview {
+  externalId: string;
+  rating: number;
+  author: string;
+  body: string;
+  reviewedAt: string;
 }
 export interface PublishInput {
   text: string;
@@ -318,6 +333,49 @@ class SandboxAdapter implements ProviderAdapter {
   }
   check(): Promise<CheckResult> {
     return Promise.resolve({ ok: true });
+  }
+  /** Deterministic fake numbers so the pipeline can be tested. Stored with mode SANDBOX and excluded from every report. */
+  metrics(_t: TokenSet, sinceIso: string): Promise<RawMetric[]> {
+    const names: Record<string, string[]> = {
+      facebook: ["page_impressions", "page_fans"],
+      instagram: ["impressions", "follower_count"],
+      google_business: ["WEBSITE_CLICKS", "CALL_CLICKS"],
+    };
+    const out: RawMetric[] = [];
+    const start = new Date(sinceIso);
+    for (let d = 0; d < 3; d++) {
+      const day = new Date(start.getTime() + d * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+      (names[this.provider] ?? ["impressions"]).forEach((n, i) =>
+        out.push({
+          scope: "ACCOUNT",
+          externalId: "",
+          name: n,
+          value: 100 * (i + 1) + d,
+          periodEnd: day,
+        }),
+      );
+    }
+    return Promise.resolve(out);
+  }
+  reviews(): Promise<RawReview[]> {
+    return Promise.resolve([
+      {
+        externalId: "sbx-r1",
+        rating: 5,
+        author: "Test Customer",
+        body: "Lovely food and quick delivery",
+        reviewedAt: new Date().toISOString(),
+      },
+      {
+        externalId: "sbx-r2",
+        rating: 2,
+        author: "Test Unhappy",
+        body: "Waited an hour, wanted a refund",
+        reviewedAt: new Date().toISOString(),
+      },
+    ]);
   }
   /** Test double. `[sandbox-fail:NNN]` in the text simulates a provider error with that HTTP status. */
   publish(_t: TokenSet, post: PublishInput): Promise<PublishResult> {

@@ -7,6 +7,8 @@ import {
   NotEnoughFacts,
   buildContentContext,
   buildGrowthBrief,
+  summarizeAttribution,
+  trackedUrl,
   buildPresenceGraph,
   checkPublishable,
   contentHash,
@@ -44,6 +46,8 @@ import type { ProviderRegistry } from "./providers.js";
 import type { Rasterizer } from "./rasterizer.js";
 import type { StudioStore } from "./studio-store.js";
 import { requireFeature } from "./entitlements.js";
+import type { IntelStore } from "./intel-store.js";
+import { recordCampaignOutcomes } from "./intel-routes.js";
 
 export interface MarketingDeps {
   platform: PlatformStore;
@@ -51,6 +55,7 @@ export interface MarketingDeps {
   billing: BillingService;
   growth: GrowthStore;
   marketing: MarketingStore;
+  intel: IntelStore;
   calendar: CalendarStore;
   channels: ChannelsStore;
   customers: CustomersStore;
@@ -366,6 +371,18 @@ export function registerMarketingRoutes(
         openIncidents: open,
       },
       presence: m.presence,
+      tracked: await (async () => {
+        const res = await d.intel.results(site.id, start, end);
+        if (!res.length) return null;
+        const a = summarizeAttribution(res);
+        return {
+          links: a.links,
+          visits: a.visits,
+          whatsapp: a.whatsappTaps,
+          calls: a.callTaps,
+          enquiries: a.enquiries,
+        };
+      })(),
     };
   };
   app.get("/api/sites/:id/marketing/brief", async (req) => {
@@ -383,6 +400,13 @@ export function registerMarketingRoutes(
   app.post("/api/sites/:id/marketing/brief", async (req, reply) => {
     const site = await siteFor(req, "MEMBER");
     await requireFeature(billing, site.orgId, "growth.brief");
+    // LEARN: finished campaigns are written to Business Memory before the brief is frozen.
+    await recordCampaignOutcomes({
+      intel: d.intel,
+      now: now(),
+      siteId: site.id,
+      orgId: site.orgId,
+    });
     const n = await weekNumbers(site);
     const brief = buildGrowthBrief(n);
     const saved = await marketing.saveBrief({
@@ -494,6 +518,23 @@ export function registerMarketingRoutes(
         assetId: assetFor[c]!,
       })),
     });
+    // Each channel gets its own tracked link so results can be told apart; the link is part of the approved post.
+    const linkFor: Record<string, string> = {};
+    if (site.publicUrl)
+      for (const ch of input.channels) {
+        const code = await d.intel.linkFor({
+          siteId: site.id,
+          orgId: site.orgId,
+          provider: ch,
+          campaignId,
+          label: input.name,
+        });
+        linkFor[ch] = trackedUrl(site.publicUrl, {
+          code,
+          provider: ch,
+          campaign: input.name,
+        });
+      }
     const beatLabel = {
       launch: "Launch",
       reminder: "Reminder",
@@ -511,7 +552,12 @@ export function registerMarketingRoutes(
             0,
             120,
           ),
-        caption: draft,
+        caption: linkFor[slot.channel]
+          ? {
+              ...draft,
+              body: `${draft.body}\n\n${linkFor[slot.channel]}`.slice(0, 2200),
+            }
+          : draft,
         assetId: assetFor[slot.channel]!,
         channels: [slot.channel],
         scheduledFor: slot.at,
