@@ -199,7 +199,7 @@ d("marketing agent", () => {
         `/api/sites/${s.id}/marketing/recommendations/${promo.id}/accept`,
       ],
       ["GET", `/api/sites/${s.id}/marketing/brief`],
-    ])
+    ] as Array<[string, string]>)
       expect(
         (await h.call(m, p, { cookie: b.cookie })).status,
         `${m} ${p}`,
