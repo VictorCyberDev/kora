@@ -23,6 +23,7 @@ import {
 import { NewSite, SitesList } from "./pages/sites";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
+import { CalendarPage } from "./pages/calendar";
 import { MarketingEntry, StudioPage } from "./pages/studio";
 import { ChannelsPage } from "./pages/channels";
 import { CustomersEntry, CustomersPage } from "./pages/customers";
@@ -219,14 +220,25 @@ function AppLayout() {
             <NavLink to="/app" end>
               Home
             </NavLink>
-            <NavLink to="/app/sites">Websites</NavLink>
             <NavLink to="/app/presence">Presence</NavLink>
             <NavLink to="/app/customers">Customers</NavLink>
             <NavLink to="/app/marketing">Marketing</NavLink>
             <NavLink to="/app/operations">Health</NavLink>
-            <NavLink to="/app/billing">Billing</NavLink>
-            <NavLink to="/app/audit">Activity</NavLink>
-            <NavLink to="/app/settings">Settings</NavLink>
+            <NavLink
+              to="/app/more"
+              className={() =>
+                /^\/app\/(more|sites|billing|audit|settings)(\/|$)/.test(
+                  loc.pathname,
+                ) &&
+                !/^\/app\/sites\/[^/]+\/(presence|brand|channels|customers|create|calendar|incidents|deployments|domains)/.test(
+                  loc.pathname,
+                )
+                  ? "active"
+                  : ""
+              }
+            >
+              More
+            </NavLink>
             <button
               className="navlink-btn"
               onClick={async () => {
@@ -264,6 +276,41 @@ function AppLayout() {
   );
 }
 
+function MorePage() {
+  const items: Array<[string, string, string]> = [
+    ["/app/sites", "Websites", "All your websites, and create a new one"],
+    [
+      "/app/billing",
+      "Billing",
+      "Your plan, payments and what each plan includes",
+    ],
+    [
+      "/app/audit",
+      "Activity",
+      "A record of what was changed, by whom, and when",
+    ],
+    ["/app/settings", "Settings", "Your account, team and notifications"],
+  ];
+  return (
+    <div className="stack">
+      <section className="card stack">
+        <p className="k-overline">More</p>
+        <h1 style={{ fontSize: "1.6rem", margin: 0 }}>Everything else</h1>
+      </section>
+      <ul className="k-checks">
+        {items.map(([to, title, detail]) => (
+          <li key={to} className="k-check">
+            <NavLink to={to} className="k-lead">
+              <strong>{title}</strong>
+              <span className="muted">{detail}</span>
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function App() {
   return (
     <Routes>
@@ -284,6 +331,7 @@ export function App() {
           <Route path="presence" element={<PresencePage />} />
           <Route path="brand" element={<BrandPage />} />
           <Route path="create" element={<StudioPage />} />
+          <Route path="calendar" element={<CalendarPage />} />
           <Route path="channels" element={<ChannelsPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="build" element={<Build />} />
@@ -297,6 +345,7 @@ export function App() {
         <Route path="presence" element={<PresenceEntry />} />
         <Route path="customers" element={<CustomersEntry />} />
         <Route path="marketing" element={<MarketingEntry />} />
+        <Route path="more" element={<MorePage />} />
         <Route path="operations" element={<OperationsPage />} />
         <Route path="billing" element={<BillingPage />} />
         <Route path="settings" element={<SettingsPage />} />

@@ -331,13 +331,25 @@ export function validateDraft(
     ].join(" "),
   );
   const corpusDigits = digits(corpus);
-  for (const m of text.match(MONEY) ?? [])
-    if (!corpus.includes(compact(m)) && !corpusDigits.includes(digits(m)))
+  const corpusNumbers = new Set(
+    (
+      [
+        ctx.description,
+        ...ctx.offers.flatMap((o) => [o.title, o.detail, o.price ?? ""]),
+      ]
+        .join(" ")
+        .match(/\d[\d,]*(?:\.\d+)?/g) ?? []
+    ).map((n) => n.replace(/,/g, "")),
+  );
+  for (const m of text.match(MONEY) ?? []) {
+    const n = (m.match(/\d[\d,]*(?:\.\d+)?/)?.[0] ?? "").replace(/,/g, "");
+    if (!corpusNumbers.has(n))
       issues.push({
         code: "unsupported_claim",
         severity: "block",
         message: `The price "${m}" is not in your profile.`,
       });
+  }
   for (const m of text.match(TIME) ?? [])
     if (!corpus.includes(compact(m)))
       issues.push({

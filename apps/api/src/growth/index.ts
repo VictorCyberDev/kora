@@ -14,6 +14,9 @@ import { SecretBox } from "./secrets.js";
 import { createGatherer } from "./gather.js";
 import { StudioStore } from "./studio-store.js";
 import { StudioWorker } from "./studio-worker.js";
+import { CalendarStore } from "./calendar-store.js";
+import { PublishWorker } from "./publish-worker.js";
+import { registerCalendarRoutes } from "./calendar-routes.js";
 import { registerStudioRoutes } from "./studio-routes.js";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
 
@@ -64,7 +67,31 @@ export function registerGrowth(
     ffmpeg,
     contentModel: null,
   });
+  const calendar = new CalendarStore(platform.sql);
+  registerCalendarRoutes(app, {
+    platform,
+    billing,
+    calendar,
+    channels,
+    studio,
+    providers,
+    gather,
+    ...(now ? { now } : {}),
+  });
   if (config.NODE_ENV !== "test" || process.env.KORA_STUDIO_WORKER === "true") {
+    const pw = new PublishWorker({
+      platform,
+      calendar,
+      channels,
+      studio,
+      providers,
+      secrets,
+      gather,
+      now: now ?? (() => new Date()),
+    });
+    pw.start(Number(process.env.KORA_PUBLISH_TICK_MS) || 5000);
+    app.addHook("onClose", () => pw.stop());
+
     const w = new StudioWorker({ studio, growth, raster, bin });
     w.start();
     app.addHook("onClose", () => w.stop());

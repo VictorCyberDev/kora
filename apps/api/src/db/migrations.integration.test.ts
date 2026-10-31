@@ -129,7 +129,7 @@ d("startup migration", () => {
       peers.map((p) => migrateWithLock(p, (n) => applied.push(n))),
     );
     // Each process walks the (re-runnable) list, but never concurrently and never failing.
-    expect(applied.length).toBe(peers.length * 16);
+    expect(applied.length).toBe(peers.length * 17);
     expect(
       (
         await sql`SELECT COUNT(*)::int AS n FROM information_schema.tables WHERE table_name IN ('sites','users','audit_log')`
