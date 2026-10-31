@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="560" viewBox="0 0 1500 560">
+<rect width="1500" height="560" fill="#f4f1ea"/>
+<g font-family="DejaVu Sans, sans-serif" fill="#14121f">
+<g transform="translate(0,0)">
+ <text x="40" y="50" font-size="22" font-weight="700">A · Resonance</text>
+ <text x="40" y="78" font-size="14">A business is a signal others recognise.</text>
+ <g transform="translate(250,300)" fill="none" stroke="#2b3cff" stroke-width="22" stroke-linecap="round">
+  <path d="M-120 0 A120 120 0 0 1 0 -120"/><path d="M-80 0 A80 80 0 0 1 0 -80" opacity=".75"/><path d="M-40 0 A40 40 0 0 1 0 -40" opacity=".5"/>
+  <circle cx="0" cy="0" r="14" fill="#14121f" stroke="none"/></g>
+ <text x="40" y="480" font-size="13">Object: offset arcs, off-centre core</text>
+ <text x="40" y="502" font-size="13">Motion: arcs settle outward, 300–450ms</text>
+ <text x="40" y="524" font-size="13">Verb: "Send your signal"</text></g>
+<g transform="translate(500,0)">
+ <text x="40" y="50" font-size="22" font-weight="700">B · Level line (evolve)</text>
+ <text x="40" y="78" font-size="14">Calm control, extended to growth.</text>
+ <g transform="translate(250,300)" fill="none" stroke="#14121f" stroke-width="14" stroke-linecap="round"><path d="M-130 0 H-30 L0 -70 L30 0 H130"/></g>
+ <text x="40" y="480" font-size="13">Object: line with one marker</text>
+ <text x="40" y="502" font-size="13">Motion: dip and return</text>
+ <text x="40" y="524" font-size="13">Verb: "Keep it level"</text></g>
+<g transform="translate(1000,0)">
+ <text x="40" y="50" font-size="22" font-weight="700">C · Mise en place</text>
+ <text x="40" y="78" font-size="14">Everything laid out, ready to serve.</text>
+ <g transform="translate(130,180)" fill="#14121f"><rect width="90" height="90" rx="10"/><rect x="104" width="90" height="90" rx="10" fill="#ff5a3c"/><rect y="104" width="90" height="90" rx="10" fill="#2b3cff"/><rect x="104" y="104" width="90" height="90" rx="10" opacity=".35"/></g>
+ <text x="40" y="480" font-size="13">Object: four tiles, one displaced</text>
+ <text x="40" y="502" font-size="13">Motion: tiles reflow into layouts</text>
+ <text x="40" y="524" font-size="13">Verb: "Lay it out"</text></g>
+</g></svg>
