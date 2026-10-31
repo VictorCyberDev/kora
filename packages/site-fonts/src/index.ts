@@ -22,3 +22,18 @@ export async function readFontFile(name: string): Promise<Buffer | null> {
   }
 }
 export const FONT_CACHE_CONTROL = "public, max-age=31536000, immutable";
+
+const ttfDir = [
+  new URL("../ttf/", import.meta.url),
+  new URL("../../ttf/", import.meta.url),
+]
+  .map((u) => fileURLToPath(u))
+  .find((p) => existsSync(p));
+/** Absolute paths of the bundled TrueType fonts, for server-side rasterisation (the web uses the woff2 files). */
+export async function ttfPaths(): Promise<string[]> {
+  if (!ttfDir) return [];
+  const { readdir } = await import("node:fs/promises");
+  return (await readdir(ttfDir))
+    .filter((f) => f.endsWith(".ttf") || f.endsWith(".otf"))
+    .map((f) => `${ttfDir}${f}`);
+}

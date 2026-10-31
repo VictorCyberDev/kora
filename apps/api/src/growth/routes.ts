@@ -19,7 +19,6 @@ import {
   evaluatePresenceHealth,
   factsFromSpec,
   summarizeHealth,
-  type PresenceInputs,
 } from "@kora/growth";
 import {
   HttpError,
@@ -37,6 +36,7 @@ import { RevisionConflict, type GrowthStore } from "./store.js";
 import type { ChannelsStore } from "./channels-store.js";
 import type { CustomersStore } from "./customers-store.js";
 import { orgFeatures, requireFeature } from "./entitlements.js";
+import { createGatherer } from "./gather.js";
 
 export interface GrowthDeps {
   platform: PlatformStore;
@@ -61,80 +61,14 @@ export function registerGrowthRoutes(app: FastifyInstance, d: GrowthDeps) {
     return site;
   };
 
-  /** Everything the graph and the checks need, read fresh from the stores. */
-  const gather = async (
-    site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
-  ) => {
-    const profile = await growth.getProfile(site.id);
-    const kit = await growth.latestBrandKit(site.id);
-    const pubRow = await platform.getPublishedVersionRow(site.id);
-    let liveFacts: PresenceInputs["site"]["liveFacts"] = null;
-    if (pubRow) {
-      try {
-        liveFacts = factsFromSpec(parseAnySiteSpec(pubRow.spec));
-      } catch {
-        liveFacts = null;
-      }
-    }
-    const domains = await ops.domainsForSite(site.id);
-    const custom = domains.find((x) => x.state !== "DECOMMISSIONED") ?? null;
-    const serviceId = await ops.serviceForSite(site.id);
-    const obs = serviceId ? await ops.latestObservation(serviceId) : null;
-    const incidents = serviceId
-      ? await ops.incidentsForService(serviceId, 20)
-      : [];
-    const t = now();
-    const inputs: PresenceInputs | null = profile
-      ? {
-          now: t,
-          facts: profile.facts,
-          site: {
-            exists: true,
-            published: site.status === "PUBLISHED",
-            url: site.publicUrl,
-            publishedAt: pubRow
-              ? new Date(pubRow.published_at as string).toISOString()
-              : null,
-            liveFacts,
-          },
-          domain: {
-            custom: custom?.hostname ?? null,
-            verified: custom?.state === "ACTIVE",
-            tls: custom
-              ? custom.sslState === "ACTIVE"
-                ? "valid"
-                : "pending"
-              : "unknown",
-          },
-          brand: kit ? { version: kit.version, kit: kit.kit } : null,
-          channels: (await channels.list(site.id))
-            .filter((c) => c.state !== "DISCONNECTED")
-            .map((c) => ({
-              provider: c.provider,
-              state: c.state,
-              account: c.accountName,
-            })),
-          proof: await growth.proofSummary(site.id),
-          operations: {
-            status: null,
-            lastCheckAt: obs?.observedAt ?? null,
-            openIncidents: incidents.filter((i) => i.resolvedAt === null)
-              .length,
-          },
-          demand: await (async () => {
-            await customers.syncFormLeads(site.id, site.orgId);
-            const c = await customers.counts(site.id, t);
-            return {
-              enquiries30d: (await growth.enquiryStats(site.id, t))
-                .enquiries30d,
-              waiting: c.waiting,
-              oldestWaitingAt: c.oldestWaitingAt,
-            };
-          })(),
-        }
-      : null;
-    return { profile, kit, inputs };
-  };
+  const gather = createGatherer({
+    platform,
+    ops,
+    growth,
+    channels,
+    customers,
+    now,
+  });
 
   const importFromSite = async (site: {
     id: string;

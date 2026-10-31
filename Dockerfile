@@ -51,6 +51,10 @@ RUN pnpm install --frozen-lockfile --prod
 FROM node:${NODE_VERSION}-bookworm-slim AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
+# Video export in Motion Studio needs an encoder. Off by default so the production image build never depends on apt;
+# build with --build-arg WITH_FFMPEG=true to enable it. Without it the app reports video export as unavailable.
+ARG WITH_FFMPEG=false
+RUN if [ "$WITH_FFMPEG" = "true" ]; then apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -rf /var/lib/apt/lists/*; fi
 COPY --from=deps /app /app
 COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/apps/web/dist apps/web/dist
@@ -64,6 +68,7 @@ COPY --from=build /app/packages/site-schema/dist packages/site-schema/dist
 COPY --from=build /app/packages/site-serving/dist packages/site-serving/dist
 COPY --from=build /app/packages/site-fonts/dist packages/site-fonts/dist
 COPY --from=build /app/packages/site-fonts/files packages/site-fonts/files
+COPY --from=build /app/packages/site-fonts/ttf packages/site-fonts/ttf
 COPY --from=build /app/packages/growth/dist packages/growth/dist
 COPY --from=build /app/packages/site-media/dist packages/site-media/dist
 COPY --from=build /app/packages/site-media/files packages/site-media/files

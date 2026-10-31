@@ -11,6 +11,14 @@ import { registerChannelRoutes } from "./channels-routes.js";
 import { registerCustomerRoutes } from "./customers-routes.js";
 import { ProviderRegistry } from "./providers.js";
 import { SecretBox } from "./secrets.js";
+import { createGatherer } from "./gather.js";
+import { StudioStore } from "./studio-store.js";
+import { StudioWorker } from "./studio-worker.js";
+import { CalendarStore } from "./calendar-store.js";
+import { PublishWorker } from "./publish-worker.js";
+import { registerCalendarRoutes } from "./calendar-routes.js";
+import { registerStudioRoutes } from "./studio-routes.js";
+import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
 
 export function registerGrowth(
   app: FastifyInstance,
@@ -35,6 +43,59 @@ export function registerGrowth(
         : undefined),
   );
   const now = d.now;
+  const studio = new StudioStore(platform.sql);
+  const bin = ffmpegBin(process.env);
+  let encoder: Promise<boolean> | null = null;
+  const ffmpeg = () => (encoder ??= ffmpegAvailable(bin));
+  let rasterP: Promise<Rasterizer> | null = null;
+  const raster = () => (rasterP ??= Rasterizer.create());
+  const gather = createGatherer({
+    platform,
+    ops,
+    growth,
+    channels,
+    customers,
+    now: now ?? (() => new Date()),
+  });
+  registerStudioRoutes(app, {
+    platform,
+    billing,
+    growth,
+    studio,
+    gather,
+    raster,
+    ffmpeg,
+    contentModel: null,
+  });
+  const calendar = new CalendarStore(platform.sql);
+  registerCalendarRoutes(app, {
+    platform,
+    billing,
+    calendar,
+    channels,
+    studio,
+    providers,
+    gather,
+    ...(now ? { now } : {}),
+  });
+  if (config.NODE_ENV !== "test" || process.env.KORA_STUDIO_WORKER === "true") {
+    const pw = new PublishWorker({
+      platform,
+      calendar,
+      channels,
+      studio,
+      providers,
+      secrets,
+      gather,
+      now: now ?? (() => new Date()),
+    });
+    pw.start(Number(process.env.KORA_PUBLISH_TICK_MS) || 5000);
+    app.addHook("onClose", () => pw.stop());
+
+    const w = new StudioWorker({ studio, growth, raster, bin });
+    w.start();
+    app.addHook("onClose", () => w.stop());
+  }
   registerGrowthRoutes(app, {
     platform,
     ops,

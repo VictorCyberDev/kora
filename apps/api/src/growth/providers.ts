@@ -32,6 +32,21 @@ export interface ProviderAdapter {
   }): Promise<{ tokens: TokenSet; account: AccountInfo }>;
   refresh(tokens: TokenSet): Promise<TokenSet>;
   check(tokens: TokenSet): Promise<CheckResult>;
+  /**
+   * Optional: only providers Kora can really post to implement it. A missing method is how the engine knows a
+   * provider is handoff-only; nothing pretends to post.
+   */
+  publish?(tokens: TokenSet, post: PublishInput): Promise<PublishResult>;
+}
+export interface PublishInput {
+  text: string;
+  media: { bytes: Buffer; mime: string } | null;
+  /** Stable per (item, channel); providers that support it should use it to deduplicate. */
+  idempotencyKey: string;
+}
+export interface PublishResult {
+  externalId: string;
+  url: string | null;
 }
 
 type Fetch = typeof fetch;
@@ -288,7 +303,9 @@ class SandboxAdapter implements ProviderAdapter {
         scopes: this.scopes,
       },
       account: {
-        externalId: p.externalAccountId ?? `sandbox-${this.provider}`,
+        externalId:
+          p.externalAccountId ??
+          `sandbox-${this.provider}-${crypto.randomUUID().slice(0, 8)}`,
         name: `Sandbox ${CHANNEL_MATRIX[this.provider].label}`,
       },
     });
@@ -301,6 +318,18 @@ class SandboxAdapter implements ProviderAdapter {
   }
   check(): Promise<CheckResult> {
     return Promise.resolve({ ok: true });
+  }
+  /** Test double. `[sandbox-fail:NNN]` in the text simulates a provider error with that HTTP status. */
+  publish(_t: TokenSet, post: PublishInput): Promise<PublishResult> {
+    const m = /\[sandbox-fail:(\d{3}|net)\]/.exec(post.text);
+    if (m)
+      return Promise.reject(
+        m[1] === "net"
+          ? new ProviderError(0, "network")
+          : new ProviderError(Number(m[1]), "sandbox failure"),
+      );
+    const id = `sandbox-${this.provider}-${post.idempotencyKey.slice(0, 12)}`;
+    return Promise.resolve({ externalId: id, url: null });
   }
 }
 
