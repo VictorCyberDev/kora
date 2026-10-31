@@ -549,6 +549,15 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
     text-align: left;
   }
 
+  /* A <button> has a light default background; without this the sidebar sign-out text sat on #efefef. */
+  header.top:has(nav[aria-label="Mission Control"]) .navlink-btn {
+    background: transparent;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
   header.top:has(nav[aria-label="Mission Control"]) nav.main a:hover,
   header.top:has(nav[aria-label="Mission Control"]) .navlink-btn:hover {
     color: #fff9ef;

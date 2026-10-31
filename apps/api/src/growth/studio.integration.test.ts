@@ -150,6 +150,11 @@ d("brand studio", () => {
     expect(buf.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
     expect(buf.readUInt32BE(16)).toBe(1080);
     expect(buf.length).toBeGreaterThan(5000);
+    const used =
+      await h.sql`SELECT dimension, SUM(quantity)::int AS n FROM usage_events WHERE site_id=${s.id} GROUP BY dimension`;
+    expect(
+      Object.fromEntries(used.map((u) => [u.dimension, u.n])),
+    ).toMatchObject({ IMAGE_RENDER: 1 });
     const svg = await fetch(
       `${h.base}/api/sites/${s.id}/assets/${asset.id}/file?as=svg`,
       { headers: { cookie: a.cookie } },
