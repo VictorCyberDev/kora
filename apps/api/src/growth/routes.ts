@@ -34,6 +34,8 @@ import type { BillingService } from "../platform/billing.js";
 import type { PlatformConfig } from "../platform/config.js";
 import { formEndpointFor } from "../platform/routes.js";
 import { RevisionConflict, type GrowthStore } from "./store.js";
+import type { ChannelsStore } from "./channels-store.js";
+import type { CustomersStore } from "./customers-store.js";
 import { orgFeatures, requireFeature } from "./entitlements.js";
 
 export interface GrowthDeps {
@@ -41,6 +43,8 @@ export interface GrowthDeps {
   ops: OpsStore;
   billing: BillingService;
   growth: GrowthStore;
+  channels: ChannelsStore;
+  customers: CustomersStore;
   config: PlatformConfig;
   now?: () => Date;
 }
@@ -48,7 +52,7 @@ export interface GrowthDeps {
 const idParam = z.object({ id: z.string().uuid() });
 
 export function registerGrowthRoutes(app: FastifyInstance, d: GrowthDeps) {
-  const { platform, ops, billing, growth, config } = d;
+  const { platform, ops, billing, growth, channels, customers, config } = d;
   const now = d.now ?? (() => new Date());
   const siteFor = async (req: FastifyRequest, min: Role = "VIEWER") => {
     const site = await platform.getSite(idParam.parse(req.params).id);
@@ -103,7 +107,13 @@ export function registerGrowthRoutes(app: FastifyInstance, d: GrowthDeps) {
               : "unknown",
           },
           brand: kit ? { version: kit.version, kit: kit.kit } : null,
-          channels: [],
+          channels: (await channels.list(site.id))
+            .filter((c) => c.state !== "DISCONNECTED")
+            .map((c) => ({
+              provider: c.provider,
+              state: c.state,
+              account: c.accountName,
+            })),
           proof: await growth.proofSummary(site.id),
           operations: {
             status: null,
@@ -111,7 +121,16 @@ export function registerGrowthRoutes(app: FastifyInstance, d: GrowthDeps) {
             openIncidents: incidents.filter((i) => i.resolvedAt === null)
               .length,
           },
-          demand: await growth.enquiryStats(site.id, t),
+          demand: await (async () => {
+            await customers.syncFormLeads(site.id, site.orgId);
+            const c = await customers.counts(site.id, t);
+            return {
+              enquiries30d: (await growth.enquiryStats(site.id, t))
+                .enquiries30d,
+              waiting: c.waiting,
+              oldestWaitingAt: c.oldestWaitingAt,
+            };
+          })(),
         }
       : null;
     return { profile, kit, inputs };

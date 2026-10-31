@@ -24,8 +24,7 @@ import {
   type SitePublisher,
 } from "./publisher.js";
 import { registerRoutes } from "./routes.js";
-import { GrowthStore } from "../growth/store.js";
-import { registerGrowthRoutes } from "../growth/routes.js";
+import { registerGrowth } from "../growth/index.js";
 import { SESSION_COOKIE, readCookie, sha256Hex } from "./security.js";
 import { PublishService, SiteMonitors } from "./services.js";
 import { PlatformStore } from "./store.js";
@@ -294,6 +293,7 @@ export function registerPlatform(
     const mutating = !["GET", "HEAD", "OPTIONS"].includes(req.method);
     const publicEndpoint =
       path.startsWith("/api/public/") ||
+      path.startsWith("/api/webhooks/") ||
       path.startsWith("/api/billing/webhook");
     if (mutating && !publicEndpoint) {
       const origin = req.headers.origin;
@@ -352,11 +352,10 @@ export function registerPlatform(
     billing: rt.billing,
   });
   registerBillingRoutes(app, { billing: rt.billing, platform });
-  registerGrowthRoutes(app, {
+  registerGrowth(app, {
     platform,
     ops: rt.ops,
     billing: rt.billing,
-    growth: new GrowthStore(platform.sql),
     config,
   });
   registerHosting(app, {

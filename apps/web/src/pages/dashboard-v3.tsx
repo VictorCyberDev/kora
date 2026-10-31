@@ -31,15 +31,14 @@ export function Dashboard() {
   const { user } = useAuth();
   const sites = useLoad<J[]>(() => api("GET", "/api/sites"));
   const firstSiteId = sites.data?.[0]?.id as string | undefined;
-  const messages = useLoad<J[]>(
+  const waiting = useLoad(
     () =>
       firstSiteId
-        ? api("GET", `/api/sites/${firstSiteId}/forms`)
-        : Promise.resolve([]),
+        ? api<J>("GET", `/api/sites/${firstSiteId}/customers/summary`)
+        : Promise.resolve(null),
     [firstSiteId],
-    firstSiteId ? 12000 : undefined,
+    firstSiteId ? 15000 : undefined,
   );
-
   return (
     <div className="k-home stack">
       <header className="k-home-head">
@@ -108,10 +107,16 @@ export function Dashboard() {
                     detail="Design, copy, sections and versions"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/forms`}
-                    eyebrow="Inbox"
-                    title={`${messages.data?.filter((m) => m.status !== "ARCHIVED").length ?? 0} customer message${(messages.data?.filter((m) => m.status !== "ARCHIVED").length ?? 0) === 1 ? "" : "s"}`}
-                    detail="Read and follow up from your website"
+                    to={`/app/sites/${rows[0].id}/customers`}
+                    eyebrow="Customers"
+                    title={
+                      waiting.data
+                        ? waiting.data.waiting === 0
+                          ? "Nobody is waiting for a reply"
+                          : `${waiting.data.waiting} customer${waiting.data.waiting === 1 ? " is" : "s are"} waiting for a reply`
+                        : "Your customers"
+                    }
+                    detail="Enquiries from your website and channels, in one place"
                   />
                   <QuickAction
                     to={`/app/sites/${rows[0].id}/presence`}

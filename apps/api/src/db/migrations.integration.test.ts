@@ -82,6 +82,8 @@ d("migrations", () => {
       "business_profiles",
       "brand_kits",
       "presence_checks",
+      "channel_connections",
+      "leads",
     ])
       expect(tables, t).toContain(t);
     await sql.end();
@@ -127,7 +129,7 @@ d("startup migration", () => {
       peers.map((p) => migrateWithLock(p, (n) => applied.push(n))),
     );
     // Each process walks the (re-runnable) list, but never concurrently and never failing.
-    expect(applied.length).toBe(peers.length * 13);
+    expect(applied.length).toBe(peers.length * 15);
     expect(
       (
         await sql`SELECT COUNT(*)::int AS n FROM information_schema.tables WHERE table_name IN ('sites','users','audit_log')`
