@@ -230,6 +230,7 @@ for (const w of WIDTHS) {
       ["site-overview", `/app/sites/${siteId}`],
       ["presence", `/app/sites/${siteId}/presence`],
       ["brand", `/app/sites/${siteId}/brand`],
+      ["create", `/app/sites/${siteId}/create`],
       ["channels", `/app/sites/${siteId}/channels`],
       ["customers", `/app/sites/${siteId}/customers`],
       ["builder", `/app/sites/${siteId}/build`],
@@ -251,6 +252,17 @@ for (const w of WIDTHS) {
           await page.getByRole("tab", { name: tab }).click();
           await check(page, `builder/${tab}`, w, problems);
         }
+      if (label === "create") {
+        await page.getByRole("tab", { name: "Images" }).click();
+        await page.getByRole("img", { name: /Preview/ }).waitFor();
+        await check(page, "create/images", w, problems);
+        await page.getByRole("tab", { name: "Video" }).click();
+        await page
+          .getByRole("img", { name: /Preview at/ })
+          .first()
+          .waitFor();
+        await check(page, "create/video", w, problems);
+      }
       if (label === "customers") {
         await page.locator(".k-lead").first().click();
         await check(page, "customers/open-lead", w, problems);

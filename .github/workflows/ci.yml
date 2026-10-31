@@ -49,6 +49,7 @@ jobs:
           test -f packages/growth/dist/src/index.js
           test -f apps/api/dist/db/migrations/013_presence.sql
           test -f apps/api/dist/db/migrations/015_customers.sql
+          test -f apps/api/dist/db/migrations/016_studio.sql
           test -f packages/site-fonts/dist/index.js
           test -f packages/site-media/dist/index.js
           test -f packages/site-media/files/restaurant-timber-ceiling.webp
