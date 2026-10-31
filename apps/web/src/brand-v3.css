@@ -199,8 +199,8 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
 }
 
 .k-hero h1 {
-  max-width: 12ch;
-  font-size: clamp(3.35rem, 7vw, 6.7rem);
+  max-width: 16ch;
+  font-size: clamp(2.4rem, 4.6vw, 4.4rem);
   line-height: 0.94;
   letter-spacing: -0.055em;
   color: #fff9ef;
