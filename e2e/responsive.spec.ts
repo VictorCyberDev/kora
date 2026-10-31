@@ -1,4 +1,5 @@
-import AxeBuilder from "@axe-core/playwright";
+import { createRequire } from "node:module";
+import { dirname } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
@@ -112,17 +113,47 @@ async function check(page: Page, label: string, w: number, problems: string[]) {
   if (bad.length) problems.push(`${label} @${w}px: ${bad.join(" // ")}`);
 }
 
-/** Automated WCAG 2.1 A/AA checks on the pages an owner actually uses, at a phone and a desktop width. */
+/**
+ * Automated WCAG 2.1 A/AA checks on the pages an owner actually uses, at a phone and a desktop width. axe-core is injected
+ * straight into the page: @axe-core/playwright opens a second page, which touch-emulating contexts do not allow.
+ */
+const req = createRequire(import.meta.url);
+const axeSource = req.resolve("axe-core/axe.min.js", {
+  paths: [dirname(req.resolve("@axe-core/playwright"))],
+});
 async function a11y(page: Page, label: string, w: number, problems: string[]) {
-  const r = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
-    .analyze();
-  for (const v of r.violations)
+  await page.addScriptTag({ path: axeSource });
+  const violations = await page.evaluate(async () => {
+    const r = await (
+      window as unknown as {
+        axe: {
+          run: (
+            c: unknown,
+            o: unknown,
+          ) => Promise<{
+            violations: Array<{
+              id: string;
+              impact: string;
+              nodes: Array<{ target: string[] }>;
+            }>;
+          }>;
+        };
+      }
+    ).axe.run(document, {
+      runOnly: {
+        type: "tag",
+        values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"],
+      },
+    });
+    return r.violations.map((v) => ({
+      id: v.id,
+      impact: v.impact,
+      targets: v.nodes.slice(0, 2).map((n) => n.target.join(" ")),
+    }));
+  });
+  for (const v of violations)
     problems.push(
-      `${label} @${w}px a11y ${v.id} (${v.impact}): ${v.nodes
-        .slice(0, 2)
-        .map((n) => n.target.join(" "))
-        .join(" | ")}`,
+      `${label} @${w}px a11y ${v.id} (${v.impact}): ${v.targets.join(" | ")}`,
     );
 }
 
