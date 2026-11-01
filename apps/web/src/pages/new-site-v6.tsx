@@ -233,7 +233,7 @@ export function NewSiteV6() {
       <div className="stack k-builder-v6">
         <div className="k-builder-v6-head">
           <p className="k-overline">Website studio</p>
-          <h1>Pick the direction that feels like your business.</h1>
+          <h1>Pick a direction that feels like your business.</h1>
           <p className="muted">
             These are three real rendered directions. Comparing them does not
             create another website or use up a website slot.

@@ -661,3 +661,14 @@
     transform: none;
   }
 }
+
+/* v6 release guard: keep floating product cards inside tablet viewports. */
+@media (max-width: 900px) {
+  .k-hero .scene-status {
+    right: 0;
+  }
+
+  .k-hero .scene-incident {
+    left: 0;
+  }
+}
