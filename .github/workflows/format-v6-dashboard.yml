@@ -1,0 +1,38 @@
+name: Format Kora v6 dashboard
+
+on:
+  push:
+    branches:
+      - kora-v6-premium-flow-repair
+
+permissions:
+  contents: write
+
+jobs:
+  prettier:
+    if: ${{ !contains(github.event.head_commit.message, '[prettier-dashboard]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: kora-v6-premium-flow-repair
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/web/src/pages/dashboard-v3.tsx
+      - name: Commit formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/web/src/pages/dashboard-v3.tsx
+          if git diff --cached --quiet; then
+            echo "Already formatted"
+            exit 0
+          fi
+          git commit -m "chore: format dashboard repair [prettier-dashboard]"
+          git push origin HEAD:kora-v6-premium-flow-repair
