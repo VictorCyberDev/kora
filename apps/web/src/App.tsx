@@ -23,16 +23,24 @@ import {
   Signup,
   Terms,
 } from "./pages/public";
-import { NewSite, SitesList } from "./pages/sites";
+import { SitesList } from "./pages/sites";
+import { NewSiteV6 } from "./pages/new-site-v6";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
 import { MemoryPage, ResultsPage, ReviewsPage } from "./pages/intel";
 import { CampaignsPage, TodayPage } from "./pages/today";
 import { CalendarPage } from "./pages/calendar";
-import { MarketingEntry, StudioPage } from "./pages/studio";
+import { StudioPage } from "./pages/studio";
 import { ChannelsPage } from "./pages/channels";
-import { CustomersEntry, CustomersPage } from "./pages/customers";
-import { BrandPage, PresenceEntry, PresencePage } from "./pages/presence";
+import { CustomersPage } from "./pages/customers";
+import { BrandPage, PresencePage } from "./pages/presence";
+import {
+  CampaignsEntryV6,
+  CustomersEntryV6,
+  ImagesEntryV6,
+  MarketingEntryV6,
+  PresenceEntryV6,
+} from "./pages/site-entry-v6";
 import { IncidentPage, IncidentsList } from "./pages/incident";
 import {
   AuditPage,
@@ -333,7 +341,7 @@ export function App() {
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="sites" element={<SitesList />} />
-        <Route path="sites/new" element={<NewSite />} />
+        <Route path="sites/new" element={<NewSiteV6 />} />
         <Route path="sites/:id" element={<SiteShell />}>
           <Route index element={<SiteOverview />} />
           <Route path="presence" element={<PresencePage />} />
@@ -357,9 +365,11 @@ export function App() {
           <Route path="forms" element={<FormsPage />} />
           <Route path="settings" element={<SiteSettings />} />
         </Route>
-        <Route path="presence" element={<PresenceEntry />} />
-        <Route path="customers" element={<CustomersEntry />} />
-        <Route path="marketing" element={<MarketingEntry />} />
+        <Route path="presence" element={<PresenceEntryV6 />} />
+        <Route path="customers" element={<CustomersEntryV6 />} />
+        <Route path="marketing" element={<MarketingEntryV6 />} />
+        <Route path="campaigns" element={<CampaignsEntryV6 />} />
+        <Route path="images" element={<ImagesEntryV6 />} />
         <Route path="more" element={<MorePage />} />
         <Route path="operations" element={<OperationsPage />} />
         <Route path="billing" element={<BillingPage />} />
