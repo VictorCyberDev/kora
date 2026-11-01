@@ -49,7 +49,7 @@ const mapLead = (r: Row): LeadRecord => ({
 });
 
 export class CustomersStore {
-  constructor(private readonly sql: postgres.Sql) {}
+  constructor(readonly sql: postgres.Sql) {}
   private tx<T>(fn: (sql: postgres.Sql) => Promise<T>): Promise<T> {
     return this.sql.begin((t) =>
       fn(t as unknown as postgres.Sql),

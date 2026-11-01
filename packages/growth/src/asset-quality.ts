@@ -62,7 +62,7 @@ export function staticAssetQuality(
       `${words} words; keep a social asset under ${opts.maxWords ?? 40}.`,
     );
 
-  const min = opts.minFontPx ?? Math.round(opts.width / 36);
+  const min = opts.minFontPx ?? Math.round(opts.width / 42);
   for (const m of svg.matchAll(/font-size="(\d+(?:\.\d+)?)"/g))
     if (Number(m[1]) < min) {
       add(

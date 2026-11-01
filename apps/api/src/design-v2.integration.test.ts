@@ -90,6 +90,7 @@ d("SiteSpec v2 through the real API", () => {
     expect(q.json.data.supported).toBe(true);
     expect(["K0", "K1", "K2", "K3", "K4", "K5"]).toContain(q.json.data.grade);
     expect(Array.isArray(q.json.data.findings)).toBe(true);
+    expect(Array.isArray(q.json.data.budgets)).toBe(true);
     const other = await h.signup("v2-quality-other@example.com");
     const denied = await h.call("GET", url, { cookie: other.cookie });
     expect(denied.status).toBeGreaterThanOrEqual(403);

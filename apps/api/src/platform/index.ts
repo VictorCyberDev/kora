@@ -25,6 +25,7 @@ import {
 } from "./publisher.js";
 import { registerRoutes } from "./routes.js";
 import { registerGrowth } from "../growth/index.js";
+import type { MediaProvider } from "@kora/growth";
 import { SESSION_COOKIE, readCookie, sha256Hex } from "./security.js";
 import { PublishService, SiteMonitors } from "./services.js";
 import { PlatformStore } from "./store.js";
@@ -59,6 +60,7 @@ export interface PlatformRuntime {
   config: PlatformConfig;
   llm: LlmClient | null;
   extensions: Array<(app: FastifyInstance) => void>;
+  media?: { image: MediaProvider[]; video: MediaProvider[] };
   startBackground(): Promise<void>;
   stop(): Promise<void>;
 }
@@ -77,6 +79,8 @@ export interface CreatePlatformOptions {
   payments?: PaymentProvider;
   resolver?: DnsResolver;
   domainFetch?: typeof fetch;
+  /** Generated-media providers; defaults to whatever the environment configures. */
+  media?: { image: MediaProvider[]; video: MediaProvider[] };
 }
 
 export function choosePublisher(
@@ -216,6 +220,7 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
     config,
     llm,
     extensions: [],
+    ...(o.media ? { media: o.media } : {}),
     async startBackground() {
       await billing.seedPlans(loadPlanCatalog(process.env));
       domainTimer = setInterval(
@@ -357,6 +362,7 @@ export function registerPlatform(
     ops: rt.ops,
     billing: rt.billing,
     config,
+    ...(rt.media ? { media: rt.media } : {}),
   });
   registerHosting(app, {
     platform,

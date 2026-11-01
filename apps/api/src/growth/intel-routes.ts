@@ -7,6 +7,7 @@ import {
   buildPresenceGraph,
   isLikelyBot,
   isSensitive,
+  performanceReport,
   normalizeMetrics,
   outcomeEntry,
   suggestReply,
@@ -148,6 +149,36 @@ export function registerIntelRoutes(app: FastifyInstance, d: IntelDeps) {
         summary: summarizeAttribution(results),
         links: results,
         note: ATTRIBUTION_NOTE,
+      },
+    };
+  });
+
+  /** What happened, and how Kora knows: counted, likely or estimated. Compares with the period before. */
+  app.get("/api/sites/:id/performance", async (req) => {
+    const site = await siteFor(req);
+    await requireFeature(billing, site.orgId, "analytics");
+    const q = z
+      .object({ days: z.coerce.number().int().min(1).max(90).default(30) })
+      .parse(req.query);
+    const end = now();
+    const mid = new Date(end.getTime() - q.days * DAY);
+    const start = new Date(mid.getTime() - q.days * DAY);
+    const cur = summarizeAttribution(await intel.results(site.id, mid, end));
+    const prev = summarizeAttribution(await intel.results(site.id, start, mid));
+    const prevTotal = prev.enquiries + prev.whatsappTaps + prev.callTaps;
+    return {
+      data: {
+        days: q.days,
+        ...performanceReport({
+          trackedVisits: cur.visits,
+          whatsappTaps: cur.whatsappTaps,
+          callTaps: cur.callTaps,
+          enquiries: cur.enquiries,
+          platformReach: null,
+          priorEnquiries:
+            prev.links === 0 && prevTotal === 0 ? null : prevTotal,
+          newCustomersEstimate: null,
+        }),
       },
     };
   });

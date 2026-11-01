@@ -1,4 +1,5 @@
 import { IdentityPage } from "./pages/identity";
+import { ImagesPage } from "./pages/creative";
 import { PublicAuditPage, SharedAuditPage } from "./pages/audit";
 import { useEffect, useState } from "react";
 import {
@@ -344,6 +345,7 @@ export function App() {
           <Route path="today" element={<TodayPage />} />
           <Route path="campaigns" element={<CampaignsPage />} />
           <Route path="create" element={<StudioPage />} />
+          <Route path="images" element={<ImagesPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="channels" element={<ChannelsPage />} />
           <Route path="customers" element={<CustomersPage />} />

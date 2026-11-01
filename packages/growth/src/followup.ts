@@ -1,6 +1,8 @@
+import type { LeadStatus } from "./leads.js";
+
 /** M19: the customer loop. When a customer has gone quiet or a job is done, what should happen next and what needs approval. */
 export interface FollowUpInput {
-  status: "NEW" | "NEEDS_REPLY" | "REPLIED" | "BOOKED" | "WON" | "LOST";
+  status: LeadStatus;
   lastInboundHoursAgo: number | null;
   lastOutboundHoursAgo: number | null;
   hasConsentToMessage: boolean;
@@ -32,7 +34,7 @@ export function followUpFor(i: FollowUpInput): FollowUp {
       blockedBecause: null,
     };
   if (
-    i.status === "REPLIED" &&
+    i.status === "FOLLOW_UP" &&
     i.lastOutboundHoursAgo !== null &&
     i.lastOutboundHoursAgo >= 48
   ) {
@@ -51,7 +53,7 @@ export function followUpFor(i: FollowUpInput): FollowUp {
         };
   }
   if (
-    (i.status === "WON" || i.status === "BOOKED") &&
+    i.status === "WON" &&
     i.completedDaysAgo !== null &&
     i.completedDaysAgo >= 2 &&
     i.completedDaysAgo <= 14

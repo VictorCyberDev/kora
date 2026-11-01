@@ -25,6 +25,8 @@ import { registerMarketingRoutes } from "./marketing-routes.js";
 import { registerStudioRoutes } from "./studio-routes.js";
 import { registerTruthRoutes } from "./truth-routes.js";
 import { registerCreativeRoutes } from "./creative-routes.js";
+import { registerMediaRoutes } from "./media-routes.js";
+import { mediaProvidersFromEnv, type MediaProvider } from "@kora/growth";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
 
 export function registerGrowth(
@@ -36,6 +38,7 @@ export function registerGrowth(
     config: PlatformConfig;
     now?: () => Date;
     providerFetch?: typeof fetch;
+    media?: { image: MediaProvider[]; video: MediaProvider[] };
   },
 ) {
   const { platform, ops, billing, config } = d;
@@ -82,6 +85,13 @@ export function registerGrowth(
     growth,
     sql: platform.sql,
     ...(now ? { now } : {}),
+  });
+  registerMediaRoutes(app, {
+    platform,
+    billing,
+    growth,
+    sql: platform.sql,
+    media: d.media ?? mediaProvidersFromEnv(process.env),
   });
   registerCreativeRoutes(app, {
     platform,

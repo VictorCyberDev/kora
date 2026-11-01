@@ -9,6 +9,9 @@ import {
   buildPresenceGraph,
   checkPublishable,
   contentHash,
+  handoffPack,
+  BUNDLE_CHANNELS,
+  type BundleChannel,
   decide,
   isBlocked,
   type ChannelProvider,
@@ -549,6 +552,42 @@ export function registerCalendarRoutes(app: FastifyInstance, d: CalendarDeps) {
       metadata: { provider: b.provider },
     });
     return { data: (await calendar.get(site.id, item.id))! };
+  });
+
+  /** Per-channel hand-off: only for approved text that has not changed since approval. Kora never says it was posted. */
+  app.get("/api/sites/:id/calendar/items/:itemId/handoff", async (req) => {
+    const { site, item } = await itemFor(req);
+    if (!item.approvedHash)
+      throw new HttpError(409, "not_approved", "Approve this post first.");
+    const text = [
+      item.caption.headline,
+      item.caption.body,
+      item.caption.hashtags.join(" "),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+    const file = item.assetId
+      ? `/api/sites/${site.id}/assets/${item.assetId}/file?as=download`
+      : "";
+    try {
+      return {
+        data: item.channels
+          .filter((c): c is BundleChannel =>
+            (BUNDLE_CHANNELS as readonly string[]).includes(c),
+          )
+          .map((c) =>
+            handoffPack({
+              channel: c,
+              caption: text,
+              assetFile: file,
+              approvedHash: item.approvedHash!,
+              currentHash: hashOf(item),
+            }),
+          ),
+      };
+    } catch (e) {
+      throw new HttpError(409, "changed_after_approval", (e as Error).message);
+    }
   });
 
   /** Copy-ready package for manual posting. */

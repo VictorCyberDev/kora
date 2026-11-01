@@ -204,4 +204,158 @@ d("creative loop over the API", () => {
       "accept",
     ]);
   });
+
+  it("runs the customer loop: suggestions need consent, performance is honest, hand-off is hash-bound, storyboards need a chosen direction", async () => {
+    const { a, site } = await ready("loop1@example.com");
+    const vs = await h.call("GET", `/api/sites/${site.id}/versions`, {
+      cookie: a.cookie,
+    });
+    const pub = await h.call(
+      "POST",
+      `/api/sites/${site.id}/versions/${vs.json.data[0].id}/publish`,
+      { cookie: a.cookie },
+    );
+    expect(pub.status).toBe(200);
+    const post = await fetch(`${h.base}/api/public/sites/${site.id}/forms`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: "Bola",
+        phone: "+234 805 550 0002",
+        message: "Need a cake",
+      }),
+    });
+    expect(post.status).toBeLessThan(300);
+    const sug = await h.call(
+      "GET",
+      `/api/sites/${site.id}/customers/suggestions`,
+      { cookie: a.cookie },
+    );
+    expect(sug.json.data[0]).toMatchObject({
+      kind: "reply_now",
+      requiresApproval: true,
+      blockedBecause: null,
+    });
+
+    await h.sql`UPDATE leads SET status='FOLLOW_UP', last_outbound_at=now() - interval '3 days', last_inbound_at=now() - interval '4 days' WHERE site_id=${site.id}`;
+    const quiet = await h.call(
+      "GET",
+      `/api/sites/${site.id}/customers/suggestions`,
+      { cookie: a.cookie },
+    );
+    expect(quiet.json.data[0]).toMatchObject({ kind: "nudge" });
+    expect(quiet.json.data[0].blockedBecause).toMatch(/agreed/);
+    const cid = (
+      await h.sql`SELECT customer_id FROM leads WHERE site_id=${site.id}`
+    )[0]!.customer_id as string;
+    expect(
+      (
+        await h.call("POST", `/api/sites/${site.id}/customers/${cid}/consent`, {
+          cookie: a.cookie,
+          body: { consented: true },
+        })
+      ).status,
+    ).toBe(200);
+    const agreed = await h.call(
+      "GET",
+      `/api/sites/${site.id}/customers/suggestions`,
+      { cookie: a.cookie },
+    );
+    expect(agreed.json.data[0].blockedBecause).toBeNull();
+    const other = await h.signup("loop1-other@example.com", "Other");
+    expect(
+      (
+        await h.call("POST", `/api/sites/${site.id}/customers/${cid}/consent`, {
+          cookie: other.cookie,
+          body: { consented: false },
+        })
+      ).status,
+    ).toBeGreaterThanOrEqual(403);
+
+    const perf = await h.call("GET", `/api/sites/${site.id}/performance`, {
+      cookie: a.cookie,
+    });
+    expect(perf.status).toBe(200);
+    expect(perf.json.data.headline).toMatch(/not counted|counted/i);
+    expect(
+      perf.json.data.lines.every((l: { evidence: string }) =>
+        ["OBSERVED", "INFERRED", "ESTIMATED"].includes(l.evidence),
+      ),
+    ).toBe(true);
+
+    const cap = {
+      headline: "Hello",
+      body: "Open Mon-Sat 9am-6pm",
+      cta: "",
+      hashtags: [],
+    };
+    const it = (
+      await h.call("POST", `/api/sites/${site.id}/calendar/items`, {
+        cookie: a.cookie,
+        body: {
+          title: "Post",
+          caption: cap,
+          channels: ["facebook", "instagram"],
+        },
+      })
+    ).json.data.id;
+    const ib = `/api/sites/${site.id}/calendar/items/${it}`;
+    expect(
+      (await h.call("GET", `${ib}/handoff`, { cookie: a.cookie })).status,
+    ).toBe(409);
+    await h.call("POST", `${ib}/submit`, { cookie: a.cookie });
+    await h.call("POST", `${ib}/approve`, { cookie: a.cookie });
+    const ho = await h.call("GET", `${ib}/handoff`, { cookie: a.cookie });
+    expect(ho.status).toBe(200);
+    expect(ho.json.data.map((p: { channel: string }) => p.channel)).toEqual([
+      "facebook",
+      "instagram",
+    ]);
+    expect(
+      ho.json.data.every((p: { manual: boolean }) => p.manual === true),
+    ).toBe(true);
+    await h.sql`UPDATE calendar_items SET caption = jsonb_set(caption, '{body}', '"Changed behind your back"') WHERE id=${it}`;
+    const tampered = await h.call("GET", `${ib}/handoff`, { cookie: a.cookie });
+    expect(tampered.status).toBe(409);
+    expect(tampered.json.error).toBe("changed_after_approval");
+
+    const cb = await h.call("POST", `/api/sites/${site.id}/campaign-briefs`, {
+      cookie: a.cookie,
+      body: {
+        hasProductPhoto: true,
+        brief: {
+          name: "Box",
+          objective: "announce",
+          audience: "Parents",
+          subjectKey: "offer:box",
+          subject: "the cake box",
+          startOn: "2026-10-20",
+          endOn: "2026-10-31",
+          channels: ["instagram"],
+        },
+      },
+    });
+    const sbUrl = `/api/sites/${site.id}/campaign-briefs/${cb.json.data.id}`;
+    expect(
+      (
+        await h.call("POST", `${sbUrl}/storyboard`, {
+          cookie: a.cookie,
+          body: { cta: "Order now" },
+        })
+      ).status,
+    ).toBe(409);
+    await h.call("POST", `${sbUrl}/choose`, {
+      cookie: a.cookie,
+      body: { angle: "moment" },
+    });
+    const sb = await h.call("POST", `${sbUrl}/storyboard`, {
+      cookie: a.cookie,
+      body: { cta: "Order on WhatsApp", detail: "Six cupcakes and a cake" },
+    });
+    expect(sb.status).toBe(200);
+    expect(
+      sb.json.data.storyboard.scenes.map((x: { id: string }) => x.id),
+    ).toEqual(["open", "detail", "close"]);
+    expect(sb.json.data.storyboard.reducedMotion).toBe("still-frames");
+  });
 });

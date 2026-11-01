@@ -17,10 +17,13 @@ import {
   localBusinessJsonLd,
   nextRequestState,
   signShare,
+  storyboardFor,
+  storyboardIssues,
   slaRemainingHours,
   tasteProfile,
   todayActions,
   verifyShare,
+  type CreativeDirection,
   type Genome,
   type RequestEvent,
 } from "@kora/growth";
@@ -151,6 +154,38 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     await sql`UPDATE campaign_briefs SET chosen_angle=${angle} WHERE id=${briefId} AND site_id=${site.id}`;
     return { data: { id: briefId, chosenAngle: angle } };
   });
+
+  app.post(
+    "/api/sites/:id/campaign-briefs/:briefId/storyboard",
+    async (req) => {
+      const site = await siteFor(req, "MEMBER");
+      await requireFeature(billing, site.orgId, "campaigns");
+      const { briefId } = z.object({ briefId: uuid }).parse(req.params);
+      const b = z
+        .object({
+          cta: z.string().trim().min(2).max(40),
+          detail: z.string().trim().max(80).optional(),
+          durationSec: z.number().min(4).max(12).optional(),
+        })
+        .strict()
+        .parse(req.body);
+      const row = (
+        await sql`SELECT directions, chosen_angle FROM campaign_briefs WHERE id=${briefId} AND site_id=${site.id}`
+      )[0];
+      if (!row) throw notFound();
+      if (!row.chosen_angle)
+        throw new HttpError(409, "no_direction", "Choose a direction first.");
+      const dir = (row.directions as CreativeDirection[]).find(
+        (x) => x.angle === row.chosen_angle,
+      )!;
+      const sb = storyboardFor(dir, {
+        cta: b.cta,
+        ...(b.detail !== undefined && { detail: b.detail }),
+        ...(b.durationSec !== undefined && { durationSec: b.durationSec }),
+      });
+      return { data: { storyboard: sb, issues: storyboardIssues(sb) } };
+    },
+  );
 
   // ---- M17: what to do today ---------------------------------------------
   app.get("/api/sites/:id/today-actions", async (req) => {

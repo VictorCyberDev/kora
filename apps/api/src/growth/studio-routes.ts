@@ -21,6 +21,7 @@ import {
   motionFrameSvg,
   previewTimes,
   renderAssetSvg,
+  staticAssetQuality,
   validateAssetSpec,
   validateDraft,
   type ContentModel,
@@ -51,6 +52,40 @@ export interface StudioDeps {
   contentModel: ContentModel | null;
 }
 const uuid = z.string().uuid();
+
+/** The static-asset gate reads the brand as a genome-shaped object; a kit is enough to build one. */
+const gateFor = (
+  svg: string,
+  kit: {
+    colors: Record<string, string>;
+    typography: Record<string, string>;
+    voice: { avoid: string[] };
+  },
+  size: { width: number; height: number },
+) =>
+  staticAssetQuality(
+    svg,
+    {
+      visual: {
+        ink: kit.colors.ink!,
+        canvas: kit.colors.canvas!,
+        primary: kit.colors.primary!,
+        accent: kit.colors.accent!,
+        displayFamily: kit.typography.displayFamily!,
+        bodyFamily: kit.typography.bodyFamily!,
+        shape: "soft",
+        imageryStyle: "abstract",
+      },
+      verbal: {
+        tone: "warm",
+        use: [],
+        avoid: kit.voice.avoid,
+        language: "en",
+        sentenceRules: [],
+      },
+    },
+    size,
+  ).map((f) => ({ severity: f.severity, message: f.message }));
 
 export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
   const { platform, billing, growth, studio, gather } = d;
@@ -220,6 +255,11 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
     const block = issues.find((i) => i.severity === "block");
     if (block) throw new HttpError(422, "asset_rejected", block.message);
     const r = renderAssetSvg(spec, kit.kit, graph.identity.name, kit.version);
+    const gate = gateFor(r.svg, kit.kit, r);
+    const gateBlock = gate.find((i) => i.severity === "block");
+    if (gateBlock)
+      throw new HttpError(422, "asset_rejected", gateBlock.message);
+    issues.push(...gate);
     const png = (await d.raster()).png(r.svg, r.width);
     const asset = await studio.saveAsset({
       siteId: site.id,
@@ -255,11 +295,19 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
     const site = await siteFor(req);
     const spec = AssetSpecSchema.parse(req.body);
     const { kit, graph } = await base(site);
+    const rendered = renderAssetSvg(
+      spec,
+      kit.kit,
+      graph.identity.name,
+      kit.version,
+    );
     return {
       data: {
-        svg: renderAssetSvg(spec, kit.kit, graph.identity.name, kit.version)
-          .svg,
-        issues: check(site, spec, kit, graph),
+        svg: rendered.svg,
+        issues: [
+          ...check(site, spec, kit, graph),
+          ...gateFor(rendered.svg, kit.kit, rendered),
+        ],
         brandVersion: kit.version,
       },
     };

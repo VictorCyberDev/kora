@@ -23,6 +23,7 @@ import {
   type AnySiteSpec,
   type StructuredEdit,
 } from "@kora/site-schema";
+import { budgetBreaches } from "@kora/growth";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
 import { sendArtifact } from "./hosting.js";
@@ -820,8 +821,22 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     if (!spec || spec.version !== 2)
       return { data: { supported: false as const } };
     const findings = creativeFindings(spec);
+    const files = renderAnySite(spec, { siteId: site.id });
+    const bytes = (n: string) => Buffer.byteLength(files[n] ?? "");
+    const budgets = budgetBreaches({
+      site_html_kb: Math.round(bytes("index.html") / 1024),
+      site_total_kb: Math.round(
+        Object.keys(files).reduce((n, k) => n + bytes(k), 0) / 1024,
+      ),
+      site_requests: Object.keys(files).length,
+    });
     return {
-      data: { supported: true as const, findings, ...gradeFindings(findings) },
+      data: {
+        supported: true as const,
+        findings,
+        budgets,
+        ...gradeFindings(findings),
+      },
     };
   });
   // Preview serves the stored artifact: the same bytes publish deploys, never a separate renderer.

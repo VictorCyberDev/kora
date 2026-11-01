@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  ASSET_FORMATS,
+  ASSET_LAYOUTS,
+  BrandKitSchema,
+  COLORWAYS,
+  renderAssetSvg,
   auditHtml,
   budgetBreaches,
   buildContextPacket,
@@ -89,6 +94,79 @@ describe("M14 static asset quality", () => {
         g,
       ).map((f) => f.rule),
     ).toContain("safe-area");
+  });
+});
+
+describe("M14 against the real renderer", () => {
+  it("every format, layout and colourway the studio can render passes the gate", () => {
+    const kit = BrandKitSchema.parse({
+      colors: {
+        ink: "#1c1917",
+        canvas: "#faf6ef",
+        primary: "#b2452c",
+        primaryText: "#ffffff",
+        accent: "#e9a23b",
+        accentText: "#1c1917",
+        muted: "#6b6258",
+      },
+      typography: {
+        pairing: "serif-sans",
+        displayFamily: "DM Serif Display",
+        bodyFamily: "Manrope",
+      },
+      voice: { tone: "warm", use: [], avoid: [] },
+      imagery: {},
+    });
+    const gen = {
+      visual: {
+        ink: kit.colors.ink,
+        canvas: kit.colors.canvas,
+        primary: kit.colors.primary,
+        accent: kit.colors.accent,
+        displayFamily: kit.typography.displayFamily,
+        bodyFamily: kit.typography.bodyFamily,
+        shape: "soft",
+        imageryStyle: "abstract",
+      },
+      verbal: {
+        tone: "warm",
+        use: [],
+        avoid: [],
+        language: "en",
+        sentenceRules: [],
+      },
+    };
+    let n = 0;
+    for (const f of Object.keys(ASSET_FORMATS) as Array<
+      keyof typeof ASSET_FORMATS
+    >)
+      for (const l of ASSET_LAYOUTS)
+        for (const c of COLORWAYS) {
+          const r = renderAssetSvg(
+            {
+              format: f,
+              category: "offer",
+              layout: l,
+              colorway: c,
+              headline: "Birthday cakes baked to order",
+              subline: "Order by Thursday",
+              cta: "Order on WhatsApp",
+              contact: "+234 801 234 5678",
+            } as never,
+            kit,
+            "Ada Cakes",
+            1,
+          );
+          expect(
+            staticAssetQuality(r.svg, gen, {
+              width: r.width,
+              height: r.height,
+            }),
+            `${f}/${l}/${c}`,
+          ).toEqual([]);
+          n++;
+        }
+    expect(n).toBe(72);
   });
 });
 
@@ -230,7 +308,7 @@ describe("M19 follow-up", () => {
       }).kind,
     ).toBe("reply_now");
     const n = followUpFor({
-      status: "REPLIED",
+      status: "FOLLOW_UP",
       lastInboundHoursAgo: 60,
       lastOutboundHoursAgo: 50,
       hasConsentToMessage: false,

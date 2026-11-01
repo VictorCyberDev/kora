@@ -83,6 +83,7 @@ export function SiteShell() {
             label: "Studio",
             items: [
               [`${base}/create`, "Create"],
+              [`${base}/images`, "Images"],
               [`${base}/build`, "Build"],
             ],
           },

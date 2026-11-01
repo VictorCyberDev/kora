@@ -108,6 +108,13 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   await expect(
     page.getByRole("heading", { name: "Your brand in your words" }),
   ).toBeVisible();
+  // 5c. Studio images: honest when no provider is configured.
+  await page.getByRole("link", { name: "Studio", exact: true }).first().click();
+  await page.getByRole("link", { name: "Images", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Pictures made by AI" }),
+  ).toBeVisible();
+  await expect(page.getByText("Not set up yet")).toBeVisible();
   await page.getByRole("link", { name: "Today", exact: true }).click();
 
   // 6. Controlled test: the live version fails for real; Kora notices.
