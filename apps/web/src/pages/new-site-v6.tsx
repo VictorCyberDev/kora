@@ -371,7 +371,7 @@ export function NewSite() {
       onSubmit={describe}
     >
       <p className="k-overline">New website</p>
-      <h1 style={{ fontSize: "2rem" }}>Tell Kora about the business</h1>
+      <h1 style={{ fontSize: "2rem" }}>Tell Kora about your business</h1>
       <p className="muted">
         Kora now treats the three designs as previews. A new website slot is
         consumed only after you choose a direction.
