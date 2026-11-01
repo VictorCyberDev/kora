@@ -90,25 +90,45 @@ export function MarketingEntry() {
             </section>
 
             <section className="k-action-matrix" aria-label="Marketing actions">
-              <Link className="k-action-card" to={`/app/sites/${site.id}/campaigns`}>
+              <Link
+                className="k-action-card"
+                to={`/app/sites/${site.id}/campaigns`}
+              >
                 <span className="k-overline">Campaigns</span>
                 <strong>Launch one idea across every channel</strong>
-                <span>Offers, campaign posts, approvals and channel-ready output.</span>
+                <span>
+                  Offers, campaign posts, approvals and channel-ready output.
+                </span>
               </Link>
-              <Link className="k-action-card" to={`/app/sites/${site.id}/images`}>
+              <Link
+                className="k-action-card"
+                to={`/app/sites/${site.id}/images`}
+              >
                 <span className="k-overline">Images</span>
                 <strong>Create branded campaign graphics</strong>
-                <span>Flyers, social formats and reusable visual directions.</span>
+                <span>
+                  Flyers, social formats and reusable visual directions.
+                </span>
               </Link>
-              <Link className="k-action-card" to={`/app/sites/${site.id}/create`}>
+              <Link
+                className="k-action-card"
+                to={`/app/sites/${site.id}/create`}
+              >
                 <span className="k-overline">Studio</span>
                 <strong>Write posts and make creative</strong>
-                <span>Content grounded in the business facts and Brand Kit.</span>
+                <span>
+                  Content grounded in the business facts and Brand Kit.
+                </span>
               </Link>
-              <Link className="k-action-card" to={`/app/sites/${site.id}/today`}>
+              <Link
+                className="k-action-card"
+                to={`/app/sites/${site.id}/today`}
+              >
                 <span className="k-overline">Strategy</span>
                 <strong>See what Kora recommends next</strong>
-                <span>Evidence-led actions, marketing brief and upcoming work.</span>
+                <span>
+                  Evidence-led actions, marketing brief and upcoming work.
+                </span>
               </Link>
             </section>
 
@@ -124,7 +144,11 @@ export function MarketingEntry() {
                     .filter((x) => x.id !== site.id)
                     .slice(0, 5)
                     .map((x) => (
-                      <Link key={x.id} className="btn quiet sm" to={`/app/sites/${x.id}`}>
+                      <Link
+                        key={x.id}
+                        className="btn quiet sm"
+                        to={`/app/sites/${x.id}`}
+                      >
                         {x.name}
                       </Link>
                     ))}

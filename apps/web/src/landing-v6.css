@@ -40,7 +40,7 @@ body:has(.k-hero) .top .btn:not(.ghost) {
 }
 
 body:has(.k-hero) .top .btn.ghost {
-  border-color: rgba(255,255,255,.16);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 body:has(.k-hero) #main {
@@ -54,8 +54,16 @@ body:has(.k-hero) .k-hero {
   align-items: center;
   padding: clamp(72px, 9vw, 132px) 0 92px;
   background:
-    radial-gradient(circle at 82% 20%, rgba(111, 86, 255, .30), transparent 31%),
-    radial-gradient(circle at 18% 15%, rgba(255, 107, 61, .20), transparent 30%),
+    radial-gradient(
+      circle at 82% 20%,
+      rgba(111, 86, 255, 0.3),
+      transparent 31%
+    ),
+    radial-gradient(
+      circle at 18% 15%,
+      rgba(255, 107, 61, 0.2),
+      transparent 30%
+    ),
     linear-gradient(180deg, #0d0f13 0%, #090a0c 66%, #11100f 100%);
 }
 
@@ -64,10 +72,10 @@ body:has(.k-hero) .k-hero::before {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: .26;
+  opacity: 0.26;
   background-image:
-    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
   background-size: 52px 52px;
   mask-image: linear-gradient(to bottom, #000, transparent 78%);
 }
@@ -76,7 +84,7 @@ body:has(.k-hero) .k-hero-grid {
   position: relative;
   z-index: 1;
   max-width: 1240px;
-  grid-template-columns: minmax(0, 1.03fr) minmax(420px, .97fr);
+  grid-template-columns: minmax(0, 1.03fr) minmax(420px, 0.97fr);
   gap: clamp(48px, 7vw, 104px);
   align-items: center;
 }
@@ -84,10 +92,10 @@ body:has(.k-hero) .k-hero-grid {
 body:has(.k-hero) .k-kicker,
 body:has(.k-hero) .k-overline {
   color: #ff8b66;
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   font-weight: 760;
-  font-size: .72rem;
+  font-size: 0.72rem;
 }
 
 body:has(.k-hero) .k-hero h1 {
@@ -95,8 +103,8 @@ body:has(.k-hero) .k-hero h1 {
   margin: 0;
   color: #faf7f2;
   font-size: clamp(3.2rem, 6.6vw, 6.7rem);
-  line-height: .91;
-  letter-spacing: -.07em;
+  line-height: 0.91;
+  letter-spacing: -0.07em;
   font-weight: 760;
   text-wrap: balance;
 }
@@ -124,13 +132,13 @@ body:has(.k-hero) .k-hero .btn:not(.ghost) {
   background: #f7efe4;
   color: #15110d;
   border-color: #f7efe4;
-  box-shadow: 0 18px 48px rgba(0,0,0,.34);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
 }
 
 body:has(.k-hero) .k-hero .btn.ghost {
   color: #f6f0e8;
-  border-color: rgba(255,255,255,.18);
-  background: rgba(255,255,255,.035);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.035);
 }
 
 body:has(.k-hero) .scene {
@@ -143,9 +151,9 @@ body:has(.k-hero) .scene {
 body:has(.k-hero) .scene-site {
   border-radius: 24px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.13);
+  border: 1px solid rgba(255, 255, 255, 0.13);
   background: #16181d;
-  box-shadow: 0 48px 110px rgba(0,0,0,.48);
+  box-shadow: 0 48px 110px rgba(0, 0, 0, 0.48);
 }
 
 body:has(.k-hero) .k-hero .scene-site {
@@ -155,15 +163,15 @@ body:has(.k-hero) .k-hero .scene-site {
 body:has(.k-hero) .scene-bar {
   background: #15171c;
   color: #8e929a;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 body:has(.k-hero) .scene-card {
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(24, 26, 31, .86);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(24, 26, 31, 0.86);
   color: #f5f0e8;
   backdrop-filter: blur(18px);
-  box-shadow: 0 24px 70px rgba(0,0,0,.42);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
 }
 
 body:has(.k-hero) .scene-status {
@@ -198,8 +206,8 @@ body:has(.k-hero) .k-band h2 {
   margin: 0;
   color: #171513;
   font-size: clamp(2.5rem, 5.2vw, 5.4rem);
-  line-height: .96;
-  letter-spacing: -.055em;
+  line-height: 0.96;
+  letter-spacing: -0.055em;
   font-weight: 720;
   text-wrap: balance;
 }
@@ -212,7 +220,7 @@ body:has(.k-hero) .k-band p {
 body:has(.k-hero) #problem .wrap,
 body:has(.k-hero) #truth .wrap {
   max-width: 980px !important;
-  margin-left: max(20px, calc((100vw - 1240px)/2));
+  margin-left: max(20px, calc((100vw - 1240px) / 2));
 }
 
 body:has(.k-hero) #truth::after {
@@ -220,9 +228,13 @@ body:has(.k-hero) #truth::after {
   position: absolute;
   right: 4vw;
   bottom: 28px;
-  font: 800 clamp(2rem, 8vw, 9rem)/.8 ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: -.08em;
-  color: rgba(20,18,16,.055);
+  font:
+    800 clamp(2rem, 8vw, 9rem)/0.8 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: -0.08em;
+  color: rgba(20, 18, 16, 0.055);
   pointer-events: none;
 }
 
@@ -242,8 +254,10 @@ body:has(.k-hero) .showcase li {
   border-radius: 22px;
   overflow: hidden;
   background: #fff;
-  box-shadow: 0 18px 44px rgba(32,26,20,.09);
-  transition: transform .32s ease, box-shadow .32s ease;
+  box-shadow: 0 18px 44px rgba(32, 26, 20, 0.09);
+  transition:
+    transform 0.32s ease,
+    box-shadow 0.32s ease;
 }
 
 body:has(.k-hero) .showcase li:nth-child(2),
@@ -253,7 +267,7 @@ body:has(.k-hero) .showcase li:nth-child(5) {
 
 body:has(.k-hero) .showcase li:hover {
   transform: translateY(-8px);
-  box-shadow: 0 28px 70px rgba(32,26,20,.16);
+  box-shadow: 0 28px 70px rgba(32, 26, 20, 0.16);
 }
 
 body:has(.k-hero) .showcase li:nth-child(2):hover,
@@ -286,7 +300,7 @@ body:has(.k-hero) .k-band.dark {
   display: grid;
   place-items: center;
   background:
-    radial-gradient(circle at 50% 0, rgba(255,107,61,.20), transparent 35%),
+    radial-gradient(circle at 50% 0, rgba(255, 107, 61, 0.2), transparent 35%),
     #101114;
   color: #f4efe7;
 }
@@ -313,7 +327,7 @@ body:has(.k-hero) .k-step {
   padding: 34px;
   border-radius: 26px;
   border: 1px solid #d7d0c6;
-  background: rgba(255,255,255,.45);
+  background: rgba(255, 255, 255, 0.45);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -337,15 +351,15 @@ body:has(.k-hero) .k-step:nth-child(3) {
 
 body:has(.k-hero) .k-num {
   margin-bottom: auto;
-  font-size: .8rem;
-  letter-spacing: .12em;
-  opacity: .55;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  opacity: 0.55;
 }
 
 body:has(.k-hero) .k-step h3 {
   font-size: clamp(1.6rem, 2.3vw, 2.35rem);
   line-height: 1.02;
-  letter-spacing: -.04em;
+  letter-spacing: -0.04em;
 }
 
 body:has(.k-hero) #proof .wrap {
@@ -364,7 +378,7 @@ body:has(.k-hero) .shots figure {
   padding: 14px;
   border-radius: 28px;
   background: #18191d;
-  box-shadow: 0 26px 70px rgba(30,25,20,.16);
+  box-shadow: 0 26px 70px rgba(30, 25, 20, 0.16);
 }
 
 body:has(.k-hero) .shots figcaption {
@@ -385,8 +399,12 @@ body:has(.k-hero) #plans li {
 }
 
 body:has(.k-hero) #plans .card {
-  border-color: rgba(255,255,255,.12);
-  background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  border-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.075),
+    rgba(255, 255, 255, 0.035)
+  );
   box-shadow: none;
 }
 
@@ -414,12 +432,14 @@ body:has(.k-hero) footer.site {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform .2s ease, box-shadow .2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .k-action-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 18px 42px rgba(20, 18, 16, .09);
+  box-shadow: 0 18px 42px rgba(20, 18, 16, 0.09);
 }
 
 .k-action-card strong {

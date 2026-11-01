@@ -122,7 +122,10 @@ export function NewSite() {
     setQuestions([]);
     setStage(1);
     try {
-      if (!orgId) throw new Error("Your workspace is not ready yet. Refresh and try again.");
+      if (!orgId)
+        throw new Error(
+          "Your workspace is not ready yet. Refresh and try again.",
+        );
       const rows = await api<J[]>("GET", "/api/sites");
       let preview = preferredSite(rows);
       let reusable = reusableDraftSite(rows);
@@ -142,7 +145,9 @@ export function NewSite() {
 
       setPreviewSiteId(preview.id);
       setTargetSiteId(reusable?.id ?? null);
-      setReusedShell(Boolean(reusable && rows.some((x) => x.id === reusable!.id)));
+      setReusedShell(
+        Boolean(reusable && rows.some((x) => x.id === reusable!.id)),
+      );
       setBrief(b);
       const d = await api<Direction[]>(
         "POST",
@@ -264,12 +269,21 @@ export function NewSite() {
           )}
         </div>
         {busy && stage >= 3 ? (
-          <div className="card stack narrow" style={{ maxWidth: 520 }} aria-live="polite">
+          <div
+            className="card stack narrow"
+            style={{ maxWidth: 520 }}
+            aria-live="polite"
+          >
             <h2 style={{ fontSize: "1.4rem" }}>Building your website</h2>
             {aiNote && <p className="small muted">{aiNote}</p>}
             <ol className="stages">
               {STAGES.map((l, i) => (
-                <li key={l} data-s={i < stage - 1 ? "done" : i === stage - 1 ? "doing" : "todo"}>
+                <li
+                  key={l}
+                  data-s={
+                    i < stage - 1 ? "done" : i === stage - 1 ? "doing" : "todo"
+                  }
+                >
                   <span className="dot" aria-hidden="true" />
                   {l}
                 </li>
@@ -280,8 +294,15 @@ export function NewSite() {
           <>
             <div className="dirs">
               {dirs.map((d) => (
-                <div key={d.index} className="dir" aria-current={picked === d.index}>
-                  <ScaledFrame src={d.previewUrl} title={`Direction ${d.index + 1}: ${d.name}`} />
+                <div
+                  key={d.index}
+                  className="dir"
+                  aria-current={picked === d.index}
+                >
+                  <ScaledFrame
+                    src={d.previewUrl}
+                    title={`Direction ${d.index + 1}: ${d.name}`}
+                  />
                   <div>
                     <strong>{d.name}</strong>
                     <div className="small muted">{d.summary}</div>
@@ -293,7 +314,11 @@ export function NewSite() {
                       ))}
                     </span>
                   </span>
-                  <button className="btn" disabled={busy} onClick={() => void build(d.index as 0 | 1 | 2)}>
+                  <button
+                    className="btn"
+                    disabled={busy}
+                    onClick={() => void build(d.index as 0 | 1 | 2)}
+                  >
                     Use this direction
                   </button>
                 </div>
@@ -319,10 +344,18 @@ export function NewSite() {
               </label>
             )}
             <div className="row">
-              <button className="btn ghost" disabled={busy} onClick={() => void build(0)}>
+              <button
+                className="btn ghost"
+                disabled={busy}
+                onClick={() => void build(0)}
+              >
                 Choose for me
               </button>
-              <button className="btn quiet" disabled={busy} onClick={() => setDirs(null)}>
+              <button
+                className="btn quiet"
+                disabled={busy}
+                onClick={() => setDirs(null)}
+              >
                 Change what I wrote
               </button>
             </div>
@@ -332,7 +365,11 @@ export function NewSite() {
     );
 
   return (
-    <form className="card stack narrow k-new-site-v6" style={{ maxWidth: 680 }} onSubmit={describe}>
+    <form
+      className="card stack narrow k-new-site-v6"
+      style={{ maxWidth: 680 }}
+      onSubmit={describe}
+    >
       <p className="k-overline">New website</p>
       <h1 style={{ fontSize: "2rem" }}>Tell Kora about the business</h1>
       <p className="muted">
@@ -341,7 +378,12 @@ export function NewSite() {
       </p>
       <label>
         Business name
-        <input name="name" required maxLength={100} defaultValue={String(brief?.name ?? "")} />
+        <input
+          name="name"
+          required
+          maxLength={100}
+          defaultValue={String(brief?.name ?? "")}
+        />
       </label>
       <label>
         What do you do?
@@ -362,7 +404,9 @@ export function NewSite() {
           What matters most?
           <select name="goal" defaultValue="">
             {GOALS.map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
+              <option key={v} value={v}>
+                {l}
+              </option>
             ))}
           </select>
         </label>
@@ -370,7 +414,9 @@ export function NewSite() {
           How should it feel?
           <select name="feel" defaultValue="">
             {FEELS.map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
+              <option key={v} value={v}>
+                {l}
+              </option>
             ))}
           </select>
         </label>
@@ -378,16 +424,32 @@ export function NewSite() {
       <details>
         <summary>Add contact details (optional)</summary>
         <div className="grid" style={{ marginTop: 12 }}>
-          <label>Phone<input name="phone" type="tel" /></label>
-          <label>WhatsApp number<input name="whatsapp" type="tel" placeholder="+234…" /></label>
-          <label>Email<input name="email" type="email" /></label>
-          <label>Location<input name="location" /></label>
+          <label>
+            Phone
+            <input name="phone" type="tel" />
+          </label>
+          <label>
+            WhatsApp number
+            <input name="whatsapp" type="tel" placeholder="+234…" />
+          </label>
+          <label>
+            Email
+            <input name="email" type="email" />
+          </label>
+          <label>
+            Location
+            <input name="location" />
+          </label>
         </div>
       </details>
       {questions.length > 0 && (
         <Notice kind="warn">
           <strong>Kora needs a little more:</strong>
-          <ul>{questions.map((q) => <li key={q}>{q}</li>)}</ul>
+          <ul>
+            {questions.map((q) => (
+              <li key={q}>{q}</li>
+            ))}
+          </ul>
         </Notice>
       )}
       {err && <Notice kind="bad">{err}</Notice>}
