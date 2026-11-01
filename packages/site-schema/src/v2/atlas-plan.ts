@@ -46,16 +46,33 @@ const DIRECTION_COPY = [
   },
 ] as const;
 
+/**
+ * Owners describe businesses in local language. Normalize high-confidence wording
+ * before retrieval without rewriting the owner's copy that is rendered on-page.
+ */
+function normalizeReferenceQuery(value: string): string {
+  return value
+    .replace(/\bbarbing\s+salon\b/gi, "barbershop barber")
+    .replace(/\bbarbing\b/gi, "barber grooming")
+    .replace(/\bbukka\b/gi, "bukka local food restaurant")
+    .replace(/\bpos\s+(?:shop|stand|point|agent)\b/gi, "POS agent agency banking")
+    .replace(/\bshort\s*let\b/gi, "shortlet hotel apartment")
+    .replace(/\bchemist\b/gi, "pharmacy chemist")
+    .replace(/\bprovisions?\b/gi, "grocery provisions minimart");
+}
+
 function briefQuery(brief: DesignBrief): string {
-  return [
-    brief.industry,
-    brief.name,
-    brief.description,
-    ...(brief.services ?? []),
-    brief.location,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  return normalizeReferenceQuery(
+    [
+      brief.industry,
+      brief.name,
+      brief.description,
+      ...(brief.services ?? []),
+      brief.location,
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
 }
 
 function mediaSetFor(spec: SiteSpecV2, profile: ReferenceProfile) {
@@ -141,10 +158,11 @@ export function planSite(
 /** Three distinct Atlas-retrieved directions, compatible with the existing API. */
 export function planDirections(brief: DesignBrief): DirectionPreview[] {
   const parsed = designBriefSchema.parse(brief);
-  const vertical = resolveAtlasVertical(briefQuery(parsed));
+  const query = briefQuery(parsed);
+  const vertical = resolveAtlasVertical(query);
   return ([0, 1, 2] as const).map((index) => {
     const seed = fnv(`${parsed.name}|${parsed.description}|${parsed.industry ?? ""}`);
-    const profile = referenceProfileFor(briefQuery(parsed), index, seed);
+    const profile = referenceProfileFor(query, index, seed);
     const spec = planSite(parsed, { direction: index });
     const copy = DIRECTION_COPY[index];
     return {
