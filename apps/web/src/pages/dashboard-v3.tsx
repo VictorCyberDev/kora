@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { api, type J } from "../api";
 import { useAuth } from "../auth";
+import { preferredSite } from "../site-selection";
 import { Async, Empty, LevelLine, Status, useLoad } from "../ui";
 import { SiteStatusCard } from "./sites";
 
@@ -30,7 +31,7 @@ function QuickAction({
 export function Dashboard() {
   const { user } = useAuth();
   const sites = useLoad<J[]>(() => api("GET", "/api/sites"));
-  const firstSiteId = sites.data?.[0]?.id as string | undefined;
+  const firstSiteId = preferredSite(sites.data ?? [])?.id as string | undefined;
   const waiting = useLoad(
     () =>
       firstSiteId
@@ -58,19 +59,24 @@ export function Dashboard() {
       </header>
 
       <Async state={sites}>
-        {(rows) =>
-          rows.length === 0 ? (
-            <Empty title="Put your business online">
-              Give Kora the business name and two lines about what you do. You
-              will get three directions to choose from, then Kora keeps watching
-              after launch.
-              <p>
-                <Link className="btn" to="/app/sites/new">
-                  Create my first website
-                </Link>
-              </p>
-            </Empty>
-          ) : (
+        {(rows) => {
+          const primary = preferredSite(rows);
+          if (!primary) {
+            return (
+              <Empty title="Put your business online">
+                Give Kora the business name and two lines about what you do. You
+                will get three directions to choose from, then Kora keeps watching
+                after launch.
+                <p>
+                  <Link className="btn" to="/app/sites/new">
+                    Create my first website
+                  </Link>
+                </p>
+              </Empty>
+            );
+          }
+
+          return (
             <>
               <section className="k-home-status" aria-labelledby="business-now">
                 <div className="k-section-head">
@@ -78,10 +84,10 @@ export function Dashboard() {
                     <p className="k-overline">Right now</p>
                     <h2 id="business-now">Can customers reach you?</h2>
                   </div>
-                  {rows[0].publicUrl ? (
+                  {primary.publicUrl ? (
                     <a
                       className="btn quiet sm"
-                      href={rows[0].publicUrl}
+                      href={primary.publicUrl}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -89,7 +95,7 @@ export function Dashboard() {
                     </a>
                   ) : null}
                 </div>
-                <SiteStatusCard siteId={rows[0].id} />
+                <SiteStatusCard siteId={primary.id} />
               </section>
 
               <section aria-labelledby="quick-actions">
@@ -101,13 +107,13 @@ export function Dashboard() {
                 </div>
                 <div className="k-quick-grid">
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/build`}
+                    to={`/app/sites/${primary.id}/build`}
                     eyebrow="Website"
                     title="Edit what customers see"
                     detail="Design, copy, sections and versions"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/customers`}
+                    to={`/app/sites/${primary.id}/customers`}
                     eyebrow="Customers"
                     title={
                       waiting.data
@@ -119,13 +125,13 @@ export function Dashboard() {
                     detail="Enquiries from your website and channels, in one place"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/presence`}
+                    to={`/app/sites/${primary.id}/presence`}
                     eyebrow="Presence"
                     title="Business details and health"
                     detail="What customers see about you, and what could be better"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/domains`}
+                    to={`/app/sites/${primary.id}/domains`}
                     eyebrow="Presence"
                     title="Your domain"
                     detail="Connect the address customers should remember"
@@ -186,8 +192,8 @@ export function Dashboard() {
                 </div>
               </section>
             </>
-          )
-        }
+          );
+        }}
       </Async>
     </div>
   );
