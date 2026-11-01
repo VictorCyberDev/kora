@@ -140,9 +140,11 @@ function applyMediaStory(
 }
 
 /**
- * Atlas-aware deterministic planner. Existing callers keep the same contract,
- * while the brief now retrieves a vertical-specific reference profile before the
- * base planner composes the final original site.
+ * Atlas-aware deterministic planner. Atlas chooses the business vertical and
+ * licensed media story. The proven recipe engine keeps authority over layout,
+ * typography and palette diversity unless a caller explicitly overrides them.
+ * This prevents vertical relevance from collapsing many businesses into the same
+ * visual skeleton.
  */
 export function planSite(
   rawBrief: DesignBrief,
@@ -161,11 +163,7 @@ export function planSite(
       .slice(0, 2)
       .join(" ")}`,
   };
-  const spec = basePlanSite(plannerBrief, {
-    ...opts,
-    lookId: opts.lookId ?? profile.lookId,
-    paletteStrategy: opts.paletteStrategy ?? profile.paletteStrategy,
-  });
+  const spec = basePlanSite(plannerBrief, opts);
   return applyMediaStory(spec, profile);
 }
 
@@ -175,10 +173,6 @@ export function planDirections(brief: DesignBrief): DirectionPreview[] {
   const query = briefQuery(parsed);
   const vertical = resolveAtlasVertical(query);
   return ([0, 1, 2] as const).map((index) => {
-    const seed = fnv(
-      `${parsed.name}|${parsed.description}|${parsed.industry ?? ""}`,
-    );
-    const profile = referenceProfileFor(query, index, seed);
     const spec = planSite(parsed, { direction: index });
     const copy = DIRECTION_COPY[index];
     return {
@@ -186,7 +180,7 @@ export function planDirections(brief: DesignBrief): DirectionPreview[] {
       name: `${copy.name} ${vertical.label}`,
       summary: copy.summary,
       recipe: spec.meta.recipe,
-      look: profile.lookId,
+      look: spec.design.look,
       palette: spec.design.paletteStrategy,
       spec,
     };
