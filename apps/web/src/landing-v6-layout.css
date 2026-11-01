@@ -1,0 +1,33 @@
+/* Keep the editorial left alignment without letting the v5 100%-wide .wrap overflow. */
+body:has(.k-hero) #problem .wrap,
+body:has(.k-hero) #truth .wrap {
+  width: min(calc(100% - 40px), 980px);
+  margin-left: max(20px, calc((100vw - 1240px) / 2));
+  margin-right: 20px;
+  padding-inline: 0;
+}
+
+/* The hero becomes one column below 900px, so its floating proof cards must
+   stop using the desktop negative offsets before the phone breakpoint. */
+@media (max-width: 900px) {
+  body:has(.k-hero) .scene-status {
+    left: 2%;
+  }
+
+  body:has(.k-hero) .scene-incident {
+    right: 2%;
+  }
+}
+
+/* At compact desktop widths the two-column hero remains, but negative proof-card
+   offsets can escape the viewport. Keep the cards inside the scene until the
+   layout has enough room for the full wide-screen treatment. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  body:has(.k-hero) .scene-status {
+    left: 0;
+  }
+
+  body:has(.k-hero) .scene-incident {
+    right: 0;
+  }
+}
