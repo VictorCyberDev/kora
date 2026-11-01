@@ -1,7 +1,9 @@
 /* Kora v5 — creation flow. Imported after the global Signal System. */
 
 /* Brief intake feels like a focused creative brief, not an admin form. */
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow {
   position: relative;
   width: min(100%, 820px);
   max-width: 820px !important;
@@ -11,12 +13,18 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.na
   border: 1px solid rgba(16, 16, 19, 0.1);
   border-radius: 34px;
   background:
-    radial-gradient(circle at 102% -2%, rgba(217, 206, 255, 0.72), transparent 18rem),
+    radial-gradient(
+      circle at 102% -2%,
+      rgba(217, 206, 255, 0.72),
+      transparent 18rem
+    ),
     rgba(255, 250, 242, 0.94);
   box-shadow: 0 30px 90px rgba(16, 16, 19, 0.09);
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow::before {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow::before {
   content: "CREATIVE BRIEF";
   width: fit-content;
   padding: 8px 10px;
@@ -28,7 +36,10 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.na
   letter-spacing: 0.12em;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow h1 {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  h1 {
   max-width: 12ch;
   margin: 2px 0 8px;
   font-size: clamp(2.4rem, 5vw, 4.7rem) !important;
@@ -36,30 +47,45 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.na
   letter-spacing: -0.065em;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow label {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  label {
   display: grid;
   gap: 8px;
   font-weight: 760;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow textarea {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  textarea {
   min-height: 150px;
   resize: vertical;
   line-height: 1.55;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow .field-hint {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  .field-hint {
   max-width: 64ch;
   line-height: 1.5;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow details {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  details {
   padding: 2px 0;
   border-top: 1px solid rgba(16, 16, 19, 0.12);
   border-bottom: 1px solid rgba(16, 16, 19, 0.12);
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow summary {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  summary {
   min-height: 52px;
   display: flex;
   align-items: center;
@@ -67,7 +93,10 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.na
   font-weight: 760;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow > .btn {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  form.card.stack.narrow
+  > .btn {
   min-height: 56px;
   justify-content: center;
   margin-top: 6px;
@@ -104,16 +133,23 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir:hover {
   box-shadow: 0 22px 58px rgba(16, 16, 19, 0.1);
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir:nth-child(2) {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .dir:nth-child(2) {
   background: #d9ceff;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir:nth-child(3) {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .dir:nth-child(3) {
   background: #101013;
   color: #fffaf2;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir:nth-child(3) .muted {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .dir:nth-child(3)
+  .muted {
   color: #c8c0c4;
 }
 
@@ -126,7 +162,11 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir .shot {
   box-shadow: inset 0 0 0 1px rgba(16, 16, 19, 0.1);
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir .shot iframe {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .dir
+  .shot
+  iframe {
   transform-origin: top left;
 }
 
@@ -152,7 +192,10 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir .btn {
   justify-content: center;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dir:nth-child(3) .btn {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .dir:nth-child(3)
+  .btn {
   background: #ff6248;
   border-color: #ff6248;
   color: #1b0c09;
@@ -181,28 +224,44 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .stages .dot {
   background: #c4bdb5;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .stages li[data-s="done"] .dot {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .stages
+  li[data-s="done"]
+  .dot {
   background: #13745b;
 }
 
-header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .stages li[data-s="doing"] .dot {
+header.top:has(nav[aria-label="Mission Control"])
+  ~ main.wrap
+  .stages
+  li[data-s="doing"]
+  .dot {
   background: #ff6248;
   box-shadow: 0 0 0 7px rgba(255, 98, 72, 0.13);
 }
 
 @media (max-width: 899px) {
-  header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow {
+  header.top:has(nav[aria-label="Mission Control"])
+    ~ main.wrap
+    form.card.stack.narrow {
     margin: 0 auto 32px;
     padding: 24px 20px;
     border-radius: 26px;
     box-shadow: none;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow h1 {
+  header.top:has(nav[aria-label="Mission Control"])
+    ~ main.wrap
+    form.card.stack.narrow
+    h1 {
     font-size: clamp(2.55rem, 12.5vw, 4rem) !important;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap form.card.stack.narrow .grid {
+  header.top:has(nav[aria-label="Mission Control"])
+    ~ main.wrap
+    form.card.stack.narrow
+    .grid {
     grid-template-columns: 1fr;
   }
 
@@ -220,7 +279,9 @@ header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .stages li[data-s=
     scrollbar-width: none;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap .dirs::-webkit-scrollbar {
+  header.top:has(nav[aria-label="Mission Control"])
+    ~ main.wrap
+    .dirs::-webkit-scrollbar {
     display: none;
   }
 

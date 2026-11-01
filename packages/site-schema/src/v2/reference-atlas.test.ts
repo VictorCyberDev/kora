@@ -15,10 +15,16 @@ describe("Reference Atlas", () => {
   });
 
   it("retrieves Nigerian SME verticals from natural language", () => {
-    expect(resolveAtlasVertical("premium barbershop in Yaba").id).toBe("barber");
-    expect(resolveAtlasVertical("birthday cake business in Abuja").id).toBe("cake-business");
+    expect(resolveAtlasVertical("premium barbershop in Yaba").id).toBe(
+      "barber",
+    );
+    expect(resolveAtlasVertical("birthday cake business in Abuja").id).toBe(
+      "cake-business",
+    );
     expect(resolveAtlasVertical("lawyer office for SMEs").id).toBe("law");
-    expect(resolveAtlasVertical("POS agent and cash withdrawal kiosk").id).toBe("pos-agent");
+    expect(resolveAtlasVertical("POS agent and cash withdrawal kiosk").id).toBe(
+      "pos-agent",
+    );
   });
 
   it("returns a useful shortlist without duplicating an entire corpus into the UI", () => {
@@ -47,7 +53,9 @@ describe("Reference Atlas", () => {
           section.type === "features" ||
           section.type === "portfolio"
         )
-          return section.items.flatMap((item) => (item.media ? [item.media.url] : []));
+          return section.items.flatMap((item) =>
+            item.media ? [item.media.url] : [],
+          );
         return [];
       });
       expect(new Set(mediaUrls).size).toBeGreaterThanOrEqual(3);

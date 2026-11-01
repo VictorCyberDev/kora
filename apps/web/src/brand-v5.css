@@ -50,8 +50,16 @@ html {
 
 body {
   background:
-    radial-gradient(circle at 96% 0%, rgba(217, 206, 255, 0.52), transparent 23rem),
-    radial-gradient(circle at 0% 22%, rgba(255, 98, 72, 0.09), transparent 26rem),
+    radial-gradient(
+      circle at 96% 0%,
+      rgba(217, 206, 255, 0.52),
+      transparent 23rem
+    ),
+    radial-gradient(
+      circle at 0% 22%,
+      rgba(255, 98, 72, 0.09),
+      transparent 26rem
+    ),
     var(--k5-paper);
   color: var(--k5-ink);
   text-rendering: optimizeLegibility;
@@ -169,8 +177,16 @@ header.top:has(nav[aria-label="Public"]) .btn:not(.ghost) {
   padding: clamp(66px, 9vw, 132px) 0 clamp(82px, 10vw, 150px);
   color: var(--k5-ink);
   background:
-    radial-gradient(circle at 83% 18%, rgba(217, 206, 255, 0.95), transparent 18rem),
-    radial-gradient(circle at 53% 106%, rgba(255, 98, 72, 0.16), transparent 29rem),
+    radial-gradient(
+      circle at 83% 18%,
+      rgba(217, 206, 255, 0.95),
+      transparent 18rem
+    ),
+    radial-gradient(
+      circle at 53% 106%,
+      rgba(255, 98, 72, 0.16),
+      transparent 29rem
+    ),
     var(--k5-paper);
 }
 
@@ -346,7 +362,11 @@ header.top:has(nav[aria-label="Public"]) .btn:not(.ghost) {
 
 .k-band.dark {
   background:
-    radial-gradient(circle at 87% 0%, rgba(77, 99, 255, 0.32), transparent 24rem),
+    radial-gradient(
+      circle at 87% 0%,
+      rgba(77, 99, 255, 0.32),
+      transparent 24rem
+    ),
     var(--k5-ink);
   color: #fffaf2;
 }
@@ -449,7 +469,10 @@ header.top:has(nav[aria-label="Public"]) .btn:not(.ghost) {
 
 .k-step {
   display: grid;
-  grid-template-columns: minmax(76px, 0.25fr) minmax(180px, 0.75fr) minmax(0, 1.6fr);
+  grid-template-columns: minmax(76px, 0.25fr) minmax(180px, 0.75fr) minmax(
+      0,
+      1.6fr
+    );
   align-items: start;
   gap: clamp(16px, 4vw, 48px);
   padding-block: clamp(28px, 4vw, 54px);
@@ -531,8 +554,16 @@ main > .wrap.narrow:has(> form.card)::before {
   z-index: -1;
   border-radius: 38px;
   background:
-    radial-gradient(circle at 70% 18%, rgba(217, 206, 255, 0.72), transparent 14rem),
-    radial-gradient(circle at 15% 85%, rgba(255, 98, 72, 0.42), transparent 16rem),
+    radial-gradient(
+      circle at 70% 18%,
+      rgba(217, 206, 255, 0.72),
+      transparent 14rem
+    ),
+    radial-gradient(
+      circle at 15% 85%,
+      rgba(255, 98, 72, 0.42),
+      transparent 16rem
+    ),
     var(--k5-ink);
   box-shadow: var(--k5-shadow-strong);
 }
@@ -592,7 +623,11 @@ header.top:has(nav[aria-label="Mission Control"])
   border-radius: 30px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 88% 16%, rgba(217, 206, 255, 0.88), transparent 15rem),
+    radial-gradient(
+      circle at 88% 16%,
+      rgba(217, 206, 255, 0.88),
+      transparent 15rem
+    ),
     #ebe3d8;
 }
 
@@ -703,7 +738,11 @@ header.top:has(nav[aria-label="Mission Control"])
 
 .k-panel-ink {
   background:
-    radial-gradient(circle at 90% 0%, rgba(77, 99, 255, 0.3), transparent 16rem),
+    radial-gradient(
+      circle at 90% 0%,
+      rgba(77, 99, 255, 0.3),
+      transparent 16rem
+    ),
     var(--k5-ink);
   color: #fffaf2;
 }
@@ -905,7 +944,8 @@ header.top:has(nav[aria-label="Mission Control"])
     scrollbar-width: none;
   }
 
-  header.top:has(nav[aria-label="Mission Control"]) nav.main::-webkit-scrollbar {
+  header.top:has(nav[aria-label="Mission Control"])
+    nav.main::-webkit-scrollbar {
     display: none;
   }
 

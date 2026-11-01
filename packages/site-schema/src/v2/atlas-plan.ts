@@ -55,7 +55,10 @@ function normalizeReferenceQuery(value: string): string {
     .replace(/\bbarbing\s+salon\b/gi, "barbershop barber")
     .replace(/\bbarbing\b/gi, "barber grooming")
     .replace(/\bbukka\b/gi, "bukka local food restaurant")
-    .replace(/\bpos\s+(?:shop|stand|point|agent)\b/gi, "POS agent agency banking")
+    .replace(
+      /\bpos\s+(?:shop|stand|point|agent)\b/gi,
+      "POS agent agency banking",
+    )
     .replace(/\bshort\s*let\b/gi, "shortlet hotel apartment")
     .replace(/\bchemist\b/gi, "pharmacy chemist")
     .replace(/\bprovisions?\b/gi, "grocery provisions minimart");
@@ -89,7 +92,10 @@ function mediaSetFor(spec: SiteSpecV2, profile: ReferenceProfile) {
  * one ornamental hero asset. We never create testimonials, staff or customer
  * claims from reference imagery; images only illustrate the vertical honestly.
  */
-function applyMediaStory(spec: SiteSpecV2, profile: ReferenceProfile): SiteSpecV2 {
+function applyMediaStory(
+  spec: SiteSpecV2,
+  profile: ReferenceProfile,
+): SiteSpecV2 {
   const media = mediaSetFor(spec, profile);
   if (!media.length) return spec;
 
@@ -145,7 +151,9 @@ export function planSite(
   const brief = designBriefSchema.parse(rawBrief);
   const direction = opts.direction ?? 0;
   const query = briefQuery(brief);
-  const seed = fnv(`${brief.name}|${brief.description}|${brief.industry ?? ""}`);
+  const seed = fnv(
+    `${brief.name}|${brief.description}|${brief.industry ?? ""}`,
+  );
   const profile = referenceProfileFor(query, direction, seed);
   const spec = basePlanSite(brief, {
     ...opts,
@@ -161,7 +169,9 @@ export function planDirections(brief: DesignBrief): DirectionPreview[] {
   const query = briefQuery(parsed);
   const vertical = resolveAtlasVertical(query);
   return ([0, 1, 2] as const).map((index) => {
-    const seed = fnv(`${parsed.name}|${parsed.description}|${parsed.industry ?? ""}`);
+    const seed = fnv(
+      `${parsed.name}|${parsed.description}|${parsed.industry ?? ""}`,
+    );
     const profile = referenceProfileFor(query, index, seed);
     const spec = planSite(parsed, { direction: index });
     const copy = DIRECTION_COPY[index];
