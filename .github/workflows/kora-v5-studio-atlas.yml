@@ -1,0 +1,67 @@
+name: Kora v5 Studio Atlas
+on:
+  push:
+    branches: [kora-v5-mobile-reference-atlas]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: kora-v5-mobile-reference-atlas
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Wire Atlas directions to the live asset renderer
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('apps/web/src/pages/studio.tsx')
+          s = p.read_text()
+
+          old = '''import { Link, Navigate, useParams } from "react-router-dom";\nimport { api, when, type J } from "../api";'''
+          new = '''import { Link, Navigate, useParams } from "react-router-dom";\nimport {\n  CAMPAIGN_ATLAS_STATS,\n  CAMPAIGN_GOALS,\n  campaignDirections,\n  campaignVerticalFor,\n} from "../campaign-atlas";\nimport { api, when, type J } from "../api";'''
+          if old not in s:
+              raise SystemExit('studio import anchor not found')
+          s = s.replace(old, new, 1)
+
+          old = '''  const contact = facts.contact.whatsapp ?? facts.contact.phone ?? "";\n  const [spec, setSpec] = useState({'''
+          new = '''  const contact = facts.contact.whatsapp ?? facts.contact.phone ?? "";\n  const services = (facts.offer.services ?? []) as string[];\n  const [businessQuery, setBusinessQuery] = useState(\n    [facts.identity.name, ...services.slice(0, 4)].filter(Boolean).join(" "),\n  );\n  const [campaignGoal, setCampaignGoal] = useState("launch");\n  const atlasVertical = useMemo(\n    () => campaignVerticalFor(businessQuery),\n    [businessQuery],\n  );\n  const atlasDirections = useMemo(\n    () =>\n      campaignDirections(\n        businessQuery,\n        campaignGoal,\n        o.assets.layouts as string[],\n        o.assets.colorways as string[],\n        (o.assets.formats as J[]).map((f) => f.id as string),\n        8,\n      ),\n    [businessQuery, campaignGoal, o],\n  );\n  const [spec, setSpec] = useState({'''
+          if old not in s:
+              raise SystemExit('ImagesTab state anchor not found')
+          s = s.replace(old, new, 1)
+
+          old = '''  return (\n    <div className="stack">\n      <div className="k-studio">'''
+          new = '''  return (\n    <div className="stack">\n      <section className="card stack k-campaign-atlas" aria-label="Campaign Reference Atlas">\n        <div className="k-campaign-atlas-head">\n          <div>\n            <p className="k-overline">Reference Atlas</p>\n            <h3>Campaign directions for {atlasVertical.label}</h3>\n          </div>\n          <span className="k-atlas-count">\n            {CAMPAIGN_ATLAS_STATS.compositions.toLocaleString()} compositions\n          </span>\n        </div>\n        <p className="muted">\n          Kora retrieves a business-specific direction, then maps it to the real\n          layouts, colors and sizes supported by your live renderer. Pick a\n          direction and the editable preview below updates immediately.\n        </p>\n        <div className="k-campaign-filters">\n          <label>\n            Business type or style\n            <input\n              value={businessQuery}\n              onChange={(e) => setBusinessQuery(e.target.value)}\n              placeholder="e.g. barbing salon, cake business, law firm"\n            />\n          </label>\n          <label>\n            Campaign goal\n            <select\n              value={campaignGoal}\n              onChange={(e) => setCampaignGoal(e.target.value)}\n            >\n              {CAMPAIGN_GOALS.map(([value, label]) => (\n                <option key={value} value={value}>\n                  {label}\n                </option>\n              ))}\n            </select>\n          </label>\n        </div>\n        <div className="k-campaign-directions" role="list" aria-label="Recommended campaign directions">\n          {atlasDirections.map((direction) => {\n            const selected =\n              spec.layout === direction.layout &&\n              spec.colorway === direction.colorway &&\n              spec.format === direction.format;\n            return (\n              <button\n                key={direction.id}\n                type="button"\n                className="k-campaign-direction"\n                aria-pressed={selected}\n                onClick={() =>\n                  setSpec((current) => ({\n                    ...current,\n                    format: direction.format,\n                    layout: direction.layout,\n                    colorway: direction.colorway,\n                  }))\n                }\n              >\n                <strong>{direction.title}</strong>\n                <small>\n                  {direction.layout} · {direction.colorway}\n                </small>\n              </button>\n            );\n          })}\n        </div>\n        <p className="muted k-atlas-note">\n          The Atlas stores compositional intelligence, not copied marketplace\n          files. Your final asset remains an original Kora render using your Brand\n          Kit and confirmed business facts.\n        </p>\n      </section>\n      <div className="k-studio">'''
+          if old not in s:
+              raise SystemExit('ImagesTab render anchor not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - name: Format all Kora v5 touched files
+        run: >-
+          pnpm exec prettier --write
+          apps/web/src/pages/studio.tsx
+          apps/web/src/campaign-atlas.ts
+          apps/web/src/studio-v5.css
+          packages/site-schema/src/v2/atlas-plan.ts
+          packages/site-schema/src/v2/intelligence.ts
+      - name: Commit Studio Atlas integration
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/src/pages/studio.tsx apps/web/src/campaign-atlas.ts apps/web/src/studio-v5.css packages/site-schema/src/v2/atlas-plan.ts packages/site-schema/src/v2/intelligence.ts
+          git commit -m 'feat(studio): make campaign Atlas directions usable'
+          git push origin HEAD:kora-v5-mobile-reference-atlas
