@@ -1,0 +1,8 @@
+/* Keep the editorial left alignment without letting the v5 100%-wide .wrap overflow. */
+body:has(.k-hero) #problem .wrap,
+body:has(.k-hero) #truth .wrap {
+  width: min(calc(100% - 40px), 980px);
+  margin-left: max(20px, calc((100vw - 1240px) / 2));
+  margin-right: 20px;
+  padding-inline: 0;
+}
