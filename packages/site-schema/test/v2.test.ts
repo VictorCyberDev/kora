@@ -471,11 +471,11 @@ describe("media", () => {
     const fits = (recipe: string) => catalogMediaFor(recipe, "light");
     expect(fits("restaurant")).toBeDefined();
     expect(fits("electronics-repair")?.url).toContain("repair-bench");
+    expect(fits("barber")?.url).toMatch(/^https:\/\/images\.pexels\.com\//);
+    expect(fits("law")?.url).toMatch(/^https:\/\/images\.pexels\.com\//);
     for (const r of [
-      "law",
       "saas",
       "interior-design",
-      "barber",
       "salon-beauty",
       "consultant-coach",
       "fitness-gym",
