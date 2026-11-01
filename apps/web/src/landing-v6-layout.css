@@ -6,3 +6,15 @@ body:has(.k-hero) #truth .wrap {
   margin-right: 20px;
   padding-inline: 0;
 }
+
+/* The hero becomes one column below 900px, so its floating proof cards must
+   stop using the desktop negative offsets before the phone breakpoint. */
+@media (max-width: 900px) {
+  body:has(.k-hero) .scene-status {
+    left: 2%;
+  }
+
+  body:has(.k-hero) .scene-incident {
+    right: 2%;
+  }
+}
