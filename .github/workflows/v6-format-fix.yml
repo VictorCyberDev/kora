@@ -1,0 +1,52 @@
+name: v6-format-fix
+
+on:
+  push:
+    branches:
+      - kora-v6-product-flow-fix
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: kora-v6-product-flow-fix
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Fix acceptance copy and mid-width overflow
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('apps/web/src/pages/new-site-v6.tsx')
+          s = p.read_text()
+          s = s.replace('Pick the direction that feels like your business.', 'Pick a direction that feels like your business.')
+          p.write_text(s)
+
+          css = Path('apps/web/src/landing-v6.css')
+          s = css.read_text()
+          marker = '/* v6 release guard: keep floating product cards inside tablet viewports. */'
+          if marker not in s:
+              s += '''\n\n/* v6 release guard: keep floating product cards inside tablet viewports. */\n@media (max-width: 900px) {\n  .k-hero .scene-status {\n    right: 0;\n  }\n\n  .k-hero .scene-incident {\n    left: 0;\n  }\n}\n'''
+          css.write_text(s)
+          PY
+      - name: Format touched files
+        run: pnpm exec prettier --write apps/web/src/landing-v6.css apps/web/src/pages/dashboard-v3.tsx apps/web/src/pages/new-site-v6.tsx
+      - name: Commit fixes
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add apps/web/src/landing-v6.css apps/web/src/pages/dashboard-v3.tsx apps/web/src/pages/new-site-v6.tsx
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(v6): align acceptance copy and tablet layout"
+          git push origin HEAD:kora-v6-product-flow-fix
