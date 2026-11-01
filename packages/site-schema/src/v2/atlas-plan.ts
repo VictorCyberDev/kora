@@ -155,7 +155,13 @@ export function planSite(
     `${brief.name}|${brief.description}|${brief.industry ?? ""}`,
   );
   const profile = referenceProfileFor(query, direction, seed);
-  const spec = basePlanSite(brief, {
+  const plannerBrief: DesignBrief = {
+    ...brief,
+    industry: `${profile.vertical.label} ${profile.vertical.aliases
+      .slice(0, 2)
+      .join(" ")}`,
+  };
+  const spec = basePlanSite(plannerBrief, {
     ...opts,
     lookId: opts.lookId ?? profile.lookId,
     paletteStrategy: opts.paletteStrategy ?? profile.paletteStrategy,
