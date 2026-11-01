@@ -3,14 +3,13 @@ import type { Media } from "./spec.js";
 /**
  * Kora's curated photograph catalogue.
  *
- * Bundled images live in @kora/site-media. Curated external images are served
- * directly from their licensed source CDN and retain source/licence metadata.
- * A photograph is only eligible for verticals it honestly represents.
+ * Every production image is bundled in @kora/site-media and served from Kora's
+ * own origin. Source and licence metadata are retained for provenance, but a
+ * published customer site never depends on a third-party image request.
  */
 export interface CatalogEntry {
   id: string;
-  file?: string;
-  externalUrl?: string;
+  file: string;
   alt: string;
   recipes: string[];
   tone: "light" | "dark" | "any";
@@ -21,8 +20,6 @@ export interface CatalogEntry {
   sourceUrl: string;
 }
 const L = "https://www.pexels.com/license/";
-const pexels = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1600`;
 
 export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   {
@@ -93,10 +90,10 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
       "https://www.pexels.com/photo/a-person-repairing-a-smartphone-6754839/",
   },
 
-  // Barbershop / grooming — a visual vertical must have a real image set, not one stock hero.
+  // Barbershop / grooming — a visual vertical gets a real image set, not one stock hero.
   {
     id: "barber-black-client-cut",
-    externalUrl: pexels(35157692),
+    file: "barber-black-client-cut.webp",
     alt: "A Black client receiving a precision haircut in a contemporary barbershop",
     recipes: ["barber"],
     tone: "dark",
@@ -109,7 +106,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "barber-detail-grooming",
-    externalUrl: pexels(35157699),
+    file: "barber-detail-grooming.webp",
     alt: "Close-up professional barbering and grooming service",
     recipes: ["barber"],
     tone: "any",
@@ -121,21 +118,22 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "barber-shop-service",
-    externalUrl: pexels(33418521),
+    file: "barber-shop-service.webp",
     alt: "Professional barber working with a client inside a modern shop",
     recipes: ["barber"],
     tone: "light",
     focal: { x: 0.45, y: 0.45 },
-    creator: "Pexels contributor",
+    creator: "Tosin Olowoleni",
     license: "Pexels License",
     licenseUrl: L,
-    sourceUrl: "https://www.pexels.com/photo/33418521/",
+    sourceUrl:
+      "https://www.pexels.com/photo/barber-giving-haircut-in-traditional-shop-33418521/",
   },
 
   // Cake / bakery — product, process and maker imagery form a coherent story.
   {
     id: "bakery-nigeria-maker",
-    externalUrl: pexels(35367277),
+    file: "bakery-nigeria-maker.webp",
     alt: "A baker working in a contemporary Nigerian kitchen",
     recipes: ["cafe-bakery", "cake-business", "catering"],
     tone: "any",
@@ -147,7 +145,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "bakery-cake-making",
-    externalUrl: pexels(8478047),
+    file: "bakery-cake-making.webp",
     alt: "A baker carefully preparing a celebration cake",
     recipes: ["cafe-bakery", "cake-business"],
     tone: "light",
@@ -158,7 +156,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "bakery-cake-frosting",
-    externalUrl: pexels(8477970),
+    file: "bakery-cake-frosting.webp",
     alt: "A baker frosting and finishing a cake by hand",
     recipes: ["cafe-bakery", "cake-business"],
     tone: "light",
@@ -171,7 +169,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   // Legal / professional services — environment and working detail, never fabricated client proof.
   {
     id: "lawyer-office-work",
-    externalUrl: pexels(7875863),
+    file: "lawyer-office-work.webp",
     alt: "A corporate attorney reviewing documents at an office desk",
     recipes: ["law"],
     tone: "any",
@@ -184,7 +182,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "law-office-consultation",
-    externalUrl: pexels(8152740),
+    file: "law-office-consultation.webp",
     alt: "Professionals discussing documents during an office consultation",
     recipes: ["law", "accounting", "consulting"],
     tone: "light",
@@ -195,7 +193,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "law-documents-detail",
-    externalUrl: pexels(8112134),
+    file: "law-documents-detail.webp",
     alt: "Legal documents and professional work at an office table",
     recipes: ["law", "accounting", "consulting"],
     tone: "dark",
@@ -210,12 +208,12 @@ export const MEDIA_URL_PREFIX = "/_kora/media/";
 
 function toMedia(entry: CatalogEntry): Media {
   return {
-    url: entry.file ? `${MEDIA_URL_PREFIX}${entry.file}` : entry.externalUrl!,
+    url: `${MEDIA_URL_PREFIX}${entry.file}`,
     alt: entry.alt,
     width: 1600,
     height: 1067,
     ...(entry.focal ? { focalPoint: entry.focal } : {}),
-    source: entry.file ? "bundled" : "external",
+    source: "bundled",
     attribution: `Photo: ${entry.creator} / Pexels`,
     license: entry.license,
   };
