@@ -1,6 +1,7 @@
 /* Kora v5 mobile release guards.
  * Keep the thumb-zone dock clickable without letting its shell block content,
- * and align horizontal rails to the true small-phone page gutter.
+ * align horizontal rails to the true small-phone page gutter, and preserve
+ * 44px touch targets in the compact Mission Control utility bar.
  */
 @media (max-width: 899px) {
   header.top:has(nav[aria-label="Mission Control"]) nav.main {
@@ -11,6 +12,10 @@
     pointer-events: auto;
     touch-action: pan-x;
   }
+
+  header.top:has(nav[aria-label="Mission Control"]) .seg button {
+    min-height: 44px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -18,5 +23,15 @@
   .k-quick-grid {
     margin-inline: -16px;
     padding-inline: 16px;
+  }
+
+  .k-hero h1 {
+    min-width: 0;
+    width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .k-hero h1 em {
+    white-space: normal;
   }
 }
