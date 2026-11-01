@@ -13,6 +13,11 @@
     touch-action: pan-x;
   }
 
+  header.top:has(nav[aria-label="Mission Control"]) .seg {
+    position: relative;
+    z-index: 80;
+  }
+
   header.top:has(nav[aria-label="Mission Control"]) .seg button {
     min-height: 44px;
   }
