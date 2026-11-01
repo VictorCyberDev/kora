@@ -18,3 +18,16 @@ body:has(.k-hero) #truth .wrap {
     right: 2%;
   }
 }
+
+/* At compact desktop widths the two-column hero remains, but negative proof-card
+   offsets can escape the viewport. Keep the cards inside the scene until the
+   layout has enough room for the full wide-screen treatment. */
+@media (min-width: 901px) and (max-width: 1100px) {
+  body:has(.k-hero) .scene-status {
+    left: 0;
+  }
+
+  body:has(.k-hero) .scene-incident {
+    right: 0;
+  }
+}
