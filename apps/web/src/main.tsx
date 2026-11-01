@@ -10,6 +10,7 @@ import "./builder-v5.css";
 import "./studio-v5.css";
 import "./mobile-v5.css";
 import "./landing-v6.css";
+import "./landing-v6-layout.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
