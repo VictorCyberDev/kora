@@ -36,7 +36,9 @@ const preferredSite = (rows: J[]) =>
 export function Dashboard() {
   const { user } = useAuth();
   const sites = useLoad<J[]>(() => api("GET", "/api/sites"));
-  const primarySite = sites.data?.length ? preferredSite(sites.data) : undefined;
+  const primarySite = sites.data?.length
+    ? preferredSite(sites.data)
+    : undefined;
   const primarySiteId = primarySite?.id as string | undefined;
   const waiting = useLoad(
     () =>
@@ -70,8 +72,8 @@ export function Dashboard() {
             return (
               <Empty title="Put your business online">
                 Give Kora the business name and two lines about what you do. You
-                will get three directions to choose from, then Kora keeps watching
-                after launch.
+                will get three directions to choose from, then Kora keeps
+                watching after launch.
                 <p>
                   <Link className="btn" to="/app/sites/new">
                     Create my first website

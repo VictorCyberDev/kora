@@ -90,8 +90,7 @@ export function NewSiteV6() {
   const describe = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const text = (key: string) =>
-      String(f.get(key) ?? "").trim() || undefined;
+    const text = (key: string) => String(f.get(key) ?? "").trim() || undefined;
     const next: Brief = {
       name: text("name"),
       description: text("description") ?? "",
@@ -104,7 +103,9 @@ export function NewSiteV6() {
     };
 
     if (!orgId) {
-      setErr("Kora could not find your business workspace. Sign out and back in, then try again.");
+      setErr(
+        "Kora could not find your business workspace. Sign out and back in, then try again.",
+      );
       return;
     }
 
@@ -115,10 +116,14 @@ export function NewSiteV6() {
     try {
       // Important: preview first. A Site row is not created merely because the
       // owner wants to compare directions, so abandoned previews cannot consume quota.
-      const directions = await api<Direction[]>("POST", "/api/design/directions", {
-        orgId,
-        ...next,
-      });
+      const directions = await api<Direction[]>(
+        "POST",
+        "/api/design/directions",
+        {
+          orgId,
+          ...next,
+        },
+      );
       setBrief(next);
       setDirs(directions);
       setStage(2);
@@ -236,7 +241,11 @@ export function NewSiteV6() {
         </div>
 
         {busy && stage >= 3 ? (
-          <div className="card stack narrow" style={{ maxWidth: 520 }} aria-live="polite">
+          <div
+            className="card stack narrow"
+            style={{ maxWidth: 520 }}
+            aria-live="polite"
+          >
             <h2 style={{ fontSize: "1.4rem" }}>Building your website</h2>
             {aiNote && <p className="small muted">{aiNote}</p>}
             <ol className="stages">
@@ -323,10 +332,18 @@ export function NewSiteV6() {
               </label>
             )}
             <div className="row">
-              <button className="btn ghost" disabled={busy} onClick={() => void build(0)}>
+              <button
+                className="btn ghost"
+                disabled={busy}
+                onClick={() => void build(0)}
+              >
                 Choose for me
               </button>
-              <button className="btn quiet" disabled={busy} onClick={() => setDirs(null)}>
+              <button
+                className="btn quiet"
+                disabled={busy}
+                onClick={() => setDirs(null)}
+              >
                 Change what I wrote
               </button>
             </div>
@@ -410,7 +427,11 @@ export function NewSiteV6() {
           </label>
           <label>
             Email
-            <input name="email" type="email" defaultValue={brief?.email ?? ""} />
+            <input
+              name="email"
+              type="email"
+              defaultValue={brief?.email ?? ""}
+            />
           </label>
           <label>
             Location
