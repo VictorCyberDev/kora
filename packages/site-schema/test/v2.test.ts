@@ -471,8 +471,8 @@ describe("media", () => {
     const fits = (recipe: string) => catalogMediaFor(recipe, "light");
     expect(fits("restaurant")).toBeDefined();
     expect(fits("electronics-repair")?.url).toContain("repair-bench");
-    expect(fits("barber")?.url).toMatch(/^https:\/\/images\.pexels\.com\//);
-    expect(fits("law")?.url).toMatch(/^https:\/\/images\.pexels\.com\//);
+    expect(fits("barber")?.url).toContain("/_kora/media/barber-");
+    expect(fits("law")?.url).toContain("/_kora/media/law");
     for (const r of [
       "saas",
       "interior-design",

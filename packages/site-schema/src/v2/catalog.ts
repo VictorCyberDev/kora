@@ -10,6 +10,8 @@ import type { Media } from "./spec.js";
 export interface CatalogEntry {
   id: string;
   file: string;
+  /** Kept optional for backwards-compatible catalogue consumers; runtime media is bundled. */
+  externalUrl?: string;
   alt: string;
   recipes: string[];
   tone: "light" | "dark" | "any";
