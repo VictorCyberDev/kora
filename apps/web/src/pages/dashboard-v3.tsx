@@ -65,8 +65,8 @@ export function Dashboard() {
             return (
               <Empty title="Put your business online">
                 Give Kora the business name and two lines about what you do. You
-                will get three directions to choose from, then Kora keeps watching
-                after launch.
+                will get three directions to choose from, then Kora keeps
+                watching after launch.
                 <p>
                   <Link className="btn" to="/app/sites/new">
                     Create my first website
