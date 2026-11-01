@@ -4,6 +4,7 @@ import {
   fnv,
   GOALS,
   lookFromFeel,
+  planDirections as basePlanDirections,
   planSite as basePlanSite,
   recipeFor,
   type DesignBrief,
@@ -76,6 +77,18 @@ function briefQuery(brief: DesignBrief): string {
       .filter(Boolean)
       .join(" "),
   );
+}
+
+function plannerBriefFor(
+  brief: DesignBrief,
+  profile: ReferenceProfile,
+): DesignBrief {
+  return {
+    ...brief,
+    industry: `${profile.vertical.label} ${profile.vertical.aliases
+      .slice(0, 2)
+      .join(" ")}`,
+  };
 }
 
 function mediaSetFor(spec: SiteSpecV2, profile: ReferenceProfile) {
@@ -157,13 +170,7 @@ export function planSite(
     `${brief.name}|${brief.description}|${brief.industry ?? ""}`,
   );
   const profile = referenceProfileFor(query, direction, seed);
-  const plannerBrief: DesignBrief = {
-    ...brief,
-    industry: `${profile.vertical.label} ${profile.vertical.aliases
-      .slice(0, 2)
-      .join(" ")}`,
-  };
-  const spec = basePlanSite(plannerBrief, opts);
+  const spec = basePlanSite(plannerBriefFor(brief, profile), opts);
   return applyMediaStory(spec, profile);
 }
 
@@ -172,15 +179,25 @@ export function planDirections(brief: DesignBrief): DirectionPreview[] {
   const parsed = designBriefSchema.parse(brief);
   const query = briefQuery(parsed);
   const vertical = resolveAtlasVertical(query);
+  const seed = fnv(
+    `${parsed.name}|${parsed.description}|${parsed.industry ?? ""}`,
+  );
+  const firstProfile = referenceProfileFor(query, 0, seed);
+  const baseDirections = basePlanDirections(
+    plannerBriefFor(parsed, firstProfile),
+  );
+
   return ([0, 1, 2] as const).map((index) => {
-    const spec = planSite(parsed, { direction: index });
+    const base = baseDirections[index]!;
+    const profile = referenceProfileFor(query, index, seed);
+    const spec = applyMediaStory(base.spec, profile);
     const copy = DIRECTION_COPY[index];
     return {
       index,
       name: `${copy.name} ${vertical.label}`,
       summary: copy.summary,
       recipe: spec.meta.recipe,
-      look: spec.design.look,
+      look: base.look,
       palette: spec.design.paletteStrategy,
       spec,
     };
