@@ -7,7 +7,7 @@ export * from "./render.js";
 export { ICONS } from "./icons.js";
 export * from "./palette.js";
 export * from "./recipes.js";
-export * from "./plan.js";
+export * from "./atlas-plan.js";
 export * from "./quality.js";
 export * from "./intelligence.js";
 export * from "./upgrade.js";
