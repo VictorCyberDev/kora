@@ -156,7 +156,7 @@ function services(s: Sec<"services">, c: Ctx): string {
     case "numbered":
       return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><span class="n">${num(n)}</span><h3 class="m0">${esc(it.title)}</h3><p>${esc(it.text)}</p></article>`).join("")}</div></div></section>`;
     case "image-cards":
-      return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><div class="thumb">${visual(c, it.media, n + 2)}</div><div class="tx"><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></div></article>`).join("")}</div></div></section>`;
+      return `${o}<div class="wrap">${hd}<div class="cards rv">${s.items.map((it, n) => `<article class="card"><div class="thumb${it.media ? "" : " tile"}"${it.media ? "" : ` data-n="${String(n + 1).padStart(2, "0")}"`}>${it.media ? visual(c, it.media, n + 2) : `<span aria-hidden="true">${String(n + 1).padStart(2, "0")}</span>`}</div><div class="tx"><h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></div></article>`).join("")}</div></div></section>`;
     case "split":
       return `${o}<div class="wrap split">${hd}<div class="acc rv">${s.items.map((it) => `<details><summary>${esc(it.title)}</summary><p>${esc(it.text)}</p></details>`).join("")}</div></div></section>`;
     case "accordion":

@@ -235,7 +235,7 @@ export function recipeFor(brief: DesignBrief): Recipe {
 
 export function extractServicesV2(description: string): string[] {
   const m =
-    /\b(?:we\s+(?:provide|offer|do|specialise in|specialize in|sell|repair|serve)|services?\s*(?:include|are)?:?|offering|including)\s+([^.\n]+)/i.exec(
+    /\b(?:we\s+(?:provide|offer|do|specialise in|specialize in|sell|repair|serve|bake|make|cook|prepare|design|build|install|clean|cut|style|photograph|teach|train|cater|grow|print|stock|deliver|supply|create|treat|plan|decorate)|services?\s*(?:include|are)?:?|offering|including)\s+([^.\n]+)/i.exec(
       description,
     );
   if (!m) return [];
@@ -487,55 +487,7 @@ export function planSite(
       values: [],
     });
 
-  // process: generic, no promises about speed, price or results
-  const steps: Record<Goal, [string, string][]> = {
-    calls: [
-      ["Call us", "Tell us what you need."],
-      [
-        "We confirm the details",
-        "We agree what is needed before anything starts.",
-      ],
-      ["We get it done", "We carry out the work and check it with you."],
-    ],
-    bookings: [
-      ["Choose a time", "Tell us what you would like and when suits you."],
-      ["We confirm", "We reply to confirm the details."],
-      ["Come in", "Visit us at the agreed time."],
-    ],
-    leads: [
-      [
-        "Tell us what you need",
-        "Share the details through the form or contact us directly.",
-      ],
-      ["We agree the plan", "We discuss options and agree how to proceed."],
-      ["We get to work", "We start once the details are settled."],
-    ],
-    sales: [
-      ["Choose what you want", "Tell us what you would like to order."],
-      [
-        "We confirm the order",
-        "We confirm the details and arrangements with you.",
-      ],
-      ["Receive it", "We arrange delivery or collection as agreed."],
-    ],
-    visits: [
-      ["Find us", "See where we are and when we are open."],
-      ["Come by", "Drop in or get in touch first."],
-      ["Enjoy", "Take your time."],
-    ],
-    "show-work": [
-      ["Look through our work", "See what we do."],
-      ["Get in touch", "Tell us about your project."],
-      ["We take it from there", "We agree the details and begin."],
-    ],
-  };
-  sections.push({
-    type: "process",
-    variant: look.process,
-    heading: "How it works",
-    intro: "",
-    items: steps[goal].map(([title, text]) => ({ title, text })),
-  });
+  // No generic "How it works" section: a section with no fact behind it is filler (see creative.ts).
 
   const faq: Array<{ question: string; answer: string }> = [];
   const reach = [
@@ -543,12 +495,6 @@ export function planSite(
     wa && "message us on WhatsApp",
     email && `email ${email}`,
   ].filter(Boolean) as string[];
-  faq.push({
-    question: "How do I get started?",
-    answer: reach.length
-      ? `Use the form below or ${reach.join(", ")}. Tell us what you need and we will reply.`
-      : "Use the form below and tell us what you need. We will reply.",
-  });
   if (location)
     faq.push({
       question: "Where are you based?",

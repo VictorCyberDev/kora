@@ -269,6 +269,57 @@ export const textEls = (x: number, p: PlacedBlock, fill: string) =>
     )
     .join("");
 
+const seedOf = (s: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++)
+    h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  return (h >>> 0) / 4294967295;
+};
+
+/**
+ * The Kora signature: a displaced solid shape with offset hairline rings bleeding off one edge, over a soft depth
+ * gradient and fine grain. Built only from the brand's own colours so every output looks like the same family while
+ * staying the owner's palette. Deterministic (seeded by the headline).
+ */
+export function artLayer(
+  p: Palette,
+  W: number,
+  H: number,
+  unit: number,
+  layout: AssetLayout,
+  seedText: string,
+  tall: boolean,
+  /** y below which nothing but the footer sits; the solid stays above it on short formats */
+): string {
+  const r = seedOf(seedText);
+  // Tall formats keep the shape in the empty lower right; short formats keep it in a reserved right-hand column.
+  const R = tall ? unit * 0.3 : Math.min(H * 0.34, W * 0.2);
+  const cx = tall ? W * 0.9 : W * 0.93;
+  const cy = tall ? H * (0.76 + r * 0.04) : H * 0.5;
+  const ringW = Math.max(2, Math.round(unit * 0.0022));
+  const rings = [1.35, 1.75, 2.2, 2.75]
+    .map(
+      (k, i) =>
+        `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${(R * k).toFixed(0)}" fill="none" stroke="${p.accent}" stroke-width="${ringW}" opacity="${(0.4 - i * 0.09).toFixed(2)}"/>`,
+    )
+    .join("");
+  const tilt = (r * 14 - 7).toFixed(1);
+  const solid =
+    layout === "clean"
+      ? `<rect x="${(cx - R).toFixed(0)}" y="${(cy - R).toFixed(0)}" width="${(R * 2).toFixed(0)}" height="${(R * 2).toFixed(0)}" rx="${(R * 0.24).toFixed(0)}" fill="url(#kAccent)" transform="rotate(${tilt} ${cx.toFixed(0)} ${cy.toFixed(0)})"/>`
+      : layout === "split"
+        ? `<path d="M${(cx - R).toFixed(0)} ${(cy + R).toFixed(0)} V${cy.toFixed(0)} A${R.toFixed(0)} ${R.toFixed(0)} 0 0 1 ${(cx + R).toFixed(0)} ${cy.toFixed(0)} V${(cy + R).toFixed(0)} Z" fill="url(#kAccent)"/>`
+        : `<circle cx="${cx.toFixed(0)}" cy="${cy.toFixed(0)}" r="${R.toFixed(0)}" fill="url(#kAccent)"/>`;
+  // a smaller, displaced echo of the main shape: the signature "one tile out of place"
+  const echo = `<circle cx="${(cx - R * 1.45).toFixed(0)}" cy="${(cy + R * 0.95).toFixed(0)}" r="${(R * 0.2).toFixed(0)}" fill="${p.accent}" opacity="0.9"/>`;
+  const defs = `<defs>
+<radialGradient id="kAccent" cx="30%" cy="28%" r="85%"><stop offset="0" stop-color="${p.accent}" stop-opacity="1"/><stop offset="1" stop-color="${p.accent}" stop-opacity="0.6"/></radialGradient>
+<filter id="kGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${Math.round(r * 90)}" result="n"/><feColorMatrix type="saturate" values="0"/></filter>
+</defs>`;
+  const grain = `<rect width="${W}" height="${H}" filter="url(#kGrain)" opacity="0.06"/>`;
+  return `${defs}${rings}${solid}${echo}${grain}`;
+}
+
 /** Deterministic SVG for a branded asset. Same spec + same kit version always produces identical bytes. */
 export function renderAssetSvg(
   spec: AssetSpec,
@@ -310,19 +361,18 @@ export function renderAssetSvg(
     : { fg: p.fg, fill: p.accent, fillFg: p.accentFg };
 
   els.push(`<rect width="${W}" height="${H}" fill="${p.bg}"/>`);
-  if (spec.layout === "bold")
-    els.push(
-      `<circle cx="${W * 0.92}" cy="${H * 0.08}" r="${unit * 0.3}" fill="${p.accent}" opacity="0.22"/>`,
-    );
-  else if (split)
+  if (split)
     els.push(
       `<rect x="0" y="${bandTop}" width="${W}" height="${H - bandTop}" fill="${p.accent}"/>`,
     );
-  else
+  else if (spec.layout === "clean")
     els.push(
       `<rect x="0" y="0" width="${Math.round(unit * 0.03)}" height="${H}" fill="${p.accent}"/>`,
     );
 
+  els.push(
+    artLayer(p, W, H, unit, spec.layout, spec.headline + business, tall),
+  );
   const wm = fit(
     business,
     inner * 0.8,
@@ -385,7 +435,8 @@ export function renderAssetSvg(
   const offset = tall
     ? Math.round(Math.max(0, bodyBottom - bodyTop) * 0.12)
     : 0;
-  for (const b of layoutStack(blocks, inner, bodyTop + offset, bodyBottom))
+  const textW = tall ? inner : Math.round(inner * 0.72);
+  for (const b of layoutStack(blocks, textW, bodyTop + offset, bodyBottom))
     els.push(textEls(pad, b, p.fg));
 
   let fy = footerTop;
