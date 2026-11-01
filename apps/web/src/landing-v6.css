@@ -1,0 +1,498 @@
+/* Kora v6 public surface — premium editorial landing, scoped away from Mission Control. */
+body:has(.k-hero) {
+  background: #090a0c;
+  color: #f4efe7;
+}
+
+body:has(.k-hero) .top {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  border: 0;
+  background: color-mix(in srgb, #090a0c 76%, transparent);
+  backdrop-filter: blur(22px) saturate(140%);
+}
+
+body:has(.k-hero) .top .wrap {
+  max-width: 1240px;
+  min-height: 76px;
+}
+
+body:has(.k-hero) .top a,
+body:has(.k-hero) .top button {
+  color: #f4efe7;
+}
+
+body:has(.k-hero) .top .main a {
+  color: #aaa7a1;
+}
+
+body:has(.k-hero) .top .main a:hover,
+body:has(.k-hero) .top .main a.active {
+  color: #fff;
+}
+
+body:has(.k-hero) .top .btn:not(.ghost) {
+  background: #ff6b3d;
+  color: #140805;
+  border-color: #ff6b3d;
+  box-shadow: 0 8px 28px rgba(255, 107, 61, 0.22);
+}
+
+body:has(.k-hero) .top .btn.ghost {
+  border-color: rgba(255,255,255,.16);
+}
+
+body:has(.k-hero) #main {
+  overflow: clip;
+}
+
+body:has(.k-hero) .k-hero {
+  position: relative;
+  min-height: min(900px, calc(100vh - 76px));
+  display: grid;
+  align-items: center;
+  padding: clamp(72px, 9vw, 132px) 0 92px;
+  background:
+    radial-gradient(circle at 82% 20%, rgba(111, 86, 255, .30), transparent 31%),
+    radial-gradient(circle at 18% 15%, rgba(255, 107, 61, .20), transparent 30%),
+    linear-gradient(180deg, #0d0f13 0%, #090a0c 66%, #11100f 100%);
+}
+
+body:has(.k-hero) .k-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .26;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, #000, transparent 78%);
+}
+
+body:has(.k-hero) .k-hero-grid {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  grid-template-columns: minmax(0, 1.03fr) minmax(420px, .97fr);
+  gap: clamp(48px, 7vw, 104px);
+  align-items: center;
+}
+
+body:has(.k-hero) .k-kicker,
+body:has(.k-hero) .k-overline {
+  color: #ff8b66;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  font-weight: 760;
+  font-size: .72rem;
+}
+
+body:has(.k-hero) .k-hero h1 {
+  max-width: 800px;
+  margin: 0;
+  color: #faf7f2;
+  font-size: clamp(3.2rem, 6.6vw, 6.7rem);
+  line-height: .91;
+  letter-spacing: -.07em;
+  font-weight: 760;
+  text-wrap: balance;
+}
+
+body:has(.k-hero) .k-hero h1 em {
+  color: #ff6b3d;
+  font-style: normal;
+  font-weight: inherit;
+}
+
+body:has(.k-hero) .k-hero .lead {
+  max-width: 700px;
+  color: #bbb7b0;
+  font-size: clamp(1.05rem, 1.45vw, 1.3rem);
+  line-height: 1.65;
+}
+
+body:has(.k-hero) .k-hero .btn.lg {
+  min-height: 56px;
+  padding-inline: 24px;
+  border-radius: 999px;
+}
+
+body:has(.k-hero) .k-hero .btn:not(.ghost) {
+  background: #f7efe4;
+  color: #15110d;
+  border-color: #f7efe4;
+  box-shadow: 0 18px 48px rgba(0,0,0,.34);
+}
+
+body:has(.k-hero) .k-hero .btn.ghost {
+  color: #f6f0e8;
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.035);
+}
+
+body:has(.k-hero) .scene {
+  position: relative;
+  margin: 0;
+  min-height: 560px;
+  perspective: 1200px;
+}
+
+body:has(.k-hero) .scene-site {
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.13);
+  background: #16181d;
+  box-shadow: 0 48px 110px rgba(0,0,0,.48);
+}
+
+body:has(.k-hero) .k-hero .scene-site {
+  transform: rotateY(-5deg) rotateX(2deg);
+}
+
+body:has(.k-hero) .scene-bar {
+  background: #15171c;
+  color: #8e929a;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+body:has(.k-hero) .scene-card {
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(24, 26, 31, .86);
+  color: #f5f0e8;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 70px rgba(0,0,0,.42);
+}
+
+body:has(.k-hero) .scene-status {
+  top: 58%;
+  left: -7%;
+  transform: rotate(-3deg);
+}
+
+body:has(.k-hero) .scene-incident {
+  right: -6%;
+  bottom: 7%;
+  transform: rotate(3deg);
+}
+
+body:has(.k-hero) .scene figcaption {
+  color: #777b82;
+}
+
+body:has(.k-hero) .k-band {
+  position: relative;
+  padding: clamp(86px, 11vw, 150px) 0;
+  background: #f4efe7;
+  color: #171513;
+}
+
+body:has(.k-hero) .k-band.alt {
+  background: #ded8cd;
+}
+
+body:has(.k-hero) .k-band h2 {
+  max-width: 920px;
+  margin: 0;
+  color: #171513;
+  font-size: clamp(2.5rem, 5.2vw, 5.4rem);
+  line-height: .96;
+  letter-spacing: -.055em;
+  font-weight: 720;
+  text-wrap: balance;
+}
+
+body:has(.k-hero) .k-band .lead,
+body:has(.k-hero) .k-band p {
+  color: #5f5b55;
+}
+
+body:has(.k-hero) #problem .wrap,
+body:has(.k-hero) #truth .wrap {
+  max-width: 980px !important;
+  margin-left: max(20px, calc((100vw - 1240px)/2));
+}
+
+body:has(.k-hero) #truth::after {
+  content: "TRUTH > OUTPUT";
+  position: absolute;
+  right: 4vw;
+  bottom: 28px;
+  font: 800 clamp(2rem, 8vw, 9rem)/.8 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: -.08em;
+  color: rgba(20,18,16,.055);
+  pointer-events: none;
+}
+
+body:has(.k-hero) #work .wrap {
+  max-width: 1240px;
+}
+
+body:has(.k-hero) .showcase {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 22px;
+  margin-top: 48px;
+}
+
+body:has(.k-hero) .showcase li {
+  grid-column: span 4;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 18px 44px rgba(32,26,20,.09);
+  transition: transform .32s ease, box-shadow .32s ease;
+}
+
+body:has(.k-hero) .showcase li:nth-child(2),
+body:has(.k-hero) .showcase li:nth-child(5) {
+  transform: translateY(36px);
+}
+
+body:has(.k-hero) .showcase li:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 28px 70px rgba(32,26,20,.16);
+}
+
+body:has(.k-hero) .showcase li:nth-child(2):hover,
+body:has(.k-hero) .showcase li:nth-child(5):hover {
+  transform: translateY(28px);
+}
+
+body:has(.k-hero) .showcase img {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+body:has(.k-hero) .showcase li > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 18px;
+  color: #201d19;
+  font-weight: 700;
+}
+
+body:has(.k-hero) .showcase li em {
+  color: #8a8178;
+  font-style: normal;
+  font-weight: 550;
+}
+
+body:has(.k-hero) .k-band.dark {
+  min-height: 560px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 0, rgba(255,107,61,.20), transparent 35%),
+    #101114;
+  color: #f4efe7;
+}
+
+body:has(.k-hero) .k-band.dark h2,
+body:has(.k-hero) .k-band.dark p {
+  color: #f4efe7;
+}
+
+body:has(.k-hero) .k-calm {
+  max-width: 900px;
+  text-align: center;
+}
+
+body:has(.k-hero) .k-steps {
+  max-width: 1240px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+body:has(.k-hero) .k-step {
+  min-height: 360px;
+  padding: 34px;
+  border-radius: 26px;
+  border: 1px solid #d7d0c6;
+  background: rgba(255,255,255,.45);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+body:has(.k-hero) .k-step:nth-child(2) {
+  background: #18191d;
+  color: #f5efe7;
+  border-color: #18191d;
+}
+
+body:has(.k-hero) .k-step:nth-child(2) h3,
+body:has(.k-hero) .k-step:nth-child(2) p {
+  color: inherit;
+}
+
+body:has(.k-hero) .k-step:nth-child(3) {
+  background: #ff6b3d;
+  border-color: #ff6b3d;
+}
+
+body:has(.k-hero) .k-num {
+  margin-bottom: auto;
+  font-size: .8rem;
+  letter-spacing: .12em;
+  opacity: .55;
+}
+
+body:has(.k-hero) .k-step h3 {
+  font-size: clamp(1.6rem, 2.3vw, 2.35rem);
+  line-height: 1.02;
+  letter-spacing: -.04em;
+}
+
+body:has(.k-hero) #proof .wrap {
+  max-width: 1240px;
+}
+
+body:has(.k-hero) .shots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 26px;
+  margin-top: 34px;
+}
+
+body:has(.k-hero) .shots figure {
+  margin: 0;
+  padding: 14px;
+  border-radius: 28px;
+  background: #18191d;
+  box-shadow: 0 26px 70px rgba(30,25,20,.16);
+}
+
+body:has(.k-hero) .shots figcaption {
+  padding: 14px 6px 5px;
+  color: #c8c3bb;
+}
+
+body:has(.k-hero) #plans {
+  background: #121317;
+  color: #f4efe7;
+}
+
+body:has(.k-hero) #plans h2,
+body:has(.k-hero) #plans h3,
+body:has(.k-hero) #plans p,
+body:has(.k-hero) #plans li {
+  color: inherit;
+}
+
+body:has(.k-hero) #plans .card {
+  border-color: rgba(255,255,255,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.035));
+  box-shadow: none;
+}
+
+body:has(.k-hero) footer.site {
+  border: 0;
+  background: #090a0c;
+  color: #8f918f;
+  padding-block: 36px;
+}
+
+.k-marketing-hub .k-action-matrix {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.k-action-card {
+  min-height: 190px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--paper, #fff);
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.k-action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 42px rgba(20, 18, 16, .09);
+}
+
+.k-action-card strong {
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+  line-height: 1.08;
+}
+
+.k-action-card > span:last-child {
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  body:has(.k-hero) .k-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  body:has(.k-hero) .scene {
+    min-height: 480px;
+  }
+  body:has(.k-hero) .showcase li {
+    grid-column: span 6;
+  }
+  body:has(.k-hero) .k-steps,
+  body:has(.k-hero) .shots {
+    grid-template-columns: 1fr;
+  }
+  body:has(.k-hero) .k-step {
+    min-height: 260px;
+  }
+}
+
+@media (max-width: 640px) {
+  body:has(.k-hero) .top .main {
+    display: none;
+  }
+  body:has(.k-hero) .k-hero {
+    padding-top: 58px;
+  }
+  body:has(.k-hero) .k-hero h1 {
+    font-size: clamp(3rem, 15vw, 4.8rem);
+  }
+  body:has(.k-hero) .scene {
+    min-height: 400px;
+  }
+  body:has(.k-hero) .scene-status {
+    left: 2%;
+  }
+  body:has(.k-hero) .scene-incident {
+    right: 2%;
+  }
+  body:has(.k-hero) .showcase {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 20px;
+  }
+  body:has(.k-hero) .showcase li,
+  body:has(.k-hero) .showcase li:nth-child(2),
+  body:has(.k-hero) .showcase li:nth-child(5) {
+    flex: 0 0 84vw;
+    transform: none;
+    scroll-snap-align: center;
+  }
+  body:has(.k-hero) .k-band {
+    padding-block: 76px;
+  }
+  .k-marketing-hub .k-action-matrix {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:has(.k-hero) .showcase li,
+  .k-action-card {
+    transition: none;
+  }
+}
