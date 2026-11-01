@@ -35,69 +35,273 @@ const COMPOSITIONS = [
 ] as const;
 
 const VERTICALS = [
-  ["barber", "Barbershop", ["barber", "barbershop", "barbing", "haircut", "fade"]],
-  ["salon-beauty", "Beauty salon", ["salon", "beauty", "braid", "lashes", "makeup"]],
+  [
+    "barber",
+    "Barbershop",
+    ["barber", "barbershop", "barbing", "haircut", "fade"],
+  ],
+  [
+    "salon-beauty",
+    "Beauty salon",
+    ["salon", "beauty", "braid", "lashes", "makeup"],
+  ],
   ["nail-studio", "Nail studio", ["nail", "manicure", "pedicure"]],
-  ["spa-wellness", "Spa & wellness", ["spa", "massage", "wellness", "skincare"]],
-  ["fashion-boutique", "Fashion boutique", ["boutique", "fashion", "clothing", "shoes", "bags"]],
-  ["tailor", "Tailoring & fashion design", ["tailor", "seamstress", "bespoke", "aso ebi"]],
-  ["cake-business", "Cake & bakery", ["cake", "bakery", "baker", "cupcake", "pastry"]],
-  ["restaurant", "Restaurant", ["restaurant", "dining", "grill", "eatery", "cuisine"]],
-  ["bukka", "Bukka & local food", ["bukka", "local food", "jollof", "swallow", "food vendor"]],
-  ["catering", "Catering", ["catering", "caterer", "small chops", "event food"]],
-  ["hotel-shortlet", "Hotel & shortlet", ["hotel", "shortlet", "guesthouse", "lodge", "apartment"]],
-  ["real-estate", "Real estate", ["real estate", "property", "realtor", "land", "rentals"]],
+  [
+    "spa-wellness",
+    "Spa & wellness",
+    ["spa", "massage", "wellness", "skincare"],
+  ],
+  [
+    "fashion-boutique",
+    "Fashion boutique",
+    ["boutique", "fashion", "clothing", "shoes", "bags"],
+  ],
+  [
+    "tailor",
+    "Tailoring & fashion design",
+    ["tailor", "seamstress", "bespoke", "aso ebi"],
+  ],
+  [
+    "cake-business",
+    "Cake & bakery",
+    ["cake", "bakery", "baker", "cupcake", "pastry"],
+  ],
+  [
+    "restaurant",
+    "Restaurant",
+    ["restaurant", "dining", "grill", "eatery", "cuisine"],
+  ],
+  [
+    "bukka",
+    "Bukka & local food",
+    ["bukka", "local food", "jollof", "swallow", "food vendor"],
+  ],
+  [
+    "catering",
+    "Catering",
+    ["catering", "caterer", "small chops", "event food"],
+  ],
+  [
+    "hotel-shortlet",
+    "Hotel & shortlet",
+    ["hotel", "shortlet", "guesthouse", "lodge", "apartment"],
+  ],
+  [
+    "real-estate",
+    "Real estate",
+    ["real estate", "property", "realtor", "land", "rentals"],
+  ],
   ["law", "Law firm", ["law", "lawyer", "legal", "solicitor", "attorney"]],
-  ["accounting", "Accounting & tax", ["accounting", "accountant", "tax", "audit", "bookkeeping"]],
-  ["consulting", "Consultancy & coaching", ["consultant", "consulting", "coach", "advisory"]],
-  ["clinic", "Medical clinic", ["clinic", "medical", "doctor", "health centre", "physio"]],
+  [
+    "accounting",
+    "Accounting & tax",
+    ["accounting", "accountant", "tax", "audit", "bookkeeping"],
+  ],
+  [
+    "consulting",
+    "Consultancy & coaching",
+    ["consultant", "consulting", "coach", "advisory"],
+  ],
+  [
+    "clinic",
+    "Medical clinic",
+    ["clinic", "medical", "doctor", "health centre", "physio"],
+  ],
   ["dental", "Dental clinic", ["dental", "dentist", "teeth", "orthodont"]],
   ["pharmacy", "Pharmacy", ["pharmacy", "chemist", "medicine", "drug store"]],
-  ["diagnostics", "Diagnostics & laboratory", ["laboratory", "diagnostic", "medical test"]],
-  ["school", "School & academy", ["school", "academy", "nursery", "primary", "secondary"]],
-  ["tutoring", "Tutoring & lessons", ["tutor", "tutoring", "lessons", "training centre"]],
-  ["daycare", "Daycare & childcare", ["daycare", "childcare", "creche", "preschool"]],
-  ["church", "Church & faith community", ["church", "ministry", "parish", "fellowship", "mosque"]],
+  [
+    "diagnostics",
+    "Diagnostics & laboratory",
+    ["laboratory", "diagnostic", "medical test"],
+  ],
+  [
+    "school",
+    "School & academy",
+    ["school", "academy", "nursery", "primary", "secondary"],
+  ],
+  [
+    "tutoring",
+    "Tutoring & lessons",
+    ["tutor", "tutoring", "lessons", "training centre"],
+  ],
+  [
+    "daycare",
+    "Daycare & childcare",
+    ["daycare", "childcare", "creche", "preschool"],
+  ],
+  [
+    "church",
+    "Church & faith community",
+    ["church", "ministry", "parish", "fellowship", "mosque"],
+  ],
   ["ngo", "NGO & foundation", ["ngo", "nonprofit", "foundation", "charity"]],
-  ["events", "Events & weddings", ["event", "wedding", "planner", "decorator", "party"]],
-  ["photography", "Photography & video", ["photography", "photographer", "videography", "photo studio"]],
+  [
+    "events",
+    "Events & weddings",
+    ["event", "wedding", "planner", "decorator", "party"],
+  ],
+  [
+    "photography",
+    "Photography & video",
+    ["photography", "photographer", "videography", "photo studio"],
+  ],
   ["music-dj", "Music & DJ", ["dj", "music", "sound", "entertainment"]],
-  ["interior-design", "Interior design", ["interior", "decor", "furnishing", "space planning"]],
-  ["architecture", "Architecture practice", ["architect", "architecture", "building design"]],
-  ["construction", "Construction & building", ["construction", "contractor", "builder", "renovation"]],
-  ["electrical", "Electrical services", ["electrician", "electrical", "wiring", "inverter"]],
+  [
+    "interior-design",
+    "Interior design",
+    ["interior", "decor", "furnishing", "space planning"],
+  ],
+  [
+    "architecture",
+    "Architecture practice",
+    ["architect", "architecture", "building design"],
+  ],
+  [
+    "construction",
+    "Construction & building",
+    ["construction", "contractor", "builder", "renovation"],
+  ],
+  [
+    "electrical",
+    "Electrical services",
+    ["electrician", "electrical", "wiring", "inverter"],
+  ],
   ["plumbing", "Plumbing services", ["plumber", "plumbing", "pipe", "leak"]],
-  ["ac-repair", "AC & refrigeration", ["air conditioning", "ac repair", "refrigeration", "hvac"]],
-  ["generator-solar", "Generator & solar", ["generator", "solar", "inverter", "renewable"]],
-  ["auto-repair", "Auto repair", ["mechanic", "garage", "car repair", "vehicle repair"]],
-  ["car-wash", "Car wash & detailing", ["car wash", "detailing", "vehicle wash"]],
-  ["logistics", "Logistics & dispatch", ["logistics", "dispatch", "delivery", "courier", "haulage"]],
-  ["cleaning", "Cleaning & laundry", ["cleaning", "laundry", "dry cleaning", "janitorial"]],
-  ["electronics-repair", "Phone & electronics repair", ["phone repair", "electronics", "laptop repair"]],
-  ["phone-accessories", "Phone & gadget store", ["phone accessories", "gadgets", "phones"]],
-  ["grocery", "Grocery & minimart", ["grocery", "minimart", "provisions", "food store"]],
+  [
+    "ac-repair",
+    "AC & refrigeration",
+    ["air conditioning", "ac repair", "refrigeration", "hvac"],
+  ],
+  [
+    "generator-solar",
+    "Generator & solar",
+    ["generator", "solar", "inverter", "renewable"],
+  ],
+  [
+    "auto-repair",
+    "Auto repair",
+    ["mechanic", "garage", "car repair", "vehicle repair"],
+  ],
+  [
+    "car-wash",
+    "Car wash & detailing",
+    ["car wash", "detailing", "vehicle wash"],
+  ],
+  [
+    "logistics",
+    "Logistics & dispatch",
+    ["logistics", "dispatch", "delivery", "courier", "haulage"],
+  ],
+  [
+    "cleaning",
+    "Cleaning & laundry",
+    ["cleaning", "laundry", "dry cleaning", "janitorial"],
+  ],
+  [
+    "electronics-repair",
+    "Phone & electronics repair",
+    ["phone repair", "electronics", "laptop repair"],
+  ],
+  [
+    "phone-accessories",
+    "Phone & gadget store",
+    ["phone accessories", "gadgets", "phones"],
+  ],
+  [
+    "grocery",
+    "Grocery & minimart",
+    ["grocery", "minimart", "provisions", "food store"],
+  ],
   ["supermarket", "Supermarket", ["supermarket", "mart", "retail store"]],
-  ["pos-agent", "POS & agency banking", ["pos agent", "pos shop", "agency banking", "cash withdrawal"]],
-  ["ecommerce", "Online store", ["online store", "ecommerce", "e-commerce", "shop online"]],
-  ["crafts", "Handmade & crafts", ["craft", "handmade", "artisan", "beads", "leather"]],
+  [
+    "pos-agent",
+    "POS & agency banking",
+    ["pos agent", "pos shop", "agency banking", "cash withdrawal"],
+  ],
+  [
+    "ecommerce",
+    "Online store",
+    ["online store", "ecommerce", "e-commerce", "shop online"],
+  ],
+  [
+    "crafts",
+    "Handmade & crafts",
+    ["craft", "handmade", "artisan", "beads", "leather"],
+  ],
   ["florist", "Florist", ["florist", "flowers", "bouquet", "floral"]],
   ["gym", "Gym & fitness", ["gym", "fitness", "trainer", "workout", "boxing"]],
-  ["football-academy", "Sports academy", ["football academy", "sports academy", "soccer"]],
-  ["travel", "Travel & tours", ["travel", "tour", "tourism", "visa", "holiday"]],
+  [
+    "football-academy",
+    "Sports academy",
+    ["football academy", "sports academy", "soccer"],
+  ],
+  [
+    "travel",
+    "Travel & tours",
+    ["travel", "tour", "tourism", "visa", "holiday"],
+  ],
   ["import-export", "Import & export", ["import", "export", "procurement"]],
-  ["printing", "Printing & signage", ["printing", "signage", "banner", "large format"]],
-  ["branding-agency", "Branding & design agency", ["branding", "design agency", "graphic design"]],
-  ["saas", "Software & SaaS", ["saas", "software", "platform", "app", "api", "startup"]],
-  ["cybersecurity", "Cybersecurity & IT", ["cybersecurity", "it services", "network", "security technology"]],
-  ["security-services", "Security services", ["security company", "guards", "surveillance"]],
-  ["agriculture", "Agriculture & farm", ["farm", "agriculture", "farming", "produce", "agribusiness"]],
-  ["poultry", "Poultry & livestock", ["poultry", "chicken", "livestock", "eggs"]],
-  ["food-processing", "Food processing", ["food processing", "packaged food", "snacks", "beverage"]],
-  ["furniture", "Furniture & carpentry", ["furniture", "carpentry", "woodwork", "cabinet"]],
-  ["home-decor", "Home decor store", ["home decor", "decor store", "household decor"]],
-  ["party-rentals", "Party rentals", ["party rental", "chairs", "canopy", "event rental"]],
+  [
+    "printing",
+    "Printing & signage",
+    ["printing", "signage", "banner", "large format"],
+  ],
+  [
+    "branding-agency",
+    "Branding & design agency",
+    ["branding", "design agency", "graphic design"],
+  ],
+  [
+    "saas",
+    "Software & SaaS",
+    ["saas", "software", "platform", "app", "api", "startup"],
+  ],
+  [
+    "cybersecurity",
+    "Cybersecurity & IT",
+    ["cybersecurity", "it services", "network", "security technology"],
+  ],
+  [
+    "security-services",
+    "Security services",
+    ["security company", "guards", "surveillance"],
+  ],
+  [
+    "agriculture",
+    "Agriculture & farm",
+    ["farm", "agriculture", "farming", "produce", "agribusiness"],
+  ],
+  [
+    "poultry",
+    "Poultry & livestock",
+    ["poultry", "chicken", "livestock", "eggs"],
+  ],
+  [
+    "food-processing",
+    "Food processing",
+    ["food processing", "packaged food", "snacks", "beverage"],
+  ],
+  [
+    "furniture",
+    "Furniture & carpentry",
+    ["furniture", "carpentry", "woodwork", "cabinet"],
+  ],
+  [
+    "home-decor",
+    "Home decor store",
+    ["home decor", "decor store", "household decor"],
+  ],
+  [
+    "party-rentals",
+    "Party rentals",
+    ["party rental", "chairs", "canopy", "event rental"],
+  ],
   ["makeup-artist", "Makeup artist", ["makeup artist", "mua", "bridal makeup"]],
-  ["creator", "Creator & portfolio", ["creator", "influencer", "portfolio", "personal brand"]],
+  [
+    "creator",
+    "Creator & portfolio",
+    ["creator", "influencer", "portfolio", "personal brand"],
+  ],
   ["general-service", "Local business", []],
 ] as const;
 
@@ -164,7 +368,11 @@ export function campaignDirections(
   const seed = hash(`${vertical.id}|${goal}`);
   const directions: CampaignDirection[] = [];
 
-  for (let index = 0; index < Math.min(limit, COMPOSITIONS.length); index += 1) {
+  for (
+    let index = 0;
+    index < Math.min(limit, COMPOSITIONS.length);
+    index += 1
+  ) {
     const composition = COMPOSITIONS[(seed + index * 7) % COMPOSITIONS.length]!;
     const layout = layouts[(seed + index * 5) % layouts.length]!;
     const colorway = colorways[(seed + index * 3) % colorways.length]!;
@@ -174,7 +382,9 @@ export function campaignDirections(
       composition[0].includes("whatsapp") ||
       composition[0].includes("carousel");
     const format =
-      formats.find((f) => preferredStory && /story|portrait|vertical/i.test(f)) ??
+      formats.find(
+        (f) => preferredStory && /story|portrait|vertical/i.test(f),
+      ) ??
       formats.find((f) => preferredSquare && /square/i.test(f)) ??
       formats[(seed + index) % formats.length]!;
     directions.push({

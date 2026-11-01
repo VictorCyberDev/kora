@@ -4,7 +4,11 @@
   padding: clamp(22px, 4vw, 38px);
   border-radius: 30px;
   background:
-    radial-gradient(circle at 96% 0%, rgba(217, 206, 255, 0.9), transparent 18rem),
+    radial-gradient(
+      circle at 96% 0%,
+      rgba(217, 206, 255, 0.9),
+      transparent 18rem
+    ),
     #fffaf2;
 }
 
