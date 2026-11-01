@@ -79,18 +79,6 @@ function briefQuery(brief: DesignBrief): string {
   );
 }
 
-function plannerBriefFor(
-  brief: DesignBrief,
-  profile: ReferenceProfile,
-): DesignBrief {
-  return {
-    ...brief,
-    industry: `${profile.vertical.label} ${profile.vertical.aliases
-      .slice(0, 2)
-      .join(" ")}`,
-  };
-}
-
 function mediaSetFor(spec: SiteSpecV2, profile: ReferenceProfile) {
   const mode = spec.design.mode;
   const exact = catalogMediaSetFor(profile.vertical.id, mode, 5);
@@ -170,7 +158,7 @@ export function planSite(
     `${brief.name}|${brief.description}|${brief.industry ?? ""}`,
   );
   const profile = referenceProfileFor(query, direction, seed);
-  const spec = basePlanSite(plannerBriefFor(brief, profile), opts);
+  const spec = basePlanSite(brief, opts);
   return applyMediaStory(spec, profile);
 }
 
@@ -182,10 +170,7 @@ export function planDirections(brief: DesignBrief): DirectionPreview[] {
   const seed = fnv(
     `${parsed.name}|${parsed.description}|${parsed.industry ?? ""}`,
   );
-  const firstProfile = referenceProfileFor(query, 0, seed);
-  const baseDirections = basePlanDirections(
-    plannerBriefFor(parsed, firstProfile),
-  );
+  const baseDirections = basePlanDirections(parsed);
 
   return ([0, 1, 2] as const).map((index) => {
     const base = baseDirections[index]!;
