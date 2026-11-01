@@ -15,7 +15,7 @@ describe("Reference Atlas", () => {
   });
 
   it("retrieves Nigerian SME verticals from natural language", () => {
-    expect(resolveAtlasVertical("premium barbing salon in Yaba").id).toBe("barber");
+    expect(resolveAtlasVertical("premium barbershop in Yaba").id).toBe("barber");
     expect(resolveAtlasVertical("birthday cake business in Abuja").id).toBe("cake-business");
     expect(resolveAtlasVertical("lawyer office for SMEs").id).toBe("law");
     expect(resolveAtlasVertical("POS agent and cash withdrawal kiosk").id).toBe("pos-agent");
@@ -26,22 +26,27 @@ describe("Reference Atlas", () => {
     expect(campaignBlueprintsFor("barbershop", 24)).toHaveLength(24);
   });
 
-  it("gives image-led businesses a coherent multi-image site story", () => {
+  it("normalizes local wording and gives image-led businesses a coherent multi-image story", () => {
     const directions = planDirections({
       name: "Edge House",
       description:
-        "A premium barbershop offering fades, beard grooming and home service in Yaba.",
-      industry: "barbershop",
+        "A premium barbing salon offering fades, beard grooming and home service in Yaba.",
+      industry: "barbing salon",
       location: "Yaba, Lagos",
       services: ["Skin fade", "Beard grooming", "Home service"],
       whatsapp: "+2348012345678",
     });
     expect(directions).toHaveLength(3);
     for (const direction of directions) {
+      expect(direction.name.toLowerCase()).toContain("barbershop");
       const mediaUrls = direction.spec.pages[0]!.sections.flatMap((section) => {
         if (section.type === "hero" || section.type === "about")
           return section.media ? [section.media.url] : [];
-        if (section.type === "services" || section.type === "features" || section.type === "portfolio")
+        if (
+          section.type === "services" ||
+          section.type === "features" ||
+          section.type === "portfolio"
+        )
           return section.items.flatMap((item) => (item.media ? [item.media.url] : []));
         return [];
       });
