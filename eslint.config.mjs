@@ -11,6 +11,8 @@ export default tseslint.config(
       "scripts/design-qa/**",
       "scripts/live-presence-check.mjs",
       "scripts/live-recovery-check.mjs",
+      "scripts/live-creative-check.mjs",
+      "scripts/pilot-summary.mjs",
       "playwright.config.ts",
       "test-results/**",
       "eslint.config.mjs",

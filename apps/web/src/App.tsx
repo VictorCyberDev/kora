@@ -1,3 +1,6 @@
+import { IdentityPage } from "./pages/identity";
+import { ImagesPage } from "./pages/creative";
+import { PublicAuditPage, SharedAuditPage } from "./pages/audit";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -55,6 +58,7 @@ function PublicLayout() {
         <div className="wrap">
           <Logo />
           <nav className="main" aria-label="Public">
+            <NavLink to="/audit">Free website check</NavLink>
             <NavLink to="/pricing">Pricing</NavLink>
           </nav>
           {user ? (
@@ -319,6 +323,8 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/audit" element={<PublicAuditPage />} />
+        <Route path="/audit/shared" element={<SharedAuditPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/privacy" element={<Privacy />} />
@@ -332,12 +338,14 @@ export function App() {
           <Route index element={<SiteOverview />} />
           <Route path="presence" element={<PresencePage />} />
           <Route path="brand" element={<BrandPage />} />
+          <Route path="identity" element={<IdentityPage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="memory" element={<MemoryPage />} />
           <Route path="today" element={<TodayPage />} />
           <Route path="campaigns" element={<CampaignsPage />} />
           <Route path="create" element={<StudioPage />} />
+          <Route path="images" element={<ImagesPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="channels" element={<ChannelsPage />} />
           <Route path="customers" element={<CustomersPage />} />

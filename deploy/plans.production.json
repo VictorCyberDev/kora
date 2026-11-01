@@ -1,0 +1,34 @@
+[
+  {
+    "code": "trial",
+    "name": "Trial",
+    "currency": "NGN",
+    "amountMinor": 0,
+    "interval": "none",
+    "capabilities": {
+      "sites": 3,
+      "customDomain": true,
+      "aiOperationsPerMonth": 200,
+      "storageMb": 500,
+      "managedRecovery": true,
+      "advancedProof": true,
+      "teamMembers": 5
+    }
+  },
+  {
+    "code": "pro-monthly",
+    "name": "Pro",
+    "currency": "NGN",
+    "amountMinor": 10000000,
+    "interval": "monthly",
+    "capabilities": {
+      "sites": 5,
+      "customDomain": true,
+      "aiOperationsPerMonth": 1500,
+      "storageMb": 5000,
+      "managedRecovery": true,
+      "advancedProof": true,
+      "teamMembers": 10
+    }
+  }
+]

@@ -1,3 +1,4 @@
+import { SuggestionsPanel } from "./creative";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { api, ago, when, type J } from "../api";
@@ -67,6 +68,7 @@ export function CustomersPage() {
   );
   return (
     <div className="stack">
+      <SuggestionsPanel />
       <Async state={data}>
         {(d) => (
           <>

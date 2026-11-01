@@ -4,6 +4,8 @@ import { z } from "zod";
 import {
   artifactHash,
   briefSchema,
+  creativeFindings,
+  gradeFindings,
   designBriefSchema,
   designIntelligenceSchema,
   intelligencePrompt,
@@ -21,6 +23,7 @@ import {
   type AnySiteSpec,
   type StructuredEdit,
 } from "@kora/site-schema";
+import { budgetBreaches } from "@kora/growth";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
 import { sendArtifact } from "./hosting.js";
@@ -805,6 +808,36 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     const v = await platform.getVersion(site.id, versionId);
     if (!v) throw notFound();
     return { data: v };
+  });
+  // Creative quality review (M11): deterministic gates + K0–K5 grade for a stored v2 version.
+  app.get("/api/sites/:id/versions/:versionId/quality", async (req) => {
+    const { id, versionId } = z
+      .object({ id: uuid, versionId: uuid })
+      .parse(req.params);
+    const { site } = await siteFor(req, id);
+    const v = await platform.getVersion(site.id, versionId);
+    if (!v) throw notFound();
+    const spec = (v as { spec?: AnySiteSpec }).spec;
+    if (!spec || spec.version !== 2)
+      return { data: { supported: false as const } };
+    const findings = creativeFindings(spec);
+    const files = renderAnySite(spec, { siteId: site.id });
+    const bytes = (n: string) => Buffer.byteLength(files[n] ?? "");
+    const budgets = budgetBreaches({
+      site_html_kb: Math.round(bytes("index.html") / 1024),
+      site_total_kb: Math.round(
+        Object.keys(files).reduce((n, k) => n + bytes(k), 0) / 1024,
+      ),
+      site_requests: Object.keys(files).length,
+    });
+    return {
+      data: {
+        supported: true as const,
+        findings,
+        budgets,
+        ...gradeFindings(findings),
+      },
+    };
   });
   // Preview serves the stored artifact: the same bytes publish deploys, never a separate renderer.
   app.get(

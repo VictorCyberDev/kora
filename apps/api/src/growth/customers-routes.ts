@@ -1,6 +1,11 @@
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { LEAD_STATUSES, waLink, whatsappWindow } from "@kora/growth";
+import {
+  LEAD_STATUSES,
+  followUpFor,
+  waLink,
+  whatsappWindow,
+} from "@kora/growth";
 import {
   HttpError,
   notFound,
@@ -44,6 +49,53 @@ export function registerCustomerRoutes(app: FastifyInstance, d: CustomerDeps) {
     const site = await siteFor(req);
     await customers.syncFormLeads(site.id, site.orgId);
     return { data: await customers.counts(site.id, now()) };
+  });
+
+  /** Suggested next step per open customer. Every suggestion needs the owner; nudges and review asks need recorded consent. */
+  app.get("/api/sites/:id/customers/suggestions", async (req) => {
+    const site = await siteFor(req);
+    await requireFeature(billing, site.orgId, "customers.hub");
+    const t = Date.now();
+    const hrs = (v: string | null) =>
+      v ? (t - new Date(v).getTime()) / 3_600_000 : null;
+    const consent = new Set(
+      (
+        await customers.sql`SELECT id FROM customers WHERE site_id=${site.id} AND message_consent_at IS NOT NULL`
+      ).map((r) => String(r.id)),
+    );
+    await customers.syncFormLeads(site.id, site.orgId);
+    const leads = await customers.list(site.id);
+    const out = leads
+      .map((l) => {
+        const s = followUpFor({
+          status: l.status,
+          lastInboundHoursAgo: hrs(l.lastInboundAt),
+          lastOutboundHoursAgo: hrs(l.lastOutboundAt),
+          hasConsentToMessage: consent.has(l.customer.id),
+          completedDaysAgo:
+            l.status === "WON"
+              ? Math.floor((hrs(l.updatedAt) ?? 0) / 24)
+              : null,
+        });
+        return { leadId: l.id, customer: l.customer.name, ...s };
+      })
+      .filter((s) => s.kind !== "none");
+    return { data: out };
+  });
+  app.post("/api/sites/:id/customers/:customerId/consent", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    const { customerId } = z
+      .object({ customerId: z.string().uuid() })
+      .parse(req.params);
+    const { consented } = z
+      .object({ consented: z.boolean() })
+      .strict()
+      .parse(req.body);
+    const r =
+      await customers.sql`UPDATE customers SET message_consent_at=${consented ? new Date().toISOString() : null}
+      WHERE id=${customerId} AND site_id=${site.id} RETURNING id`;
+    if (r.length === 0) throw notFound();
+    return { data: { customerId, consented } };
   });
 
   app.get("/api/sites/:id/leads", async (req) => {

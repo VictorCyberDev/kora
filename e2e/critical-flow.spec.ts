@@ -26,7 +26,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   // 1. Landing communicates the product, then sign up.
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /made for you/ }),
+    page.getByRole("heading", { name: /Look world-class/ }),
   ).toBeVisible();
   await shot(page, "01-landing");
   await page.getByRole("link", { name: "Build my website" }).first().click();
@@ -91,10 +91,31 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   expect(await siteResponse.text()).toContain("Victor Laundry");
 
   // 5. Kora watches it: the overview says Online.
-  await page.getByRole("link", { name: "Overview", exact: true }).click();
+  await page.getByRole("link", { name: "Today", exact: true }).click();
   await expect(page.getByText("Healthy", { exact: true }).first()).toBeVisible({
     timeout: 30_000,
   });
+
+  // 5b. Business identity: Kora shows what it knows and what it still needs to ask.
+  await page
+    .getByRole("link", { name: "Presence", exact: true })
+    .first()
+    .click();
+  await page.getByRole("link", { name: "Identity", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "What Kora knows" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Your brand in your words" }),
+  ).toBeVisible();
+  // 5c. Studio images: honest when no provider is configured.
+  await page.getByRole("link", { name: "Studio", exact: true }).first().click();
+  await page.getByRole("link", { name: "Images", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Pictures made by AI" }),
+  ).toBeVisible();
+  await expect(page.getByText("Not set up yet")).toBeVisible();
+  await page.getByRole("link", { name: "Today", exact: true }).click();
 
   // 6. Controlled test: the live version fails for real; Kora notices.
   await shot(page, "03-online");
@@ -170,6 +191,10 @@ test("public pages render and protected pages require sign-in", async ({
 }) => {
   await page.goto("/pricing");
   await expect(page.getByRole("heading", { name: "Pricing" })).toBeVisible();
+  await page.goto("/audit");
+  await expect(
+    page.getByRole("heading", { name: /How does your website look/ }),
+  ).toBeVisible();
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { name: "Privacy" })).toBeVisible();
   await page.goto("/app/sites");

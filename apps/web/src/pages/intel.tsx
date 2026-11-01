@@ -1,3 +1,4 @@
+import { PerformancePanel } from "./creative";
 import { useState, type FormEvent } from "react";
 import { useParams } from "react-router-dom";
 import { api, when, type J } from "../api";
@@ -30,6 +31,7 @@ export function ResultsPage() {
   const [msg, setMsg] = useState<string | null>(null);
   return (
     <div className="stack">
+      <PerformancePanel />
       <section className="card stack">
         <p className="k-overline">Results</p>
         <h2>What your posts brought, in the last 30 days</h2>

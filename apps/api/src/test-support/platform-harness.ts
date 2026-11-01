@@ -1,4 +1,5 @@
 import { createServer } from "node:net";
+import type { MediaProvider } from "@kora/growth";
 import postgres from "postgres";
 import type { LlmClient } from "@kora/reasoner";
 import { buildApi } from "../app.js";
@@ -60,6 +61,7 @@ export async function startHarness(
     resolver?: DnsResolver;
     domainFetch?: typeof fetch;
     now?: () => Date;
+    media?: { image: MediaProvider[]; video: MediaProvider[] };
   } = {},
 ): Promise<Harness> {
   const databaseUrl = process.env.DATABASE_URL!;
@@ -97,6 +99,7 @@ export async function startHarness(
         ...(o.resolver ? { resolver: o.resolver } : {}),
         ...(o.domainFetch ? { domainFetch: o.domainFetch } : {}),
         ...(o.now ? { now: o.now } : {}),
+        ...(o.media ? { media: o.media } : {}),
         llm: o.llm ?? null,
         publisher: o.publisher
           ? o.publisher(base)

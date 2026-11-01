@@ -15,3 +15,15 @@ All optional. A feature whose variables are missing reports `NOT_CONFIGURED`; no
 | `KORA_PUBLISH_TICK_MS`                                    | Publish worker poll interval, default 5000.                                                                      |
 | `KORA_PLANS_JSON`                                         | Production plan catalog. Plan codes containing `pro` / `plus` / `business` map to those tiers; others to Launch. |
 | Build arg `WITH_FFMPEG=true`                              | Installs ffmpeg in the API image.                                                                                |
+
+## Added by the creative-loop build
+
+| Variable                                  | Effect                                                                                                                                                                  |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `KORA_PLANS_JSON`                         | Set it to the contents of `deploy/plans.production.json` (trial + Pro at NGN 100,000/month). Without it production only has the free trial.                             |
+| `HF_TOKEN`                                | Hugging Face Inference token. Enables FLUX.1-schnell (Apache-2.0) image generation. With `KORA_HF_VIDEO=true` also enables LTX-Video text-to-video (not verified live). |
+| `KORA_SDWEBUI_URL`, `KORA_SDWEBUI_MODEL`  | A self-hosted AUTOMATIC1111 Stable Diffusion WebUI started with `--api`. Any open checkpoint the host installs.                                                         |
+| `KORA_IMAGE_PROVIDERS`                    | Order to try providers, default `sdwebui,huggingface`. Providers without their variables are skipped.                                                                   |
+| `KORA_HF_IMAGE_MODEL`, `KORA_HF_BASE_URL` | Override the model or endpoint.                                                                                                                                         |
+| `KORA_MEDIA_MONTHLY_LIMIT`                | Generations per website per month, default 200 (also 20 per day).                                                                                                       |
+| `KORA_SECRETS_KEY`                        | Also signs public-audit share links. Without it in production, links stop working on every restart.                                                                     |
