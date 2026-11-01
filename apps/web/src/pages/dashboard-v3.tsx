@@ -27,17 +27,24 @@ function QuickAction({
   );
 }
 
+const preferredSite = (rows: J[]) =>
+  rows.find((site) => site.status === "PUBLISHED" && site.publicUrl) ??
+  rows.find((site) => site.publishedVersionId) ??
+  rows.find((site) => site.currentVersionId) ??
+  rows[0];
+
 export function Dashboard() {
   const { user } = useAuth();
   const sites = useLoad<J[]>(() => api("GET", "/api/sites"));
-  const firstSiteId = sites.data?.[0]?.id as string | undefined;
+  const primarySite = sites.data?.length ? preferredSite(sites.data) : undefined;
+  const primarySiteId = primarySite?.id as string | undefined;
   const waiting = useLoad(
     () =>
-      firstSiteId
-        ? api<J>("GET", `/api/sites/${firstSiteId}/customers/summary`)
+      primarySiteId
+        ? api<J>("GET", `/api/sites/${primarySiteId}/customers/summary`)
         : Promise.resolve(null),
-    [firstSiteId],
-    firstSiteId ? 15000 : undefined,
+    [primarySiteId],
+    primarySiteId ? 15000 : undefined,
   );
   return (
     <div className="k-home stack">
@@ -58,19 +65,23 @@ export function Dashboard() {
       </header>
 
       <Async state={sites}>
-        {(rows) =>
-          rows.length === 0 ? (
-            <Empty title="Put your business online">
-              Give Kora the business name and two lines about what you do. You
-              will get three directions to choose from, then Kora keeps watching
-              after launch.
-              <p>
-                <Link className="btn" to="/app/sites/new">
-                  Create my first website
-                </Link>
-              </p>
-            </Empty>
-          ) : (
+        {(rows) => {
+          if (rows.length === 0)
+            return (
+              <Empty title="Put your business online">
+                Give Kora the business name and two lines about what you do. You
+                will get three directions to choose from, then Kora keeps watching
+                after launch.
+                <p>
+                  <Link className="btn" to="/app/sites/new">
+                    Create my first website
+                  </Link>
+                </p>
+              </Empty>
+            );
+
+          const site = preferredSite(rows);
+          return (
             <>
               <section className="k-home-status" aria-labelledby="business-now">
                 <div className="k-section-head">
@@ -78,10 +89,10 @@ export function Dashboard() {
                     <p className="k-overline">Right now</p>
                     <h2 id="business-now">Can customers reach you?</h2>
                   </div>
-                  {rows[0].publicUrl ? (
+                  {site.publicUrl ? (
                     <a
                       className="btn quiet sm"
-                      href={rows[0].publicUrl}
+                      href={site.publicUrl}
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -89,7 +100,7 @@ export function Dashboard() {
                     </a>
                   ) : null}
                 </div>
-                <SiteStatusCard siteId={rows[0].id} />
+                <SiteStatusCard siteId={site.id} />
               </section>
 
               <section aria-labelledby="quick-actions">
@@ -101,13 +112,25 @@ export function Dashboard() {
                 </div>
                 <div className="k-quick-grid">
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/build`}
+                    to={`/app/sites/${site.id}/build`}
                     eyebrow="Website"
                     title="Edit what customers see"
                     detail="Design, copy, sections and versions"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/customers`}
+                    to="/app/campaigns"
+                    eyebrow="Marketing"
+                    title="Create a campaign"
+                    detail="Use the business you already published — no new website needed"
+                  />
+                  <QuickAction
+                    to="/app/images"
+                    eyebrow="Studio"
+                    title="Create campaign images"
+                    detail="Make and review visuals for your existing business"
+                  />
+                  <QuickAction
+                    to={`/app/sites/${site.id}/customers`}
                     eyebrow="Customers"
                     title={
                       waiting.data
@@ -119,13 +142,13 @@ export function Dashboard() {
                     detail="Enquiries from your website and channels, in one place"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/presence`}
+                    to={`/app/sites/${site.id}/presence`}
                     eyebrow="Presence"
                     title="Business details and health"
                     detail="What customers see about you, and what could be better"
                   />
                   <QuickAction
-                    to={`/app/sites/${rows[0].id}/domains`}
+                    to={`/app/sites/${site.id}/domains`}
                     eyebrow="Presence"
                     title="Your domain"
                     detail="Connect the address customers should remember"
@@ -171,11 +194,11 @@ export function Dashboard() {
                     business current in one place.
                   </p>
                   <div className="k-presence-list">
-                    {rows.slice(0, 4).map((site) => (
-                      <Link key={site.id} to={`/app/sites/${site.id}`}>
-                        <span>{site.name}</span>
+                    {rows.slice(0, 4).map((row) => (
+                      <Link key={row.id} to={`/app/sites/${row.id}`}>
+                        <span>{row.name}</span>
                         <span className="small muted">
-                          {site.publicUrl ? "Live" : "Draft"}
+                          {row.publicUrl ? "Live" : "Draft"}
                         </span>
                       </Link>
                     ))}
@@ -186,8 +209,8 @@ export function Dashboard() {
                 </div>
               </section>
             </>
-          )
-        }
+          );
+        }}
       </Async>
     </div>
   );
