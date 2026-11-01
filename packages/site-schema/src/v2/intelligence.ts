@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { designBriefSchema, planSite, type DesignBrief } from "./atlas-plan.js";
 import { PALETTE_STRATEGY_IDS, type PaletteStrategy } from "./palette.js";
-import { designBriefSchema, planSite, type DesignBrief } from "./plan.js";
 import { designQuality } from "./quality.js";
 import { LOOKS } from "./recipes.js";
 import { ART_STYLES, PERSONALITIES, type SiteSpecV2 } from "./spec.js";

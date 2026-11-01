@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import {
+  CAMPAIGN_ATLAS_STATS,
+  CAMPAIGN_GOALS,
+  campaignDirections,
+  campaignVerticalFor,
+} from "../campaign-atlas";
 import { api, when, type J } from "../api";
 import { Async, Empty, Notice, Status, errText, useLoad } from "../ui";
 
@@ -331,6 +337,27 @@ function ImagesTab({ id, facts, o }: { id: string; facts: J; o: J }) {
     [id],
   );
   const contact = facts.contact.whatsapp ?? facts.contact.phone ?? "";
+  const services = (facts.offer.services ?? []) as string[];
+  const [businessQuery, setBusinessQuery] = useState(
+    [facts.identity.name, ...services.slice(0, 4)].filter(Boolean).join(" "),
+  );
+  const [campaignGoal, setCampaignGoal] = useState("launch");
+  const atlasVertical = useMemo(
+    () => campaignVerticalFor(businessQuery),
+    [businessQuery],
+  );
+  const atlasDirections = useMemo(
+    () =>
+      campaignDirections(
+        businessQuery,
+        campaignGoal,
+        o.assets.layouts as string[],
+        o.assets.colorways as string[],
+        (o.assets.formats as J[]).map((f) => f.id as string),
+        8,
+      ),
+    [businessQuery, campaignGoal, o],
+  );
   const [spec, setSpec] = useState({
     format: "square",
     category: "announcement",
@@ -362,6 +389,86 @@ function ImagesTab({ id, facts, o }: { id: string; facts: J; o: J }) {
   const blocked = preview?.issues.some((i) => i.severity === "block");
   return (
     <div className="stack">
+      <section
+        className="card stack k-campaign-atlas"
+        aria-label="Campaign Reference Atlas"
+      >
+        <div className="k-campaign-atlas-head">
+          <div>
+            <p className="k-overline">Reference Atlas</p>
+            <h3>Campaign directions for {atlasVertical.label}</h3>
+          </div>
+          <span className="k-atlas-count">
+            {CAMPAIGN_ATLAS_STATS.compositions.toLocaleString()} compositions
+          </span>
+        </div>
+        <p className="muted">
+          Kora retrieves a business-specific direction, then maps it to the real
+          layouts, colors and sizes supported by your live renderer. Pick a
+          direction and the editable preview below updates immediately.
+        </p>
+        <div className="k-campaign-filters">
+          <label>
+            Business type or style
+            <input
+              value={businessQuery}
+              onChange={(e) => setBusinessQuery(e.target.value)}
+              placeholder="e.g. barbing salon, cake business, law firm"
+            />
+          </label>
+          <label>
+            Campaign goal
+            <select
+              value={campaignGoal}
+              onChange={(e) => setCampaignGoal(e.target.value)}
+            >
+              {CAMPAIGN_GOALS.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div
+          className="k-campaign-directions"
+          role="list"
+          aria-label="Recommended campaign directions"
+        >
+          {atlasDirections.map((direction) => {
+            const selected =
+              spec.layout === direction.layout &&
+              spec.colorway === direction.colorway &&
+              spec.format === direction.format;
+            return (
+              <button
+                key={direction.id}
+                type="button"
+                className="k-campaign-direction"
+                aria-pressed={selected}
+                onClick={() =>
+                  setSpec((current) => ({
+                    ...current,
+                    format: direction.format,
+                    layout: direction.layout,
+                    colorway: direction.colorway,
+                  }))
+                }
+              >
+                <strong>{direction.title}</strong>
+                <small>
+                  {direction.layout} · {direction.colorway}
+                </small>
+              </button>
+            );
+          })}
+        </div>
+        <p className="muted k-atlas-note">
+          The Atlas stores compositional intelligence, not copied marketplace
+          files. Your final asset remains an original Kora render using your
+          Brand Kit and confirmed business facts.
+        </p>
+      </section>
       <div className="k-studio">
         <form
           className="card stack"

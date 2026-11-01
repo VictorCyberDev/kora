@@ -427,13 +427,25 @@ describe("edge briefs", () => {
 
 describe("media", () => {
   it("any photograph is a catalogued, licensed, existing file with alt text; never anything else", () => {
-    const ids = new Set(MEDIA_CATALOG.map((e) => e.file));
+    const bundled = new Set(
+      MEDIA_CATALOG.flatMap((e) => (e.file ? [e.file] : [])),
+    );
+    const external = new Set(
+      MEDIA_CATALOG.flatMap((e) => (e.externalUrl ? [e.externalUrl] : [])),
+    );
     for (const { d } of all) {
       const html = renderSiteV2(d.spec)["index.html"]!;
       for (const m of html.matchAll(/<img\b[^>]*>/g)) {
         const src = /src="([^"]+)"/.exec(m[0])![1]!;
-        expect(src.startsWith("/_kora/media/"), src).toBe(true);
-        expect(ids.has(src.slice("/_kora/media/".length)), src).toBe(true);
+        if (src.startsWith("/_kora/media/")) {
+          expect(bundled.has(src.slice("/_kora/media/".length)), src).toBe(
+            true,
+          );
+        } else {
+          const decoded = src.replaceAll("&amp;", "&");
+          expect(decoded.startsWith("https://"), src).toBe(true);
+          expect(external.has(decoded), src).toBe(true);
+        }
         expect(m[0]).toMatch(/alt="[^"]+"/);
       }
     }
@@ -442,8 +454,14 @@ describe("media", () => {
     const dir = new URL("../../site-media/files/", import.meta.url);
     expect(MEDIA_CATALOG.length).toBeGreaterThanOrEqual(3);
     for (const e of MEDIA_CATALOG) {
-      expect(existsSync(new URL(e.file, dir)), e.file).toBe(true);
-      expect(statSync(new URL(e.file, dir)).size, e.file).toBeLessThan(260_000);
+      if (e.file) {
+        expect(existsSync(new URL(e.file, dir)), e.file).toBe(true);
+        expect(statSync(new URL(e.file, dir)).size, e.file).toBeLessThan(
+          260_000,
+        );
+      } else {
+        expect(e.externalUrl).toMatch(/^https:\/\//);
+      }
       expect(e.license).toBe("Pexels License");
       expect(e.sourceUrl).toMatch(/^https:\/\/www\.pexels\.com\/photo\//);
       expect(e.alt.length).toBeGreaterThan(20);
@@ -453,11 +471,11 @@ describe("media", () => {
     const fits = (recipe: string) => catalogMediaFor(recipe, "light");
     expect(fits("restaurant")).toBeDefined();
     expect(fits("electronics-repair")?.url).toContain("repair-bench");
+    expect(fits("barber")?.url).toContain("/_kora/media/barber-");
+    expect(fits("law")?.url).toContain("/_kora/media/law");
     for (const r of [
-      "law",
       "saas",
       "interior-design",
-      "barber",
       "salon-beauty",
       "consultant-coach",
       "fitness-gym",
