@@ -80,7 +80,13 @@ export function registerGrowth(
     ffmpeg,
     contentModel: null,
   });
-  registerArtifactRoutes(app, { platform, billing, studio, raster, sql: platform.sql });
+  registerArtifactRoutes(app, {
+    platform,
+    billing,
+    studio,
+    raster,
+    sql: platform.sql,
+  });
   registerTruthRoutes(app, {
     platform,
     billing,

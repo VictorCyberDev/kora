@@ -115,6 +115,21 @@ export function Build() {
       setTab("chat");
       versions.reload();
     });
+  const tryNew = () =>
+    void run(async () => {
+      const r = await api(
+        "POST",
+        `/api/sites/${id}/versions/${current}/upgrade-v3`,
+        {},
+      );
+      say(
+        "kora",
+        `Made a new draft in the "${r.direction}" direction (version ${r.version.number}). ${r.note}`,
+      );
+      setSel(r.version.id);
+      setTab("chat");
+      versions.reload();
+    });
   const live = site.data?.publishedVersionId as string | null | undefined;
   const liveNumber = list.find((v) => v.id === live)?.number;
   const home = spec?.pages?.find((p: J) => p.slug === "home");
@@ -179,7 +194,7 @@ export function Build() {
                 Colours, button text, adding a service and renaming work without
                 AI. Bigger rewrites need the AI model.
               </p>
-              {spec && !isV2 && (
+              {spec && spec.version === 1 && (
                 <Notice kind="info">
                   This version uses the earlier design.{" "}
                   <button className="btn sm" disabled={busy} onClick={upgrade}>
@@ -190,6 +205,21 @@ export function Build() {
                     not change until you publish it.
                   </div>
                 </Notice>
+              )}
+              {spec && spec.version !== 3 && (
+                <p className="small">
+                  <button
+                    className="btn sm ghost"
+                    disabled={busy}
+                    onClick={tryNew}
+                  >
+                    Try a new Kora design
+                  </button>{" "}
+                  <span className="muted">
+                    A new draft from the newest design engine, built from the
+                    same facts. You can compare it and roll back.
+                  </span>
+                </p>
               )}
             </div>
           )}
@@ -310,8 +340,9 @@ export function Build() {
               </div>
             ) : (
               <Notice>
-                Design controls are available on the updated design. Open the
-                Ask Kora tab to upgrade this version.
+                {spec?.version === 3
+                  ? "This website uses Kora's newest design system. Change how it looks from Brand (more premium, bolder, calmer), or ask Kora in plain words."
+                  : "Design controls are available on the updated design. Open the Ask Kora tab to upgrade this version."}
               </Notice>
             ))}
 
