@@ -5,6 +5,7 @@ import { KoraStore } from "./store.js";
 import { buildVerificationReport } from "./verification/report.js";
 import { registerPassportRoutes } from "./passport-routes.js";
 import { registerUiRoutes } from "./ui/ui-routes.js";
+import { registerBriefDirectionRoutes } from "./platform/brief-directions.js";
 import { HttpError } from "./platform/http.js";
 import { loadPlatformConfig } from "./platform/config.js";
 import { registerPlatform, type PlatformRuntime } from "./platform/index.js";
@@ -63,10 +64,15 @@ export function buildApi(
     });
   });
   const platform = options.platform ?? options.createPlatform?.(app.log);
-  if (platform)
+  if (platform) {
     registerPlatform(app, platform, {
       ...(options.webDir ? { webDir: options.webDir } : {}),
     });
+    registerBriefDirectionRoutes(app, {
+      platform: platform.platform,
+      billing: platform.billing,
+    });
+  }
   app.get("/health", () => ({ status: "ok" }));
   // Self-reported identity of this process: unauthenticated, read-only, no
   // secrets, and a claim rather than proof (ADR-009).
