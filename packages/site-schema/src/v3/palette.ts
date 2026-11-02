@@ -6,10 +6,23 @@ export function paletteFromColorway(c: Colorway): Palette {
   const dark = c.mode === "dark";
   const bg = c.bg;
   const surface = dark ? mix(bg, "#ffffff", 0.05) : mix(bg, "#ffffff", 0.5);
-  const surfaceRaised = dark ? mix(bg, "#ffffff", 0.09) : mix(bg, "#ffffff", 0.85);
-  const surfaceMuted = dark ? mix(bg, c.primary, 0.14) : mix(bg, c.primary, 0.08);
-  const fg = ensureContrast(ensureContrast(ensureContrast(ensureContrast(c.fg, bg), surface), surfaceRaised), surfaceMuted);
-  const mf = ensureContrast(ensureContrast(ensureContrast(mix(fg, bg, 0.36), bg), surfaceMuted), surfaceRaised);
+  const surfaceRaised = dark
+    ? mix(bg, "#ffffff", 0.09)
+    : mix(bg, "#ffffff", 0.85);
+  const surfaceMuted = dark
+    ? mix(bg, c.primary, 0.14)
+    : mix(bg, c.primary, 0.08);
+  const fg = ensureContrast(
+    ensureContrast(
+      ensureContrast(ensureContrast(c.fg, bg), surface),
+      surfaceRaised,
+    ),
+    surfaceMuted,
+  );
+  const mf = ensureContrast(
+    ensureContrast(ensureContrast(mix(fg, bg, 0.36), bg), surfaceMuted),
+    surfaceRaised,
+  );
   return paletteSchema.parse({
     background: bg,
     foreground: fg,

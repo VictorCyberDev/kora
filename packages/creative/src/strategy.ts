@@ -49,7 +49,10 @@ export function offerPhrase(truth: BusinessTruth, v: VerticalIntel): string {
   const m = verbsRe(v).exec(truth.brief.description);
   if (m?.[1])
     return m[1]
-      .replace(/\s+(?:and|but|so|because|in|at|from|for)\s+(?:i|we|our|my|the)\b.*$/i, "")
+      .replace(
+        /\s+(?:and|but|so|because|in|at|from|for)\s+(?:i|we|our|my|the)\b.*$/i,
+        "",
+      )
       .replace(/[,\s]+$/, "")
       .trim()
       .toLowerCase();
@@ -71,7 +74,11 @@ export function deriveBrandStrategy(
     version: 1,
     brandEssence: essence.charAt(0).toUpperCase() + essence.slice(1),
     audience: v.customer,
-    positioning: `${truth.brief.name}${where}: ${thing}. Positioned as ${g.personality.join(", ")}.`.slice(0, 280),
+    positioning:
+      `${truth.brief.name}${where}: ${thing}. Positioned as ${g.personality.join(", ")}.`.slice(
+        0,
+        280,
+      ),
     valuePromise: `${v.jobToBeDone}.`,
     personality: g.personality,
     voice: g.voice,
@@ -86,7 +93,11 @@ export function deriveBrandStrategy(
     conversionMood: g.conversionMood,
     contentCharacter: `${g.voice}; use ${v.voiceRange.join(", ")} language; no superlatives.`,
     antiTraits: [...new Set([...v.antiTraits, ...g.antiPatterns])].slice(0, 10),
-    rationale: `${g.name} suits ${v.label.toLowerCase()} because the customer's main job is "${v.jobToBeDone.toLowerCase()}", which asks for ${g.emotionalGoal}. ${g.concept}`.slice(0, 600),
+    rationale:
+      `${g.name} suits ${v.label.toLowerCase()} because the customer's main job is "${v.jobToBeDone.toLowerCase()}", which asks for ${g.emotionalGoal}. ${g.concept}`.slice(
+        0,
+        600,
+      ),
     basis: {
       suppliedByOwner: supplied.slice(0, 12),
       inferred: truth.inferences.map((i) => i.statement).slice(0, 8),

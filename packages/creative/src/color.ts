@@ -52,7 +52,9 @@ export function ensureContrast(fg: string, bg: string, min = 4.5): string {
   const first = luminance(bg) < 0.4 ? 255 : 0;
   const ok = attempt(first) ?? attempt(255 - first);
   if (ok) return ok;
-  return contrast("#000000", bg) >= contrast("#ffffff", bg) ? "#000000" : "#ffffff";
+  return contrast("#000000", bg) >= contrast("#ffffff", bg)
+    ? "#000000"
+    : "#ffffff";
 }
 /** Readable text colour (near-black or white) on a background; always >= 4.5 when achievable. */
 export const readableOn = (bg: string, ink = "#111827", paper = "#ffffff") => {

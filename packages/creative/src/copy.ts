@@ -64,16 +64,34 @@ export const GENERIC_CTAS = [
   "see more",
 ];
 export const isGenericCta = (label: string) =>
-  GENERIC_CTAS.includes(label.trim().toLowerCase().replace(/[.!→>]+$/, "").trim());
+  GENERIC_CTAS.includes(
+    label
+      .trim()
+      .toLowerCase()
+      .replace(/[.!→>]+$/, "")
+      .trim(),
+  );
 
 /** Specific action wording per vertical id, falling back to the intent. */
 const BY_VERTICAL: Record<string, Partial<Record<Intent, string>>> = {
-  bakery: { order: "Order on WhatsApp", whatsapp: "Order on WhatsApp", visit: "Find the bakery" },
-  restaurant: { reserve: "Reserve a table", order: "See the menu", visit: "Plan your visit" },
+  bakery: {
+    order: "Order on WhatsApp",
+    whatsapp: "Order on WhatsApp",
+    visit: "Find the bakery",
+  },
+  restaurant: {
+    reserve: "Reserve a table",
+    order: "See the menu",
+    visit: "Plan your visit",
+  },
   bukka: { order: "See today's food", visit: "Find us" },
   cafe: { visit: "Plan your visit", order: "See the menu" },
   catering: { quote: "Get a catering quote", whatsapp: "Ask about your event" },
-  barber: { book: "Book a haircut", whatsapp: "Book on WhatsApp", visit: "Find the shop" },
+  barber: {
+    book: "Book a haircut",
+    whatsapp: "Book on WhatsApp",
+    visit: "Find the shop",
+  },
   salon: { book: "Book an appointment", whatsapp: "Book on WhatsApp" },
   nails: { book: "Book your set" },
   makeup: { whatsapp: "Check availability", book: "Book your look" },
@@ -83,12 +101,21 @@ const BY_VERTICAL: Record<string, Partial<Record<Intent, string>>> = {
   dental: { book: "Book a check-up", call: "Call the practice" },
   law: { enquire: "Request a consultation", call: "Call the firm" },
   accounting: { enquire: "Talk to an accountant" },
-  realestate: { enquire: "View available homes", whatsapp: "Ask about availability" },
+  realestate: {
+    enquire: "View available homes",
+    whatsapp: "Ask about availability",
+  },
   hotel: { reserve: "Reserve a room", whatsapp: "Ask about availability" },
-  shortlet: { reserve: "Check availability", whatsapp: "Ask about availability" },
+  shortlet: {
+    reserve: "Check availability",
+    whatsapp: "Ask about availability",
+  },
   photographer: { "view-work": "See the work", book: "Check my dates" },
   interior: { "view-work": "See the projects", enquire: "Start a project" },
-  architecture: { "view-work": "See the projects", enquire: "Discuss a project" },
+  architecture: {
+    "view-work": "See the projects",
+    enquire: "Discuss a project",
+  },
   plumbing: { call: "Call a plumber", quote: "Get a quote" },
   electrical: { call: "Call an electrician", quote: "Get a quote" },
   hvac: { call: "Call for service", quote: "Get a quote" },

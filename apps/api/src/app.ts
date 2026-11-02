@@ -71,6 +71,7 @@ export function buildApi(
     registerBriefDirectionRoutes(app, {
       platform: platform.platform,
       billing: platform.billing,
+      engine: platform.config.KORA_CREATIVE_ENGINE,
     });
   }
   app.get("/health", () => ({ status: "ok" }));

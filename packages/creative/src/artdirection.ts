@@ -7,7 +7,14 @@ import { z } from "zod";
 import type { Grammar } from "./grammars.js";
 import type { VerticalIntel } from "./verticals.js";
 
-export const PLACEMENTS = ["hero", "feature", "gallery", "about", "campaign", "social-preview"] as const;
+export const PLACEMENTS = [
+  "hero",
+  "feature",
+  "gallery",
+  "about",
+  "campaign",
+  "social-preview",
+] as const;
 export const MEDIA_SOURCES = [
   "owner-supplied",
   "owner-approved-stored",
@@ -22,7 +29,13 @@ export const ImageBriefSchema = z.object({
   subject: z.string().max(160),
   context: z.string().max(160),
   cameraDistance: z.enum(["macro", "close", "medium", "wide", "aerial"]),
-  cameraAngle: z.enum(["eye-level", "overhead", "low", "three-quarter", "straight-on"]),
+  cameraAngle: z.enum([
+    "eye-level",
+    "overhead",
+    "low",
+    "three-quarter",
+    "straight-on",
+  ]),
   lighting: z.string().max(120),
   background: z.string().max(120),
   texture: z.string().max(100),
@@ -62,7 +75,12 @@ export interface ArtDirectionInput {
   grammar: Grammar;
   /** The owner's own words for what they offer. */
   thing: string;
-  palette: { bg: string; primary: string; accent: string; mode: "light" | "dark" };
+  palette: {
+    bg: string;
+    primary: string;
+    accent: string;
+    mode: "light" | "dark";
+  };
   hasOwnerPhotos: boolean;
   placement: (typeof PLACEMENTS)[number];
 }
@@ -85,7 +103,14 @@ const SUBJECT_BY_CLUSTER: Record<string, string> = {
 
 export function artDirect(i: ArtDirectionInput): ImageBrief {
   const g = i.grammar.genome;
-  const tone = g.paletteBehavior === "dark-field" || i.palette.mode === "dark" ? "dark" : g.density === "airy" ? "calm" : g.accentScarcity === "frequent" ? "bright" : "warm";
+  const tone =
+    g.paletteBehavior === "dark-field" || i.palette.mode === "dark"
+      ? "dark"
+      : g.density === "airy"
+        ? "calm"
+        : g.accentScarcity === "frequent"
+          ? "bright"
+          : "warm";
   const real = i.hasOwnerPhotos;
   const photoLed = i.vertical.photoTrust;
   const preferred: MediaSourceType = real
@@ -103,9 +128,17 @@ export function artDirect(i: ArtDirectionInput): ImageBrief {
     cameraDistance: g.density === "airy" ? "close" : "medium",
     cameraAngle: i.vertical.cluster === "food" ? "overhead" : "eye-level",
     lighting: LIGHT[tone],
-    background: i.palette.mode === "dark" ? "deep, low-detail dark surface" : "restrained surface in the brand's neutral",
-    texture: i.grammar.tags.includes("craft") ? "visible handmade texture" : "clean, minimal texture",
-    humanPresence: i.vertical.cluster === "food" || i.vertical.cluster === "creative" ? "hands-only" : "none",
+    background:
+      i.palette.mode === "dark"
+        ? "deep, low-detail dark surface"
+        : "restrained surface in the brand's neutral",
+    texture: i.grammar.tags.includes("craft")
+      ? "visible handmade texture"
+      : "clean, minimal texture",
+    humanPresence:
+      i.vertical.cluster === "food" || i.vertical.cluster === "creative"
+        ? "hands-only"
+        : "none",
     colourRelationship: `harmonises with ${i.palette.primary} and ${i.palette.accent} on ${i.palette.bg}`,
     negativeSpace: g.alignment === "center" ? "generous" : "left",
     cropStrategy: crop,
@@ -126,8 +159,12 @@ export function briefToPrompt(b: ImageBrief): string {
     b.lighting,
     b.background,
     b.texture,
-    b.humanPresence === "none" ? "no people" : `${b.humanPresence.replace("-", " ")} only`,
-    b.negativeSpace === "none" ? "" : `${b.negativeSpace} negative space for text`,
+    b.humanPresence === "none"
+      ? "no people"
+      : `${b.humanPresence.replace("-", " ")} only`,
+    b.negativeSpace === "none"
+      ? ""
+      : `${b.negativeSpace} negative space for text`,
     b.colourRelationship,
     `feeling of ${b.emotion}`,
     `${b.cropStrategy} crop`,

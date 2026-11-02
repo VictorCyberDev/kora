@@ -1,5 +1,11 @@
 import type { SiteFiles } from "../hash.js";
-import { esc, origin, pagePath, relFrom, type RenderContext } from "../render.js";
+import {
+  esc,
+  origin,
+  pagePath,
+  relFrom,
+  type RenderContext,
+} from "../render.js";
 import { SITE_JS_V2 } from "../v2/render.js";
 import { baseCss } from "./css.js";
 import { voiceFiles, VOICES } from "./fonts.js";
@@ -25,9 +31,14 @@ const waLink = (spec: SiteSpecV3, text?: string) =>
   spec.business.whatsapp
     ? `https://wa.me/${spec.business.whatsapp.replace(/^\+/, "")}${text ? `?text=${enc(text)}` : ""}`
     : "";
-const telLink = (spec: SiteSpecV3) => (spec.business.phone ? `tel:${spec.business.phone.replace(/[^\d+]/g, "")}` : "");
+const telLink = (spec: SiteSpecV3) =>
+  spec.business.phone
+    ? `tel:${spec.business.phone.replace(/[^\d+]/g, "")}`
+    : "";
 const mapsLink = (spec: SiteSpecV3) =>
-  spec.business.location ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spec.business.location)}` : "";
+  spec.business.location
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spec.business.location)}`
+    : "";
 
 function href(h: string, from: string): string {
   if (h.startsWith("/")) return relFrom(from, h.slice(1) || "home");
@@ -48,7 +59,13 @@ function headline(text: string, c: Ctx): string {
 }
 
 function visual(
-  v: { media?: MediaV3 | undefined; plate?: { kind: never; seed: number } | { kind: string; seed: number } | undefined },
+  v: {
+    media?: MediaV3 | undefined;
+    plate?:
+      | { kind: never; seed: number }
+      | { kind: string; seed: number }
+      | undefined;
+  },
   c: Ctx,
   opts: { cls?: string; eager?: boolean; ar?: string } = {},
 ): string {
@@ -63,7 +80,8 @@ function visual(
       fp = ` fp-${x}-${y}`;
       c.focals.add(`${x}-${y}`);
     }
-    const dims = m.width && m.height ? ` width="${m.width}" height="${m.height}"` : "";
+    const dims =
+      m.width && m.height ? ` width="${m.width}" height="${m.height}"` : "";
     return `<div class="frame ${ar} tr-${m.treatment}${fp} ${opts.cls ?? ""}"><img src="${esc(m.url)}" alt="${esc(m.alt)}"${dims} ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"'}></div>`;
   }
   const plate = v.plate ?? { kind: "arch", seed: 1 };
@@ -96,8 +114,13 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
   const eyebrow = s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : "";
   const h1 = `<h1>${headline(s.heading, c)}</h1>`;
   const sub = s.subheading ? `<p class="sub">${esc(s.subheading)}</p>` : "";
-  const ctas = s.primaryCta || s.secondaryCta ? `<div class="row">${s.primaryCta ? link(s.primaryCta, c) : ""}${s.secondaryCta ? link(s.secondaryCta, c, "btn alt") : ""}</div>` : "";
-  const hl = s.highlights.length ? `<ul class="hl">${s.highlights.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+  const ctas =
+    s.primaryCta || s.secondaryCta
+      ? `<div class="row">${s.primaryCta ? link(s.primaryCta, c) : ""}${s.secondaryCta ? link(s.secondaryCta, c, "btn alt") : ""}</div>`
+      : "";
+  const hl = s.highlights.length
+    ? `<ul class="hl">${s.highlights.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
+    : "";
   const copy = `${eyebrow}${h1}${sub}${ctas}${hl}`;
   const stamp = `<span class="stamp" aria-hidden="true">${esc(c.stamp)}</span>`;
   const o = `<section class="sec hero h-${s.layout} t-${tone}" id="hero">`;
@@ -118,21 +141,37 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
     case "booking-focus": {
       const wa = waLink(c.spec, `Hello ${b.name}, I would like to book.`);
       const tel = telLink(c.spec);
-      const today = b.hours[0] ? `<small>${esc(b.hours[0].days)}: ${esc(b.hours[0].hours)}</small>` : "";
+      const today = b.hours[0]
+        ? `<small>${esc(b.hours[0].days)}: ${esc(b.hours[0].hours)}</small>`
+        : "";
       const actions = [
         s.primaryCta ? link(s.primaryCta, c) : "",
-        wa && !/wa\.me/.test(s.primaryCta?.href ?? "") ? `<a class="btn alt wa" href="${esc(wa)}">Message on WhatsApp</a>` : "",
-        tel && !/^tel:/.test(s.primaryCta?.href ?? "") ? `<a class="btn alt" href="${esc(tel)}">Call ${esc(b.phone ?? "")}</a>` : "",
+        wa && !/wa\.me/.test(s.primaryCta?.href ?? "")
+          ? `<a class="btn alt wa" href="${esc(wa)}">Message on WhatsApp</a>`
+          : "",
+        tel && !/^tel:/.test(s.primaryCta?.href ?? "")
+          ? `<a class="btn alt" href="${esc(tel)}">Call ${esc(b.phone ?? "")}</a>`
+          : "",
       ].join("");
       return `${o}<div class="w gridh"><div>${eyebrow}${h1}${sub}${hl}</div><div class="bk"><h2>Book your visit</h2>${actions}${today}</div></div></section>`;
     }
     case "location-focus": {
       const info = [
         b.location ? `<div><b>Find us</b>${esc(b.location)}</div>` : "",
-        b.hours.length ? `<div><b>Hours</b>${b.hours.slice(0, 2).map((h) => `${esc(h.days)} ${esc(h.hours)}`).join("<br>")}</div>` : "",
-        b.phone || b.whatsapp ? `<div><b>Reach us</b>${esc(b.phone ?? b.whatsapp ?? "")}</div>` : "",
+        b.hours.length
+          ? `<div><b>Hours</b>${b.hours
+              .slice(0, 2)
+              .map((h) => `${esc(h.days)} ${esc(h.hours)}`)
+              .join("<br>")}</div>`
+          : "",
+        b.phone || b.whatsapp
+          ? `<div><b>Reach us</b>${esc(b.phone ?? b.whatsapp ?? "")}</div>`
+          : "",
       ].join("");
-      const wide = s.media || s.plate ? `<div class="wide">${visual(s, c, { eager, ar: "wide" })}</div>` : "";
+      const wide =
+        s.media || s.plate
+          ? `<div class="wide">${visual(s, c, { eager, ar: "wide" })}</div>`
+          : "";
       return `${o}<div class="w">${eyebrow}${h1}${sub}${ctas}${info ? `<div class="info">${info}</div>` : ""}${wide}</div></section>`;
     }
     case "collage": {
@@ -140,7 +179,20 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
       void p;
       const base = s.plate?.seed ?? 1;
       const three = [0, 1, 2]
-        .map((i) => visual(i === 0 ? s : { plate: { kind: (["arch", "circles", "stripes"] as const)[i]!, seed: base + i } }, c, { cls: `f${i + 1}`, eager: eager && i === 0 }))
+        .map((i) =>
+          visual(
+            i === 0
+              ? s
+              : {
+                  plate: {
+                    kind: (["arch", "circles", "stripes"] as const)[i]!,
+                    seed: base + i,
+                  },
+                },
+            c,
+            { cls: `f${i + 1}`, eager: eager && i === 0 },
+          ),
+        )
         .join("");
       return `${o}<div class="w gridh"><div>${copy}</div><div class="stack">${three}${stamp}</div></div></section>`;
     }
@@ -157,7 +209,9 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
       const box = tel
         ? `<div class="callbox"><small>${telLink(c.spec) ? "Call now" : "Message now"}</small><a class="num" href="${esc(tel)}">${esc(label)}</a>${waLink(c.spec) && telLink(c.spec) ? `<a class="btn wa" href="${esc(waLink(c.spec, `Hello ${b.name}`))}">Or send a WhatsApp</a>` : ""}</div>`
         : visual(s, c, { eager });
-      const ck = s.highlights.length ? `<ul class="ck">${s.highlights.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : "";
+      const ck = s.highlights.length
+        ? `<ul class="ck">${s.highlights.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
+        : "";
       return `${o}<div class="w gridh"><div>${eyebrow}${h1}${sub}${ck}</div>${box}</div></section>`;
     }
     default:
@@ -169,7 +223,12 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
 function offer(s: Sec<"offer">, c: Ctx, tone: Tone): string {
   mark(c, `offer.${s.layout}`);
   const h = head(c, "offer", s.heading, s.intro);
-  const P = (it: Sec<"offer">["items"][number]) => (it.price ? `<span class="price">${esc(it.price)}</span>` : it.tag ? `<span class="tg">${esc(it.tag)}</span>` : "");
+  const P = (it: Sec<"offer">["items"][number]) =>
+    it.price
+      ? `<span class="price">${esc(it.price)}</span>`
+      : it.tag
+        ? `<span class="tg">${esc(it.tag)}</span>`
+        : "";
   let body = "";
   switch (s.layout) {
     case "editorial-index":
@@ -208,7 +267,9 @@ function products(s: Sec<"products">, c: Ctx, tone: Tone): string {
   if (s.layout === "price-menu")
     body = `<ul class="pm rv">${s.items.map((it) => `<li><div class="top"><h3>${esc(it.title)}</h3><i></i>${it.price ? `<span class="price">${esc(it.price)}</span>` : ""}</div>${it.text ? `<p>${esc(it.text)}</p>` : ""}</li>`).join("")}</ul>`;
   else {
-    const cls = { rail: "rl", "gallery-grid": "gg", "featured-pair": "fp" }[s.layout];
+    const cls = { rail: "rl", "gallery-grid": "gg", "featured-pair": "fp" }[
+      s.layout
+    ];
     body = `<div class="${cls} rv"${s.layout === "rail" ? ' tabindex="0" role="region" aria-label="Products, scroll sideways"' : ""}>${s.items.map(art).join("")}</div>`;
   }
   return `${open("products", tone)}<div class="w">${h}${body}</div></section>`;
@@ -232,8 +293,17 @@ function story(s: Sec<"story">, c: Ctx, tone: Tone): string {
 function process(s: Sec<"process">, c: Ctx, tone: Tone): string {
   mark(c, `process.${s.layout}`);
   const h = head(c, "process", s.heading, s.intro);
-  const cls = { numerals: "pn2", "horizontal-steps": "hs", "timeline-line": "tl" }[s.layout];
-  const li = s.items.map((it, i) => `<li>${s.layout === "timeline-line" ? "" : `<span class="no">${s.layout === "numerals" ? String(i + 1).padStart(2, "0") : i + 1}</span>`}<h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></li>`).join("");
+  const cls = {
+    numerals: "pn2",
+    "horizontal-steps": "hs",
+    "timeline-line": "tl",
+  }[s.layout];
+  const li = s.items
+    .map(
+      (it, i) =>
+        `<li>${s.layout === "timeline-line" ? "" : `<span class="no">${s.layout === "numerals" ? String(i + 1).padStart(2, "0") : i + 1}</span>`}<h3>${esc(it.title)}</h3><p>${esc(it.text)}</p></li>`,
+    )
+    .join("");
   return `${open("process", tone)}<div class="w">${h}<ol class="${cls} rv"${s.layout === "horizontal-steps" ? ' tabindex="0"' : ""}>${li}</ol></div></section>`;
 }
 
@@ -241,7 +311,10 @@ function gallery(s: Sec<"gallery">, c: Ctx, tone: Tone): string {
   mark(c, `gallery.${s.layout}`);
   const cls = { mosaic: "gm", rail: "gl", pair: "gp", grid: "gr" }[s.layout];
   const figs = s.items
-    .map((it, i) => `<figure>${visual({ media: it.media, plate: it.plate ?? { kind: (["arch", "stripes", "circles", "checker", "sunburst", "lines"] as const)[i % 6]!, seed: i + 21 } }, c, { ar: s.layout === "mosaic" || s.layout === "grid" ? "square" : "tall" })}${it.caption ? `<figcaption>${esc(it.caption)}</figcaption>` : ""}</figure>`)
+    .map(
+      (it, i) =>
+        `<figure>${visual({ media: it.media, plate: it.plate ?? { kind: (["arch", "stripes", "circles", "checker", "sunburst", "lines"] as const)[i % 6]!, seed: i + 21 } }, c, { ar: s.layout === "mosaic" || s.layout === "grid" ? "square" : "tall" })}${it.caption ? `<figcaption>${esc(it.caption)}</figcaption>` : ""}</figure>`,
+    )
     .join("");
   return `${open("gallery", tone)}<div class="w">${s.heading ? head(c, "gallery", s.heading) : ""}<div class="${cls} rv"${s.layout === "rail" ? ' tabindex="0" role="region" aria-label="Gallery, scroll sideways"' : ""}>${figs}</div></div></section>`;
 }
@@ -250,10 +323,12 @@ function proof(s: Sec<"proof">, c: Ctx, tone: Tone): string {
   mark(c, `proof.${s.layout}`);
   const h = s.heading ? head(c, "proof", s.heading) : "";
   let body = "";
-  if (s.layout === "facts-band") body = `<div class="pf rv">${s.facts.map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join("")}</div>`;
+  if (s.layout === "facts-band")
+    body = `<div class="pf rv">${s.facts.map((f) => `<div><b>${esc(f.value)}</b><span>${esc(f.label)}</span></div>`).join("")}</div>`;
   else if (s.layout === "spotlight" && s.quotes[0])
     body = `<figure class="ps rv"><blockquote>“${esc(s.quotes[0].quote)}”</blockquote><cite>${esc(s.quotes[0].author)}${s.quotes[0].role ? `, ${esc(s.quotes[0].role)}` : ""}</cite></figure>`;
-  else body = `<div class="pk rv">${s.quotes.map((q) => `<figure><blockquote>“${esc(q.quote)}”</blockquote><figcaption>${esc(q.author)}${q.role ? `, ${esc(q.role)}` : ""}</figcaption></figure>`).join("")}</div>`;
+  else
+    body = `<div class="pk rv">${s.quotes.map((q) => `<figure><blockquote>“${esc(q.quote)}”</blockquote><figcaption>${esc(q.author)}${q.role ? `, ${esc(q.role)}` : ""}</figcaption></figure>`).join("")}</div>`;
   return `${open("proof", tone)}<div class="w">${h}${body}</div></section>`;
 }
 
@@ -262,9 +337,15 @@ function visit(s: Sec<"visit">, c: Ctx, tone: Tone): string {
   const b = c.spec.business;
   const maps = b.locationKind === "service-area" ? "" : mapsLink(c.spec);
   const dl = [
-    b.location ? `<div><dt>${b.locationKind === "service-area" ? "Where we work" : "Find us"}</dt><dd>${esc(b.location)}${maps ? `<br><a class="btn alt" href="${esc(maps)}" rel="noopener">Get directions</a>` : ""}</dd></div>` : "",
-    b.hours.length ? `<div><dt>Hours</dt><dd><ul>${b.hours.map((h) => `<li><span>${esc(h.days)}</span><b>${esc(h.hours)}</b></li>`).join("")}</ul></dd></div>` : "",
-    b.phone || b.whatsapp ? `<div><dt>Reach us</dt><dd>${b.phone ? `<a href="${esc(telLink(c.spec))}">${esc(b.phone)}</a>` : ""}${b.phone && b.whatsapp ? " · " : ""}${b.whatsapp ? `<a href="${esc(waLink(c.spec))}">WhatsApp</a>` : ""}</dd></div>` : "",
+    b.location
+      ? `<div><dt>${b.locationKind === "service-area" ? "Where we work" : "Find us"}</dt><dd>${esc(b.location)}${maps ? `<br><a class="btn alt" href="${esc(maps)}" rel="noopener">Get directions</a>` : ""}</dd></div>`
+      : "",
+    b.hours.length
+      ? `<div><dt>Hours</dt><dd><ul>${b.hours.map((h) => `<li><span>${esc(h.days)}</span><b>${esc(h.hours)}</b></li>`).join("")}</ul></dd></div>`
+      : "",
+    b.phone || b.whatsapp
+      ? `<div><dt>Reach us</dt><dd>${b.phone ? `<a href="${esc(telLink(c.spec))}">${esc(b.phone)}</a>` : ""}${b.phone && b.whatsapp ? " · " : ""}${b.whatsapp ? `<a href="${esc(waLink(c.spec))}">WhatsApp</a>` : ""}</dd></div>`
+      : "",
   ].join("");
   return `${open("visit", tone)}<div class="w vs2"><div class="rv"><p class="kick">${kickLabel.visit}</p><h2>${headline(s.heading, c)}</h2>${s.intro ? `<p class="lede">${esc(s.intro)}</p>` : ""}</div><div class="card rv"><dl>${dl}</dl></div></div></section>`;
 }
@@ -272,26 +353,53 @@ function visit(s: Sec<"visit">, c: Ctx, tone: Tone): string {
 function contact(s: Sec<"contact">, c: Ctx, tone: Tone, id: string): string {
   mark(c, "contact.shared");
   const b = c.spec.business;
-  const labels: Record<string, string> = { name: "Your name", email: "Email", phone: "Phone", message: "How can we help?", service: "Service you need", date: "Preferred date" };
-  const fields = s.layout === "booking-form" && !s.formFields.includes("date") ? [...s.formFields, "date" as const] : s.formFields;
+  const labels: Record<string, string> = {
+    name: "Your name",
+    email: "Email",
+    phone: "Phone",
+    message: "How can we help?",
+    service: "Service you need",
+    date: "Preferred date",
+  };
+  const fields =
+    s.layout === "booking-form" && !s.formFields.includes("date")
+      ? [...s.formFields, "date" as const]
+      : s.formFields;
   const field = (n: string) => {
     const fid = `${id}-${n}`;
-    const inp = n === "message" ? `<textarea id="${fid}" name="message" rows="4" maxlength="2000" required></textarea>` : `<input id="${fid}" name="${n}" type="${n === "email" ? "email" : n === "phone" ? "tel" : n === "date" ? "date" : "text"}" maxlength="200"${n === "name" ? " required" : ""}>`;
+    const inp =
+      n === "message"
+        ? `<textarea id="${fid}" name="message" rows="4" maxlength="2000" required></textarea>`
+        : `<input id="${fid}" name="${n}" type="${n === "email" ? "email" : n === "phone" ? "tel" : n === "date" ? "date" : "text"}" maxlength="200"${n === "name" ? " required" : ""}>`;
     return `<label for="${fid}">${labels[n]}${inp}</label>`;
   };
-  const form = s.form && c.rc.formEndpoint && s.layout !== "call-first" && s.layout !== "whatsapp-first" && s.layout !== "visit"
-    ? `<form data-kora-form data-endpoint="${esc(c.rc.formEndpoint)}" data-success="Thank you. We have received your message." data-failure="Sorry, that did not send. Please use the contact details instead." method="post" action="${esc(c.rc.formEndpoint)}">${fields.map(field).join("")}<div class="hp" aria-hidden="true"><label>Leave empty<input name="website" tabindex="-1" autocomplete="off"></label></div><button class="btn" type="submit">${esc(s.submitLabel)}</button><p class="form-status" role="status" aria-live="polite"></p></form>`
-    : "";
+  const form =
+    s.form &&
+    c.rc.formEndpoint &&
+    s.layout !== "call-first" &&
+    s.layout !== "whatsapp-first" &&
+    s.layout !== "visit"
+      ? `<form data-kora-form data-endpoint="${esc(c.rc.formEndpoint)}" data-success="Thank you. We have received your message." data-failure="Sorry, that did not send. Please use the contact details instead." method="post" action="${esc(c.rc.formEndpoint)}">${fields.map(field).join("")}<div class="hp" aria-hidden="true"><label>Leave empty<input name="website" tabindex="-1" autocomplete="off"></label></div><button class="btn" type="submit">${esc(s.submitLabel)}</button><p class="form-status" role="status" aria-live="polite"></p></form>`
+      : "";
   const wa = waLink(c.spec, `Hello ${b.name}`);
   const tel = telLink(c.spec);
   let big = "";
-  if (s.layout === "whatsapp-first" && wa) big = `<a class="big-link" href="${esc(wa)}">Message us on WhatsApp</a>`;
-  else if (tel && (s.layout === "call-first" || !wa)) big = `<a class="big-link" href="${esc(tel)}">${esc(b.phone ?? "")}</a>`;
-  else if (wa) big = `<a class="big-link" href="${esc(wa)}">Message us on WhatsApp</a>`;
+  if (s.layout === "whatsapp-first" && wa)
+    big = `<a class="big-link" href="${esc(wa)}">Message us on WhatsApp</a>`;
+  else if (tel && (s.layout === "call-first" || !wa))
+    big = `<a class="big-link" href="${esc(tel)}">${esc(b.phone ?? "")}</a>`;
+  else if (wa)
+    big = `<a class="big-link" href="${esc(wa)}">Message us on WhatsApp</a>`;
   const lines = [
-    b.phone && big.indexOf(esc(b.phone)) < 0 ? `<li>Call <a href="${esc(tel)}">${esc(b.phone)}</a></li>` : "",
-    wa && big.indexOf("WhatsApp") < 0 ? `<li><a class="btn wa" href="${esc(wa)}">Message on WhatsApp</a></li>` : "",
-    b.email ? `<li><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></li>` : "",
+    b.phone && big.indexOf(esc(b.phone)) < 0
+      ? `<li>Call <a href="${esc(tel)}">${esc(b.phone)}</a></li>`
+      : "",
+    wa && big.indexOf("WhatsApp") < 0
+      ? `<li><a class="btn wa" href="${esc(wa)}">Message on WhatsApp</a></li>`
+      : "",
+    b.email
+      ? `<li><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></li>`
+      : "",
     b.location ? `<li>${esc(b.location)}</li>` : "",
     ...b.hours.map((h) => `<li>${esc(h.days)} · ${esc(h.hours)}</li>`),
   ].join("");
@@ -308,10 +416,13 @@ function cta(s: Sec<"cta">, c: Ctx, tone: Tone): string {
   mark(c, `cta.${s.layout}`);
   const btn = `<div class="row">${link(s.button, c)}</div>`;
   if (s.layout === "marquee") {
-    const words = (s.heading.split(/\s+/).slice(0, 6).join(" ") + " ").repeat(2);
+    const words = (s.heading.split(/\s+/).slice(0, 6).join(" ") + " ").repeat(
+      2,
+    );
     return `<section class="sec t-${tone} cm" id="cta"><div class="tr" aria-hidden="true"><span>${esc(words)}</span><span>${esc(words)}</span></div><div class="w after"><h2 class="sr">${esc(s.heading)}</h2>${s.body ? `<p class="lede">${esc(s.body)}</p>` : ""}${btn}</div></section>`;
   }
-  if (s.layout === "outline") return `${open("cta", tone)}<div class="w"><div class="co rv"><h2>${headline(s.heading, c)}</h2>${s.body ? `<p>${esc(s.body)}</p>` : ""}${btn}</div></div></section>`;
+  if (s.layout === "outline")
+    return `${open("cta", tone)}<div class="w"><div class="co rv"><h2>${headline(s.heading, c)}</h2>${s.body ? `<p>${esc(s.body)}</p>` : ""}${btn}</div></div></section>`;
   return `${open("cta", tone, "cs")}<div class="w rv"><h2>${headline(s.heading, c)}</h2>${s.body ? `<p>${esc(s.body)}</p>` : ""}${btn}</div></section>`;
 }
 
@@ -330,31 +441,78 @@ function toneFor(spec: SiteSpecV3, sections: SectionV3[], i: number): Tone {
   const g = spec.design.genome;
   const s = sections[i]!;
   const pb = g.paletteBehavior;
-  const hero = (): Tone => (s.type === "hero" && s.layout === "cinematic" ? "dark" : pb === "color-field" ? "brand" : pb === "dark-field" || pb === "duotone" ? "dark" : pb === "soft-neutral" ? "alt" : "light");
+  const hero = (): Tone =>
+    s.type === "hero" && s.layout === "cinematic"
+      ? "dark"
+      : pb === "color-field"
+        ? "brand"
+        : pb === "dark-field" || pb === "duotone"
+          ? "dark"
+          : pb === "soft-neutral"
+            ? "alt"
+            : "light";
   if (s.type === "hero") return hero();
-  if (s.type === "cta") return pb === "color-field" ? "brand" : pb === "dark-field" || pb === "duotone" ? "dark" : "alt";
-  const idx = sections.slice(0, i).filter((x) => x.type !== "hero" && x.type !== "ticker").length;
+  if (s.type === "cta")
+    return pb === "color-field"
+      ? "brand"
+      : pb === "dark-field" || pb === "duotone"
+        ? "dark"
+        : "alt";
+  const idx = sections
+    .slice(0, i)
+    .filter((x) => x.type !== "hero" && x.type !== "ticker").length;
   switch (g.sectionRhythm) {
     case "continuous":
     case "ruled":
       return "light";
     case "banded":
-      return idx % 3 === 1 ? (pb === "color-field" ? "accent" : "alt") : idx % 3 === 2 ? "light" : "light";
+      return idx % 3 === 1
+        ? pb === "color-field"
+          ? "accent"
+          : "alt"
+        : idx % 3 === 2
+          ? "light"
+          : "light";
     default:
       return idx % 2 === 1 ? "alt" : "light";
   }
 }
 
 function navItems(spec: SiteSpecV3, from: string) {
-  return spec.pages.filter((p) => p.slug !== "home").map((p) => ({ label: p.nav ?? p.title, href: relFrom(from, p.slug), current: p.slug === from }));
+  return spec.pages
+    .filter((p) => p.slug !== "home")
+    .map((p) => ({
+      label: p.nav ?? p.title,
+      href: relFrom(from, p.slug),
+      current: p.slug === from,
+    }));
 }
-function header(spec: SiteSpecV3, from: string, overlay: boolean, c: Ctx): string {
+function header(
+  spec: SiteSpecV3,
+  from: string,
+  overlay: boolean,
+  c: Ctx,
+): string {
   const g = spec.design.genome;
   const items = navItems(spec, from);
-  const bits = items.map((x) => `<li><a href="${esc(x.href)}"${x.current ? ' aria-current="page"' : ""}>${esc(x.label)}</a></li>`);
-  const cta = spec.business.whatsapp ? `<li><a class="btn" href="${esc(waLink(spec, `Hello ${spec.business.name}`))}">Message us</a></li>` : spec.business.phone ? `<li><a class="btn" href="${esc(telLink(spec))}">Call</a></li>` : "";
-  const seal = g.signatureMotif === "monogram-seal" ? `<i class="seal" aria-hidden="true">${esc(c.letter)}</i>` : "";
-  const style = overlay ? "overlay" : g.headerStyle === "overlay" ? "minimal-bar" : g.headerStyle;
+  const bits = items.map(
+    (x) =>
+      `<li><a href="${esc(x.href)}"${x.current ? ' aria-current="page"' : ""}>${esc(x.label)}</a></li>`,
+  );
+  const cta = spec.business.whatsapp
+    ? `<li><a class="btn" href="${esc(waLink(spec, `Hello ${spec.business.name}`))}">Message us</a></li>`
+    : spec.business.phone
+      ? `<li><a class="btn" href="${esc(telLink(spec))}">Call</a></li>`
+      : "";
+  const seal =
+    g.signatureMotif === "monogram-seal"
+      ? `<i class="seal" aria-hidden="true">${esc(c.letter)}</i>`
+      : "";
+  const style = overlay
+    ? "overlay"
+    : g.headerStyle === "overlay"
+      ? "minimal-bar"
+      : g.headerStyle;
   const brand = `<a class="brand" href="${esc(relFrom(from, "home"))}">${seal}${esc(spec.business.name)}</a>`;
   const menu = `<details class="menu"><summary>Menu</summary><ul>${bits.join("")}${cta}</ul></details>`;
   const nav = `<ul class="nav-d" aria-label="Main">${bits.join("")}${cta}</ul>`;
@@ -364,16 +522,34 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   const b = spec.business;
   const g = spec.design.genome;
   const nav = navItems(spec, from);
-  const contact = [b.phone && `<li><a href="${esc(telLink(spec))}">${esc(b.phone)}</a></li>`, b.whatsapp && `<li><a href="${esc(waLink(spec))}">WhatsApp</a></li>`, b.email && `<li><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></li>`, b.location && `<li>${esc(b.location)}</li>`, ...b.social.map((l) => `<li><a href="${esc(l.href)}" rel="noopener">${esc(l.label)}</a></li>`)].filter(Boolean).join("");
-  const hours = b.hours.length ? `<div><h4>Hours</h4><ul>${b.hours.map((h) => `<li>${esc(h.days)} · ${esc(h.hours)}</li>`).join("")}</ul></div>` : "";
+  const contact = [
+    b.phone && `<li><a href="${esc(telLink(spec))}">${esc(b.phone)}</a></li>`,
+    b.whatsapp && `<li><a href="${esc(waLink(spec))}">WhatsApp</a></li>`,
+    b.email && `<li><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></li>`,
+    b.location && `<li>${esc(b.location)}</li>`,
+    ...b.social.map(
+      (l) =>
+        `<li><a href="${esc(l.href)}" rel="noopener">${esc(l.label)}</a></li>`,
+    ),
+  ]
+    .filter(Boolean)
+    .join("");
+  const hours = b.hours.length
+    ? `<div><h4>Hours</h4><ul>${b.hours.map((h) => `<li>${esc(h.days)} · ${esc(h.hours)}</li>`).join("")}</ul></div>`
+    : "";
   const exp = `<nav aria-label="Footer"><h4>Explore</h4><ul><li><a href="${esc(relFrom(from, "home"))}">Home</a></li>${nav.map((x) => `<li><a href="${esc(x.href)}">${esc(x.label)}</a></li>`).join("")}${spec.footer.links.map((l) => `<li><a href="${esc(href(l.href, from))}">${esc(l.label)}</a></li>`).join("")}</ul></nav>`;
-  const reach = contact ? `<div><h4>Get in touch</h4><ul>${contact}</ul></div>` : "";
+  const reach = contact
+    ? `<div><h4>Get in touch</h4><ul>${contact}</ul></div>`
+    : "";
   const legal = `<p class="legal">${esc(spec.footer.text || `© ${b.name}`)}</p>`;
   const brand = `<div><a class="brand" href="${esc(relFrom(from, "home"))}">${esc(b.name)}</a></div>`;
   let body: string;
-  if (g.footerStyle === "brand-heavy") body = `<div class="big" aria-hidden="true">${esc(b.name)}</div><div class="fg">${exp}${reach}${hours}</div>${legal}`;
-  else if (g.footerStyle === "local-card") body = `<div class="lc"><div class="fg">${brand}${hours || exp}${reach}</div></div>${legal}`;
-  else if (g.footerStyle === "columns") body = `<div class="fg">${brand}${exp}${reach}${hours}</div>${legal}`;
+  if (g.footerStyle === "brand-heavy")
+    body = `<div class="big" aria-hidden="true">${esc(b.name)}</div><div class="fg">${exp}${reach}${hours}</div>${legal}`;
+  else if (g.footerStyle === "local-card")
+    body = `<div class="lc"><div class="fg">${brand}${hours || exp}${reach}</div></div>${legal}`;
+  else if (g.footerStyle === "columns")
+    body = `<div class="fg">${brand}${exp}${reach}${hours}</div>${legal}`;
   else body = `<div class="fg">${brand}${exp}${reach}</div>${legal}`;
   void c;
   return `<footer class="ft t-${g.paletteBehavior === "dark-field" ? "dark" : "light"} fs-${g.footerStyle}"><div class="w">${body}</div></footer>`;
@@ -382,51 +558,123 @@ function dock(spec: SiteSpecV3): string {
   const g = spec.design.genome;
   if (g.mobileStrategy === "narrative-stack") return "";
   const parts = [
-    spec.business.phone ? `<a class="btn" href="${esc(telLink(spec))}">Call</a>` : "",
-    spec.business.whatsapp ? `<a class="btn wa" href="${esc(waLink(spec, `Hello ${spec.business.name}`))}">WhatsApp</a>` : "",
+    spec.business.phone
+      ? `<a class="btn" href="${esc(telLink(spec))}">Call</a>`
+      : "",
+    spec.business.whatsapp
+      ? `<a class="btn wa" href="${esc(waLink(spec, `Hello ${spec.business.name}`))}">WhatsApp</a>`
+      : "",
   ].filter(Boolean);
-  return parts.length ? `<div class="dock" role="navigation" aria-label="Quick contact">${parts.join("")}</div>` : "";
+  return parts.length
+    ? `<div class="dock" role="navigation" aria-label="Quick contact">${parts.join("")}</div>`
+    : "";
 }
 
 // ---------------------------------------------------------------- page + site
 function sectionHtml(s: SectionV3, c: Ctx, tone: Tone, id: string): string {
   switch (s.type) {
-    case "hero": return hero(s, c, tone);
-    case "ticker": return ticker(s, c);
-    case "statement": return statement(s, c, tone);
-    case "offer": return offer(s, c, tone);
-    case "products": return products(s, c, tone);
-    case "story": return story(s, c, tone);
-    case "process": return process(s, c, tone);
-    case "gallery": return gallery(s, c, tone);
-    case "proof": return proof(s, c, tone);
-    case "visit": return visit(s, c, tone);
-    case "contact": return contact(s, c, tone, id);
-    case "faq": return faq(s, c, tone);
-    case "cta": return cta(s, c, tone);
+    case "hero":
+      return hero(s, c, tone);
+    case "ticker":
+      return ticker(s, c);
+    case "statement":
+      return statement(s, c, tone);
+    case "offer":
+      return offer(s, c, tone);
+    case "products":
+      return products(s, c, tone);
+    case "story":
+      return story(s, c, tone);
+    case "process":
+      return process(s, c, tone);
+    case "gallery":
+      return gallery(s, c, tone);
+    case "proof":
+      return proof(s, c, tone);
+    case "visit":
+      return visit(s, c, tone);
+    case "contact":
+      return contact(s, c, tone, id);
+    case "faq":
+      return faq(s, c, tone);
+    case "cta":
+      return cta(s, c, tone);
   }
 }
 
-export interface PageOut { html: string; used: Set<string>; focals: Set<string> }
+export interface PageOut {
+  html: string;
+  used: Set<string>;
+  focals: Set<string>;
+}
 
-export function renderPageV3(spec: SiteSpecV3, slug: string, rc: RenderContext, shared?: { used: Set<string>; focals: Set<string> }): string {
+export function renderPageV3(
+  spec: SiteSpecV3,
+  slug: string,
+  rc: RenderContext,
+  shared?: { used: Set<string>; focals: Set<string> },
+): string {
   const page = spec.pages.find((p) => p.slug === slug)!;
   const root = slug === "home" ? "" : "../";
-  const title = slug === "home" ? spec.seo.title : `${page.title} | ${spec.business.name}`;
+  const title =
+    slug === "home" ? spec.seo.title : `${page.title} | ${spec.business.name}`;
   const fo = origin(rc.formEndpoint);
   const csp = `default-src 'none'; img-src 'self' https: data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src ${fo}; form-action ${fo}; base-uri 'none'`;
-  const c: Ctx = { spec, rc, from: slug, used: shared?.used ?? new Set(), focals: shared?.focals ?? new Set(), heroSeen: false, letter: (spec.business.name.trim()[0] ?? "K").toUpperCase(), stamp: "" };
+  const c: Ctx = {
+    spec,
+    rc,
+    from: slug,
+    used: shared?.used ?? new Set(),
+    focals: shared?.focals ?? new Set(),
+    heroSeen: false,
+    letter: (spec.business.name.trim()[0] ?? "K").toUpperCase(),
+    stamp: "",
+  };
   const firstOffer = page.sections.find((s) => s.type === "offer");
   const hero0 = page.sections[0];
-  c.stamp = (hero0?.type === "hero" && hero0.highlights[0]) || (firstOffer?.type === "offer" && firstOffer.items[0]?.title) || spec.business.name;
-  const overlay = hero0?.type === "hero" && hero0.layout === "cinematic" && spec.design.genome.headerStyle === "overlay";
-  const body = page.sections.map((s, i) => sectionHtml(s, c, toneFor(spec, page.sections, i), `${s.type}${i}`)).join("\n");
+  c.stamp =
+    (hero0?.type === "hero" && hero0.highlights[0]) ||
+    (firstOffer?.type === "offer" && firstOffer.items[0]?.title) ||
+    spec.business.name;
+  const overlay =
+    hero0?.type === "hero" &&
+    hero0.layout === "cinematic" &&
+    spec.design.genome.headerStyle === "overlay";
+  const body = page.sections
+    .map((s, i) =>
+      sectionHtml(s, c, toneFor(spec, page.sections, i), `${s.type}${i}`),
+    )
+    .join("\n");
   const g = spec.design.genome;
-  const preload = voiceFiles(g.typeVoice).slice(0, 2).map((f) => `<link rel="preload" href="/_kora/fonts/${f}" as="font" type="font/woff2" crossorigin>`).join("\n");
+  const preload = voiceFiles(g.typeVoice)
+    .slice(0, 2)
+    .map(
+      (f) =>
+        `<link rel="preload" href="/_kora/fonts/${f}" as="font" type="font/woff2" crossorigin>`,
+    )
+    .join("\n");
   const desc = spec.seo.description;
-  const canon = spec.seo.canonicalOrigin ? `${spec.seo.canonicalOrigin}${slug === "home" ? "/" : `/${slug}/`}` : "";
+  const canon = spec.seo.canonicalOrigin
+    ? `${spec.seo.canonicalOrigin}${slug === "home" ? "/" : `/${slug}/`}`
+    : "";
   const b = spec.business;
-  const ld = { "@context": "https://schema.org", "@type": "LocalBusiness", name: b.name, ...(b.description ? { description: b.description.slice(0, 300) } : {}), ...(b.phone ? { telephone: b.phone } : {}), ...(b.email ? { email: b.email } : {}), ...(b.location ? { address: b.location } : {}), ...(b.social.length ? { sameAs: b.social.map((l) => l.href).filter((h) => h.startsWith("https://")) } : {}), ...(canon ? { url: canon } : {}) };
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: b.name,
+    ...(b.description ? { description: b.description.slice(0, 300) } : {}),
+    ...(b.phone ? { telephone: b.phone } : {}),
+    ...(b.email ? { email: b.email } : {}),
+    ...(b.location ? { address: b.location } : {}),
+    ...(b.social.length
+      ? {
+          sameAs: b.social
+            .map((l) => l.href)
+            .filter((h) => h.startsWith("https://")),
+        }
+      : {}),
+    ...(canon ? { url: canon } : {}),
+  };
   const ldJson = JSON.stringify(ld).replace(/</g, "\\u003c");
   const hasDock = !!dock(spec);
   return `<!doctype html>
@@ -464,18 +712,34 @@ ${dock(spec)}
 
 const favicon = (spec: SiteSpecV3) => {
   const p = spec.design.palette;
-  const r = ["none", "slight"].includes(spec.design.genome.radiusStyle) ? 0 : 16;
+  const r = ["none", "slight"].includes(spec.design.genome.radiusStyle)
+    ? 0
+    : 16;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="${r}" fill="${p.primary}"/><circle cx="48" cy="16" r="6" fill="${p.accent}"/><text x="30" y="46" font-family="sans-serif" font-size="34" font-weight="700" text-anchor="middle" fill="${p.primaryForeground}">${esc((spec.business.name.trim()[0] ?? "K").toUpperCase())}</text></svg>\n`;
 };
 
-export function renderSiteV3(spec: SiteSpecV3, rc: RenderContext = {}): SiteFiles {
+export function renderSiteV3(
+  spec: SiteSpecV3,
+  rc: RenderContext = {},
+): SiteFiles {
   const files: SiteFiles = {};
   const shared = { used: new Set<string>(), focals: new Set<string>() };
-  for (const page of spec.pages) files[pagePath(page.slug)] = renderPageV3(spec, page.slug, rc, shared);
+  for (const page of spec.pages)
+    files[pagePath(page.slug)] = renderPageV3(spec, page.slug, rc, shared);
   const g = spec.design.genome;
-  const parts = [...shared.used].sort().map((k) => PARTS[k] ?? "").join("\n");
-  const fp = [...shared.focals].sort().map((k) => { const [x, y] = k.split("-"); return `.fp-${k} img{object-position:${x}% ${y}%}`; }).join("");
-  files["styles.css"] = `${baseCss(g, spec.design.palette, spec.design.mode)}\n${parts}\n${fp}\n`;
+  const parts = [...shared.used]
+    .sort()
+    .map((k) => PARTS[k] ?? "")
+    .join("\n");
+  const fp = [...shared.focals]
+    .sort()
+    .map((k) => {
+      const [x, y] = k.split("-");
+      return `.fp-${k} img{object-position:${x}% ${y}%}`;
+    })
+    .join("");
+  files["styles.css"] =
+    `${baseCss(g, spec.design.palette, spec.design.mode)}\n${parts}\n${fp}\n`;
   files["site.js"] = SITE_JS_V2;
   files["favicon.svg"] = favicon(spec);
   return files;

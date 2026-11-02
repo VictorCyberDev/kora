@@ -41,6 +41,9 @@ importers:
       '@kora/action-executor':
         specifier: workspace:*
         version: link:../../services/action-executor
+      '@kora/creative':
+        specifier: workspace:*
+        version: link:../../packages/creative
       '@kora/event-schema':
         specifier: workspace:*
         version: link:../../packages/event-schema
@@ -224,6 +227,9 @@ importers:
 
   packages/growth:
     dependencies:
+      '@kora/creative':
+        specifier: workspace:*
+        version: link:../creative
       '@kora/site-schema':
         specifier: workspace:*
         version: link:../site-schema

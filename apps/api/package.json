@@ -27,7 +27,8 @@
     "@resvg/resvg-js": "^2.6.2",
     "fastify": "^5.6.1",
     "postgres": "^3.4.7",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@kora/creative": "workspace:*"
   },
   "devDependencies": {
     "@kora/site-host": "workspace:*",

@@ -281,8 +281,11 @@ export function lintArtifact(files: SiteFiles): string[] {
         )
       )
         problems.push(`${path}: inline script`);
-      for (const m of content.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi))
-        if (m[1]!.includes("<")) problems.push(`${path}: unescaped markup in JSON-LD`);
+      for (const m of content.matchAll(
+        /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi,
+      ))
+        if (m[1]!.includes("<"))
+          problems.push(`${path}: unescaped markup in JSON-LD`);
       // Quoted attribute values are removed first: escaped text such as
       // `onerror=` inside a value is data, only a real attribute counts.
       const tags = content.match(/<[a-z][^>]*>/gi) ?? [];

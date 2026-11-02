@@ -62,6 +62,25 @@ const BUNDLED = new Set([
   "DM Serif Display",
   "Bricolage Grotesque",
   "Syne",
+  // v7 type voices (all bundled as TrueType for server-side rendering)
+  "Fraunces",
+  "Instrument Serif",
+  "Bodoni Moda",
+  "Barlow Condensed",
+  "Oswald",
+  "Bebas Neue",
+  "Archivo",
+  "Sora",
+  "Fredoka",
+  "Young Serif",
+  "Newsreader",
+  "Marcellus",
+  "Work Sans",
+  "Unbounded",
+  "Gloock",
+  "Caveat",
+  "Libre Baskerville",
+  "Epilogue",
 ]);
 /** Fonts the renderer actually has; anything else renders in Inter rather than an unpredictable system face. */
 export const resolveFont = (family: string) =>

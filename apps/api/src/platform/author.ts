@@ -1,5 +1,7 @@
 import {
   applySitePatch,
+  applyStructuredEditV3,
+  ruleBasedEditV3,
   applyIntelligence,
   applyStructuredEditV2,
   briefSchema,
@@ -9,16 +11,20 @@ import {
   intelligencePrompt,
   parseSiteSpec,
   planSite,
+  planDirectionsV3,
   readableOn,
   ruleBasedEditV2,
   sitePatchSchema,
   structuredEditToPatch,
   type AnySiteSpec,
+  type PlanV3Options,
   type SitePatch,
   type SiteSpec,
   type SiteSpecV2,
+  type SiteSpecV3,
   type StructuredEdit,
 } from "@kora/site-schema";
+import type { BrandOS } from "@kora/creative";
 import type { LlmClient } from "@kora/reasoner";
 import { sanitizeUntrusted } from "@kora/reasoner";
 
@@ -224,6 +230,29 @@ export class SiteAuthor {
     };
   }
 
+  /**
+   * v3 creative engine. Deterministic by design: the strategy, genome and copy are produced by Kora's own engine from
+   * the owner's facts, so an unavailable model can never make this path worse. Models are not given authority here.
+   */
+  generateV3(
+    rawBrief: unknown,
+    direction: 0 | 1 | 2 = 0,
+    o: PlanV3Options = {},
+  ): Promise<Authored & { brandOs: BrandOS; directionName: string }> {
+    const brief = designBriefSchema.parse(rawBrief);
+    const { directions } = planDirectionsV3(brief, o);
+    const d = directions[direction]!;
+    return Promise.resolve({
+      spec: d.spec,
+      source: "DETERMINISTIC",
+      inputTokens: null,
+      outputTokens: null,
+      note: `Designed by Kora's creative engine: ${d.name}`,
+      brandOs: d.brandOs,
+      directionName: d.name,
+    });
+  }
+
   async generate(rawBrief: unknown): Promise<Authored> {
     const brief = briefSchema.parse(rawBrief);
     if (this.llm) {
@@ -276,6 +305,7 @@ export class SiteAuthor {
       patch?: unknown;
     },
   ): Promise<Authored> {
+    if (spec.version === 3) return this.editV3(spec, input);
     if (spec.version === 2) return this.editV2(spec, input);
     if (input.edit)
       return {
@@ -335,6 +365,61 @@ export class SiteAuthor {
     } catch {
       throw new EditNotUnderstood(
         "The AI suggested a change that is not allowed for this website. Nothing was changed.",
+      );
+    }
+  }
+
+  /**
+   * v3 edits resolve to validated structured operations only. Natural language is matched by rules; a model is never
+   * asked to rewrite a v3 spec, so an edit can change how the site looks but cannot invent what it claims.
+   */
+  private editV3(
+    spec: SiteSpecV3,
+    input: { instruction?: string | undefined; designEdit?: unknown },
+  ): Promise<Authored> {
+    try {
+      return Promise.resolve(this.editV3Sync(spec, input));
+    } catch (e) {
+      return Promise.reject(e instanceof Error ? e : new Error(String(e)));
+    }
+  }
+
+  private editV3Sync(
+    spec: SiteSpecV3,
+    input: { instruction?: string | undefined; designEdit?: unknown },
+  ): Authored {
+    const done = (next: SiteSpecV3, note: string | null): Authored => ({
+      spec: next,
+      source: "EDIT_STRUCTURED",
+      inputTokens: null,
+      outputTokens: null,
+      note,
+    });
+    try {
+      if (input.designEdit)
+        return done(applyStructuredEditV3(spec, input.designEdit), null);
+    } catch (e) {
+      throw new EditNotUnderstood(
+        e instanceof Error && e.name === "EditV3Error"
+          ? e.message
+          : "That change is not available. Nothing was changed.",
+      );
+    }
+    const instruction = (input.instruction ?? "").trim();
+    if (!instruction) throw new EditNotUnderstood("Tell Kora what to change.");
+    const rule = ruleBasedEditV3(instruction);
+    if (!rule)
+      throw new EditNotUnderstood(
+        "Kora can make it more premium, bolder, calmer or more playful, change colours and type, update contact details, or rewrite the headline. Try one of those, or use the controls.",
+      );
+    try {
+      return done(
+        applyStructuredEditV3(spec, rule),
+        "applied as a design edit",
+      );
+    } catch (e) {
+      throw new EditNotUnderstood(
+        e instanceof Error ? e.message : "Nothing was changed.",
       );
     }
   }

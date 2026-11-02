@@ -25,13 +25,23 @@ export const BrandOSSchema = z.object({
   visual: z.object({
     colorwayId: z.string().max(40),
     mode: z.enum(["light", "dark"]),
-    palette: z.object({ background: hex, foreground: hex, primary: hex, secondary: hex, accent: hex }),
+    palette: z.object({
+      background: hex,
+      foreground: hex,
+      primary: hex,
+      secondary: hex,
+      accent: hex,
+    }),
     typeVoice: z.string().max(40),
     signatureMotif: z.string().max(40),
     shape: z.string().max(40),
     /** Uploaded logo asset id, or null. Kora never claims a generated mark is the owner's trademark. */
     logoAssetId: z.string().max(80).nullable().default(null),
-    wordmark: z.object({ text: z.string().max(60), style: z.enum(["typographic", "monogram"]), replaceable: z.literal(true).default(true) }),
+    wordmark: z.object({
+      text: z.string().max(60),
+      style: z.enum(["typographic", "monogram"]),
+      replaceable: z.literal(true).default(true),
+    }),
   }),
   voice: z.object({
     tone: z.string().max(60),
@@ -53,8 +63,14 @@ export const BrandOSSchema = z.object({
     whatsapp: z.string().max(160),
     banner: z.string().max(160),
   }),
-  rules: z.object({ dos: z.array(z.string().max(160)).max(10), donts: z.array(z.string().max(160)).max(12) }),
-  provenance: z.object({ createdBy: z.enum(["kora-deterministic", "owner-edit"]), seed: z.number().int().min(0) }),
+  rules: z.object({
+    dos: z.array(z.string().max(160)).max(10),
+    donts: z.array(z.string().max(160)).max(12),
+  }),
+  provenance: z.object({
+    createdBy: z.enum(["kora-deterministic", "owner-edit"]),
+    seed: z.number().int().min(0),
+  }),
 });
 export type BrandOS = z.infer<typeof BrandOSSchema>;
 
@@ -64,8 +80,11 @@ export function brandOsHash(b: BrandOS): string {
     Array.isArray(v)
       ? `[${v.map(stable).join(",")}]`
       : v && typeof v === "object"
-        ? `{${Object.entries(v as Record<string, unknown>).sort(([a], [c]) => (a < c ? -1 : 1)).map(([k, x]) => `${JSON.stringify(k)}:${stable(x)}`).join(",")}}`
-        : JSON.stringify(v) ?? "null";
+        ? `{${Object.entries(v as Record<string, unknown>)
+            .sort(([a], [c]) => (a < c ? -1 : 1))
+            .map(([k, x]) => `${JSON.stringify(k)}:${stable(x)}`)
+            .join(",")}}`
+        : (JSON.stringify(v) ?? "null");
   return createHash("sha256").update(stable(b)).digest("hex");
 }
 
@@ -73,7 +92,13 @@ export function brandOsFromDirection(
   d: CreativeDirection,
   o: {
     name: string;
-    palette: { background: string; foreground: string; primary: string; secondary: string; accent: string };
+    palette: {
+      background: string;
+      foreground: string;
+      primary: string;
+      secondary: string;
+      accent: string;
+    };
     mode: "light" | "dark";
     ctas: string[];
     previous?: BrandOS;
@@ -106,10 +131,25 @@ export function brandOsFromDirection(
       headlineStyle: `${ch.headlineBehavior.replace(/-/g, " ")}; ${d.strategy.voice}`,
       ctaLanguage: o.ctas.slice(0, 6),
       use: o.use ?? [],
-      avoid: [...new Set([...(o.avoid ?? []), ...CLICHES.filter((c) => !/[.{\\]/.test(c))])].slice(0, 60),
+      avoid: [
+        ...new Set([
+          ...(o.avoid ?? []),
+          ...CLICHES.filter((c) => !/[.{\\]/.test(c)),
+        ]),
+      ].slice(0, 60),
       language: "en",
     },
-    media: { briefs: d.artDirection, sourcePriority: ["owner-supplied", "owner-approved-stored", "licensed-stock", "ai-generated", "procedural-illustration", "typography-only"] },
+    media: {
+      briefs: d.artDirection,
+      sourcePriority: [
+        "owner-supplied",
+        "owner-approved-stored",
+        "licensed-stock",
+        "ai-generated",
+        "procedural-illustration",
+        "typography-only",
+      ],
+    },
     channels: {
       website: d.compositionSummary,
       social: `${g?.campaignBehaviour ?? d.campaignBehaviour}`,
@@ -119,9 +159,19 @@ export function brandOsFromDirection(
       banner: "Wide: headline left, one action right, brand colour field.",
     },
     rules: {
-      dos: [`Use the ${ch.signatureMotif === "none" ? "type system" : ch.signatureMotif.replace(/-/g, " ")} as the recurring device`, `Keep accent colour ${ch.accentScarcity}`, "Say only what the owner supplied"],
-      donts: [...d.antiPatterns, "invent testimonials, prices, ratings, years or counts"],
+      dos: [
+        `Use the ${ch.signatureMotif === "none" ? "type system" : ch.signatureMotif.replace(/-/g, " ")} as the recurring device`,
+        `Keep accent colour ${ch.accentScarcity}`,
+        "Say only what the owner supplied",
+      ],
+      donts: [
+        ...d.antiPatterns,
+        "invent testimonials, prices, ratings, years or counts",
+      ],
     },
-    provenance: { createdBy: o.previous ? "owner-edit" : "kora-deterministic", seed: d.seed },
+    provenance: {
+      createdBy: o.previous ? "owner-edit" : "kora-deterministic",
+      seed: d.seed,
+    },
   });
 }

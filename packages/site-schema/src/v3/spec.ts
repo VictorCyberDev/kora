@@ -19,19 +19,44 @@ import {
 import { safeHref } from "../spec.js";
 import { paletteSchema } from "../v2/spec.js";
 
+/* eslint-disable no-control-regex */
 const text = (max: number) =>
   z
     .string()
     .max(max)
-    // eslint-disable-next-line no-control-regex
-    .refine((v) => !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(v), "control characters are not allowed");
+    .refine(
+      (v) => !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(v),
+      "control characters are not allowed",
+    );
 const line = (max = 160) => text(max).min(1);
 const slug = z.string().regex(/^[a-z0-9][a-z0-9-]{0,40}$/);
 const link = z.object({ label: line(60), href: safeHref });
 
-export const PLATE_KINDS = ["arch", "stripes", "circles", "checker", "sunburst", "lines", "monogram", "stack"] as const;
-export const MEDIA_TREATMENTS = ["none", "mono", "warm", "cool", "contrast"] as const;
-export const MEDIA_ROLES = ["hero", "feature", "gallery", "about", "product", "background"] as const;
+export const PLATE_KINDS = [
+  "arch",
+  "stripes",
+  "circles",
+  "checker",
+  "sunburst",
+  "lines",
+  "monogram",
+  "stack",
+] as const;
+export const MEDIA_TREATMENTS = [
+  "none",
+  "mono",
+  "warm",
+  "cool",
+  "contrast",
+] as const;
+export const MEDIA_ROLES = [
+  "hero",
+  "feature",
+  "gallery",
+  "about",
+  "product",
+  "background",
+] as const;
 
 export const mediaV3Schema = z.object({
   url: z
@@ -41,22 +66,34 @@ export const mediaV3Schema = z.object({
   alt: text(200).default(""),
   width: z.number().int().min(1).max(8000).optional(),
   height: z.number().int().min(1).max(8000).optional(),
-  focalPoint: z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) }).optional(),
+  focalPoint: z
+    .object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) })
+    .optional(),
   role: z.enum(MEDIA_ROLES).default("feature"),
   treatment: z.enum(MEDIA_TREATMENTS).default("none"),
   provenance: z
     .object({
-      sourceType: z.enum(["owner-supplied", "owner-approved-stored", "licensed-stock", "ai-generated"]),
+      sourceType: z.enum([
+        "owner-supplied",
+        "owner-approved-stored",
+        "licensed-stock",
+        "ai-generated",
+      ]),
       provider: text(80).optional(),
       license: text(120).optional(),
       attribution: text(200).optional(),
-      reviewStatus: z.enum(["owner-approved", "unreviewed", "kora-curated"]).default("unreviewed"),
+      reviewStatus: z
+        .enum(["owner-approved", "unreviewed", "kora-curated"])
+        .default("unreviewed"),
     })
     .default({ sourceType: "licensed-stock", reviewStatus: "kora-curated" }),
 });
 export type MediaV3 = z.infer<typeof mediaV3Schema>;
 
-const plate = z.object({ kind: z.enum(PLATE_KINDS), seed: z.number().int().min(0).max(999_999) });
+const plate = z.object({
+  kind: z.enum(PLATE_KINDS),
+  seed: z.number().int().min(0).max(999_999),
+});
 const visual = { media: mediaV3Schema.optional(), plate: plate.optional() };
 
 const item = z.object({
@@ -68,14 +105,28 @@ const item = z.object({
   ...visual,
 });
 
-const sec = <T extends string, L extends readonly [string, ...string[]]>(type: T, layouts: L) => ({
+const sec = <T extends string, L extends readonly [string, ...string[]]>(
+  type: T,
+  layouts: L,
+) => ({
   type: z.literal(type),
   layout: z.enum(layouts),
 });
 
 export const GALLERY_LAYOUTS = ["mosaic", "rail", "pair", "grid"] as const;
-export const STORY_LAYOUTS = ["manifesto", "founder-note", "split-image", "craft"] as const;
-export const CONTACT_LAYOUTS = ["whatsapp-first", "call-first", "booking-form", "enquiry-form", "visit"] as const;
+export const STORY_LAYOUTS = [
+  "manifesto",
+  "founder-note",
+  "split-image",
+  "craft",
+] as const;
+export const CONTACT_LAYOUTS = [
+  "whatsapp-first",
+  "call-first",
+  "booking-form",
+  "enquiry-form",
+  "visit",
+] as const;
 export const CTA_LAYOUTS = ["statement", "outline", "marquee"] as const;
 
 export const sectionV3Schema = z.discriminatedUnion("type", [
@@ -89,8 +140,17 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
     highlights: z.array(line(60)).max(5).default([]),
     ...visual,
   }),
-  z.object({ type: z.literal("ticker"), layout: z.literal("band"), items: z.array(line(40)).min(2).max(8) }),
-  z.object({ type: z.literal("statement"), layout: z.literal("large"), text: line(320), eyebrow: text(60).optional() }),
+  z.object({
+    type: z.literal("ticker"),
+    layout: z.literal("band"),
+    items: z.array(line(40)).min(2).max(8),
+  }),
+  z.object({
+    type: z.literal("statement"),
+    layout: z.literal("large"),
+    text: line(320),
+    eyebrow: text(60).optional(),
+  }),
   z.object({
     ...sec("offer", SERVICE_LAYOUTS),
     heading: line(90),
@@ -119,7 +179,16 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
   z.object({
     ...sec("gallery", GALLERY_LAYOUTS),
     heading: text(90).default(""),
-    items: z.array(z.object({ caption: text(120).default(""), media: mediaV3Schema.optional(), plate: plate.optional() })).min(2).max(9),
+    items: z
+      .array(
+        z.object({
+          caption: text(120).default(""),
+          media: mediaV3Schema.optional(),
+          plate: plate.optional(),
+        }),
+      )
+      .min(2)
+      .max(9),
   }),
   z.object({
     ...sec("proof", PROOF_LAYOUTS),
@@ -127,10 +196,19 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
     /** Proof exists only when the owner supplied it. The literal makes an invented testimonial unrepresentable. */
     supplied: z.literal(true),
     quotes: z
-      .array(z.object({ quote: line(400), author: line(80), role: text(80).optional() }))
+      .array(
+        z.object({
+          quote: line(400),
+          author: line(80),
+          role: text(80).optional(),
+        }),
+      )
       .max(6)
       .default([]),
-    facts: z.array(z.object({ value: line(24), label: line(80) })).max(4).default([]),
+    facts: z
+      .array(z.object({ value: line(24), label: line(80) }))
+      .max(4)
+      .default([]),
   }),
   z.object({
     type: z.literal("visit"),
@@ -143,14 +221,21 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
     heading: line(100),
     intro: text(300).default(""),
     form: z.boolean().default(true),
-    formFields: z.array(z.enum(["name", "email", "phone", "message", "service", "date"])).min(1).max(6).default(["name", "phone", "message"]),
+    formFields: z
+      .array(z.enum(["name", "email", "phone", "message", "service", "date"]))
+      .min(1)
+      .max(6)
+      .default(["name", "phone", "message"]),
     submitLabel: line(40).default("Send message"),
   }),
   z.object({
     type: z.literal("faq"),
     layout: z.literal("accordion"),
     heading: line(90),
-    items: z.array(z.object({ question: line(200), answer: line(700) })).min(1).max(10),
+    items: z
+      .array(z.object({ question: line(200), answer: line(700) }))
+      .min(1)
+      .max(10),
   }),
   z.object({
     ...sec("cta", CTA_LAYOUTS),
@@ -190,12 +275,24 @@ export const siteSpecV3Schema = z
       location: text(160).optional(),
       /** A home-based or mobile business has a service area, not premises to visit: no directions, no "find us". */
       locationKind: z.enum(["premises", "service-area"]).default("premises"),
-      phone: z.string().regex(/^\+?[0-9 ()-]{5,30}$/).optional(),
-      whatsapp: z.string().regex(/^\+?[0-9]{6,20}$/).optional(),
+      phone: z
+        .string()
+        .regex(/^\+?[0-9 ()-]{5,30}$/)
+        .optional(),
+      whatsapp: z
+        .string()
+        .regex(/^\+?[0-9]{6,20}$/)
+        .optional(),
       email: z.string().email().max(200).optional(),
-      hours: z.array(z.object({ days: line(60), hours: line(60) })).max(10).default([]),
+      hours: z
+        .array(z.object({ days: line(60), hours: line(60) }))
+        .max(10)
+        .default([]),
       social: z.array(link).max(8).default([]),
-      language: z.string().regex(/^[a-z]{2}(-[A-Z]{2})?$/).default("en"),
+      language: z
+        .string()
+        .regex(/^[a-z]{2}(-[A-Z]{2})?$/)
+        .default("en"),
     }),
     brand: z.object({
       osVersion: z.number().int().min(1),
@@ -218,7 +315,10 @@ export const siteSpecV3Schema = z
       description: text(180).default(""),
       keywords: z.array(line(40)).max(12).default([]),
       /** Absolute https origin when the site has a public address; enables canonical and og:url. */
-      canonicalOrigin: z.string().regex(/^https:\/\/[a-z0-9.-]+$/).optional(),
+      canonicalOrigin: z
+        .string()
+        .regex(/^https:\/\/[a-z0-9.-]+$/)
+        .optional(),
     }),
     pages: z
       .array(
@@ -233,24 +333,42 @@ export const siteSpecV3Schema = z
       )
       .min(1)
       .max(8),
-    footer: z.object({ text: text(200).default(""), links: z.array(link).max(6).default([]) }),
+    footer: z.object({
+      text: text(200).default(""),
+      links: z.array(link).max(6).default([]),
+    }),
     meta: z.object({
       engine: z.literal("kora-creative/1").default("kora-creative/1"),
       direction: z.number().int().min(0).max(2).default(0),
-      generator: z.enum(["deterministic", "model", "edit"]).default("deterministic"),
+      generator: z
+        .enum(["deterministic", "model", "edit"])
+        .default("deterministic"),
     }),
   })
   .superRefine((spec, ctx) => {
     const slugs = spec.pages.map((p) => p.slug);
-    if (new Set(slugs).size !== slugs.length) ctx.addIssue({ code: "custom", message: "duplicate page slug" });
-    if (!slugs.includes("home")) ctx.addIssue({ code: "custom", message: 'a "home" page is required' });
+    if (new Set(slugs).size !== slugs.length)
+      ctx.addIssue({ code: "custom", message: "duplicate page slug" });
+    if (!slugs.includes("home"))
+      ctx.addIssue({ code: "custom", message: 'a "home" page is required' });
     for (const page of spec.pages)
       for (const s of page.sections) {
-        const l = ("primaryCta" in s && s.primaryCta) || ("button" in s && s.button) || null;
+        const l =
+          ("primaryCta" in s && s.primaryCta) ||
+          ("button" in s && s.button) ||
+          null;
         for (const x of [l, "secondaryCta" in s ? s.secondaryCta : null])
-          if (x?.href.startsWith("#") && x.href.length > 1 && !page.sections.some((y) => y.type === x.href.slice(1)))
-            ctx.addIssue({ code: "custom", message: `link ${x.href} points at a section that is not on page ${page.slug}` });
+          if (
+            x?.href.startsWith("#") &&
+            x.href.length > 1 &&
+            !page.sections.some((y) => y.type === x.href.slice(1))
+          )
+            ctx.addIssue({
+              code: "custom",
+              message: `link ${x.href} points at a section that is not on page ${page.slug}`,
+            });
       }
   });
 export type SiteSpecV3 = z.infer<typeof siteSpecV3Schema>;
-export const parseSiteSpecV3 = (input: unknown): SiteSpecV3 => siteSpecV3Schema.parse(input);
+export const parseSiteSpecV3 = (input: unknown): SiteSpecV3 =>
+  siteSpecV3Schema.parse(input);

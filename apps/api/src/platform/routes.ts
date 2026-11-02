@@ -14,16 +14,19 @@ import {
   missingBlockingDetails,
   PAIRINGS,
   PALETTE_STRATEGIES,
-  planDirections,
   renderAnySite,
-  renderSiteV2,
   upgradeV1ToV2,
   VARIANTS,
   parseSiteSpec,
+  parseAnySiteSpec,
+  criticV3,
+  gradeByDimension,
   type AnySiteSpec,
   type StructuredEdit,
 } from "@kora/site-schema";
 import { budgetBreaches } from "@kora/growth";
+import { BrandOsStore, learnedTaste } from "./brand-os-store.js";
+import { previewDirections } from "./directions.js";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
 import { sendArtifact } from "./hosting.js";
@@ -418,6 +421,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   });
 
   // ---- builder ----------------------------------------------------------------
+  const brandOs = new BrandOsStore(platform.sql);
   const buildVersion = async (
     site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
     spec: AnySiteSpec,
@@ -425,6 +429,9 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     createdBy: string,
     parentId: string | null,
   ) => {
+    // A v3 version records which Brand OS version made it; a content edit keeps the brand version, a brand change
+    // writes the next one. Earlier versions and their artifacts are never rewritten.
+    if (spec.version === 3) spec = await brandOs.stamp(site, spec, createdBy);
     const files = renderAnySite(spec, {
       siteId: site.id,
       ...(formEndpointFor(config, site.id)
@@ -479,9 +486,17 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         intelligenceProvider: z.string().max(40).optional(),
       })
       .parse(req.body ?? {});
-    // New sites are v2 designs. `format: 1` keeps the legacy generator reachable.
-    const authored =
-      extra.format === 1
+    // New sites are v2 designs unless the v3 creative engine is switched on. `format: 1` keeps the legacy generator.
+    const useV3 =
+      config.KORA_CREATIVE_ENGINE === "v3" &&
+      extra.format === undefined &&
+      !extra.intelligence;
+    const authored = useV3
+      ? await author.generateV3(
+          { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
+          extra.direction ?? 0,
+        )
+      : extra.format === 1
         ? await author.generate(brief)
         : await author.generateV2(
             { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
@@ -573,7 +588,10 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       ...body,
       name: body.name ?? site.name,
     });
-    const planned = planDirections(brief);
+    const { directions: planned, recommended } = previewDirections(
+      config.KORA_CREATIVE_ENGINE,
+      brief,
+    );
     const token = randomBytes(16).toString("hex");
     for (const [k, v] of directionPreviews)
       if (v.expires < Date.now()) directionPreviews.delete(k);
@@ -582,31 +600,20 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     directionPreviews.set(token, {
       userId: requireUser(req).userId,
       expires: Date.now() + 30 * 60_000,
-      files: planned.map((d) => {
-        const files = renderSiteV2(d.spec);
-        // Previews are internal: direct contact only, never a form that posts to production.
-        files["index.html"] = files["index.html"]!.replace(
-          /<form[\s\S]*?<\/form>/g,
-          "",
-        );
-        return files;
-      }),
+      files: planned.map((d) => d.files),
     });
     return {
+      recommended,
       data: planned.map((d) => ({
         index: d.index,
         name: d.name,
         summary: d.summary,
         look: d.look,
         palette: d.palette,
-        swatches: [
-          d.spec.design.palette.background,
-          d.spec.design.palette.primary,
-          d.spec.design.palette.accent,
-          d.spec.design.palette.surfaceMuted,
-        ],
-        fontPairing: d.spec.design.typography.pairing,
+        swatches: d.swatches,
+        fontPairing: d.fontPairing,
         previewUrl: `/api/design/previews/${token}/${d.index}/`,
+        ...d.extras,
       })),
     };
   });
@@ -651,6 +658,160 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         variants: VARIANTS,
       },
     };
+  });
+  // "Try a new Kora design": a NEW v3 draft built from the facts an existing version already states. Never published
+  // automatically, never replaces the live site, and rollback to the old version stays one click away.
+  app.post(
+    "/api/sites/:id/versions/:versionId/upgrade-v3",
+    async (req, reply) => {
+      const { id, versionId } = z
+        .object({ id: uuid, versionId: uuid })
+        .parse(req.params);
+      const { site } = await siteFor(req, id, "MEMBER");
+      await entitled(site.orgId, "canGenerate");
+      if (config.KORA_CREATIVE_ENGINE !== "v3")
+        throw new HttpError(
+          409,
+          "creative_engine_disabled",
+          "The new Kora design engine is not switched on for this deployment yet.",
+        );
+      const a = requireUser(req);
+      const row = await platform.getVersionRow(site.id, versionId);
+      if (!row) throw notFound();
+      const parsed = z
+        .object({
+          direction: z
+            .union([z.literal(0), z.literal(1), z.literal(2)])
+            .optional(),
+          feel: z.string().max(120).optional(),
+          goal: designBriefSchema.shape.goal,
+        })
+        .parse(req.body ?? {});
+      const old = parseAnySiteSpec(row.spec);
+      if (old.version === 3)
+        throw new HttpError(
+          409,
+          "already_v3",
+          "This version already uses the new design engine.",
+        );
+      const b = old.business;
+      const services: string[] = [];
+      for (const p of old.pages)
+        for (const sec of p.sections)
+          if (sec.type === "services" && "items" in sec)
+            for (const it of sec.items) {
+              const t = "title" in it ? it.title : "";
+              if (t && !services.includes(t)) services.push(t);
+            }
+      const brief = designBriefSchema.parse({
+        name: b.name,
+        description:
+          b.description && b.description.length >= 12
+            ? b.description
+            : `${b.name} — ${old.seo.description || b.name}`.slice(0, 600),
+        ...(parsed.goal ? { goal: parsed.goal } : {}),
+        ...(parsed.feel ? { feel: parsed.feel } : {}),
+        ...(b.industry ? { industry: b.industry } : {}),
+        ...(b.location ? { location: b.location } : {}),
+        ...(b.phone ? { phone: b.phone } : {}),
+        ...(b.whatsapp ? { whatsapp: b.whatsapp } : {}),
+        ...(b.email ? { email: b.email } : {}),
+        ...(services.length ? { services: services.slice(0, 12) } : {}),
+        ...("hours" in b && b.hours.length ? { hours: b.hours } : {}),
+      });
+      const authored = await author.generateV3(brief, parsed.direction ?? 0);
+      const version = await buildVersion(
+        site,
+        authored.spec,
+        "DETERMINISTIC",
+        a.userId,
+        String(row.id),
+      );
+      await platform.audit({
+        orgId: site.orgId,
+        actorUserId: a.userId,
+        action: "site.design_upgraded_v3",
+        objectType: "site_version",
+        objectId: version.id,
+        requestId: req.id,
+        metadata: { from: old.version, direction: authored.directionName },
+      });
+      await brandOs.feedback(
+        site,
+        "DIRECTION_CHOSEN",
+        authored.directionName,
+        { via: "upgrade-v3" },
+        a.userId,
+      );
+      return reply.code(201).send({
+        data: {
+          version,
+          from: { id: String(row.id), specVersion: old.version },
+          direction: authored.directionName,
+          note: "A new draft was created. Your live website is unchanged until you publish it.",
+        },
+      });
+    },
+  );
+  // Owner-facing Brand OS: the current brand system and its history for one site.
+  app.get("/api/sites/:id/brand-os", async (req) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id);
+    const [latest, history, fb] = await Promise.all([
+      brandOs.latest(site.id),
+      brandOs.list(site.id),
+      brandOs.feedbackSummary(site.id),
+    ]);
+    return {
+      data: {
+        current: latest
+          ? {
+              version: latest.version,
+              hash: latest.hash,
+              createdAt: latest.createdAt,
+              brandOs: latest.brandOs,
+            }
+          : null,
+        history,
+        taste: learnedTaste(fb),
+      },
+    };
+  });
+  app.get("/api/sites/:id/brand-os/:version", async (req) => {
+    const { id, version } = z
+      .object({ id: uuid, version: z.coerce.number().int().min(1) })
+      .parse(req.params);
+    const { site } = await siteFor(req, id);
+    const row = await brandOs.get(site.id, version);
+    if (!row) throw notFound();
+    return { data: row };
+  });
+  // Evidence for taste learning. One event is a data point; Kora only reports a preference once choices repeat.
+  app.post("/api/sites/:id/creative-feedback", async (req, reply) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
+    const body = z
+      .object({
+        kind: z.enum([
+          "DIRECTION_CHOSEN",
+          "DIRECTION_REJECTED",
+          "REGENERATED",
+          "IMAGE_REJECTED",
+          "PALETTE_CHANGED",
+          "FONT_CHANGED",
+          "ARTIFACT_APPROVED",
+          "NUDGE_APPLIED",
+        ]),
+        subject: z.string().trim().min(1).max(80),
+      })
+      .strict()
+      .parse(req.body);
+    await brandOs.feedback(
+      site,
+      body.kind,
+      body.subject,
+      {},
+      requireUser(req).userId,
+    );
+    return reply.code(201).send({ data: { recorded: true } });
   });
   // "Upgrade design": a NEW v2 draft from a v1 version's own content. Never published automatically.
   app.post("/api/sites/:id/versions/:versionId/upgrade", async (req, reply) => {
@@ -818,6 +979,26 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     const v = await platform.getVersion(site.id, versionId);
     if (!v) throw notFound();
     const spec = (v as { spec?: AnySiteSpec }).spec;
+    if (spec && spec.version === 3) {
+      const issues = criticV3(spec);
+      const files3 = renderAnySite(spec, { siteId: site.id });
+      const b3 = (n: string) => Buffer.byteLength(files3[n] ?? "");
+      return {
+        data: {
+          supported: true as const,
+          engine: "v3" as const,
+          issues,
+          dimensions: gradeByDimension(issues),
+          budgets: budgetBreaches({
+            site_html_kb: Math.round(b3("index.html") / 1024),
+            site_total_kb: Math.round(
+              Object.keys(files3).reduce((n, k) => n + b3(k), 0) / 1024,
+            ),
+            site_requests: Object.keys(files3).length,
+          }),
+        },
+      };
+    }
     if (!spec || spec.version !== 2)
       return { data: { supported: false as const } };
     const findings = creativeFindings(spec);

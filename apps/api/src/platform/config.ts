@@ -20,6 +20,8 @@ export const platformConfigSchema = z.object({
   /** Controlled-test fault injection for Kora-hosted sites. Never on by default. */
   KORA_CHAOS_ENABLED: bool,
   KORA_TRUST_PROXY: bool,
+  /** Creative engine for NEW designs. v2 keeps the previous designer; v3 is the Brand OS / SiteSpec v3 engine. Existing sites are never converted. */
+  KORA_CREATIVE_ENGINE: z.enum(["v2", "v3"]).optional(),
   KORA_SIGNUP_ENABLED: bool,
   ACTION_VERIFICATION_TIMEOUT_MS: z.coerce
     .number()
@@ -94,6 +96,7 @@ export type PlatformConfig = Omit<
   | "KORA_EXPERIMENTAL_RUMPTY_BUCKET"
   | "KORA_SANDBOX_CHANNELS"
 > & {
+  KORA_CREATIVE_ENGINE: "v2" | "v3";
   KORA_COOKIE_SECURE: boolean;
   KORA_LEGACY_PUBLIC_API: boolean;
   KORA_CHAOS_ENABLED: boolean;
@@ -116,6 +119,7 @@ export function loadPlatformConfig(
     KORA_COOKIE_SECURE: c.KORA_COOKIE_SECURE ?? prod,
     KORA_LEGACY_PUBLIC_API: c.KORA_LEGACY_PUBLIC_API ?? !prod,
     KORA_CHAOS_ENABLED: c.KORA_CHAOS_ENABLED ?? false,
+    KORA_CREATIVE_ENGINE: c.KORA_CREATIVE_ENGINE ?? "v2",
     KORA_TRUST_PROXY: c.KORA_TRUST_PROXY ?? prod,
     KORA_SIGNUP_ENABLED: c.KORA_SIGNUP_ENABLED ?? true,
     KORA_EXPERIMENTAL_RUMPTY_BUCKET: c.KORA_EXPERIMENTAL_RUMPTY_BUCKET ?? false,

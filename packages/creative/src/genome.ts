@@ -64,7 +64,13 @@ export const IMAGE_DOMINANCE = [
   "balanced",
   "dominant",
 ] as const;
-export const IMAGE_CROPS = ["natural", "tall", "square", "wide", "arch"] as const;
+export const IMAGE_CROPS = [
+  "natural",
+  "tall",
+  "square",
+  "wide",
+  "arch",
+] as const;
 export const PALETTE_BEHAVIOURS = [
   "ink-on-paper",
   "dark-field",
@@ -134,13 +140,43 @@ export const SERVICE_LAYOUTS = [
   "board",
   "ladder",
 ] as const;
-export const PRODUCT_LAYOUTS = ["rail", "gallery-grid", "featured-pair", "price-menu"] as const;
-export const PROCESS_LAYOUTS = ["numerals", "horizontal-steps", "timeline-line"] as const;
+export const PRODUCT_LAYOUTS = [
+  "rail",
+  "gallery-grid",
+  "featured-pair",
+  "price-menu",
+] as const;
+export const PROCESS_LAYOUTS = [
+  "numerals",
+  "horizontal-steps",
+  "timeline-line",
+] as const;
 export const PROOF_LAYOUTS = ["spotlight", "stack", "facts-band"] as const;
-export const FOOTER_STYLES = ["minimal", "brand-heavy", "columns", "local-card"] as const;
-export const SECTION_RHYTHMS = ["alternating", "continuous", "banded", "ruled"] as const;
-export const MOTION_INTENSITIES = ["none", "restrained", "measured", "expressive"] as const;
-export const MOTION_CHARACTERS = ["fade", "rise", "draw", "snap", "float"] as const;
+export const FOOTER_STYLES = [
+  "minimal",
+  "brand-heavy",
+  "columns",
+  "local-card",
+] as const;
+export const SECTION_RHYTHMS = [
+  "alternating",
+  "continuous",
+  "banded",
+  "ruled",
+] as const;
+export const MOTION_INTENSITIES = [
+  "none",
+  "restrained",
+  "measured",
+  "expressive",
+] as const;
+export const MOTION_CHARACTERS = [
+  "fade",
+  "rise",
+  "draw",
+  "snap",
+  "float",
+] as const;
 export const MOBILE_STRATEGIES = [
   "narrative-stack",
   "action-dock",

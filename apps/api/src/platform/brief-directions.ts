@@ -1,11 +1,8 @@
 import { randomBytes } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import {
-  designBriefSchema,
-  planDirections,
-  renderSiteV2,
-} from "@kora/site-schema";
+import { designBriefSchema } from "@kora/site-schema";
+import { previewDirections } from "./directions.js";
 import type { BillingService } from "./billing.js";
 import { HttpError, notFound, requireOrgRole, requireUser } from "./http.js";
 import { sendArtifact } from "./hosting.js";
@@ -20,7 +17,11 @@ const uuid = z.string().uuid();
  */
 export function registerBriefDirectionRoutes(
   app: FastifyInstance,
-  d: { platform: PlatformStore; billing: BillingService },
+  d: {
+    platform: PlatformStore;
+    billing: BillingService;
+    engine?: "v2" | "v3";
+  },
 ) {
   const held = new Map<
     string,
@@ -54,7 +55,10 @@ export function registerBriefDirectionRoutes(
       );
 
     const brief = designBriefSchema.parse(body);
-    const planned = planDirections(brief);
+    const { directions: planned, recommended } = previewDirections(
+      d.engine ?? "v2",
+      brief,
+    );
     const token = randomBytes(16).toString("hex");
 
     for (const [key, value] of held)
@@ -64,31 +68,21 @@ export function registerBriefDirectionRoutes(
     held.set(token, {
       userId: user.userId,
       expires: Date.now() + 30 * 60_000,
-      files: planned.map((direction) => {
-        const files = renderSiteV2(direction.spec);
-        files["index.html"] = files["index.html"]!.replace(
-          /<form[\s\S]*?<\/form>/g,
-          "",
-        );
-        return files;
-      }),
+      files: planned.map((direction) => direction.files),
     });
 
     return {
+      recommended,
       data: planned.map((direction) => ({
         index: direction.index,
         name: direction.name,
         summary: direction.summary,
         look: direction.look,
         palette: direction.palette,
-        swatches: [
-          direction.spec.design.palette.background,
-          direction.spec.design.palette.primary,
-          direction.spec.design.palette.accent,
-          direction.spec.design.palette.surfaceMuted,
-        ],
-        fontPairing: direction.spec.design.typography.pairing,
+        swatches: direction.swatches,
+        fontPairing: direction.fontPairing,
         previewUrl: `/api/design/brief-previews/${token}/${direction.index}/`,
+        ...direction.extras,
       })),
     };
   });

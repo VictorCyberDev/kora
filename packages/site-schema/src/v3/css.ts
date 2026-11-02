@@ -1,4 +1,11 @@
-import { contrast, ensureContrast, mix, readableOn, type DesignGenome } from "@kora/creative";
+import {
+  contrast,
+  ensureContrast,
+  luminance,
+  mix,
+  readableOn,
+  type DesignGenome,
+} from "@kora/creative";
 import type { Palette } from "../v2/spec.js";
 import { voiceFaceCss, voiceStacks, VOICES } from "./fonts.js";
 
@@ -10,19 +17,32 @@ function toneVars(p: Palette, mode: "light" | "dark", tone: Tone): string {
   if (tone === "light") [bg, fg] = [p.background, p.foreground];
   else if (tone === "alt") [bg, fg] = [p.surfaceMuted, p.foreground];
   else if (tone === "dark") {
-    bg = mode === "dark" ? mix(p.background, "#000000", 0.4) : mix(p.foreground, p.primary, 0.1);
+    bg =
+      mode === "dark"
+        ? mix(p.background, "#000000", 0.4)
+        : mix(p.foreground, p.primary, 0.1);
     fg = mode === "dark" ? p.foreground : p.background;
   } else if (tone === "brand") [bg, fg] = [p.primary, p.primaryForeground];
   else [bg, fg] = [p.secondary, p.secondaryForeground];
   fg = ensureContrast(fg, bg, 7);
-  const sf = tone === "light" ? p.surfaceRaised : mix(bg, fg, 0.06);
+  // On a mid-tone background (a brand green or orange) text has little contrast to spare, so the card surface moves
+  // away from the text colour instead of towards it; otherwise it moves gently towards the text colour.
+  const sf =
+    tone === "light"
+      ? p.surfaceRaised
+      : contrast(fg, bg) >= 8
+        ? mix(bg, fg, 0.06)
+        : mix(bg, luminance(fg) < 0.4 ? "#ffffff" : "#000000", 0.1);
   // Text must hold on the tone's background AND on the card surface that sits on it.
-  const onBoth = (c: string) => ensureContrast(ensureContrast(c, bg, 4.5), sf, 4.5);
+  const onBoth = (c: string) =>
+    ensureContrast(ensureContrast(c, bg, 4.5), sf, 4.5);
   const mf = onBoth(mix(fg, bg, 0.3));
   const ac = onBoth(p.accent);
   const bd = mix(bg, fg, tone === "dark" || mode === "dark" ? 0.28 : 0.2);
   // Button fill: the first brand colour that is visibly distinct from this surface, else the foreground.
-  const bb = [p.primary, p.accent, p.secondary, fg].find((c) => contrast(c, bg) >= 3) ?? fg;
+  const bb =
+    [p.primary, p.accent, p.secondary, fg].find((c) => contrast(c, bg) >= 3) ??
+    fg;
   const bf = readableOn(bb);
   return `--bg:${bg};--fg:${fg};--mf:${mf};--ac:${ac};--bd:${bd};--sf:${sf};--bb:${bb};--bf:${bf}`;
 }
@@ -39,24 +59,60 @@ const SCALE: Record<DesignGenome["typeContrast"], [number, number, number]> = {
   high: [2.6, 7.6, 6],
   extreme: [2.8, 10.5, 9],
 };
-const RADIUS = { none: "0", slight: "4px", soft: "12px", round: "22px", pill: "26px", arch: "6px" } as const;
+const RADIUS = {
+  none: "0",
+  slight: "4px",
+  soft: "12px",
+  round: "22px",
+  pill: "26px",
+  arch: "6px",
+} as const;
 
-export function baseCss(g: DesignGenome, p: Palette, mode: "light" | "dark"): string {
+export function baseCss(
+  g: DesignGenome,
+  p: Palette,
+  mode: "light" | "dark",
+): string {
   const voice = VOICES[g.typeVoice];
   const st = voiceStacks(voice.id);
   const k = Math.min(1.25, Math.max(0.62, 0.5 / voice.displayWidth));
   const [mn, vw, mx] = SCALE[g.typeContrast];
-  const boost = g.headlineBehavior === "oversized" ? 1.18 : g.headlineBehavior === "tight-stack" ? 1.05 : 1;
+  const boost =
+    g.headlineBehavior === "oversized"
+      ? 1.18
+      : g.headlineBehavior === "tight-stack"
+        ? 1.05
+        : 1;
   const h1 = `clamp(${(mn * k).toFixed(2)}rem,${(vw * k * boost).toFixed(2)}vw,${(mx * k * boost).toFixed(2)}rem)`;
   const h2 = `clamp(${(mn * k * 0.62).toFixed(2)}rem,${(vw * k * 0.42 * boost).toFixed(2)}vw,${(mx * k * 0.5).toFixed(2)}rem)`;
   const pad = PAD[g.density];
-  const padMul = g.spacingRhythm === "dramatic" ? 1.2 : g.spacingRhythm === "tight" ? 0.8 : 1;
+  const padMul =
+    g.spacingRhythm === "dramatic"
+      ? 1.2
+      : g.spacingRhythm === "tight"
+        ? 0.8
+        : 1;
   const r = RADIUS[g.radiusStyle];
-  const btnR = g.buttonCharacter === "solid-pill" ? "999px" : g.buttonCharacter === "block-arrow" || g.buttonCharacter === "underline" ? "0" : g.buttonCharacter === "stamp" ? "8px" : r;
+  const btnR =
+    g.buttonCharacter === "solid-pill"
+      ? "999px"
+      : g.buttonCharacter === "block-arrow" || g.buttonCharacter === "underline"
+        ? "0"
+        : g.buttonCharacter === "stamp"
+          ? "8px"
+          : r;
   const upper = g.headlineBehavior === "uppercase";
   const tracking = upper ? "0.01em" : voice.tracking;
-  const lh = g.headlineBehavior === "tight-stack" ? 0.94 : upper ? 0.96 : g.typeContrast === "extreme" ? 0.98 : 1.04;
-  const border = g.borderStyle === "heavy" ? "2px" : g.borderStyle === "none" ? "0" : "1px";
+  const lh =
+    g.headlineBehavior === "tight-stack"
+      ? 0.94
+      : upper
+        ? 0.96
+        : g.typeContrast === "extreme"
+          ? 0.98
+          : 1.04;
+  const border =
+    g.borderStyle === "heavy" ? "2px" : g.borderStyle === "none" ? "0" : "1px";
   const tones = (["light", "alt", "dark", "brand", "accent"] as Tone[])
     .map((t) => `.t-${t}{${toneVars(p, mode, t)}}`)
     .join("\n");

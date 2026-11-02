@@ -41,7 +41,13 @@ export const briefSchema = z.object({
       prices: z.boolean().default(false),
       team: z.boolean().default(false),
     })
-    .default({ logo: false, photos: 0, testimonials: 0, prices: false, team: false }),
+    .default({
+      logo: false,
+      photos: 0,
+      testimonials: 0,
+      prices: false,
+      team: false,
+    }),
 });
 export type CreativeBrief = z.input<typeof briefSchema>;
 export type ParsedBrief = z.output<typeof briefSchema>;
@@ -138,7 +144,8 @@ export function buildTruth(input: CreativeBrief): BusinessTruth {
   if (!can.prices) missing.push("a price list");
   if (!can.photos) missing.push("your own photos");
   if (!can.logo) missing.push("a logo");
-  if (!can.testimonials) missing.push("real customer reviews you are happy to show");
+  if (!can.testimonials)
+    missing.push("real customer reviews you are happy to show");
 
   const inferences = [
     {
