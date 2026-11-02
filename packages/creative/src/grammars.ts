@@ -72,6 +72,8 @@ export interface Grammar {
     headline: DesignGenome["headlineBehavior"][];
     radius: DesignGenome["radiusStyle"][];
     header: DesignGenome["headerStyle"][];
+    /** Voices with the same character, so siblings do not share a typeface. */
+    voice?: DesignGenome["typeVoice"][];
   };
 }
 
@@ -376,6 +378,7 @@ export const GRAMMARS: readonly Grammar[] = [
       headline: ["sentence", "mixed-italic"],
       radius: ["none", "slight"],
       header: ["split-rule", "centered-stack"],
+      voice: ["heritage-serif", "classical-roman"],
     },
   },
   {
@@ -435,6 +438,24 @@ export const GRAMMARS: readonly Grammar[] = [
         "#1e4a35",
         "#ff7a3d",
       ),
+      cw(
+        "cobalt-chalk",
+        "Cobalt & chalk",
+        "#f4f1ea",
+        "#111111",
+        "#1f3bd1",
+        "#111111",
+        "#ffd23f",
+      ),
+      cw(
+        "forest-flame",
+        "Forest & flame",
+        "#0f1a12",
+        "#f2efe0",
+        "#ff7a1a",
+        "#1f3a24",
+        "#e8f06a",
+      ),
     ],
     genome: G({
       compositionMode: "poster-bold",
@@ -469,6 +490,7 @@ export const GRAMMARS: readonly Grammar[] = [
       headline: ["uppercase", "oversized"],
       radius: ["none", "slight"],
       header: ["minimal-bar", "sticker"],
+      voice: ["poster-condensed", "condensed-utility"],
     },
   },
   {
@@ -702,6 +724,24 @@ export const GRAMMARS: readonly Grammar[] = [
         "#d6d0bf",
         "#b86a2d",
       ),
+      cw(
+        "stone-terracotta",
+        "Stone & terracotta",
+        "#f3efe9",
+        "#1b1714",
+        "#8a3b24",
+        "#d9cfc2",
+        "#8a3b24",
+      ),
+      cw(
+        "mono-black",
+        "Monochrome",
+        "#fafafa",
+        "#0a0a0a",
+        "#0a0a0a",
+        "#dcdcdc",
+        "#5a5a5a",
+      ),
     ],
     genome: G({
       compositionMode: "monograph",
@@ -733,6 +773,7 @@ export const GRAMMARS: readonly Grammar[] = [
       headline: ["sentence", "mixed-italic"],
       radius: ["none"],
       header: ["minimal-bar", "wordmark-left"],
+      voice: ["editorial-luxury", "minimal-modernist", "modern-serif"],
     },
   },
   {
@@ -980,6 +1021,24 @@ export const GRAMMARS: readonly Grammar[] = [
         "#2a2a2a",
         "#f2b705",
       ),
+      cw(
+        "forest-hi-vis",
+        "Forest & hi-vis",
+        "#f2f1ea",
+        "#12201a",
+        "#1d4a33",
+        "#ffd400",
+        "#d96a00",
+      ),
+      cw(
+        "graphite-orange",
+        "Graphite & orange",
+        "#efeeec",
+        "#151515",
+        "#2a2d33",
+        "#ff6a13",
+        "#d9540a",
+      ),
     ],
     genome: G({
       compositionMode: "stacked-utility",
@@ -1013,6 +1072,7 @@ export const GRAMMARS: readonly Grammar[] = [
       headline: ["uppercase", "tight-stack"],
       radius: ["none", "slight"],
       header: ["minimal-bar", "wordmark-left"],
+      voice: ["condensed-utility", "poster-condensed", "local-commerce"],
     },
   },
   {
@@ -1425,6 +1485,24 @@ export const GRAMMARS: readonly Grammar[] = [
         "#d8d1c3",
         "#a5652c",
       ),
+      cw(
+        "wine-gold",
+        "Wine & gold",
+        "#1a0f14",
+        "#f4ebe4",
+        "#c9a45c",
+        "#2c1a22",
+        "#e8c9a0",
+      ),
+      cw(
+        "sea-sand",
+        "Sea & sand",
+        "#f3efe6",
+        "#0f2a33",
+        "#14606e",
+        "#e0d4bd",
+        "#b86d1f",
+      ),
     ],
     genome: G({
       compositionMode: "cinematic-minimal",
@@ -1457,6 +1535,7 @@ export const GRAMMARS: readonly Grammar[] = [
       headline: ["sentence", "mixed-italic"],
       radius: ["none"],
       header: ["centered-stack", "overlay"],
+      voice: ["classical-roman", "soft-luxury", "editorial-luxury"],
     },
   },
 ];

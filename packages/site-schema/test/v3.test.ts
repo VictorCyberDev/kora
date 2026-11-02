@@ -405,8 +405,13 @@ describe("type voices stay in step between website and artifacts", () => {
     const { VOICE_FAMILIES } = await import("@kora/creative");
     const { VOICES } = await import("../src/index.js");
     for (const [id, v] of Object.entries(VOICES)) {
-      expect(VOICE_FAMILIES[id as keyof typeof VOICE_FAMILIES].display, id).toBe(v.display.family);
-      expect(VOICE_FAMILIES[id as keyof typeof VOICE_FAMILIES].body, id).toBe(v.body.family);
+      expect(
+        VOICE_FAMILIES[id as keyof typeof VOICE_FAMILIES].display,
+        id,
+      ).toBe(v.display.family);
+      expect(VOICE_FAMILIES[id as keyof typeof VOICE_FAMILIES].body, id).toBe(
+        v.body.family,
+      );
     }
   });
 });

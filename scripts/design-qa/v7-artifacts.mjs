@@ -15,7 +15,9 @@ import {
   ARTIFACT_FORMATS,
 } from "../../packages/creative/dist/src/index.js";
 import { ttfPaths } from "../../packages/site-fonts/dist/index.js";
-import { GOLDEN } from "./v7-golden-briefs.mjs";
+const GOLDEN = JSON.parse(
+  readFileSync(new URL("./v7-golden-briefs.json", import.meta.url), "utf8"),
+);
 const { Resvg } = createRequire(
   new URL("../../apps/api/package.json", import.meta.url),
 )("@resvg/resvg-js");

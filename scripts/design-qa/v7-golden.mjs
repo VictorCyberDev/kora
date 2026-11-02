@@ -1,12 +1,14 @@
 // Renders the golden businesses through the real v3 engine into a directory, for browser screenshots.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import {
   planDirectionsV3,
   renderSiteV3,
   lintArtifact,
 } from "../../packages/site-schema/dist/src/index.js";
-import { GOLDEN } from "./v7-golden-briefs.mjs";
+const GOLDEN = JSON.parse(
+  readFileSync(new URL("./v7-golden-briefs.json", import.meta.url), "utf8"),
+);
 
 const out = process.argv[2] ?? "/var/tmp/gold";
 const only = process.argv[3];

@@ -200,6 +200,9 @@ export function varyGenome(
     headlineBehavior: a.headline[idx(a.headline.length, seed, salt + 4)]!,
     radiusStyle: a.radius[idx(a.radius.length, seed, salt + 5)]!,
     headerStyle: a.header[idx(a.header.length, seed, salt + 6)]!,
+    ...(a.voice?.length
+      ? { typeVoice: a.voice[idx(a.voice.length, seed, salt + 7)]! }
+      : {}),
   };
   // Truth-driven constraints, never taste: without any photograph a photo-led hero is not allowed to pretend.
   if (

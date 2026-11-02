@@ -1,129 +1,34 @@
 {
-  "inter": [
-    400,
-    600,
-    700
-  ],
-  "manrope": [
-    400,
-    600,
-    800
-  ],
-  "playfair-display": [
-    400,
-    600,
-    700
-  ],
-  "dm-serif-display": [
-    400
-  ],
-  "lora": [
-    400,
-    600
-  ],
-  "dm-sans": [
-    400,
-    500,
-    700
-  ],
-  "space-grotesk": [
-    400,
-    600
-  ],
-  "outfit": [
-    400,
-    600
-  ],
-  "nunito": [
-    400,
-    700
-  ],
-  "jetbrains-mono": [
-    400
-  ],
-  "cormorant-garamond": [
-    400,
-    600
-  ],
-  "syne": [
-    700
-  ],
-  "plus-jakarta-sans": [
-    400,
-    600,
-    700
-  ],
-  "bricolage-grotesque": [
-    400,
-    700
-  ],
-  "fraunces": [
-    400,
-    600,
-    "400i"
-  ],
-  "instrument-serif": [
-    400,
-    "400i"
-  ],
-  "bodoni-moda": [
-    400,
-    700
-  ],
-  "barlow-condensed": [
-    500,
-    700
-  ],
-  "oswald": [
-    500,
-    700
-  ],
-  "bebas-neue": [
-    400
-  ],
-  "archivo": [
-    400,
-    600,
-    800
-  ],
-  "sora": [
-    400,
-    600
-  ],
-  "fredoka": [
-    400,
-    600
-  ],
-  "young-serif": [
-    400
-  ],
-  "newsreader": [
-    400,
-    600,
-    "400i"
-  ],
-  "marcellus": [
-    400
-  ],
-  "work-sans": [
-    400,
-    600
-  ],
-  "unbounded": [
-    600
-  ],
-  "gloock": [
-    400
-  ],
-  "caveat": [
-    600
-  ],
-  "libre-baskerville": [
-    400,
-    700
-  ],
-  "epilogue": [
-    400,
-    700
-  ]
+  "inter": [400, 600, 700],
+  "manrope": [400, 600, 800],
+  "playfair-display": [400, 600, 700],
+  "dm-serif-display": [400],
+  "lora": [400, 600],
+  "dm-sans": [400, 500, 700],
+  "space-grotesk": [400, 600],
+  "outfit": [400, 600],
+  "nunito": [400, 700],
+  "jetbrains-mono": [400],
+  "cormorant-garamond": [400, 600],
+  "syne": [700],
+  "plus-jakarta-sans": [400, 600, 700],
+  "bricolage-grotesque": [400, 700],
+  "fraunces": [400, 600, "400i"],
+  "instrument-serif": [400, "400i"],
+  "bodoni-moda": [400, 700],
+  "barlow-condensed": [500, 700],
+  "oswald": [500, 700],
+  "bebas-neue": [400],
+  "archivo": [400, 600, 800],
+  "sora": [400, 600],
+  "fredoka": [400, 600],
+  "young-serif": [400],
+  "newsreader": [400, 600, "400i"],
+  "marcellus": [400],
+  "work-sans": [400, 600],
+  "unbounded": [600],
+  "gloock": [400],
+  "caveat": [600],
+  "libre-baskerville": [400, 700],
+  "epilogue": [400, 700]
 }

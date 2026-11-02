@@ -230,3 +230,30 @@ describe("brand os", () => {
     expect(d.artDirection[0]!.preferredSource).toBe("owner-supplied");
   });
 });
+
+import { REFERENCES, referenceStats } from "../src/index.js";
+describe("reference atlas", () => {
+  it("has at least 100 structured entries and states its evidence honestly", () => {
+    const s = referenceStats();
+    expect(s.total).toBeGreaterThanOrEqual(100);
+    expect(s.fetched).toBe(23);
+    expect(s.fetched + s.searchLead + s.analyst).toBe(s.total);
+    expect(new Set(REFERENCES.map((r) => r.id)).size).toBe(REFERENCES.length);
+    for (const r of REFERENCES) {
+      expect(r.principle.length, r.id).toBeGreaterThan(10);
+      expect(r.doNotCopy).toMatch(/principle only/i);
+    }
+  });
+  it("every grammar is informed by at least three references, and fetched entries carry observed tokens", () => {
+    for (const g of GRAMMARS)
+      expect(
+        REFERENCES.filter((r) => r.informs.includes(g.id)).length,
+        g.id,
+      ).toBeGreaterThanOrEqual(3);
+    for (const r of REFERENCES.filter(
+      (x) =>
+        x.evidence === "fetched" && !["spotify", "godaddy-airo"].includes(x.id),
+    ))
+      expect(r.observed, r.id).toBeDefined();
+  });
+});
