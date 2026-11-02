@@ -22,6 +22,8 @@ interface Ctx {
   used: Set<string>;
   focals: Set<string>;
   heroSeen: boolean;
+  /** Quiet brands get low-contrast placeholder graphics so a placeholder never out-shouts the brand. */
+  quiet: boolean;
   letter: string;
   stamp: string;
 }
@@ -85,7 +87,7 @@ function visual(
     return `<div class="frame ${ar} tr-${m.treatment}${fp} ${opts.cls ?? ""}"><img src="${esc(m.url)}" alt="${esc(m.alt)}"${dims} ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"'}></div>`;
   }
   const plate = v.plate ?? { kind: "arch", seed: 1 };
-  return `<div class="frame plate-w ${ar} ${opts.cls ?? ""}">${plateSvg(plate.kind as never, plate.seed, c.spec.design.palette, c.letter)}</div>`;
+  return `<div class="frame plate-w ${ar} ${opts.cls ?? ""}">${plateSvg(plate.kind as never, plate.seed, c.spec.design.palette, c.letter, c.quiet)}</div>`;
 }
 
 const kickLabel: Record<string, string> = {
@@ -112,7 +114,9 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
   const eager = !c.heroSeen;
   c.heroSeen = true;
   const eyebrow = s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : "";
-  const h1 = `<h1>${headline(s.heading, c)}</h1>`;
+  const hcls =
+    s.heading.length > 60 ? " l3" : s.heading.length > 34 ? " l2" : "";
+  const h1 = `<h1${hcls ? ` class="${hcls.trim()}"` : ""}>${headline(s.heading, c)}</h1>`;
   const sub = s.subheading ? `<p class="sub">${esc(s.subheading)}</p>` : "";
   const ctas =
     s.primaryCta || s.secondaryCta
@@ -627,6 +631,9 @@ export function renderPageV3(
     used: shared?.used ?? new Set(),
     focals: shared?.focals ?? new Set(),
     heroSeen: false,
+    quiet:
+      spec.design.genome.accentScarcity === "rare" ||
+      spec.design.genome.paletteBehavior === "soft-neutral",
     letter: (spec.business.name.trim()[0] ?? "K").toUpperCase(),
     stamp: "",
   };

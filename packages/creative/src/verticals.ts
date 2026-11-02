@@ -911,7 +911,7 @@ export const VERTICALS: readonly VerticalIntel[] = [
     "events",
     "Events & planning",
     "creative",
-    "event plan|wedding|party plan|event decor|mc\\b|venue|rentals",
+    "event plan|wedding (plan|decor|coordinat)|party plan|event decor|mc\\b|venue|event rentals",
     ["handmade-modern", "grand-stay", "fashion-edit"],
     ["generic celebration stock", "cluttered"],
     {

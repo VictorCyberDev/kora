@@ -23,12 +23,16 @@ export function plateSvg(
   seed: number,
   p: Palette,
   letter = "K",
+  quiet = false,
 ): string {
   const r = rng(seed + 11);
-  const cols = [p.primary, p.secondary, p.accent, p.surfaceMuted];
-  const A = pick(r, [p.primary, p.secondary]);
-  const B = pick(r, [p.accent, p.secondary, p.surfaceMuted]);
-  const C = p.accent;
+  // Quiet brands: tonal neutrals and one fine accent. Loud brands: full brand colours.
+  const cols = quiet
+    ? [p.secondary, p.border, p.surfaceMuted, p.secondary]
+    : [p.primary, p.secondary, p.accent, p.surfaceMuted];
+  const A = quiet ? p.secondary : pick(r, [p.primary, p.secondary]);
+  const B = quiet ? p.border : pick(r, [p.accent, p.secondary, p.surfaceMuted]);
+  const C = quiet ? p.primary : p.accent;
   const open = `<svg class="plate" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" role="presentation" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">`;
   const bg = `<rect width="400" height="500" fill="${p.surfaceMuted}"/>`;
   let body = "";

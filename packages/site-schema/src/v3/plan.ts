@@ -51,7 +51,6 @@ const CATALOG: Record<string, string> = {
   restaurant: "restaurant",
   bukka: "bukka",
   catering: "catering",
-  events: "events",
   barber: "barber",
   law: "law",
   accounting: "accounting",

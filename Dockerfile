@@ -25,6 +25,7 @@ COPY packages/site-serving/package.json packages/site-serving/package.json
 COPY packages/site-fonts/package.json packages/site-fonts/package.json
 COPY packages/site-media/package.json packages/site-media/package.json
 COPY packages/growth/package.json packages/growth/package.json
+COPY packages/creative/package.json packages/creative/package.json
 COPY services/incident-engine/package.json services/incident-engine/package.json
 COPY services/reasoner/package.json services/reasoner/package.json
 COPY services/policy-engine/package.json services/policy-engine/package.json
@@ -70,6 +71,7 @@ COPY --from=build /app/packages/site-fonts/dist packages/site-fonts/dist
 COPY --from=build /app/packages/site-fonts/files packages/site-fonts/files
 COPY --from=build /app/packages/site-fonts/ttf packages/site-fonts/ttf
 COPY --from=build /app/packages/growth/dist packages/growth/dist
+COPY --from=build /app/packages/creative/dist packages/creative/dist
 COPY --from=build /app/packages/site-media/dist packages/site-media/dist
 COPY --from=build /app/packages/site-media/files packages/site-media/files
 COPY --from=build /app/services/incident-engine/dist services/incident-engine/dist
