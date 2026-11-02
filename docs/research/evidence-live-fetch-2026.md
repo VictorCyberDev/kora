@@ -1,0 +1,130 @@
+# Kora design research: live fetch evidence (2026-11-02)
+
+## Method and honesty notes (read first)
+- The Firecrawl MCP returned "Insufficient credits" on its first batch (daily MCP allowance exhausted, resets ~20:30 UTC). No Firecrawl scrape or search succeeded. It was not retried.
+- Task A fallback: direct `curl` of each homepage plus up to 6 linked stylesheets, then regex extraction of `font-family`, `#rrggbb` frequency, `border-radius`, `<title>`, `<h1>`, `theme-color`, counts of `<a>/<img>/<video>`. This is real observed data, but it is raw static HTML/CSS: no rendering, no screenshots, no computed styles. Many sites use CSS variables (radius shows as `var(--...)`) and JS-rendered content (h1/links often empty). Hex frequency counts every declared colour in the CSS, including unused ones and third-party widgets. Treat palettes as "present in CSS", not "dominant on screen".
+- Evidence tags: FETCHED = static HTML/CSS retrieved via curl (not Firecrawl). SEARCH_ONLY = web-search snippets only; page not opened. FAILED = fetch blocked or no tokens obtainable.
+- Task B: WebSearch returned roundup articles (mostly vendor/agency blogs), not individual-site metadata. Site names below come from those snippets. Domains were not returned, so I give the roundup URL that names the site and do NOT invent domains.
+- Task C: written from general public knowledge plus the homepage headlines observed in Task A. Marked UNVERIFIED where I could not confirm current (late 2026) product behaviour.
+
+## Section A: Observed data, 30 sites
+
+Totals: FETCHED 23, FAILED 7. Layout columns are limited to what static HTML reveals (structure counts, headline text); imagery strategy is inferred from img/video counts only.
+
+| # | Site | Evidence | Fonts (as declared) | Colours observed (hex, by CSS frequency) | Radius / shape | Structure signals |
+|---|---|---|---|---|---|---|
+| 1 | apple.com | FETCHED | SF Pro (many locale cuts) | #0071e3 (link blue), #006edb, #333336, #272729, #18181a, #ededf2 | 980px pill buttons; 5px, 10px | h1 just "Apple"; 143 links, 99 img, 2 video: image-heavy tile grid, neutral greys plus one blue accent |
+| 2 | spotify.com | FETCHED (web-player shell, not marketing page) | Encore stack via CSS vars; SpotifyMixUI / MixUITitle | #1ed760 (green), #282828, plus dark tint pairs (#590810/#ffd2d7, #073116, #491e00/#ffd97e) | 4px, 8px, 50%; corner-radius tokens (large) | JS shell: 0 links in HTML. Palette shows a design-system of dark+light tint pairs per hue |
+| 3 | airbnb.com | FETCHED | Airbnb Cereal VF | #ff385c (coral), #d7251c, #222222, #000, #fff, greys #8c8c8c/#c1c1c1 | 8px, 12px | theme-color #ffffff; 14 links in SSR, 4 video; search-led, content mostly client-rendered |
+| 4 | nike.com | FETCHED | Helvetica Now Text, Helvetica Neue | #111111, #707072, #1151ff, #ec3ea7, #ff623a | CDS tokens (button radius via var), 30px, 50% | h1 uppercase campaign line ("celebrate your home team"); 492 links, 44 img: dense commerce, campaign-led hero |
+| 5 | stripe.com | FETCHED | sohne-var (via --hds-font-family), monospace token for code | #635bff / #533afd (indigo), #061b31 (navy ink), #f8fafd, #ffd601, #ee30fb, #ff6118 | radius tokens xs/sm/md used ~360 times, 50% | Long h1 sentence; 190 links, 35 img. Navy ink plus saturated multicolour gradient accents |
+| 6 | notion.com | FETCHED | NotionInter, Lyon Text (serif), iA Writer Mono | #ffb110, #097fe8, #f64932, #1aae39, #1313ba, warm greys #f6f5f4/#f9f9f8 | token-based (rounded, 400, 700), 100% | h1 "Where teams and agents think together"; 92 links, 56 img. Sans + serif + mono triad; warm neutral base |
+| 7 | linear.app | FETCHED | Mono token used heavily (sans via var) | #08090a (near-black), #e2e4e7, #e4e5e9, #f79ce0 (pink), #55cdff (cyan), #2e2e32 | 6px, 50%, edge-highlight radius | theme-color #08090a: dark-first; 74 links, 38 img; two small neon accents on near-black |
+| 8 | vercel.com | FETCHED | Geist Sans, Geist Mono | #fafafa, #eaeaea, #252525, #4b4c57, plus partner colours #95bf47, #de2670 | 6px, 12px, 0, .25rem | theme-color #FAFAFA; h1 "Agentic Infrastructure"; 168 links. Pure neutral scale, colour only from third-party logos |
+| 9 | figma.com | FETCHED | figmaSans (global-font-sans), mono token | #000, #fff, #0d99ff, #00b6ff, #e5f4ff, #24cb71 | radius tokens 8/16/full | h1 "The full-stack creative canvas"; 151 links, 88 img. Black/white base, product-UI blues as accent |
+| 10 | wise.com | FETCHED | Wise display via Zen Kaku Gothic Antique stack, wds-font tokens | #163300 (deep green ink), #9fe870 (lime), #e2f6d5, #fadc65, #ffd11a, #fff | radius small/medium tokens, 50% | h1 "The fast way to send money abroad"; 149 links, 33 img, 2 video. Green-on-lime brand, yellow secondary |
+| 11 | monzo.com | FETCHED | MonzoSansDisplay, MonzoSansText | #091723 / #112231 (navy), #f2f8f3 (mint white), #ff4f40 (coral), #218fb7, #2eafc0, #016b83 | corner-radius large / x-large tokens, 1rem | theme-color #112231; h1 "Spend your money on life, not your life on money"; 26 video elements: motion-led product storytelling |
+| 12 | duolingo.com | FAILED (JS shell: 0 fonts, 0 hex, 0 links in HTML) | n/a | n/a | n/a | Only `<title>` recovered. No tokens |
+| 13 | headspace.com | FETCHED | Headspace Apercu, Apercu Pro Mono | #ffffff, #44423f, #2d2c2b (warm charcoal), #f9f4f2 (blush white), #0040ea / #0061ef (blue) | 2rem dominant (75 uses), 0.5rem | 230 links, 65 img, 0 video. Very rounded cards; warm neutrals not pure grey |
+| 14 | oatly.com | FETCHED | Margo Pro, Girdo Black Pro, Girdo Rounded Pro (custom display) | #98c5d3 (pale blue), #f40000, #e43e39, #fdcf85, #f8c8d8, #e80084, #c6c6c6 | 50%, 9999px, 2px | h1 "the Original Oat Drink Company"; only 42 links, 2 img: sparse, type- and colour-led, imagery barely used |
+| 15 | aesop.com | FAILED (HTTP 403) | n/a | n/a | n/a | Bot-blocked |
+| 16 | cos.com | FAILED (HTTP 403) | n/a | n/a | n/a | Bot-blocked |
+| 17 | glossier.com | FETCHED | Apercu, Apercu Mono | #f7f7f7, #e8e8e8, #000, #0600ff (electric blue), #d30000, #00ac5a | 0 radius dominant (28 uses) | 189 links, 55 img, 4 video. Square corners, near-white grey, a single saturated blue |
+| 18 | sonos.com | FETCHED | aktiv-grotesk | #2e2e2e, #000, #fff, #e0e0e0, #eeeeee, #737373 | 0px, 50%, 1.5rem, .25rem | h1 "Love the sound. Feel the system."; 101 links, 38 img, 5 video. Greyscale only; product photography carries colour |
+| 19 | muji.com | FAILED (curl code 000, no response) | n/a | n/a | n/a | Connection failed |
+| 20 | kinfolk.com | FETCHED | Kinfolk-Sans, Kinfolk-Serif-Text (+italics) | #1e1e1e, #d0d0d0, #e0e0e0, #8d8d8d, plus WP defaults #3858e9/#cc1818 | 0 radius dominant, 2px | theme-color #ffffff; h1 "Issue 61"; 241 links, 113 img. Editorial: bespoke serif+sans, square, white |
+| 21 | lego.com | FAILED (HTTP 403) | n/a | n/a | n/a | Bot-blocked |
+| 22 | mailchimp.com | FETCHED | Means Web, Graphik Web, Tally (custom) | #231e15 (warm black), #ffe01b (Cavendish yellow), #4bc4c2, #007c89, #692340, #dbd9d2, #bcbab8 | .25rem, .5rem, 50% | h1 "Turn ideas into emails & SMS that connect"; 323 links, 161 img. Warm black ink + yellow, quirky custom type |
+| 23 | shopify.com | FETCHED | Shopify-Inter | #061a1c (deep teal-black), #121c1e, #36f4a4 (mint), greys #a1a1aa/#d4d4d8/#71717a | radius-lg/2xl tokens, full-pill (3.4e38px) | h1 "Be the next AI all-star"; 9 video. Dark teal-black with one mint accent |
+| 24 | framer.com | FETCHED | Inter, Inter Display | #242424, #1f1f1f, #212121, #303030, #f3f3f3, #141414 | 8px, 20px | h1 "Framer is the pro website builder with a world-class design agent"; 464 links, 185 img. Near-black greyscale; product screenshots carry colour |
+| 25 | squarespace.com | FETCHED | Clarkson, Clarkson Serif (custom) | #1a1a1a, #323232, #999999, #1e4c41 (forest green), #087bb5, #e0e0e0 | 4px, 8px, 30px, 50% | theme-color white; h1 "A website makes it real"; 446 links, 77 img, 12 video. Serif-flavoured display, dark forest accent |
+| 26 | wix.com | FETCHED | wix-madefor-display-v2 / text-v2 | #000, #fff, #116dff (blue), #212121, #2b328c, #535a85 | 50px pill, 50%, variable (--rd) | h1 "Create your future on the leading website builder"; 262 links, 149 img, 19 video |
+| 27 | canva.com | FAILED (HTTP 403, challenge page returned) | n/a | n/a | n/a | Bot-blocked |
+| 28 | durable.co | FETCHED | newSpiritCondensed (display), openRunde | #00b67a (green, appears to be a review-widget colour), #fe4d0e (orange), #f1f1f1, #eaeaea, #e8f5ee | radius token + 4px, full-pill | h1 "The complete AI business builder"; only 42 links, 73 img. Condensed display + rounded sans, orange accent |
+| 29 | hostinger.com/ai-website-builder | FETCHED | Noto Sans, DM Sans | #673de6 (purple, = theme-color), #e536db (magenta), #d5dfff, #212121 | radius tokens full/md/lg/sm (~450 uses): heavy pill and rounded usage | h1 "AI website builder"; 176 links, 43 img |
+| 30 | godaddy.com/airo | FAILED (HTTP 403) | n/a | n/a | n/a | Bot-blocked |
+
+### A: what the data supports
+- Neutrals are almost never pure grey: warm charcoals (#2d2c2b, #231e15, #44423f), blush white (#f9f4f2), mint white (#f2f8f3), navy ink (#061b31, #091723), teal-black (#061a1c). Brands tint their neutral.
+- Nearly every site uses ONE saturated accent with 1 to 2 supporting hues (Apple blue, Spotify green, Airbnb coral, Wise lime on deep green, Monzo coral on navy, Mailchimp yellow on warm black, Shopify mint on teal-black).
+- Custom or licensed type is the norm for brands with identity (Cereal, Sohne, Geist, Apercu, Margo/Girdo, Means, Clarkson, Kinfolk serif). Builders and utilities lean on Inter/Noto (Framer, Shopify, Hostinger).
+- Radius splits into two camps: soft/pill (Apple 980px, Wix 50px, Headspace 2rem, Hostinger full, Shopify full) and sharp/editorial (Glossier 0, Kinfolk 0, Sonos 0px, Oatly small). Radius is a brand-personality lever, not a default.
+- Dark-first builders (Linear #08090a, Framer, Shopify) pair near-black with tiny neon accents; the "AI builder" hero is currently a near-black or purple gradient look.
+
+## Section B: Found examples (SEARCH_ONLY)
+
+All rows: Evidence SEARCH_ONLY. Names come from search snippets; I did not open the sites or verify domains. "Source" is the roundup URL that named the example. Prefer treating these as leads to verify.
+
+| # | Category | Example (as named) | Source URL | One-line principle |
+|---|---|---|---|---|
+| 1 | Bakery | Fabrique | https://www.krishaweb.com/blog/best-bakery-website-designs/ | Restraint: strip everything except product and story. |
+| 2 | Bakery | Wild Goose Bakery (London) | https://www.zarla.com/inspiration/bakery | Use the founder/origin story as the hero. |
+| 3 | Bakery | Leaven & Co (NY wholesale) | https://www.zarla.com/inspiration/bakery | Two-tone black and cream palette signals craft and trade seriousness. |
+| 4 | Bakery/cafe | Flour Bakery and Cafe | https://www.krishaweb.com/blog/best-bakery-website-designs/ | Consistent photography polishes a small business. |
+| 5 | Restaurant | Pizzeria Vetri | https://www.digitalsilk.com/?p=4737 | Shape imagery to echo the product (brick-oven frames) to reinforce brand. |
+| 6 | Restaurant | Sushima, Forage, Rebel Cheese (Dorik list) | https://dorik.com/blog/restaurant-website-examples | Bold look plus online ordering and mobile-first layout. |
+| 7 | Barbershop | Jack the Clipper (London) | https://thesalonbusiness.com/barbershop-website-designs/ | Retro visual style can coexist with modern scheduling. |
+| 8 | Barbershop | Legends The Barbershop | https://blog.hubspot.com/website/barbershop-websites | Simple layout beats flash for trade services. |
+| 9 | Barbershop | Millheads (Seattle) | https://thesalonbusiness.com/barbershop-website-designs/ | Squarespace-class sites win on booking clarity; booking at the top of every page. |
+| 10 | Salon | Bleach London | https://wegic.ai/blog/best-hair-salon-website-examples | Warm, spa-like tones match the salon experience. |
+| 11 | Salon | Two Birds (Melbourne) | https://www.zarla.com/inspiration/salon | Calm two-palette look; limit colour. |
+| 12 | Salon | Peach Stockholm | https://thesalonbusiness.com/hair-salon-websites/ | Let the work (blog/lookbook) fill the page, text secondary. |
+| 13 | Plumber/electrician | Mister Sparky | https://comradeweb.com/blog/best-electrician-websites | Brand colour (red/yellow) used consistently builds recognition. |
+| 14 | Plumber | Cornerstone Plumbing | https://hookagency.com/blog/plumbing-websites/ | Real, happy human photos humanize a trade. |
+| 15 | Auto repair | Avondale Auto Repair | https://www.cyberoptik.net/blog/best-auto-mechanic-websites/ | Sleek and contemporary beats stock "garage" clichés. |
+| 16 | Law | Bick Law LLP / Paceline Law | https://enter.converge.ai/page/en-US/blog/law-firm-website-design | Niche focus can carry the design; lead with the specialism. |
+| 17 | Dental | Grand Street Dental | https://www.krishaweb.com/blog/best-dental-website-designs.md | Colourful yet minimal; breaks the sterile-blue dental default. |
+| 18 | Dental | Zen Dental Studio | https://thomasdigital.com/industry/best-dental-website-designs | Thoughtful branding plus minimalism builds calm trust. |
+| 19 | Real estate | Rouse + Co (Hudson Valley) | https://www.zarla.com/inspiration/real-estate-agent | A repeated italic-serif element works as brand voice. |
+| 20 | Photographer | Hilario Photography | https://www.hostinger.com/uk/tutorials/portfolio-website-examples/ | Clean, elegant frame; the images are the design. |
+| 21 | Interior designer | Cathie Hong Interiors | https://blog.hubspot.com/website/20-of-the-best-interior-design-websites-to-inspire-yours | Minimal layout, big project photography, clear path to portfolio. |
+| 22 | Hotel/shortlet | Stelor guest house (Sweden) | https://htmlburger.com/blog/best-hotel-website-design/ | Small properties win by showing character larger brands cannot. |
+| 23 | Hotel | Ace Hotel | https://wix.com/blog/best-hotel-website-design | Sticky booking bar on accommodation pages. |
+| 24 | Fashion boutique | Hors-D'oeuvre | https://www.wix.com/explore/websites/site/hors-d'oeuvre | Open with the season's lookbook so aesthetic is set before product grid. |
+| 25 | Fashion/Agriculture | Zelie for She; Floret Flowers | https://www.zarla.com/guides/boutique-website-examples ; https://www.localline.co/blog/farm-website-design | A Story page builds trust before checkout; farm brands sell through narrative plus shop. |
+
+Not covered with a named example (roundups only, no specific small site surfaced): gym (roundups: https://www.zarla.com/inspiration/gym, https://glossgenius.com/blog/best-gym-websites), school (https://www.schooljotter.com/4-best-independent-school-websites-2025; named: St George's Preparatory), logistics (https://www.blendb2b.com/blog/best-logistics-and-transportation-website-examples; named: Vitesse Transport). All SEARCH_ONLY.
+
+Galleries: the search for awwwards / cssdesignawards / siteinspire "small business" returned no useful collection pages (SEARCH_ONLY, nothing reliable). siteInspire reportedly has "Small Business" and "Services Page" filters (second-hand via a DesignRush page, unverified). Recommended manual follow-up: browse siteinspire.com category filters directly.
+
+Cross-industry patterns repeated in the roundups (vendor-written, so low-confidence): lead with real work imagery, one primary action (book, call, order), trust signals above the fold for trades and health, click-to-call and service-area clarity for plumbers/electricians, and brand consistency from palette to photography. Claims such as "calls convert 10-12x better than forms" are unsourced.
+
+## Section C: Competitor matrix
+
+Evidence: homepage headline/tokens from Section A where fetched; otherwise UNVERIFIED general knowledge (current late-2026 feature sets not confirmed live). Canva, GoDaddy Airo: fetch FAILED (403). Webflow, 10Web, Adobe Express, VistaCreate: not fetched or searched (UNVERIFIED).
+
+| Competitor | Evidence | What it automates | Where output feels templated/samey | What Kora can uniquely do |
+|---|---|---|---|---|
+| Wix | FETCHED (tokens); features UNVERIFIED | AI site generation from prompts, templates, bookings/stores; headline "Create your future on the leading website builder" | Template gallery lineage; block layouts converge on hero + 3 cards + CTA | Derive structure from the business (services, area, booking model) rather than a template; keep copy, palette, and imagery from one brand model |
+| Squarespace | FETCHED (tokens); features UNVERIFIED | Template + AI-assisted design, strong typography defaults ("A website makes it real") | Few, tightly styled template families; many small business sites look alike | Brand coherence beyond the website: same system drives flyers and social; per-sector grammar (trade vs boutique) |
+| Webflow | UNVERIFIED | Visual dev platform, some AI assist | Output depends on designer; no business understanding | Zero-designer path with sector-aware layout rules |
+| Framer | FETCHED (tokens); features UNVERIFIED | Website builder with "design agent" (own headline) | Near-black SaaS aesthetic and Inter dominate community templates | Non-SaaS grammars (warm trades, editorial retail) and local-business content models |
+| Canva | FAILED (403); features UNVERIFIED | Social creatives, flyers, docs, brand kit | Template-driven social look; brand kits are manual | Generate creatives from a live brand and business state, not a template picked by the user |
+| Durable | FETCHED (tokens); features UNVERIFIED | One-prompt AI business builder ("The complete AI business builder") | Rapid generation tends to produce generic section order and stock-feel imagery (assessment, UNVERIFIED) | Deeper business model (hours, services, offers) feeding every asset; ongoing monitoring |
+| 10Web | UNVERIFIED | AI WordPress site builder/hosting | WordPress-theme feel (assessment only) | Same as above; plus coherence across non-web assets |
+| Hostinger AI builder | FETCHED (tokens); features UNVERIFIED | AI website builder tied to hosting (headline "AI website builder") | Purple/pill-heavy platform styling; broad template output | Brand-specific radius/type/colour logic, not platform styling |
+| Shopify | FETCHED (tokens); features UNVERIFIED | Commerce stack, themes, AI helpers | Theme-driven storefronts converge on same grid | Brand-system-first storefront presentation, plus off-store creatives |
+| GoDaddy Airo | FAILED (403); features UNVERIFIED | AI start-to-finish business presence | Unknown | Cannot assess; treat as bundled-suite competitor |
+| Adobe Express | UNVERIFIED | Templated design and social, Firefly generation | Template and generative look often converges | Business-aware brand coherence; no per-asset manual styling |
+| VistaCreate | UNVERIFIED | Template-based graphics and social posts | Template-driven | Same as Canva |
+
+Kora differentiators (across rows): (1) business understanding as the source of structure and copy, not a prompt-to-template mapping; (2) one brand model driving website, flyer, social with enforced coherence; (3) monitoring/drift detection after launch (stale hours, off-brand edits, broken pages) that generators do not perform. Competitor claims about lacking these are my assessment; verify before external use.
+
+## Cross-cutting principles (supported by A/B)
+1. Choose one saturated accent and 1 to 2 supports; everything else is neutral (A: Apple, Spotify, Airbnb, Wise, Monzo, Mailchimp, Shopify).
+2. Tint neutrals toward the brand (warm charcoal, blush, mint, navy, teal-black) rather than pure grey (A: Headspace, Mailchimp, Monzo, Wise, Shopify, Stripe).
+3. Pair a dark ink with its tint partner per hue to build a tonal system (A: Spotify tint pairs).
+4. Radius is a personality dial: pill/soft for friendly services (Headspace 2rem, Wix 50px), square for editorial/luxury (Glossier, Kinfolk, Sonos). Pick one per brand and apply everywhere.
+5. Use a distinctive display face plus a plain text face; custom type signals identity, Inter-class fonts signal "tool" (A).
+6. Sparse can be strong: Oatly and Durable use few links/images and let type and colour carry (A).
+7. Product/work imagery carries the colour when the UI is greyscale (Sonos, Framer, Apple) (A).
+8. Dark-first with tiny neon accents is the current software-builder look; avoid it for local trades and boutiques where it reads as SaaS (A: Linear, Framer, Shopify).
+9. Lead with the founder/origin story or real work for small food and craft brands (B: Wild Goose, Fabrique, Flour).
+10. One primary action per page, visible at top: book, call, order, view menu (B: barbershop, plumber, restaurant roundups, low-confidence vendor claims).
+11. Trades need trust and speed signals (licence, reviews, click-to-call, service area), not decoration (B: plumber/electrician roundups).
+12. Real photos of people and premises beat stock, especially for trades, dental, hotels (B: Cornerstone, Stelor, dental roundups).
+13. Match the page's shape to the product when it is cheap to do (B: Pizzeria Vetri brick-oven frames).
+14. Consistency of palette and photography across pages is the most repeated praise for small sites (B: Flour, Mister Sparky, Benjamin Franklin Plumbing).
+15. Sector conventions are worth breaking selectively: colourful dental, retro-plus-modern barber (B: Grand Street Dental, Jack the Clipper), but only with a coherent brand model behind it.
+
+Caveats: static-HTML extraction cannot confirm layout, spacing, or motion; sites returning 403 (Aesop, COS, Lego, Canva, GoDaddy) and Muji/Duolingo need a rendered scrape once Firecrawl credits reset (~20:30 UTC today) to complete Section A.

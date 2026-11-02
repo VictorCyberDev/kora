@@ -1,0 +1,564 @@
+/**
+ * Vertical Intelligence 2.0. Strategic knowledge about how a kind of business is found, trusted and chosen.
+ * It is NOT a template: it feeds the strategy, page architecture, copy and grammar choice, and never outputs a layout.
+ * Adding a vertical is one entry; the clusters below supply defaults so an entry only states what is specific.
+ */
+export const INTENTS = [
+  "call",
+  "whatsapp",
+  "book",
+  "reserve",
+  "visit",
+  "order",
+  "quote",
+  "inspect",
+  "buy",
+  "view-work",
+  "trust",
+  "compare",
+  "enquire",
+  "register",
+  "donate",
+  "subscribe",
+  "learn",
+] as const;
+export type Intent = (typeof INTENTS)[number];
+
+export const PAGE_KINDS = [
+  "home",
+  "menu",
+  "services",
+  "work",
+  "gallery",
+  "booking",
+  "visit",
+  "orders",
+  "about",
+  "approach",
+  "contact",
+  "products",
+  "properties",
+  "stay",
+  "programmes",
+  "faq",
+] as const;
+export type PageKind = (typeof PAGE_KINDS)[number];
+
+export const CLUSTERS = [
+  "food",
+  "beauty",
+  "trades",
+  "professional",
+  "health",
+  "creative",
+  "hospitality",
+  "retail",
+  "education",
+  "civic",
+  "tech",
+  "agri",
+  "mobility",
+] as const;
+export type Cluster = (typeof CLUSTERS)[number];
+
+export type Density = "airy" | "balanced" | "compact" | "dense";
+
+export interface VerticalIntel {
+  id: string;
+  label: string;
+  cluster: Cluster;
+  /** Regex source matched (case-insensitive) against name + description + industry. */
+  match: string;
+  customer: string;
+  jobToBeDone: string;
+  primaryIntent: Intent;
+  secondaryIntent: Intent;
+  trustBarrier: string;
+  usefulContent: string[];
+  pages: PageKind[];
+  singlePageSuffices: boolean;
+  proof: string[];
+  imagery: string[];
+  mobilePriorities: Intent[];
+  contactMethod: "whatsapp" | "phone" | "form" | "visit" | "booking";
+  localSearch: string[];
+  density: Density;
+  voiceRange: string[];
+  pitfalls: string[];
+  compliance: string[];
+  artifactTypes: string[];
+  campaignUseCases: string[];
+  antiTraits: string[];
+  /** What the owner's list of offerings is called in that trade's own words. */
+  offerHeading: string;
+  offerNoun: string;
+  /** Verbs/nouns used to read the owner's description ("we bake", "we repair"). */
+  verbs: string[];
+  /** Ranked grammar ids (see grammars.ts) that suit this kind of business. */
+  grammars: string[];
+  /** True when real photography is the main trust signal. */
+  photoTrust: boolean;
+  /** Bundled-photo recipe id from the media catalogue, when one exists. */
+  catalogRecipe?: string;
+}
+
+type Defaults = Omit<
+  VerticalIntel,
+  "id" | "label" | "match" | "cluster" | "grammars" | "antiTraits"
+>;
+const D: Record<Cluster, Defaults> = {
+  food: {
+    customer: "Hungry locals deciding where or what to order today",
+    jobToBeDone: "Find something good to eat and get it with no friction",
+    primaryIntent: "order",
+    secondaryIntent: "visit",
+    trustBarrier: "Will it taste as good as it looks, and is it open now?",
+    usefulContent: ["menu", "how to order", "hours", "location", "photos"],
+    pages: ["home", "menu", "gallery", "about", "contact"],
+    singlePageSuffices: false,
+    proof: ["real food photography", "supplied reviews"],
+    imagery: ["food close-up", "table setting", "hands at work"],
+    mobilePriorities: ["order", "whatsapp", "call", "visit"],
+    contactMethod: "whatsapp",
+    localSearch: ["business name", "dish + area", "hours", "address"],
+    density: "balanced",
+    voiceRange: ["warm", "sensory", "plain"],
+    pitfalls: ["menu hidden behind a PDF", "stock food that is not theirs"],
+    compliance: ["allergen statements only if supplied", "no hygiene ratings"],
+    artifactTypes: ["menu-spotlight", "offer", "story", "whatsapp-status"],
+    campaignUseCases: ["new item", "weekend offer", "order reminder", "event catering"],
+    offerHeading: "On the menu",
+    offerNoun: "dish",
+    verbs: ["bake", "cook", "serve", "grill", "prepare", "make", "cater"],
+    photoTrust: true,
+  },
+  beauty: {
+    customer: "Someone who wants to look and feel good and needs a slot",
+    jobToBeDone: "Trust the result enough to book",
+    primaryIntent: "book",
+    secondaryIntent: "whatsapp",
+    trustBarrier: "Will they get my look right, is the space clean and welcoming?",
+    usefulContent: ["services", "how to book", "work examples", "location", "hours"],
+    pages: ["home", "services", "work", "booking", "visit"],
+    singlePageSuffices: false,
+    proof: ["real before/after work", "supplied reviews"],
+    imagery: ["finished work", "detail close-up", "the space"],
+    mobilePriorities: ["book", "whatsapp", "visit", "call"],
+    contactMethod: "booking",
+    localSearch: ["service + area", "business name", "hours", "address"],
+    density: "balanced",
+    voiceRange: ["confident", "warm", "precise"],
+    pitfalls: ["generic salon stock", "price list buried"],
+    compliance: ["no results guarantees"],
+    artifactTypes: ["service-spotlight", "booking", "story", "carousel"],
+    campaignUseCases: ["open slots", "new service", "seasonal look", "referral"],
+    offerHeading: "Services",
+    offerNoun: "service",
+    verbs: ["cut", "style", "braid", "do", "offer", "specialise"],
+    photoTrust: true,
+  },
+  trades: {
+    customer: "A person with a problem right now who needs it fixed by someone reliable",
+    jobToBeDone: "Reach a trustworthy tradesperson fast and get a quote",
+    primaryIntent: "call",
+    secondaryIntent: "quote",
+    trustBarrier: "Will they turn up, do it properly and charge fairly?",
+    usefulContent: ["services", "areas covered", "how it works", "contact", "response promise only if supplied"],
+    pages: ["home", "services", "work", "contact"],
+    singlePageSuffices: true,
+    proof: ["real completed jobs", "supplied licences", "supplied reviews"],
+    imagery: ["tools", "work in progress", "finished job"],
+    mobilePriorities: ["call", "whatsapp", "quote", "visit"],
+    contactMethod: "phone",
+    localSearch: ["trade + area", "emergency", "phone", "service area"],
+    density: "compact",
+    voiceRange: ["direct", "reassuring", "plain"],
+    pitfalls: ["art-gallery hero hiding the phone number", "invented response times"],
+    compliance: ["licences only if supplied", "no guarantees unless supplied"],
+    artifactTypes: ["service-spotlight", "offer", "whatsapp-status", "flyer"],
+    campaignUseCases: ["seasonal servicing", "emergency cover", "quote request"],
+    offerHeading: "What we handle",
+    offerNoun: "job",
+    verbs: ["fix", "repair", "install", "service", "build", "maintain", "wire"],
+    photoTrust: true,
+  },
+  professional: {
+    customer: "A person or company with a serious matter who needs to trust competence first",
+    jobToBeDone: "Judge credibility quickly and start a conversation",
+    primaryIntent: "enquire",
+    secondaryIntent: "call",
+    trustBarrier: "Are they genuinely competent, and will they treat my matter seriously?",
+    usefulContent: ["practice areas", "approach", "who you are", "how to start", "contact"],
+    pages: ["home", "services", "approach", "about", "contact"],
+    singlePageSuffices: false,
+    proof: ["supplied credentials", "supplied matters or clients with consent"],
+    imagery: ["quiet interiors", "documents and detail", "typography"],
+    mobilePriorities: ["call", "enquire", "whatsapp", "visit"],
+    contactMethod: "form",
+    localSearch: ["practice + city", "firm name", "address"],
+    density: "balanced",
+    voiceRange: ["measured", "precise", "plain"],
+    pitfalls: ["cartoons", "unsubstantiated authority claims", "stock handshakes"],
+    compliance: ["credentials only if supplied", "no outcome promises", "advertising rules vary by jurisdiction"],
+    artifactTypes: ["insight", "announcement", "carousel", "linkedin"],
+    campaignUseCases: ["practice announcement", "explainer", "event"],
+    offerHeading: "Areas of practice",
+    offerNoun: "matter",
+    verbs: ["advise", "represent", "handle", "audit", "consult", "file"],
+    photoTrust: false,
+  },
+  health: {
+    customer: "A patient or parent who is anxious and wants clarity and reassurance",
+    jobToBeDone: "Confirm they treat my issue and book without friction",
+    primaryIntent: "book",
+    secondaryIntent: "call",
+    trustBarrier: "Are they qualified, is it clean and safe, can I get seen soon?",
+    usefulContent: ["services", "how to book", "hours", "location", "who treats you"],
+    pages: ["home", "services", "booking", "about", "visit"],
+    singlePageSuffices: false,
+    proof: ["supplied registration/credentials only"],
+    imagery: ["calm interiors", "equipment detail", "friendly simple graphics"],
+    mobilePriorities: ["call", "book", "visit", "whatsapp"],
+    contactMethod: "booking",
+    localSearch: ["service + area", "clinic name", "hours", "address"],
+    density: "balanced",
+    voiceRange: ["calm", "clear", "caring"],
+    pitfalls: ["clinical coldness", "medical claims", "fake doctors"],
+    compliance: ["no cures or outcome claims", "credentials only if supplied", "no patient images"],
+    artifactTypes: ["service-spotlight", "education", "announcement", "story"],
+    campaignUseCases: ["health awareness day", "new service", "open hours change"],
+    offerHeading: "Care we provide",
+    offerNoun: "treatment",
+    verbs: ["treat", "diagnose", "care", "examine", "test", "screen"],
+    photoTrust: false,
+  },
+  creative: {
+    customer: "Someone choosing a creative partner by the quality of their work",
+    jobToBeDone: "See the work, feel the taste, then get in touch",
+    primaryIntent: "view-work",
+    secondaryIntent: "enquire",
+    trustBarrier: "Is their taste and quality right for my occasion or brand?",
+    usefulContent: ["work", "services", "process", "about", "how to book"],
+    pages: ["home", "work", "services", "about", "booking"],
+    singlePageSuffices: false,
+    proof: ["the portfolio itself", "supplied clients with consent"],
+    imagery: ["the work", "process", "details"],
+    mobilePriorities: ["view-work", "whatsapp", "book", "call"],
+    contactMethod: "whatsapp",
+    localSearch: ["service + city", "name", "portfolio"],
+    density: "airy",
+    voiceRange: ["confident", "understated", "personal"],
+    pitfalls: ["template portfolio grids", "tiny images", "no way to enquire"],
+    compliance: ["image rights belong to owner"],
+    artifactTypes: ["portfolio-piece", "carousel", "story", "announcement"],
+    campaignUseCases: ["new work", "booking season", "event coverage"],
+    offerHeading: "What I make",
+    offerNoun: "service",
+    verbs: ["shoot", "design", "create", "produce", "style", "compose"],
+    photoTrust: true,
+  },
+  hospitality: {
+    customer: "A traveller or host comparing places by feel, location and trust",
+    jobToBeDone: "Be confident enough in the place to reserve",
+    primaryIntent: "reserve",
+    secondaryIntent: "whatsapp",
+    trustBarrier: "Is it as good, clean and safe as the photos suggest?",
+    usefulContent: ["rooms or spaces", "location", "amenities", "how to reserve", "photos"],
+    pages: ["home", "stay", "gallery", "visit", "contact"],
+    singlePageSuffices: false,
+    proof: ["real photography", "supplied reviews"],
+    imagery: ["rooms", "entrance", "surroundings"],
+    mobilePriorities: ["reserve", "whatsapp", "visit", "call"],
+    contactMethod: "whatsapp",
+    localSearch: ["stay + area", "name", "address"],
+    density: "airy",
+    voiceRange: ["warm", "welcoming", "calm"],
+    pitfalls: ["stock rooms that are not theirs", "invented amenities", "invented ratings"],
+    compliance: ["amenities and prices only if supplied", "no star ratings unless supplied"],
+    artifactTypes: ["offer", "story", "announcement", "whatsapp-status"],
+    campaignUseCases: ["seasonal stay", "weekend offer", "event hosting"],
+    offerHeading: "Stay with us",
+    offerNoun: "room",
+    verbs: ["host", "welcome", "accommodate", "rent", "book"],
+    photoTrust: true,
+  },
+  retail: {
+    customer: "A shopper who wants to see the product and ask or buy quickly",
+    jobToBeDone: "Find the right item and know how to get it",
+    primaryIntent: "buy",
+    secondaryIntent: "whatsapp",
+    trustBarrier: "Is it real, in stock and will it reach me?",
+    usefulContent: ["products", "how to order", "delivery info if supplied", "location"],
+    pages: ["home", "products", "about", "contact"],
+    singlePageSuffices: false,
+    proof: ["real product photography", "supplied reviews"],
+    imagery: ["product on neutral ground", "in use", "detail"],
+    mobilePriorities: ["buy", "whatsapp", "call", "visit"],
+    contactMethod: "whatsapp",
+    localSearch: ["product + area", "shop name", "address"],
+    density: "balanced",
+    voiceRange: ["friendly", "plain", "confident"],
+    pitfalls: ["invented stock levels", "invented prices", "coupon-shop clutter"],
+    compliance: ["prices and availability only if supplied", "no fake discounts"],
+    artifactTypes: ["product-spotlight", "offer", "carousel", "story"],
+    campaignUseCases: ["new arrival", "sale (real prices only)", "restock"],
+    offerHeading: "What we sell",
+    offerNoun: "product",
+    verbs: ["sell", "stock", "supply", "import", "make", "retail"],
+    photoTrust: true,
+  },
+  education: {
+    customer: "A parent or learner choosing a place to trust with development",
+    jobToBeDone: "See the environment and approach, then register or visit",
+    primaryIntent: "register",
+    secondaryIntent: "visit",
+    trustBarrier: "Is it safe, is it good, will my child thrive here?",
+    usefulContent: ["programmes", "approach", "how to register", "visit", "contact"],
+    pages: ["home", "programmes", "approach", "visit", "contact"],
+    singlePageSuffices: false,
+    proof: ["supplied accreditation", "supplied results with consent"],
+    imagery: ["friendly illustration", "learning moments with consent", "spaces"],
+    mobilePriorities: ["register", "call", "whatsapp", "visit"],
+    contactMethod: "form",
+    localSearch: ["school type + area", "name", "address"],
+    density: "balanced",
+    voiceRange: ["warm", "clear", "encouraging"],
+    pitfalls: ["cold luxury", "tiny type", "dark intimidating surfaces", "child photos without consent"],
+    compliance: ["accreditation only if supplied", "no results claims unless supplied"],
+    artifactTypes: ["announcement", "event", "education", "flyer"],
+    campaignUseCases: ["admission season", "open day", "term start"],
+    offerHeading: "Programmes",
+    offerNoun: "programme",
+    verbs: ["teach", "tutor", "coach", "train", "educate", "run"],
+    photoTrust: false,
+  },
+  civic: {
+    customer: "A person looking for belonging, help or a cause to support",
+    jobToBeDone: "Feel the community is real and know how to join or give",
+    primaryIntent: "visit",
+    secondaryIntent: "donate",
+    trustBarrier: "Is this genuine and what actually happens here?",
+    usefulContent: ["when and where", "what we do", "how to join or give", "contact"],
+    pages: ["home", "programmes", "about", "visit", "contact"],
+    singlePageSuffices: false,
+    proof: ["supplied activities", "supplied reports with consent"],
+    imagery: ["community moments with consent", "place", "typography"],
+    mobilePriorities: ["visit", "donate", "whatsapp", "call"],
+    contactMethod: "whatsapp",
+    localSearch: ["name + area", "service times", "address"],
+    density: "balanced",
+    voiceRange: ["warm", "sincere", "plain"],
+    pitfalls: ["corporate tone", "invented impact numbers"],
+    compliance: ["impact figures only if supplied", "donation details only if supplied"],
+    artifactTypes: ["event", "announcement", "story", "flyer"],
+    campaignUseCases: ["event", "appeal", "weekly reminder"],
+    offerHeading: "What we do",
+    offerNoun: "activity",
+    verbs: ["gather", "serve", "support", "teach", "meet", "help"],
+    photoTrust: false,
+  },
+  tech: {
+    customer: "A buyer comparing tools and teams on clarity and credibility",
+    jobToBeDone: "Understand what it does and whether it fits",
+    primaryIntent: "enquire",
+    secondaryIntent: "learn",
+    trustBarrier: "Does it really work, and who is behind it?",
+    usefulContent: ["what it does", "how it works", "who it is for", "contact or sign-up"],
+    pages: ["home", "services", "approach", "contact"],
+    singlePageSuffices: true,
+    proof: ["supplied customers with consent", "supplied certifications"],
+    imagery: ["interface-free abstract systems", "typography", "diagrams"],
+    mobilePriorities: ["enquire", "learn", "call", "whatsapp"],
+    contactMethod: "form",
+    localSearch: ["product category", "name"],
+    density: "balanced",
+    voiceRange: ["clear", "precise", "confident"],
+    pitfalls: ["fake dashboards", "invented user counts", "purple-gradient sameness"],
+    compliance: ["no invented metrics, customers or certifications"],
+    artifactTypes: ["announcement", "explainer", "carousel", "linkedin"],
+    campaignUseCases: ["launch", "feature explainer", "demo invitation"],
+    offerHeading: "What it does",
+    offerNoun: "capability",
+    verbs: ["build", "automate", "secure", "run", "ship", "monitor"],
+    photoTrust: false,
+  },
+  agri: {
+    customer: "A buyer or household who wants fresh, reliable supply",
+    jobToBeDone: "Know what is available and how to order in quantity",
+    primaryIntent: "order",
+    secondaryIntent: "whatsapp",
+    trustBarrier: "Is it fresh, consistent and will it arrive on time?",
+    usefulContent: ["products", "how to order", "area served", "contact"],
+    pages: ["home", "products", "about", "contact"],
+    singlePageSuffices: false,
+    proof: ["real farm or product photography", "supplied standards"],
+    imagery: ["produce", "farm environment", "packaging"],
+    mobilePriorities: ["order", "whatsapp", "call", "visit"],
+    contactMethod: "whatsapp",
+    localSearch: ["product + area", "farm name", "phone"],
+    density: "balanced",
+    voiceRange: ["honest", "plain", "grounded"],
+    pitfalls: ["invented volumes or certifications", "stock farms that are not theirs"],
+    compliance: ["certifications and quantities only if supplied"],
+    artifactTypes: ["product-spotlight", "offer", "whatsapp-status", "flyer"],
+    campaignUseCases: ["harvest availability", "bulk orders", "seasonal produce"],
+    offerHeading: "What we supply",
+    offerNoun: "product",
+    verbs: ["grow", "raise", "process", "supply", "harvest", "package"],
+    photoTrust: true,
+  },
+  mobility: {
+    customer: "A person or business who needs goods or vehicles moved or kept moving",
+    jobToBeDone: "Get a dependable quote and trust the handover",
+    primaryIntent: "quote",
+    secondaryIntent: "call",
+    trustBarrier: "Will it arrive intact and on time, and who is accountable?",
+    usefulContent: ["services", "areas", "how it works", "contact"],
+    pages: ["home", "services", "approach", "contact"],
+    singlePageSuffices: true,
+    proof: ["supplied fleet or licences only", "supplied reviews"],
+    imagery: ["vehicles", "loading detail", "routes as graphics"],
+    mobilePriorities: ["quote", "call", "whatsapp", "visit"],
+    contactMethod: "phone",
+    localSearch: ["service + area", "name", "phone"],
+    density: "compact",
+    voiceRange: ["direct", "plain", "dependable"],
+    pitfalls: ["invented fleet sizes", "invented delivery times"],
+    compliance: ["delivery times and insurance only if supplied"],
+    artifactTypes: ["service-spotlight", "offer", "whatsapp-status", "flyer"],
+    campaignUseCases: ["route announcement", "seasonal capacity", "quote request"],
+    offerHeading: "What we move",
+    offerNoun: "service",
+    verbs: ["move", "deliver", "haul", "ship", "drive", "dispatch"],
+    photoTrust: true,
+  },
+};
+
+const v = (
+  id: string,
+  label: string,
+  cluster: Cluster,
+  match: string,
+  grammars: string[],
+  antiTraits: string[],
+  over: Partial<Defaults> & { catalogRecipe?: string } = {},
+): VerticalIntel => ({
+  ...D[cluster],
+  ...over,
+  id,
+  label,
+  cluster,
+  match,
+  grammars,
+  antiTraits,
+});
+
+export const VERTICALS: readonly VerticalIntel[] = [
+  // ---- beauty & personal care
+  v("barber", "Barbershop", "beauty", "barber|fade|beard|haircut|grooming|clipper", ["neighbourhood-energy", "after-dark", "trade-solid"], ["generic corporate", "overly delicate", "stock-office photography"], { offerHeading: "Cuts & grooming", offerNoun: "cut", verbs: ["cut", "fade", "shape", "groom", "trim"], catalogRecipe: "barber", density: "compact", campaignUseCases: ["open slots", "new style", "student discount (real terms only)", "walk-in hours"] }),
+  v("salon", "Hair salon", "beauty", "salon|hair ?dresser|hairstyl|braid|weave|wig|lash|stylist", ["lush-retreat", "handmade-modern", "after-dark"], ["cheap", "coupon-shop", "harsh"], { offerHeading: "Treatments", offerNoun: "treatment" }),
+  v("nails", "Nail studio", "beauty", "nail|manicure|pedicure|gel polish", ["handmade-modern", "lush-retreat", "fashion-edit"], ["clinical", "dull", "crowded"], { offerHeading: "Nail services", offerNoun: "set" }),
+  v("makeup", "Makeup artist", "beauty", "make ?up|mua|bridal glam|beauty artist", ["fashion-edit", "lush-retreat", "gallery-monograph"], ["cheap", "generic pink", "busy"], { offerHeading: "Makeup services", offerNoun: "look", primaryIntent: "whatsapp", secondaryIntent: "book" }),
+  v("spa", "Spa & wellness", "beauty", "spa|massage|wellness|facial|sauna|aromatherapy", ["lush-retreat", "grand-stay", "gallery-monograph"], ["clinical", "loud", "discount-driven"], { offerHeading: "Treatments", density: "airy" }),
+  v("gym", "Gym & fitness", "health", "gym|fitness|personal train|crossfit|workout|yoga|pilates|boxing", ["neighbourhood-energy", "trade-solid", "after-dark"], ["delicate", "clinical", "stock-model sameness"], { primaryIntent: "register", secondaryIntent: "visit", offerHeading: "Classes & training", offerNoun: "class", verbs: ["train", "coach", "lift", "run"], density: "compact" }),
+  // ---- food
+  v("bakery", "Bakery & cakes", "food", "bak(e|ery)|cake|pastr|cupcake|bread|confection|dessert|donut|doughnut", ["sunday-table", "handmade-modern", "fresh-market"], ["cheap", "cartoonish", "generic pink bakery", "corporate"], { offerHeading: "What we bake", offerNoun: "bake", catalogRecipe: "bakery", pages: ["home", "menu", "orders", "gallery", "about"], campaignUseCases: ["birthday cake orders", "festive orders", "new flavour", "weekend bake"] }),
+  v("restaurant", "Restaurant", "food", "restaurant|dining|eatery|grill house|kitchen|cuisine|bistro|chop", ["sunday-table", "after-dark", "grand-stay"], ["fast-food clutter", "generic stock food", "corporate"], { primaryIntent: "reserve", secondaryIntent: "order", pages: ["home", "menu", "visit", "gallery", "about"], catalogRecipe: "restaurant", contactMethod: "booking" }),
+  v("bukka", "Local food spot / bukka", "food", "bukka|mama put|buka|local food|amala|jollof|suya|canteen|food joint|swallow", ["neighbourhood-energy", "sunday-table", "fresh-market"], ["fine-dining pretension", "tiny type", "stock-western food"], { offerHeading: "Today's food", offerNoun: "plate", density: "compact", catalogRecipe: "bukka" }),
+  v("cafe", "Café", "food", "caf[eé]|coffee|espresso|brunch|tea house|roaster", ["sunday-table", "gallery-monograph", "handmade-modern"], ["cold", "corporate", "generic latte art"], { offerHeading: "Coffee & food", catalogRecipe: "cafe-bakery" }),
+  v("catering", "Catering", "food", "cater|event food|party food|buffet|small chops|banquet", ["sunday-table", "handmade-modern", "grand-stay"], ["fast-food", "cluttered buffets", "cold corporate"], { primaryIntent: "quote", secondaryIntent: "whatsapp", pages: ["home", "menu", "gallery", "orders", "about"], offerHeading: "What we cater", offerNoun: "package" }),
+  v("grocery", "Grocery & supermarket", "retail", "grocery|supermarket|provisions|mart\\b|minimart|fresh produce store", ["fresh-market", "neighbourhood-energy", "trade-solid"], ["luxury", "coupon clutter with invented prices"], { primaryIntent: "visit", secondaryIntent: "whatsapp", offerHeading: "Aisles & essentials", offerNoun: "item", density: "dense" }),
+  // ---- retail & fashion
+  v("fashion", "Fashion boutique", "retail", "fashion|boutique|clothing|apparel|dress|ready.?to.?wear|thrift|menswear|womenswear|streetwear", ["fashion-edit", "gallery-monograph", "handmade-modern"], ["crowded service cards", "coupon-shop", "template ecommerce"], { offerHeading: "The collection", offerNoun: "piece", density: "airy" }),
+  v("tailor", "Tailor & bespoke", "retail", "tailor|bespoke|seamstress|aso ?ebi|sewing|alteration|couture", ["fashion-edit", "handmade-modern", "quiet-authority"], ["mass-market", "cheap", "generic"], { primaryIntent: "whatsapp", secondaryIntent: "book", offerHeading: "What we make", offerNoun: "garment", catalogRecipe: "tailor" }),
+  v("crafts", "Crafts & handmade", "retail", "craft|handmade|artisan|pottery|woven|bead|leather goods|candle|soap maker", ["handmade-modern", "sunday-table", "gallery-monograph"], ["mass-produced", "cold", "corporate"], { offerHeading: "Made by hand", offerNoun: "piece" }),
+  v("florist", "Florist", "retail", "florist|flower|bouquet|floral|bloom", ["lush-retreat", "handmade-modern", "sunday-table"], ["plastic", "generic pink", "busy"], { primaryIntent: "order", offerHeading: "Arrangements", offerNoun: "bouquet", catalogRecipe: "florist" }),
+  v("furniture", "Furniture", "retail", "furniture|sofa|carpentry|woodwork|wardrobe|mattress|upholster", ["gallery-monograph", "handmade-modern", "trade-solid"], ["clutter", "cheap", "showroom-flyer"], { primaryIntent: "inspect", offerHeading: "Pieces", offerNoun: "piece", density: "airy" }),
+  v("decor", "Home décor", "retail", "d[eé]cor|home accessor|curtain|rug|lighting|homeware", ["gallery-monograph", "lush-retreat", "handmade-modern"], ["clutter", "cheap"], { offerHeading: "For your home", offerNoun: "piece" }),
+  v("gadgets", "Phones & gadgets", "retail", "phone|gadget|laptop|accessor(y|ies)|iphone|android|electronics store", ["signal-product", "neighbourhood-energy", "trade-solid"], ["fake discounts", "clutter"], { offerHeading: "What we stock", offerNoun: "device", primaryIntent: "whatsapp" }),
+  v("ecommerce", "Online store", "retail", "online store|e-?commerce|dropship|webshop|sell online|delivery nationwide", ["fresh-market", "signal-product", "handmade-modern"], ["generic marketplace", "fake urgency"], { primaryIntent: "buy", offerHeading: "Shop", offerNoun: "product" }),
+  v("printing", "Printing & signage", "retail", "print(ing)?\\b|signage|branding materials|banner print|screen print|embroider", ["trade-solid", "neighbourhood-energy", "signal-product"], ["generic agency", "pixelated samples"], { primaryIntent: "quote", offerHeading: "What we print", offerNoun: "job", contactMethod: "whatsapp" }),
+  // ---- hospitality & travel & events
+  v("hotel", "Hotel", "hospitality", "hotel|resort|guest ?house|lodge|inn\\b", ["grand-stay", "after-dark", "lush-retreat"], ["budget-portal", "stock lobby"], { offerHeading: "Rooms & suites", offerNoun: "room", catalogRecipe: "hospitality", pages: ["home", "stay", "gallery", "visit", "contact"] }),
+  v("shortlet", "Shortlet / apartments", "hospitality", "shortlet|short.?let|serviced apartment|airbnb|apartment rental", ["grand-stay", "gallery-monograph", "lush-retreat"], ["listing-portal clutter", "invented amenities"], { offerHeading: "The apartments", offerNoun: "apartment", catalogRecipe: "hospitality" }),
+  v("travel", "Travel & tours", "hospitality", "travel|tour|visa|flight|safari|excursion|holiday", ["grand-stay", "neighbourhood-energy", "gallery-monograph"], ["stock-globe clichés", "invented prices"], { primaryIntent: "enquire", offerHeading: "Trips we plan", offerNoun: "trip" }),
+  v("events", "Events & planning", "creative", "event plan|wedding|party plan|event decor|mc\\b|venue|rentals", ["handmade-modern", "grand-stay", "fashion-edit"], ["generic celebration stock", "cluttered"], { primaryIntent: "enquire", secondaryIntent: "whatsapp", offerHeading: "Events we run", offerNoun: "event", catalogRecipe: "events" }),
+  v("photographer", "Photographer", "creative", "photograph|photo studio|portrait|wedding photo|videograph|cinemat", ["gallery-monograph", "after-dark", "fashion-edit"], ["template portfolio", "watermark clutter", "tiny thumbnails"], { offerHeading: "What I shoot", offerNoun: "shoot", catalogRecipe: "photography", primaryIntent: "view-work", secondaryIntent: "book" }),
+  v("dj", "DJ & music", "creative", "dj\\b|music|band|sound system|producer|mc\\b|live band", ["after-dark", "neighbourhood-energy", "fashion-edit"], ["corporate", "clipart"], { primaryIntent: "book", offerHeading: "Sets & shows", offerNoun: "set" }),
+  v("creator", "Creator / personal brand", "creative", "creator|influencer|personal brand|coach and speaker|content creator|blogger", ["fashion-edit", "gallery-monograph", "handmade-modern"], ["corporate", "template link-in-bio"], { primaryIntent: "subscribe", secondaryIntent: "enquire", offerHeading: "Work with me", offerNoun: "offer" }),
+  v("agency", "Branding & design agency", "creative", "branding|design agency|graphic design|creative agency|brand studio|logo design", ["gallery-monograph", "fashion-edit", "signal-product"], ["template portfolio", "agency clichés"], { offerHeading: "What we do", offerNoun: "project", primaryIntent: "enquire" }),
+  v("interior", "Interior design", "creative", "interior|space plan|fit.?out|home styling|d[eé]corator", ["gallery-monograph", "lush-retreat", "quiet-authority"], ["showroom clutter", "stock sofa photos"], { offerHeading: "What we design", offerNoun: "space", catalogRecipe: "interior-design", density: "airy" }),
+  v("architecture", "Architecture", "professional", "architect|architecture|building design|urban planning|drafting", ["gallery-monograph", "quiet-authority", "signal-product"], ["stock cranes", "cartoon blueprints"], { primaryIntent: "view-work", secondaryIntent: "enquire", offerHeading: "What we design", offerNoun: "project", density: "airy" }),
+  // ---- professional
+  v("law", "Law firm", "professional", "law firm|lawyer|attorney|barrister|solicitor|legal|advocate|chambers|litigation|conveyanc", ["quiet-authority", "gallery-monograph", "after-dark"], ["playful", "cute", "excessive gradients", "cartoon illustrations", "unsubstantiated authority claims"], { catalogRecipe: "law" }),
+  v("accounting", "Accounting & tax", "professional", "account(ing|ant)|bookkeep|tax|audit|payroll|finance advisor", ["quiet-authority", "precision-practice", "civic-warmth"], ["flashy", "invented savings claims", "stock calculators"], { offerHeading: "How we help", offerNoun: "service" }),
+  v("consulting", "Consulting", "professional", "consult|advisory|strategy|management firm|coach", ["quiet-authority", "signal-product", "gallery-monograph"], ["buzzwords", "stock handshakes"], { offerHeading: "How we help", offerNoun: "engagement" }),
+  v("realestate", "Real estate", "professional", "real estate|estate agent|property|realtor|land sale|housing|rentals", ["grand-stay", "quiet-authority", "gallery-monograph"], ["invented listings", "stock mansions", "cluttered portals"], { primaryIntent: "enquire", secondaryIntent: "whatsapp", pages: ["home", "properties", "services", "about", "contact"], offerHeading: "How we help", offerNoun: "service" }),
+  v("security", "Security services", "professional", "security (guard|service|company)|guard|cctv|alarm|surveillance", ["trade-solid", "quiet-authority", "after-dark"], ["intimidation", "invented licences"], { primaryIntent: "quote", offerHeading: "Protection we provide", offerNoun: "service" }),
+  v("it", "IT services", "tech", "it (support|services)|managed services|network|helpdesk|computer repair|systems integrat", ["signal-product", "precision-practice", "trade-solid"], ["stock circuits", "fake dashboards"], { offerHeading: "What we handle", offerNoun: "service" }),
+  v("cyber", "Cybersecurity", "tech", "cyber|pentest|infosec|soc\\b|security audit|vulnerab", ["signal-product", "after-dark", "quiet-authority"], ["hooded-hacker clichés", "fear selling", "invented threat stats"], { offerHeading: "What we secure", offerNoun: "assessment" }),
+  v("saas", "SaaS / software", "tech", "saas|software|platform|app\\b|api\\b|dashboard tool|startup", ["signal-product", "precision-practice", "gallery-monograph"], ["purple-gradient SaaS", "fake dashboards", "invented user counts"], { primaryIntent: "subscribe", secondaryIntent: "enquire", offerHeading: "What it does" }),
+  // ---- health & education & civic
+  v("clinic", "Medical clinic", "health", "clinic|doctor|medical|hospital|physician|gp\\b|paediatric|maternity|physio", ["precision-practice", "civic-warmth", "lush-retreat"], ["cold clinical sterility", "fake doctors", "alarming imagery"], {}),
+  v("dental", "Dental practice", "health", "dent(al|ist)|orthodont|teeth|oral", ["precision-practice", "lush-retreat", "play-school"], ["scary instruments", "before/after claims"], { offerHeading: "Treatments" }),
+  v("pharmacy", "Pharmacy", "health", "pharmac|chemist|drug store|medicines", ["precision-practice", "fresh-market", "civic-warmth"], ["alarmist", "invented stock"], { primaryIntent: "visit", secondaryIntent: "call", offerHeading: "What we provide", pages: ["home", "services", "visit", "contact"] }),
+  v("diagnostics", "Diagnostics lab", "health", "diagnostic|laborator|lab test|radiolog|scan|imaging", ["precision-practice", "signal-product", "civic-warmth"], ["clinical coldness", "result guarantees"], { offerHeading: "Tests we run", offerNoun: "test" }),
+  v("school", "School", "education", "school|academy|college|nursery and primary|secondary school|montessori", ["play-school", "civic-warmth", "quiet-authority"], ["cold luxury", "tiny typography", "dark intimidating surfaces"], {}),
+  v("daycare", "Daycare / creche", "education", "daycare|day care|creche|crèche|preschool|childcare|kindergarten", ["play-school", "civic-warmth", "handmade-modern"], ["cold luxury", "tiny typography", "dark intimidating surfaces"], { offerHeading: "Our programmes", offerNoun: "programme" }),
+  v("tutoring", "Tutoring & lessons", "education", "tutor|lesson|exam prep|coaching class|waec|jamb|ielts|language class|coding class", ["play-school", "precision-practice", "civic-warmth"], ["dull", "guaranteed-results claims"], { primaryIntent: "register", offerHeading: "Lessons", offerNoun: "lesson" }),
+  v("church", "Church / faith community", "civic", "church|ministry|mosque|parish|chapel|fellowship|worship|synagogue|temple", ["civic-warmth", "quiet-authority", "grand-stay"], ["corporate", "stock praying hands", "invented attendance"], { offerHeading: "Gatherings", offerNoun: "service" }),
+  v("ngo", "NGO / non-profit", "civic", "ngo|non.?profit|foundation|charity|nonprofit|community initiative|relief", ["civic-warmth", "play-school", "gallery-monograph"], ["pity imagery", "invented impact numbers"], { primaryIntent: "donate", secondaryIntent: "learn", offerHeading: "Our work", offerNoun: "programme" }),
+  // ---- trades & mobility
+  v("construction", "Construction", "trades", "construction|builder|civil engineer|contractor|renovat|roofing|tiling|painting contractor", ["trade-solid", "quiet-authority", "gallery-monograph"], ["fake completed projects", "stock cranes only"], { offerHeading: "What we build", offerNoun: "project", primaryIntent: "quote" }),
+  v("electrical", "Electrician", "trades", "electric(ian|al)|wiring|inverter install|lighting install", ["trade-solid", "signal-product", "neighbourhood-energy"], ["artsy", "invented certifications"], { offerHeading: "Electrical work", offerNoun: "job" }),
+  v("plumbing", "Plumber", "trades", "plumb|drain|pipe|borehole|water heater|leak", ["trade-solid", "neighbourhood-energy", "precision-practice"], ["artsy", "invented response times"], { offerHeading: "Plumbing work", offerNoun: "job" }),
+  v("hvac", "AC & HVAC", "trades", "air.?condition|hvac|ac repair|repair\\w* (an? )?ac\\b|\\bac\\b.{0,12}(repair|install|service)|fridge|refrigerat|cooling", ["trade-solid", "signal-product", "precision-practice"], ["artsy", "invented warranties"], { offerHeading: "Cooling & air", offerNoun: "job" }),
+  v("solar", "Solar & generators", "trades", "solar|generator|inverter|power backup|renewable|battery", ["trade-solid", "signal-product", "fresh-market"], ["invented savings", "stock panels"], { primaryIntent: "quote", offerHeading: "Power solutions", offerNoun: "system" }),
+  v("mechanic", "Auto mechanic", "mobility", "mechanic|auto repair|garage|car repair|vulcaniz|tyre|panel beat|auto electric", ["trade-solid", "neighbourhood-energy", "after-dark"], ["luxury-showroom", "invented warranties"], { primaryIntent: "call", secondaryIntent: "whatsapp", offerHeading: "What we fix", offerNoun: "repair", catalogRecipe: "auto" }),
+  v("carwash", "Car wash & detailing", "mobility", "car wash|detailing|auto spa|valet|polish", ["neighbourhood-energy", "after-dark", "trade-solid"], ["generic soap bubbles"], { primaryIntent: "book", offerHeading: "Wash & detail", offerNoun: "package" }),
+  v("logistics", "Logistics & delivery", "mobility", "logistic|delivery|courier|freight|haulage|dispatch|moving company|shipping", ["trade-solid", "signal-product", "neighbourhood-energy"], ["stock globes", "invented delivery times"], {}),
+  v("cleaning", "Cleaning & laundry", "trades", "clean(ing|er)|laundry|dry clean|janitorial|fumigat|housekeeping", ["precision-practice", "fresh-market", "neighbourhood-energy"], ["generic sparkles", "invented guarantees"], { primaryIntent: "book", secondaryIntent: "whatsapp", offerHeading: "What we clean", offerNoun: "service" }),
+  v("electronics-repair", "Electronics repair", "trades", "electronics repair|phone repair|laptop repair|screen repair|tv repair|gadget repair", ["trade-solid", "signal-product", "neighbourhood-energy"], ["stock circuit boards", "invented turnaround"], { offerHeading: "What we repair", offerNoun: "repair", catalogRecipe: "repair" }),
+  v("pos-agent", "POS & agency banking", "trades", "pos agent|agency banking|cash withdraw|money transfer|bureau de change|fintech agent|bill payment", ["trade-solid", "neighbourhood-energy", "fresh-market"], ["invented licences", "invented limits"], { primaryIntent: "visit", secondaryIntent: "call", offerHeading: "Services", offerNoun: "service", singlePageSuffices: true }),
+  // ---- agri
+  v("poultry", "Poultry & farm produce", "agri", "poultry|egg|broiler|layer|livestock|fish farm|catfish|farm produce", ["fresh-market", "trade-solid", "civic-warmth"], ["invented volumes", "stock farms"], { offerHeading: "What we supply", offerNoun: "supply" }),
+  v("agriculture", "Agriculture", "agri", "agric|farm|crop|plantation|agro|cassava|cocoa|rice farm", ["fresh-market", "civic-warmth", "gallery-monograph"], ["invented certifications", "stock fields"], {}),
+  v("food-processing", "Food processing", "agri", "food processing|packaged food|spices|snack maker|palm oil|garri|flour mill|sauce maker|bottled", ["fresh-market", "handmade-modern", "neighbourhood-energy"], ["invented NAFDAC claims", "stock factory"], { offerHeading: "Our products", offerNoun: "product" }),
+];
+
+export const GENERAL_VERTICAL: VerticalIntel = v(
+  "general",
+  "Local business",
+  "professional",
+  "$^",
+  ["precision-practice", "civic-warmth", "gallery-monograph"],
+  ["generic startup", "invented claims"],
+  {
+    primaryIntent: "whatsapp",
+    secondaryIntent: "call",
+    pages: ["home", "services", "about", "contact"],
+    singlePageSuffices: true,
+    offerHeading: "What we do",
+    offerNoun: "service",
+    verbs: ["do", "offer", "provide", "make", "run"],
+  },
+);
+
+const compiled = VERTICALS.map((x) => ({ x, re: new RegExp(x.match, "i") }));
+
+/** Best vertical for free text, scoring specific matches over incidental ones. Never throws; falls back to "general". */
+export function resolveVertical(text: string): VerticalIntel {
+  const t = text.toLowerCase();
+  let best: { x: VerticalIntel; score: number } | undefined;
+  for (const { x, re } of compiled) {
+    const m = re.exec(t);
+    if (!m) continue;
+    // Earlier matches in the owner's own words and longer matches are stronger evidence.
+    const score = m[0].length * 2 + Math.max(0, 40 - m.index / 8);
+    if (!best || score > best.score) best = { x, score };
+  }
+  return best?.x ?? GENERAL_VERTICAL;
+}
+
+export const verticalById = (id: string): VerticalIntel =>
+  VERTICALS.find((x) => x.id === id) ?? GENERAL_VERTICAL;
