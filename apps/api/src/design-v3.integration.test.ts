@@ -258,28 +258,30 @@ d("Creative engine v3 through the real API", () => {
     ).toBeGreaterThanOrEqual(403);
   });
 
-  it("taste is not claimed from one choice", async () => {
+  it("taste is not claimed from one or two choices, only from three", async () => {
     const { o, site } = await newSite(v3, "v3-taste@example.com");
-    await v3.call("POST", `/api/sites/${site.id}/creative-feedback`, {
-      cookie: o.cookie,
-      body: { kind: "DIRECTION_CHOSEN", subject: "After Dark" },
-    });
-    let t = (
-      await v3.call("GET", `/api/sites/${site.id}/brand-os`, {
+    const choose = () =>
+      v3.call("POST", `/api/sites/${site.id}/creative-feedback`, {
         cookie: o.cookie,
-      })
-    ).json.data.taste;
-    expect(t.confident).toBe(false);
-    await v3.call("POST", `/api/sites/${site.id}/creative-feedback`, {
-      cookie: o.cookie,
-      body: { kind: "DIRECTION_CHOSEN", subject: "After Dark" },
-    });
-    t = (
-      await v3.call("GET", `/api/sites/${site.id}/brand-os`, {
+        body: { kind: "DIRECTION_CHOSEN", subject: "After Dark" },
+      });
+    const taste = async (): Promise<{
+      confident: boolean;
+      chosen: string[];
+    }> => {
+      const r = await v3.call("GET", `/api/sites/${site.id}/brand-os`, {
         cookie: o.cookie,
-      })
-    ).json.data.taste;
-    expect(t.chosen).toEqual(["After Dark"]);
+      });
+      return (
+        r.json as { data: { taste: { confident: boolean; chosen: string[] } } }
+      ).data.taste;
+    };
+    await choose();
+    expect((await taste()).confident).toBe(false);
+    await choose();
+    expect((await taste()).confident).toBe(false);
+    await choose();
+    expect((await taste()).chosen).toEqual(["After Dark"]);
   });
 
   it("upgrading an existing v2 site creates a NEW v3 draft, never touches the live version, and rollback still works", async () => {

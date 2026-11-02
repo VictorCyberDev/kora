@@ -107,10 +107,10 @@ export function learnedTaste(
   summary: Array<{ kind: string; subject: string; count: number }>,
 ) {
   const chosen = summary
-    .filter((s) => s.kind === "DIRECTION_CHOSEN" && s.count >= 2)
+    .filter((s) => s.kind === "DIRECTION_CHOSEN" && s.count >= 3)
     .map((s) => s.subject);
   const rejected = summary
-    .filter((s) => s.kind === "DIRECTION_REJECTED" && s.count >= 2)
+    .filter((s) => s.kind === "DIRECTION_REJECTED" && s.count >= 3)
     .map((s) => s.subject);
   return {
     chosen,
