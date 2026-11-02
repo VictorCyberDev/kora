@@ -260,9 +260,9 @@ function proof(s: Sec<"proof">, c: Ctx, tone: Tone): string {
 function visit(s: Sec<"visit">, c: Ctx, tone: Tone): string {
   mark(c, "visit.shared");
   const b = c.spec.business;
-  const maps = mapsLink(c.spec);
+  const maps = b.locationKind === "service-area" ? "" : mapsLink(c.spec);
   const dl = [
-    b.location ? `<div><dt>Find us</dt><dd>${esc(b.location)}${maps ? `<br><a class="btn alt" href="${esc(maps)}" rel="noopener">Get directions</a>` : ""}</dd></div>` : "",
+    b.location ? `<div><dt>${b.locationKind === "service-area" ? "Where we work" : "Find us"}</dt><dd>${esc(b.location)}${maps ? `<br><a class="btn alt" href="${esc(maps)}" rel="noopener">Get directions</a>` : ""}</dd></div>` : "",
     b.hours.length ? `<div><dt>Hours</dt><dd><ul>${b.hours.map((h) => `<li><span>${esc(h.days)}</span><b>${esc(h.hours)}</b></li>`).join("")}</ul></dd></div>` : "",
     b.phone || b.whatsapp ? `<div><dt>Reach us</dt><dd>${b.phone ? `<a href="${esc(telLink(c.spec))}">${esc(b.phone)}</a>` : ""}${b.phone && b.whatsapp ? " · " : ""}${b.whatsapp ? `<a href="${esc(waLink(c.spec))}">WhatsApp</a>` : ""}</dd></div>` : "",
   ].join("");

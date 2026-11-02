@@ -29,6 +29,14 @@ import { parseSiteSpecV3, type MediaV3, type SectionV3, type SiteSpecV3 } from "
 
 type Page = SiteSpecV3["pages"][number];
 
+/** Stock that would misrepresent the business is excluded even when the catalogue tags it for the trade. */
+const CATALOG_EXCLUDE: Record<string, RegExp> = {
+  bakery: /interior|dining|tables?\b|window|room|restaurant|cafe|café/i,
+  cafe: /portrait/i,
+};
+/** Sentences that talk about the owner's situation or wishes, not the business; never public copy. */
+const META = /\b(i|we)\s+(only\s+|just\s+)?(have|want|need|would like|am looking|are looking|hope)\b|\bmore\s+(bookings|customers|orders|sales|clients|leads)\b|\bmy\s+(photos?|logo|whatsapp|website)\b|\bphone photos?\b/i;
+const HOME_BASED = /\bfrom\s+(my\s+)?home\b|home.?based|online only|delivery only|mobile (service|barber|mechanic)|we come to you|house calls?/i;
 const CATALOG: Record<string, string> = {
   bakery: "cake-business",
   cafe: "cafe-bakery",
@@ -81,7 +89,8 @@ function mediaFor(vertical: VerticalIntel, mode: "light" | "dark", opts: PlanV3O
   if (owner.length) return owner;
   const recipe = CATALOG[vertical.id];
   if (!recipe) return [];
-  return catalogMediaSetFor(recipe, mode, 4).map((m) => ({
+  const ex = CATALOG_EXCLUDE[vertical.id];
+  return catalogMediaSetFor(recipe, mode, 8).filter((m) => !ex || !ex.test(m.alt)).slice(0, 4).map((m) => ({
     url: m.url,
     alt: m.alt,
     ...(m.width ? { width: m.width } : {}),
@@ -119,6 +128,7 @@ export function planSiteV3(input: CreativeBrief, direction: CreativeDirection, o
   const media = mediaFor(v, colorway.mode, opts);
   const hasMedia = media.length > 0;
   const seed = direction.seed;
+  const homeBased = HOME_BASED.test(b.description);
   const cty = city(b.location);
 
   // ---- CTAs from the channels that actually exist
@@ -135,9 +145,9 @@ export function planSiteV3(input: CreativeBrief, direction: CreativeDirection, o
   let primaryLabel = ctaLabel(v.id, v.primaryIntent);
   if (primaryHref.startsWith("tel:") && /whatsapp/i.test(primaryLabel)) primaryLabel = v.primaryIntent === "order" ? "Call to order" : v.primaryIntent === "book" ? "Call to book" : "Call us";
   if (primaryHref === "#contact" && !/enquiry|quote|consult|view|see/i.test(primaryLabel)) primaryLabel = v.primaryIntent === "quote" ? "Get a quote" : "Send an enquiry";
-  const hasVisit = truth.can.location || truth.can.hours;
+  const hasVisit = (truth.can.location && !homeBased) || truth.can.hours;
   const secondary =
-    hasVisit && (v.secondaryIntent === "visit" || v.secondaryIntent === "call")
+    hasVisit && (v.secondaryIntent === "visit" || v.secondaryIntent === "call") && (truth.can.hours || ["hospitality", "health", "professional", "civic", "education"].includes(v.cluster))
       ? { label: ctaLabel(v.id, "visit"), href: "#visit" }
       : tel && primaryHref !== `tel:${tel}`
         ? { label: "Call us", href: `tel:${tel}` }
@@ -146,7 +156,7 @@ export function planSiteV3(input: CreativeBrief, direction: CreativeDirection, o
           : undefined;
 
   // ---- copy: the owner's words first
-  const sents = sentences(b.description);
+  const sents = sentences(b.description).filter((x) => !META.test(x));
   const ownerFirst = sents[0] ?? b.description;
   const heading = cap(g.headlineBehavior === "uppercase" || g.headlineBehavior === "oversized" || g.headlineBehavior === "tight-stack" ? `${up(thing)}.` : `${up(thing)}${/[.!?]$/.test(thing) ? "" : "."}`, 100);
   const action = primaryHref.startsWith("https://wa.me") ? "Message us on WhatsApp." : primaryHref.startsWith("tel:") ? "Call us to get started." : "Send us a message.";
@@ -207,7 +217,7 @@ export function planSiteV3(input: CreativeBrief, direction: CreativeDirection, o
   };
   const gallery = (): SectionV3 | null =>
     media.length >= 2
-      ? { type: "gallery", layout: g.compositionMode === "monograph" ? "pair" : g.compositionMode === "poster-bold" ? "mosaic" : "grid", heading: "", items: media.slice(0, 4).map((m) => ({ caption: "", media: { ...m, role: "gallery" as const } })) }
+      ? { type: "gallery", layout: g.compositionMode === "monograph" ? "pair" : g.compositionMode === "poster-bold" ? "mosaic" : "grid", heading: "", items: media.slice(0, g.compositionMode === "monograph" || g.compositionMode === "poster-bold" ? 4 : media.length >= 6 ? 6 : media.length >= 3 ? 3 : 2).map((m) => ({ caption: "", media: { ...m, role: "gallery" as const } })) }
       : null;
   const ticker = (): SectionV3 | null => (services.length >= 2 && (g.signatureMotif === "marquee-band" || heroLayout === "ticker-energy") ? { type: "ticker", layout: "band", items: services.slice(0, 6).map((x) => cap(x, 36)) } : null);
   const proof = (): SectionV3 | null => {
@@ -218,7 +228,7 @@ export function planSiteV3(input: CreativeBrief, direction: CreativeDirection, o
   const visit = (): SectionV3 | null => (hasVisit ? { type: "visit", layout: "card", heading: truth.can.location ? "Find us" : "When we are open", intro: "" } : null);
   const faq = (): SectionV3 | null => {
     const items: Array<{ question: string; answer: string }> = [];
-    if (b.location) items.push({ question: "Where are you?", answer: b.location });
+    if (b.location && !homeBased) items.push({ question: "Where are you?", answer: b.location });
     if (b.hours?.length) items.push({ question: "When are you open?", answer: b.hours.map((h) => `${h.days}: ${h.hours}`).join(". ") });
     if (waHref || tel) items.push({ question: v.primaryIntent === "order" ? "How do I order?" : v.primaryIntent === "book" ? "How do I book?" : "How do I get in touch?", answer: `${wa ? `Message us on WhatsApp (${b.whatsapp})` : ""}${wa && tel ? " or " : ""}${tel ? `call ${b.phone}` : ""}.`.replace(/^call/, "Call") });
     return items.length >= 2 ? { type: "faq", layout: "accordion", heading: "Good to know", items } : null;
@@ -356,9 +366,10 @@ export function planSiteV3(input: CreativeBrief, direction: CreativeDirection, o
     version: 3,
     business: {
       name: b.name,
-      description: cap(b.description, 600),
+      description: cap(sents.join(" ") || b.description, 600),
       industry: b.industry ?? "",
       ...(b.location ? { location: b.location } : {}),
+      locationKind: homeBased ? "service-area" : "premises",
       ...(b.phone ? { phone: b.phone } : {}),
       ...(b.whatsapp ? { whatsapp: b.whatsapp.replace(/[^\d+]/g, "") } : {}),
       ...(b.email ? { email: b.email } : {}),

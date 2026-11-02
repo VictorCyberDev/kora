@@ -135,13 +135,13 @@ describe("closed vocabulary and safety", () => {
 });
 
 describe("diversity", () => {
-  const industries: Array<[string, typeof barber]> = [["barber", barber], ["law", law], ["cake", cake as never],
-    ["clinic", { name: "Greenfield Clinic", description: "A family clinic offering check-ups and vaccinations in Port Harcourt.", phone: "+2348066666666" } as never],
-    ["plumber", { name: "QuickFix Plumbing", description: "We fix leaks, blocked drains and water heaters across Abuja.", phone: "+2348088888888" } as never],
-    ["photographer", { name: "Lens & Light", description: "Wedding and portrait photographer based in Lagos. Natural light, honest moments.", whatsapp: "+2348012121212", feel: "minimal quiet" } as never],
-    ["hotel", { name: "Palmview Hotel", description: "A boutique hotel with garden rooms and a restaurant near the Calabar waterfront.", whatsapp: "+2348034343434", feel: "luxury" } as never],
-    ["school", { name: "Little Steps Daycare", description: "A daycare and early learning centre for children aged one to five in Enugu.", phone: "+2348056565656" } as never],
-    ["saas", { name: "Ledgerly", description: "Ledgerly is accounting software for small shops that tracks sales, stock and debts in one place.", email: "hello@ledgerly.example" } as never]];
+  const industries: Array<[string, Parameters<typeof planDirectionsV3>[0]]> = [["barber", barber], ["law", law], ["cake", cake],
+    ["clinic", { name: "Greenfield Clinic", description: "A family clinic offering check-ups and vaccinations in Port Harcourt.", phone: "+2348066666666" }],
+    ["plumber", { name: "QuickFix Plumbing", description: "We fix leaks, blocked drains and water heaters across Abuja.", phone: "+2348088888888" }],
+    ["photographer", { name: "Lens & Light", description: "Wedding and portrait photographer based in Lagos. Natural light, honest moments.", whatsapp: "+2348012121212", feel: "minimal quiet" }],
+    ["hotel", { name: "Palmview Hotel", description: "A boutique hotel with garden rooms and a restaurant near the Calabar waterfront.", whatsapp: "+2348034343434", feel: "luxury" }],
+    ["school", { name: "Little Steps Daycare", description: "A daycare and early learning centre for children aged one to five in Enugu.", phone: "+2348056565656" }],
+    ["saas", { name: "Ledgerly", description: "Ledgerly is accounting software for small shops that tracks sales, stock and debts in one place.", email: "hello@ledgerly.example" }]];
   it("cross-industry: no two industries share a design language", () => {
     const specs = industries.map(([, b]) => planDirectionsV3(b).directions.find((d) => d.recommended)!.spec);
     const r = diversityReport(specs);
@@ -160,5 +160,23 @@ describe("diversity", () => {
     const specs = bakeries.map((b) => planDirectionsV3(b).directions[0]!.spec);
     expect(diversityReport(specs).max).toBeLessThan(0.62);
     expect(new Set(specs.map((s) => s.design.genome.typeVoice)).size).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("owner situation is not public copy", () => {
+  it("drops meta sentences and never shows directions for a home-based business", () => {
+    const cake2 = { name: "Tola's Cakes", description: "I sell birthday cakes from home in Lekki. I only have my WhatsApp and three phone photos. We want more orders.", whatsapp: "+2348099999999", location: "Lekki, Lagos", services: ["Birthday cakes", "Cupcakes"] };
+    for (const d of planDirectionsV3(cake2).directions) {
+      const html = Object.values(renderSiteV3(d.spec, ctx)).join("\n");
+      expect(html).not.toMatch(/phone photos|more orders|I only have/i);
+      expect(html).not.toMatch(/Get directions|Find the bakery/);
+      expect(d.spec.business.locationKind).toBe("service-area");
+      expect(d.spec.pages.map((p) => p.slug)).not.toContain("visit");
+    }
+  });
+  it("does not use a cafe interior as the picture of a home baker", () => {
+    const spec = planDirectionsV3({ name: "Tola's Cakes", description: "I sell birthday cakes from home in Lekki.", whatsapp: "+2348099999999" }).directions[0]!.spec;
+    const alts = spec.pages.flatMap((p) => p.sections.flatMap((s) => ("media" in s && s.media ? [s.media.alt] : "items" in s && Array.isArray(s.items) ? (s.items as Array<{ media?: { alt: string } }>).flatMap((i) => (i.media ? [i.media.alt] : [])) : [])));
+    for (const a of alts) expect(a).not.toMatch(/interior|dining|tables?|window/i);
   });
 });

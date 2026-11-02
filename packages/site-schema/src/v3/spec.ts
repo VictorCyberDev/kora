@@ -188,6 +188,8 @@ export const siteSpecV3Schema = z
       description: text(600).default(""),
       industry: text(80).default(""),
       location: text(160).optional(),
+      /** A home-based or mobile business has a service area, not premises to visit: no directions, no "find us". */
+      locationKind: z.enum(["premises", "service-area"]).default("premises"),
       phone: z.string().regex(/^\+?[0-9 ()-]{5,30}$/).optional(),
       whatsapp: z.string().regex(/^\+?[0-9]{6,20}$/).optional(),
       email: z.string().email().max(200).optional(),
