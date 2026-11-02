@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 /** URL prefix under which every Kora host serves the bundled font files. */
 export const FONT_URL_PREFIX = "/_kora/fonts/";
-const FILE_RE = /^[a-z0-9-]+-latin-\d{3}-normal\.woff2$/;
+const FILE_RE = /^[a-z0-9-]+-latin-\d{3}-(?:normal|italic)\.woff2$/;
 const filesDir = [
   new URL("../files/", import.meta.url),
   new URL("../../files/", import.meta.url),
