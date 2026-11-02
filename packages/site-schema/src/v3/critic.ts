@@ -1,0 +1,212 @@
+/**
+ * Creative Critic: structured, actionable defects instead of one misleading score. It judges a finished spec against
+ * the brand, the business facts and the rules of the closed vocabulary. Safe repairs are applied by `repairV3`;
+ * anything that needs taste or a fact is reported, never "fixed" by guessing.
+ */
+import { GRAMMARS, buildTruth, ctaLabel, findCliches, inventedNumbers, isGenericCta, resolveVertical } from "@kora/creative";
+import { genomeDistance } from "@kora/creative";
+import type { SectionV3, SiteSpecV3 } from "./spec.js";
+
+export const DIMENSIONS = [
+  "brandDistinctiveness",
+  "businessFit",
+  "conversionClarity",
+  "hierarchy",
+  "typography",
+  "artDirection",
+  "composition",
+  "mobile",
+  "accessibility",
+  "performance",
+  "truthfulness",
+  "crossChannelConsistency",
+] as const;
+export type Dimension = (typeof DIMENSIONS)[number];
+
+export interface CriticIssue {
+  code: string;
+  severity: "block" | "warn" | "info";
+  dimension: Dimension;
+  message: string;
+  repairable: boolean;
+}
+
+/** Everything a visitor can read, section by section. */
+export function visibleTextV3(spec: SiteSpecV3): string[] {
+  const out: string[] = [spec.seo.title, spec.seo.description];
+  for (const p of spec.pages)
+    for (const s of p.sections) {
+      const a = s as unknown as Record<string, unknown>;
+      for (const k of ["eyebrow", "heading", "subheading", "intro", "text", "body", "caption"]) {
+        const v = a[k];
+        if (typeof v === "string") out.push(v);
+        if (Array.isArray(v)) out.push(...v.filter((x): x is string => typeof x === "string"));
+      }
+      if ("highlights" in s) out.push(...s.highlights);
+      if ("items" in s && Array.isArray(s.items))
+        for (const it of s.items as unknown as Array<Record<string, unknown>>) for (const k of ["title", "text", "tag", "price", "question", "answer", "caption"]) if (typeof it[k] === "string") out.push(it[k] as string);
+      if ("quotes" in s) for (const q of s.quotes) out.push(q.quote);
+      for (const c of [("primaryCta" in s && s.primaryCta) || null, ("secondaryCta" in s && s.secondaryCta) || null, ("button" in s && s.button) || null]) if (c) out.push(c.label);
+    }
+  return out.filter(Boolean);
+}
+
+const CARDS = new Set(["offer.image-tiles", "offer.board", "products.gallery-grid", "products.rail", "gallery.grid"]);
+const sectionKey = (s: SectionV3) => `${s.type}.${s.layout}`;
+
+export function criticV3(spec: SiteSpecV3): CriticIssue[] {
+  const issues: CriticIssue[] = [];
+  const add = (code: string, severity: CriticIssue["severity"], dimension: Dimension, message: string, repairable = false) => issues.push({ code, severity, dimension, message, repairable });
+  const g = spec.design.genome;
+  const b = spec.business;
+  const home = spec.pages.find((p) => p.slug === "home")!;
+  const text = visibleTextV3(spec);
+  const joined = text.join(" \n ");
+
+  // --- hierarchy & conversion
+  const hero = home.sections[0];
+  if (!hero || hero.type !== "hero") add("HERO_WEAK_HIERARCHY", "block", "hierarchy", "The first thing on the home page is not a hero with one dominant message.");
+  else {
+    if (hero.heading.length > 72) add("HERO_WEAK_HIERARCHY", "warn", "hierarchy", `The hero headline is ${hero.heading.length} characters; one dominant message should be shorter.`);
+    if (!hero.primaryCta) add("HERO_NO_ACTION", "warn", "conversionClarity", "The hero offers no action.");
+  }
+  for (const p of spec.pages)
+    for (const s of p.sections)
+      for (const c of [("primaryCta" in s && s.primaryCta) || null, ("secondaryCta" in s && s.secondaryCta) || null, ("button" in s && s.button) || null])
+        if (c && isGenericCta(c.label)) add("CTA_TOO_GENERIC", "warn", "conversionClarity", `"${c.label}" is generic; name the real action.`, true);
+
+  // --- composition
+  const cardRun = home.sections.filter((s) => CARDS.has(sectionKey(s))).length;
+  if (cardRun >= 3) add("TOO_MANY_CARD_GRIDS", "warn", "composition", `${cardRun} card-style sections on the home page.`);
+  const layouts = home.sections.map(sectionKey);
+  if (layouts.some((k, i) => i > 0 && k === layouts[i - 1])) add("REPEATED_SECTION", "warn", "composition", "Two identical layouts sit next to each other.");
+  if (g.radiusStyle === "pill" && ["centered-classical", "monograph", "stacked-utility"].includes(g.compositionMode)) add("EXCESSIVE_RADIUS", "warn", "composition", "Pill radii undercut this composition's seriousness.", true);
+
+  // --- brand
+  if (g.signatureMotif === "none" && ["minimal-modernist", "local-commerce"].includes(g.typeVoice) && g.paletteBehavior === "ink-on-paper")
+    add("BRAND_TOO_GENERIC", "warn", "brandDistinctiveness", "No signature device and a neutral type voice: this reads as a default look.", true);
+  const treatments = new Set<string>();
+  const sources = new Set<string>();
+  for (const p of spec.pages) for (const s of p.sections) {
+    const ms: Array<{ treatment: string; provenance: { sourceType: string }; alt: string }> = [];
+    const a = s as unknown as { media?: (typeof ms)[number]; items?: Array<{ media?: (typeof ms)[number] }> };
+    if (a.media) ms.push(a.media);
+    for (const it of a.items ?? []) if (it.media) ms.push(it.media);
+    for (const m of ms) {
+      treatments.add(m.treatment);
+      sources.add(m.provenance.sourceType);
+      if (!m.alt.trim()) add("IMAGE_ALT_MISSING", "warn", "accessibility", "An image has no alt text.");
+    }
+  }
+  if (treatments.size > 1) add("IMAGE_STYLE_INCONSISTENT", "warn", "artDirection", "Images use different treatments on one site.");
+  if (sources.size > 1 && sources.has("owner-supplied")) add("IMAGE_SOURCE_MIXED", "info", "artDirection", "Owner photos are mixed with stock; prefer the owner's own.");
+
+  // --- typography
+  if (!GRAMMARS.some((x) => x.genome.typeVoice === g.typeVoice)) add("TYPE_PAIRING_WEAK", "info", "typography", "The type voice is not used by any Kora design language.");
+
+  // --- mobile
+  const reach = !!(b.phone || b.whatsapp);
+  const heroActs = hero?.type === "hero" && [hero.primaryCta, hero.secondaryCta].some((c) => c && /^(tel:|https:\/\/wa\.me)/.test(c.href));
+  if (reach && !heroActs && g.mobileStrategy === "narrative-stack") add("MOBILE_ACTION_BURIED", "warn", "mobile", "Phone or WhatsApp exists but no first-screen action or action dock reaches it.");
+
+  // --- truthfulness
+  for (const w of findCliches(joined)) add("COPY_CLICHE", "warn", "truthfulness", `Generic phrase: "${w}".`);
+  const truth = buildTruth({
+    name: b.name,
+    description: b.description || "—".repeat(12),
+    ...(b.location ? { location: b.location } : {}),
+    ...(b.phone ? { phone: b.phone } : {}),
+    ...(b.whatsapp ? { whatsapp: b.whatsapp } : {}),
+    ...(b.hours.length ? { hours: b.hours } : {}),
+    services: home.sections.flatMap((s) => (s.type === "offer" || s.type === "products" ? s.items.map((i) => i.title) : [])).slice(0, 12),
+  });
+  const supplied = [...truth.suppliedNumbers];
+  const priced = home.sections.flatMap((s) => (s.type === "offer" || s.type === "products" ? s.items.map((i) => i.price ?? "") : []));
+  for (const pr of priced) for (const d of pr.match(/\d+/g) ?? []) supplied.push(d);
+  const trueTruth = { ...truth, suppliedNumbers: supplied };
+  const proofText = spec.pages.flatMap((p) => p.sections.flatMap((s) => (s.type === "proof" ? [...s.quotes.map((q) => q.quote), ...s.facts.flatMap((f) => [f.value, f.label])] : [])));
+  for (const n of inventedNumbers(text.filter((t) => !proofText.includes(t)).join(" \n "), trueTruth)) add("INVENTED_NUMBER", "block", "truthfulness", `"${n}" is a figure the owner never supplied.`);
+  if (/\b(award[- ]winning|certified|accredited|guarantee[d]?|since \d{4}|years of experience|\d+\+? (clients|customers|projects))\b/i.test(joined) && !proofText.length)
+    add("UNSUPPORTED_CLAIM", "block", "truthfulness", "Copy makes an authority claim with no supplied proof behind it.");
+  for (const p of spec.pages) for (const s of p.sections) {
+    const a = s as unknown as { media?: { provenance: { sourceType: string; reviewStatus: string } }; items?: Array<{ media?: { provenance: { sourceType: string; reviewStatus: string } } }> };
+    const ms = [a.media, ...(a.items ?? []).map((i) => i.media)].filter(Boolean) as Array<{ provenance: { sourceType: string; reviewStatus: string } }>;
+    if (ms.some((m) => m.provenance.sourceType === "ai-generated" && m.provenance.reviewStatus === "unreviewed")) add("MEDIA_UNREVIEWED", "block", "artDirection", "A generated image has not been approved by the owner.");
+  }
+
+  // --- performance
+  const imgs = spec.pages.reduce((n, p) => n + p.sections.reduce((m, s) => m + (("media" in s && s.media ? 1 : 0) + ("items" in s && Array.isArray(s.items) ? (s.items as Array<{ media?: unknown }>).filter((i) => i.media).length : 0)), 0), 0);
+  if (imgs > 24) add("IMAGE_HEAVY", "warn", "performance", `${imgs} images across the site.`);
+  if (home.sections.length < 4) add("THIN_PAGE", "info", "businessFit", "A short home page: honest, but consider adding supplied facts (hours, services, photos).");
+  return issues;
+}
+
+export function gradeByDimension(issues: CriticIssue[]): Record<Dimension, { status: "ok" | "warn" | "block"; issues: string[] }> {
+  const out = Object.fromEntries(DIMENSIONS.map((d) => [d, { status: "ok" as "ok" | "warn" | "block", issues: [] as string[] }])) as Record<Dimension, { status: "ok" | "warn" | "block"; issues: string[] }>;
+  for (const i of issues) {
+    const o = out[i.dimension];
+    if (i.severity === "block") o.status = "block";
+    else if (i.severity === "warn" && o.status !== "block") o.status = "warn";
+    o.issues.push(i.code);
+  }
+  return out;
+}
+
+/** Applies only repairs that do not change meaning or require a fact. Returns a new spec; the input is untouched. */
+export function repairV3(spec: SiteSpecV3): { spec: SiteSpecV3; applied: string[] } {
+  const next = structuredClone(spec);
+  const applied: string[] = [];
+  const v = resolveVertical(`${next.business.name} ${next.business.industry} ${next.business.description}`);
+  const g = next.design.genome;
+  for (const p of next.pages)
+    for (const s of p.sections)
+      for (const c of [("primaryCta" in s && s.primaryCta) || null, ("secondaryCta" in s && s.secondaryCta) || null, ("button" in s && s.button) || null])
+        if (c && isGenericCta(c.label)) {
+          const better = /^tel:/.test(c.href) ? "Call us" : /wa\.me/.test(c.href) ? ctaLabel(v.id, "whatsapp") : ctaLabel(v.id, v.primaryIntent);
+          if (!isGenericCta(better)) { c.label = better; applied.push("CTA_TOO_GENERIC"); }
+        }
+  if (criticV3(spec).some((i) => i.code === "EXCESSIVE_RADIUS")) { g.radiusStyle = "slight"; applied.push("EXCESSIVE_RADIUS"); }
+  if (criticV3(spec).some((i) => i.code === "BRAND_TOO_GENERIC")) {
+    const gram = GRAMMARS.find((x) => x.id === next.brand.grammarId);
+    const motif = gram?.alternates.motif.find((m) => m !== "none");
+    if (motif) { g.signatureMotif = motif; applied.push("BRAND_TOO_GENERIC"); }
+  }
+  return { spec: next, applied };
+}
+
+// ------------------------------------------------------------------ anti-sameness
+const SEQ = (s: SiteSpecV3) => s.pages.find((p) => p.slug === "home")!.sections.map(sectionKey);
+function lcs(a: string[], b: string[]): number {
+  const dp = Array.from({ length: a.length + 1 }, () => new Array<number>(b.length + 1).fill(0));
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) dp[i]![j] = a[i - 1] === b[j - 1] ? dp[i - 1]![j - 1]! + 1 : Math.max(dp[i - 1]![j]!, dp[i]![j - 1]!);
+  return dp[a.length]![b.length]!;
+}
+/** 1 = indistinguishable structure, 0 = nothing in common. Weighs what a designer notices first. */
+export function similarityV3(a: SiteSpecV3, b: SiteSpecV3): number {
+  const ga = a.design.genome, gb = b.design.genome;
+  const eq = (x: unknown, y: unknown) => (x === y ? 1 : 0);
+  const sa = SEQ(a), sb = SEQ(b);
+  const seq = lcs(sa, sb) / Math.max(sa.length, sb.length, 1);
+  const parts: Array<[number, number]> = [
+    [3, eq(ga.heroPhilosophy, gb.heroPhilosophy)],
+    [2, eq(ga.headerStyle, gb.headerStyle)],
+    [3, seq],
+    [3, eq(ga.typeVoice, gb.typeVoice)],
+    [2, eq(ga.paletteBehavior, gb.paletteBehavior)],
+    [2, eq(a.design.mode, b.design.mode)],
+    [1, eq(ga.radiusStyle, gb.radiusStyle)],
+    [2, eq(ga.servicePresentation, gb.servicePresentation)],
+    [1, eq(ga.signatureMotif, gb.signatureMotif)],
+    [2, 1 - genomeDistance(ga, gb)],
+    [1, eq(a.design.palette.primary, b.design.palette.primary)],
+  ];
+  const w = parts.reduce((n, [x]) => n + x, 0);
+  return parts.reduce((n, [x, v]) => n + x * v, 0) / w;
+}
+
+export function diversityReport(specs: SiteSpecV3[]): { max: number; mean: number; worst: [number, number] | null; matrix: number[][] } {
+  const matrix = specs.map((a) => specs.map((b) => Math.round(similarityV3(a, b) * 100) / 100));
+  let max = 0, sum = 0, n = 0, worst: [number, number] | null = null;
+  for (let i = 0; i < specs.length; i++) for (let j = i + 1; j < specs.length; j++) { const s = matrix[i]![j]!; sum += s; n++; if (s > max) { max = s; worst = [i, j]; } }
+  return { max, mean: n ? sum / n : 0, worst, matrix };
+}

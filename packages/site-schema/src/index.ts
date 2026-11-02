@@ -5,3 +5,4 @@ export * from "./render.js";
 export * from "./generate.js";
 export * from "./any.js";
 export * from "./v2/index.js";
+export * from "./v3/index.js";

@@ -276,6 +276,9 @@ importers:
 
   packages/site-schema:
     dependencies:
+      '@kora/creative':
+        specifier: workspace:*
+        version: link:../creative
       zod:
         specifier: ^4.1.12
         version: 4.6.5

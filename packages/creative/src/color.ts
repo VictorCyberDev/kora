@@ -35,17 +35,24 @@ export function hsl(h: number, s: number, l: number): string {
     ll - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
   return rgbToHex(f(0) * 255, f(8) * 255, f(4) * 255);
 }
-/** Moves `fg` towards black or white until it reaches `min` contrast on `bg`. */
+/**
+ * Moves `fg` towards black or white until it reaches `min` contrast on `bg`. Tries the natural direction first and
+ * the other when that cannot reach the target (a mid-tone background like orange needs dark text, not white).
+ */
 export function ensureContrast(fg: string, bg: string, min = 4.5): string {
   if (contrast(fg, bg) >= min) return fg;
-  const towardWhite = luminance(bg) < 0.4;
   const [r, g, b] = hexToRgb(fg);
-  for (let t = 0.05; t <= 1.0001; t += 0.05) {
-    const m = towardWhite ? 255 : 0;
-    const c = rgbToHex(r + (m - r) * t, g + (m - g) * t, b + (m - b) * t);
-    if (contrast(c, bg) >= min) return c;
-  }
-  return towardWhite ? "#ffffff" : "#000000";
+  const attempt = (m: number) => {
+    for (let t = 0.05; t <= 1.0001; t += 0.05) {
+      const c = rgbToHex(r + (m - r) * t, g + (m - g) * t, b + (m - b) * t);
+      if (contrast(c, bg) >= min) return c;
+    }
+    return null;
+  };
+  const first = luminance(bg) < 0.4 ? 255 : 0;
+  const ok = attempt(first) ?? attempt(255 - first);
+  if (ok) return ok;
+  return contrast("#000000", bg) >= contrast("#ffffff", bg) ? "#000000" : "#ffffff";
 }
 /** Readable text colour (near-black or white) on a background; always >= 4.5 when achievable. */
 export const readableOn = (bg: string, ink = "#111827", paper = "#ffffff") => {
