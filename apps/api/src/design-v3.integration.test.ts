@@ -404,4 +404,106 @@ d("Creative engine v3 through the real API", () => {
     });
     expect(r.json.data.map((x: { name: string }) => x.name)).toEqual(names);
   });
+
+  it("backfills a Brand OS for older v1/v2 sites as inferred, without touching the old version or the live site", async () => {
+    // v2 site (flag off deployment)
+    const { o, site } = await newSite(v2, "v3-backfill-v2@example.com");
+    const gen = await v2.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: brief,
+    });
+    const vid = gen.json.data.version.id as string;
+    await v2.call("POST", `/api/sites/${site.id}/versions/${vid}/publish`, {
+      cookie: o.cookie,
+    });
+    const before = (
+      await v2.call("GET", `/api/sites/${site.id}/versions/${vid}`, {
+        cookie: o.cookie,
+      })
+    ).json.data;
+    expect(
+      (
+        await v2.call("GET", `/api/sites/${site.id}/brand-os`, {
+          cookie: o.cookie,
+        })
+      ).json.data.current,
+    ).toBeNull();
+    const r = await v2.call("POST", `/api/sites/${site.id}/brand-os/backfill`, {
+      cookie: o.cookie,
+      body: {},
+    });
+    expect(r.status).toBe(201);
+    expect(r.json.data.inferred).toBe(true);
+    const bos = r.json.data.current.brandOs;
+    expect(bos.provenance.createdBy).toBe("inferred-from-site");
+    expect(bos.provenance.inferred.fromSpecVersion).toBe(2);
+    expect(bos.provenance.inferred.unknown.length).toBeGreaterThan(0);
+    // colours are READ from the live site, not invented
+    expect(bos.visual.palette.primary).toBe(before.spec.design.palette.primary);
+    expect(bos.name).toBe(brief.name);
+    // idempotent; the old version and the live pointer are untouched
+    const again = await v2.call(
+      "POST",
+      `/api/sites/${site.id}/brand-os/backfill`,
+      {
+        cookie: o.cookie,
+        body: {},
+      },
+    );
+    expect(again.status).toBe(200);
+    expect(again.json.data.created).toBe(false);
+    expect(again.json.data.current.hash).toBe(r.json.data.current.hash);
+    const after = (
+      await v2.call("GET", `/api/sites/${site.id}/versions/${vid}`, {
+        cookie: o.cookie,
+      })
+    ).json.data;
+    expect(after.specHash).toBe(before.specHash);
+    expect(after.artifactHash).toBe(before.artifactHash);
+    const site2 = (
+      await v2.call("GET", `/api/sites/${site.id}`, { cookie: o.cookie })
+    ).json.data;
+    expect(site2.publishedVersionId).toBe(vid);
+    // another organisation cannot backfill or read it
+    const other = await v2.signup("v3-backfill-other@example.com");
+    const x = await v2.call("POST", `/api/sites/${site.id}/brand-os/backfill`, {
+      cookie: other.cookie,
+      body: {},
+    });
+    expect([403, 404]).toContain(x.status);
+  });
+
+  it("upgrading uses the backfilled Brand OS: version 1 inferred, version 2 new, with a before/after comparison", async () => {
+    const n = await newSite(v3, "v3-up-compare@example.com");
+    const old = await v3.call("POST", `/api/sites/${n.site.id}/generate`, {
+      cookie: n.o.cookie,
+      body: { ...brief, format: 1 },
+    });
+    const up = await v3.call(
+      "POST",
+      `/api/sites/${n.site.id}/versions/${old.json.data.version.id}/upgrade-v3`,
+      { cookie: n.o.cookie, body: {} },
+    );
+    expect(up.status).toBe(201);
+    const c = up.json.data.comparison;
+    expect(c.before.inferred).toBe(true);
+    expect(c.before.brandVersion).toBe(1);
+    expect(c.after.essence.length).toBeGreaterThan(3);
+    expect(c.keptFromYourSite).toContain("contact details");
+    const hist = (
+      await v3.call("GET", `/api/sites/${n.site.id}/brand-os`, {
+        cookie: n.o.cookie,
+      })
+    ).json.data;
+    expect(hist.current.version).toBe(2);
+    expect(hist.history.map((h: { version: number }) => h.version)).toEqual([
+      2, 1,
+    ]);
+    const v1 = (
+      await v3.call("GET", `/api/sites/${n.site.id}/brand-os/1`, {
+        cookie: n.o.cookie,
+      })
+    ).json.data;
+    expect(v1.brandOs.provenance.createdBy).toBe("inferred-from-site");
+  });
 });

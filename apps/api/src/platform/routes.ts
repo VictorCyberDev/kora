@@ -21,6 +21,7 @@ import {
   parseAnySiteSpec,
   criticV3,
   gradeByDimension,
+  inferBrandOs,
   type AnySiteSpec,
   type StructuredEdit,
 } from "@kora/site-schema";
@@ -439,6 +440,25 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       ...ctx,
     };
   };
+  /** Gives an older (v1/v2) site a Brand OS record, marked inferred. No republish; the old version is untouched. */
+  const backfillBrandOs = async (
+    site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
+    versionRow: Record<string, unknown>,
+    userId: string,
+  ) => {
+    const existing = await brandOs.latest(site.id);
+    if (existing) return { row: existing, created: false };
+    const old = parseAnySiteSpec(versionRow["spec"]);
+    if (old.version === 3) return { row: null, created: false };
+    const inferred = inferBrandOs(old, { versionId: String(versionRow["id"]) });
+    const row = await brandOs.backfill(
+      site,
+      inferred.brandOs,
+      inferred.direction.name,
+      userId,
+    );
+    return { row, created: row !== null };
+  };
   const buildVersion = async (
     site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
     spec: AnySiteSpec,
@@ -775,6 +795,8 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         ...(services.length ? { services: services.slice(0, 12) } : {}),
         ...("hours" in b && b.hours.length ? { hours: b.hours } : {}),
       });
+      // The old look becomes a recorded, inferred Brand OS first, so the comparison below is against something real.
+      const before = (await backfillBrandOs(site, row, a.userId)).row;
       const authored = await author.generateV3(
         brief,
         parsed.direction ?? 0,
@@ -808,6 +830,31 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
           version,
           from: { id: String(row.id), specVersion: old.version },
           direction: authored.directionName,
+          comparison: {
+            before: before
+              ? {
+                  brandVersion: before.version,
+                  inferred:
+                    before.brandOs.provenance.createdBy ===
+                    "inferred-from-site",
+                  palette: before.brandOs.visual.palette,
+                  typeVoice: before.brandOs.visual.typeVoice,
+                  tone: before.brandOs.voice.tone,
+                }
+              : null,
+            after: {
+              palette: authored.brandOs.visual.palette,
+              typeVoice: authored.brandOs.visual.typeVoice,
+              tone: authored.brandOs.voice.tone,
+              essence: authored.brandOs.strategy.brandEssence,
+              signature: authored.brandOs.visual.signatureMotif,
+            },
+            keptFromYourSite: [
+              "business name",
+              "contact details",
+              "services and hours you listed",
+            ],
+          },
           note: "A new draft was created. Your live website is unchanged until you publish it.",
         },
       });
@@ -842,6 +889,41 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         },
       },
     };
+  });
+  // Gives an older website a Brand OS record so the owner can see what Kora knows about it. Marked inferred; it
+  // never republishes, never edits the old version, and never overwrites a Brand OS that already exists.
+  app.post("/api/sites/:id/brand-os/backfill", async (req, reply) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
+    const a = requireUser(req);
+    const versions = await platform.listVersions(site.id);
+    const newest = versions[0];
+    if (!newest) throw notFound();
+    const row = await platform.getVersionRow(site.id, newest.id);
+    if (!row) throw notFound();
+    const r = await backfillBrandOs(site, row, a.userId);
+    if (r.created)
+      await platform.audit({
+        orgId: site.orgId,
+        actorUserId: a.userId,
+        action: "site.brand_os_backfilled",
+        objectType: "site",
+        objectId: site.id,
+        requestId: req.id,
+        metadata: { fromVersion: newest.id },
+      });
+    return reply.code(r.created ? 201 : 200).send({
+      data: {
+        created: r.created,
+        inferred: r.row?.brandOs.provenance.createdBy === "inferred-from-site",
+        current: r.row
+          ? {
+              version: r.row.version,
+              hash: r.row.hash,
+              brandOs: r.row.brandOs,
+            }
+          : null,
+      },
+    });
   });
   app.get("/api/sites/:id/brand-os/:version", async (req) => {
     const { id, version } = z

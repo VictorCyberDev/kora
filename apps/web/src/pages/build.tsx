@@ -115,6 +115,12 @@ export function Build() {
       setTab("chat");
       versions.reload();
     });
+  /** Plain-words before/after for the owner. The "before" is read from the old site and says so. */
+  const compare = (c: J | undefined) => {
+    if (!c?.before || !c?.after) return "";
+    const type = (t: string) => t.replace(/-/g, " ");
+    return ` Before (worked out from your current site): ${type(c.before.typeVoice)} type, ${c.before.tone} tone, main colour ${c.before.palette.primary}. After: ${type(c.after.typeVoice)} type, ${c.after.tone} tone, main colour ${c.after.palette.primary}, built around "${c.after.essence}". Kept from your site: ${c.keptFromYourSite.join(", ")}.`;
+  };
   const tryNew = () =>
     void run(async () => {
       const r = await api(
@@ -124,7 +130,7 @@ export function Build() {
       );
       say(
         "kora",
-        `Made a new draft in the "${r.direction}" direction (version ${r.version.number}). ${r.note}`,
+        `Made a new draft in the "${r.direction}" direction (version ${r.version.number}). ${r.note}${compare(r.comparison)}`,
       );
       setSel(r.version.id);
       setTab("chat");

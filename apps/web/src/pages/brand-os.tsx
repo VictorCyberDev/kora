@@ -50,6 +50,22 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
       setBusy(false);
     }
   };
+  const backfill = async () => {
+    setBusy(true);
+    setMsg(null);
+    try {
+      await api("POST", `/api/sites/${siteId}/brand-os/backfill`, {});
+      setMsg({
+        ok: true,
+        text: "Done. This is what Kora worked out from your website. Nothing was published or changed.",
+      });
+      os.reload();
+    } catch (x) {
+      setMsg({ ok: false, text: errText(x) });
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <Async state={os}>
       {(d) => {
@@ -63,6 +79,21 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
                 the new design engine: strategy, colours, type, voice and rules
                 that every flyer, post and story will follow.
               </p>
+              <p className="muted">
+                Already have a website made earlier? Kora can read its colours
+                and type and write them down as your brand system. It is marked
+                as worked out from your site, and your website is not changed.
+              </p>
+              <div className="row">
+                <button
+                  className="btn sm"
+                  disabled={busy}
+                  onClick={() => void backfill()}
+                >
+                  Work out my brand from my website
+                </button>
+              </div>
+              {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
             </section>
           );
         const b = cur.brandOs;
@@ -70,6 +101,13 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
         return (
           <section className="card stack" aria-labelledby="bos-h">
             <p className="k-overline">Brand system · version {cur.version}</p>
+            {b.provenance?.createdBy === "inferred-from-site" && (
+              <Notice kind="info">
+                Worked out from your earlier website, not chosen by you. Kora
+                could not know: {b.provenance.inferred?.unknown.join("; ")}.
+                Change anything below to make it yours.
+              </Notice>
+            )}
             <h2 id="bos-h">
               {b.grammarId ? b.strategy.brandEssence : "Your brand"}
             </h2>

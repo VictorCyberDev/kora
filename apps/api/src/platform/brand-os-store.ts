@@ -86,6 +86,25 @@ export class BrandOsStore {
     return next.spec;
   }
 
+  /**
+   * Records the Brand OS an older (v1/v2) website already embodies as version 1, marked inferred. Only when the site
+   * has no Brand OS yet; never replaces or rewrites one. Returns null when one already exists.
+   */
+  async backfill(
+    site: { id: string; orgId: string },
+    brandOs: BrandOS,
+    directionName: string,
+    userId: string | null,
+  ): Promise<BrandOsRow | null> {
+    if (await this.latest(site.id)) return null;
+    const bos: BrandOS = { ...brandOs, version: 1 };
+    await this.sql`
+      INSERT INTO brand_os_versions (id, site_id, org_id, version, hash, grammar_id, direction_name, brand_os, created_by)
+      VALUES (${randomUUID()}, ${site.id}, ${site.orgId}, 1, ${brandOsHash(bos)}, ${bos.grammarId}, ${directionName.slice(0, 80)},
+        ${this.sql.json(toJson(bos))}, ${userId})`;
+    return this.latest(site.id);
+  }
+
   async feedback(
     site: { id: string; orgId: string },
     kind: string,

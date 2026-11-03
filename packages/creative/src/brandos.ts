@@ -68,8 +68,21 @@ export const BrandOSSchema = z.object({
     donts: z.array(z.string().max(160)).max(12),
   }),
   provenance: z.object({
-    createdBy: z.enum(["kora-deterministic", "owner-edit"]),
+    createdBy: z.enum([
+      "kora-deterministic",
+      "owner-edit",
+      /** Worked out from an older website that never had a Brand OS. Not a decision the owner made. */
+      "inferred-from-site",
+    ]),
     seed: z.number().int().min(0),
+    /** Present only when inferred: which older version it was read from and what it could not know. */
+    inferred: z
+      .object({
+        fromSpecVersion: z.union([z.literal(1), z.literal(2)]),
+        fromVersionId: z.string().max(80).optional(),
+        unknown: z.array(z.string().max(120)).max(8),
+      })
+      .optional(),
   }),
 });
 export type BrandOS = z.infer<typeof BrandOSSchema>;

@@ -17,6 +17,10 @@ import {
   planSiteV3,
   sectionV3Schema,
   applyStructuredEditV3,
+  inferBrandOs,
+  planDirections,
+  generateSpecFromBrief,
+  parseSiteSpec,
   ruleBasedEditV3,
   EditV3Error,
 } from "../src/index.js";
@@ -572,5 +576,42 @@ describe("owner-friendly design nudges", () => {
       expect(out.design.genome).not.toEqual(spec.design.genome);
       expect(() => parseSiteSpecV3(out)).not.toThrow();
     }
+  });
+});
+
+describe("Brand OS backfill for older sites", () => {
+  it("reads colours and type from a v2 site and marks the result inferred", () => {
+    const v2 = planDirections(barber)[0]!.spec;
+    const { brandOs } = inferBrandOs(v2, { versionId: "v-1" });
+    expect(brandOs.provenance.createdBy).toBe("inferred-from-site");
+    expect(brandOs.provenance.inferred?.fromSpecVersion).toBe(2);
+    expect(brandOs.provenance.inferred?.fromVersionId).toBe("v-1");
+    expect(brandOs.visual.palette.primary).toBe(v2.design.palette.primary);
+    expect(brandOs.visual.palette.background).toBe(
+      v2.design.palette.background,
+    );
+    expect(brandOs.name).toBe(barber.name);
+    expect(brandOs.version).toBe(1);
+  });
+  it("reads a v1 site's own two colours and never invents others as facts", () => {
+    const v1 = parseSiteSpec(
+      generateSpecFromBrief({
+        name: barber.name,
+        description: barber.description,
+        whatsapp: barber.whatsapp,
+      } as never),
+    );
+    const { brandOs } = inferBrandOs(v1);
+    expect(brandOs.visual.palette.primary).toBe(v1.brand.primaryColor);
+    expect(brandOs.visual.palette.accent).toBe(v1.brand.accentColor);
+    expect(brandOs.provenance.inferred?.fromSpecVersion).toBe(1);
+    expect(brandOs.provenance.inferred?.unknown).toContain("your logo");
+    expect(brandOs.visual.logoAssetId).toBeNull();
+  });
+  it("is deterministic", () => {
+    const v2 = planDirections(law)[0]!.spec;
+    expect(brandOsHashOf(inferBrandOs(v2).brandOs)).toBe(
+      brandOsHashOf(inferBrandOs(v2).brandOs),
+    );
   });
 });
