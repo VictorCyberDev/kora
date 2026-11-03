@@ -184,5 +184,162 @@ d("tenant integrity", () => {
   });
 });
 
+d("migration set integrity", () => {
+  const names = async () =>
+    (await readdir(fileURLToPath(dir)))
+      .filter((f) => f.endsWith(".sql"))
+      .sort();
+
+  it("every file is NNN_snake_case.sql and numbers run 001..N with no gaps or repeats", async () => {
+    const files = await names();
+    for (const f of files) expect(f, f).toMatch(/^\d{3}_[a-z0-9_]+\.sql$/);
+    files.forEach((f, i) => expect(Number(f.slice(0, 3)), f).toBe(i + 1));
+    expect(files.length).toBeGreaterThanOrEqual(27);
+  });
+
+  it("migrations are applied in numeric order, each exactly once per pass", async () => {
+    const { sql } = await freshDb();
+    const seen: string[] = [];
+    await applyMigrations(sql, (n) => seen.push(n));
+    expect(seen).toEqual(await names());
+    await sql.end();
+  });
+
+  it("deployed migrations 007-026 are byte-stable; anything new must be a new file", async () => {
+    const { createHash } = await import("node:crypto");
+    const files = (await names()).filter((f) => {
+      const n = Number(f.slice(0, 3));
+      return n >= 7 && n <= 26;
+    });
+    expect(files).toHaveLength(20);
+    const digest = createHash("sha256");
+    for (const f of files) digest.update(await readFile(new URL(f, dir)));
+    // Recorded at the v7 closure. Editing a deployed migration fails here; add 028+ instead.
+    expect(digest.digest("hex")).toBe(EXPECTED_007_026);
+  });
+
+  it("a database at the pre-v7 schema (024) upgrades to the v7 schema without losing its rows", async () => {
+    const { sql } = await freshDb();
+    await applyUpTo(sql, 24);
+    const [u, org, site] = [1, 2, 3].map(() => crypto.randomUUID());
+    await sql`INSERT INTO users(id,email,password_hash,display_name) VALUES(${u!},'up@x.io','h','U')`;
+    await sql`INSERT INTO organizations(id,name) VALUES(${org!},'O')`;
+    await sql`INSERT INTO sites(id,org_id,name,slug) VALUES(${site!},${org!},'S','site-up-1')`;
+    await sql`INSERT INTO site_versions(id,site_id,org_id,number,spec,spec_hash,artifact_hash,artifact,generation_source) VALUES(${crypto.randomUUID()},${site!},${org!},1,${sql.json({})},'h','h',${sql.json({})},'MANUAL')`;
+    const before =
+      await sql`SELECT to_regclass('public.brand_os_versions') AS t, to_regclass('public.owner_media') AS o`;
+    expect(before[0]).toMatchObject({ t: null, o: null });
+    await applyMigrations(sql);
+    expect(
+      (
+        await sql`SELECT count(*)::int AS n FROM site_versions WHERE site_id=${site!}`
+      )[0]!.n,
+    ).toBe(1);
+    expect(
+      (
+        await sql`SELECT to_regclass('public.brand_os_versions') AS t, to_regclass('public.owner_media') AS o`
+      )[0],
+    ).toMatchObject({ t: "brand_os_versions", o: "owner_media" });
+    await sql.end();
+  });
+
+  it("the v7 tables have the schema the code relies on: columns, checks, tenant keys, indexes, immutability", async () => {
+    const { sql } = await freshDb();
+    await applyMigrations(sql);
+    const cols = async (t: string) =>
+      Object.fromEntries(
+        (
+          await sql`SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name=${t}`
+        ).map((r) => [
+          String(r.column_name),
+          `${r.data_type}${r.is_nullable === "NO" ? "!" : ""}`,
+        ]),
+      );
+    expect(await cols("brand_os_versions")).toMatchObject({
+      site_id: "uuid!",
+      version: "integer!",
+      hash: "text!",
+      brand_os: "jsonb!",
+      created_at: "timestamp with time zone!",
+    });
+    expect(await cols("creative_feedback")).toMatchObject({
+      kind: "text!",
+      subject: "text!",
+      detail: "jsonb!",
+      org_id: "uuid!",
+    });
+    expect(await cols("owner_media")).toMatchObject({
+      kind: "text!",
+      sha256: "text!",
+      focal_x: "real!",
+      quality: "jsonb!",
+      provenance: "jsonb!",
+      thumb: "bytea!",
+      removed_at: "timestamp with time zone",
+      v1280: "bytea",
+      logo_png: "bytea",
+    });
+    const fks = (
+      await sql`SELECT conname FROM pg_constraint WHERE contype='f' AND conname IN ('brand_os_site_org_fk','creative_feedback_site_org_fk','owner_media_site_org_fk')`
+    ).map((r) => String(r.conname));
+    expect(fks.sort()).toEqual([
+      "brand_os_site_org_fk",
+      "creative_feedback_site_org_fk",
+      "owner_media_site_org_fk",
+    ]);
+    const idx = (
+      await sql`SELECT indexname FROM pg_indexes WHERE schemaname='public' AND tablename IN ('brand_os_versions','creative_feedback','owner_media')`
+    ).map((r) => String(r.indexname));
+    for (const i of [
+      "brand_os_site_idx",
+      "creative_feedback_site_idx",
+      "creative_feedback_org_idx",
+      "owner_media_site_idx",
+      "owner_media_dedupe_idx",
+    ])
+      expect(idx, i).toContain(i);
+    const triggers = (
+      await sql`SELECT tgname FROM pg_trigger WHERE NOT tgisinternal`
+    ).map((r) => String(r.tgname));
+    expect(triggers).toContain("brand_os_versions_immutable");
+    expect(triggers).toContain("creative_feedback_immutable");
+
+    // behaviour, not just shape
+    const [u, orgA, orgB, site] = [1, 2, 3, 4].map(() => crypto.randomUUID());
+    await sql`INSERT INTO users(id,email,password_hash,display_name) VALUES(${u!},'v7@x.io','h','V')`;
+    await sql`INSERT INTO organizations(id,name) VALUES(${orgA!},'A'),(${orgB!},'B')`;
+    await sql`INSERT INTO sites(id,org_id,name,slug) VALUES(${site!},${orgA!},'S','site-v7-1')`;
+    const hash = "a".repeat(64);
+    const bos = (org: string, v: number) =>
+      sql`INSERT INTO brand_os_versions(id,site_id,org_id,version,hash,grammar_id,direction_name,brand_os) VALUES(${crypto.randomUUID()},${site!},${org},${v},${hash},'g','d',${sql.json({})})`;
+    await expect(bos(orgB!, 1)).rejects.toThrow(/brand_os_site_org_fk/);
+    await bos(orgA!, 1);
+    await expect(bos(orgA!, 1)).rejects.toThrow(); // one row per version
+    await expect(
+      sql`UPDATE brand_os_versions SET hash=${"b".repeat(64)} WHERE site_id=${site!}`,
+    ).rejects.toThrow(); // history is immutable
+    await expect(
+      sql`INSERT INTO brand_os_versions(id,site_id,org_id,version,hash,grammar_id,direction_name,brand_os) VALUES(${crypto.randomUUID()},${site!},${orgA!},0,${hash},'g','d',${sql.json({})})`,
+    ).rejects.toThrow(); // versions start at 1
+    await expect(
+      sql`INSERT INTO creative_feedback(id,site_id,org_id,kind,subject) VALUES(${crypto.randomUUID()},${site!},${orgA!},'NOT_A_KIND','x')`,
+    ).rejects.toThrow();
+    const photo = (sha: string, removed = false) =>
+      sql`INSERT INTO owner_media(id,site_id,org_id,kind,sha256,width,height,quality,provenance,v1280,thumb,removed_at) VALUES(${crypto.randomUUID()},${site!},${orgA!},'photo',${sha},800,600,${sql.json({})},${sql.json({})},${Buffer.from("x")},${Buffer.from("t")},${removed ? new Date() : null})`;
+    await photo("c".repeat(64));
+    await expect(photo("c".repeat(64))).rejects.toThrow(); // same picture twice is refused
+    await photo("c".repeat(64), true); // a removed copy does not block a re-upload history
+    await expect(
+      sql`INSERT INTO owner_media(id,site_id,org_id,kind,sha256,width,height,quality,provenance,thumb) VALUES(${crypto.randomUUID()},${site!},${orgA!},'logo',${"d".repeat(64)},10,10,${sql.json({})},${sql.json({})},${Buffer.from("t")})`,
+    ).rejects.toThrow(/owner_media_kind_bytes/); // a logo must carry bytes
+    await expect(
+      sql`INSERT INTO owner_media(id,site_id,org_id,kind,sha256,width,height,quality,provenance,v1280,thumb,focal_x) VALUES(${crypto.randomUUID()},${site!},${orgA!},'photo',${"e".repeat(64)},10,10,${sql.json({})},${sql.json({})},${Buffer.from("x")},${Buffer.from("t")},1.5)`,
+    ).rejects.toThrow(); // focal point stays inside the picture
+    await sql.end();
+  });
+});
+
+const EXPECTED_007_026 =
+  "735e3f61608383114bb729d8c189c9df366aa223ee3b81817bd30993acc21b7f";
 const EXPECTED_001_006 =
   "c0cccf72c5fe36038934df6c6f4e0771bdecc2d780febf199c18b0b41be95ec9";
