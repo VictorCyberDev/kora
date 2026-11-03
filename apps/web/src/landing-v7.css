@@ -24,27 +24,46 @@
 @media (min-width: 720px) {
   .v7-collage {
     grid-template-columns: 1fr;
-    padding: 0 0 12% 0;
+    padding: 0 0 27% 0;
   }
   .v7-collage-phone {
     display: block;
     position: absolute;
-    left: -6%;
-    bottom: 2%;
-    width: 24%;
+    right: 25%;
+    bottom: 8%;
+    width: 21%;
   }
   .v7-collage-story {
     display: block;
     position: absolute;
-    right: -3%;
-    bottom: 0;
-    width: 20%;
+    right: 2%;
+    bottom: 8%;
+    width: 19%;
   }
-  .v7-collage figcaption {
-    position: absolute;
+  .k-hero .v7-collage figcaption {
+    position: absolute !important;
     left: 0;
-    bottom: -26px;
+    right: auto !important;
+    bottom: 0;
+    max-width: 48%;
   }
+}
+.v7-collage figcaption {
+  position: static !important;
+  color: rgba(247, 245, 239, 0.62) !important;
+}
+.k-hero h1 {
+  color: #f7f5ef;
+  max-width: 15ch;
+  font-size: clamp(2.7rem, 5.2vw, 5.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+.k-hero h1 em {
+  color: #d8b8ff;
+}
+.k-hero-grid {
+  align-items: start;
 }
 .v7-story {
   padding-block: clamp(56px, 9vw, 120px);
