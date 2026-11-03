@@ -6,16 +6,43 @@ raw observations are in `docs/research/evidence-live-fetch-2026.md`.
 
 ## Method and what was actually done
 
-| Evidence level | Count | What it means                                                                                                                                                         |
-| -------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fetched`      | 23    | Homepage HTML and up to six stylesheets were retrieved over HTTP and read for fonts, hex colours, radii, headline and structure counts. No rendering, no screenshots. |
-| `search-lead`  | 28    | Named by a search result (mostly agency and vendor roundups). The site itself was **not opened**; only the stated principle is recorded.                              |
-| `analyst`      | 55    | Kora's design analysis from general knowledge of the brand or category. **Not re-verified live in this research.**                                                    |
+Two bodies of evidence, kept apart so neither is inflated:
 
-The mandate asked for at least 100 references studied; the corpus has 106 structured entries, but only 23 were read live
-and all 23 by static fetch. The Firecrawl allowance ran out on the first batch, so a rendered scrape of the seven
-blocked or JavaScript-only sites (Duolingo, Aesop, COS, LEGO, Canva, GoDaddy, Muji) is outstanding. Entries for
-those are marked `analyst`. A test pins these counts so the documentation cannot claim more than was done.
+**1. The rendered study (this is what the count rests on).** `scripts/research/observe.mjs` opens each site in
+Chromium at 1440x900 and again at 390x844 and records what the page actually shows: the fonts applied to the headline,
+body and buttons; the colours painted across the first screen by area; headline size, weight, case, alignment and line
+length; button radius and height; how much of the first screen is a picture and where it sits; whether the first
+screen has a full-bleed background image; header position and visible navigation; page length; structured data and
+social preview presence; on a phone, whether there is a menu button, a sticky bottom bar or any sideways overflow.
+These are COMPUTED values, not read from source. Raw data: `docs/research/data/site-observations-2026.jsonl`. A table
+of every site, with a derived fingerprint: `docs/research/SITE-OBSERVATIONS-2026.md`. Counts are pinned by tests that
+read the data file.
+
+| Outcome                                                    | Count |
+| ---------------------------------------------------------- | ----- |
+| Attempted (254 sites in 16 kinds of business)              | 254   |
+| **Studied: rendered, measured at desktop and phone width** | **182** |
+| Blocked by the site (403/429) and recorded as blocked      | 46    |
+| Network or other errors, recorded as errors                | 18    |
+| Rendered but not counted (bot challenge, empty JS shell)   | 8     |
+
+Evidence class for the 182: **DIRECT_SITE_REVIEW** (live page rendered and measured). One page per site, the home
+page: this is a study of first impressions and page systems, not of whole sites. Consent banners were dismissed when a
+standard "Accept" button was found. No screenshots, copy, imagery or code from these sites are stored in this
+repository.
+
+**2. The reference atlas (design memory).** `packages/creative/src/references.ts` holds 106 structured principle
+entries, each with `whyItWorks`, `whenItFails`, `smallBusinessApplicability`, the grammars it informed and a
+`doNotCopy` line. Their evidence classes are stated and are NOT counted as studied unless they are the first kind:
+
+| Evidence class      | Count | What it means                                                                                                  |
+| ------------------- | ----- | -------------------------------------------------------------------------------------------------------------- |
+| `DIRECT_SITE_REVIEW`| 23    | Static HTML and CSS of the live site were retrieved and read (2026-11-02). Superseded in strength by study 1.   |
+| `SEARCH_LEAD`       | 28    | Named by a search result. The site itself was **not opened**. Kept as a lead; **not counted as studied**.       |
+| `ANALYST_MEMORY`    | 55    | Kora's analysis from general knowledge. **Not re-verified live; not counted as studied.**                       |
+
+`CASE_STUDY_REVIEW` and `SECONDARY_DESIGN_ANALYSIS` are not used: no published case study or secondary analysis was
+read as a source in this research, so none is claimed.
 
 Reference policy: **design memory, not a template inventory.** Nothing is copied: no layout, copy, imagery, mark or
 motion. Every entry carries a `doNotCopy` line and names the first-party grammar it informed, never a brand as an enum.

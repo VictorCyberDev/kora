@@ -25,19 +25,52 @@ bolder, colour set, type voice) writes version N+1. Each v3 spec embeds `osVersi
 brand version in `media_assets.brand_version` and the full ArtifactSpec (with the hash). Changing the brand never mutates an earlier
 artifact or version.
 
-## Taste learning
+## Design memory, taste and template fatigue
 
-`creative_feedback` records direction chosen or rejected, regeneration, image rejected, palette or font changed,
-artifact approved. `learnedTaste` only reports a preference when a choice has repeated at least three times; one event is a
-data point. The UI says "Not enough choices yet to say what you prefer" until then.
+Every design decision is stored in design terms, not as words: `creative_feedback.detail.traits` holds the design
+language (`grammarId`), type voice, colour set and composition of the direction that was chosen, and of the other
+directions that were on screen and passed over (only when the owner actually picked one of three; a Kora default is
+never counted as a choice). `BrandOsStore.designHistory(orgId)` reads a year of it per organisation (migration 027
+adds the index).
+
+- **Template fatigue.** `fatigueAvoid` weights each remembered choice by recency (half-life 45 days). A design
+  language whose weighted use reaches 1.2 (two recent choices, or one very recent plus an older one) is passed to the
+  engine's existing `avoidGrammarIds`, so the next three directions rotate away from it. At most two languages are
+  avoided, so three genuinely different directions always remain. An account with no history gets exactly what it
+  got before.
+- **Taste.** Nothing is claimed from fewer than three judgements (ADR-028). From three, `tasteSignals` reports repeated
+  preferences (design language, type voice) and repeated passes (weighted 1.5 or more). `rerankByTaste` only moves
+  which direction is *recommended*, by at most +1.5 / -1.5 on a fit score whose own spread for a poor match is larger:
+  taste can break a near tie, never recommend a bad fit, and the owner can always pick any of the three. The reason
+  shown says so ("it is close to the directions you have chosen before, and it still fits what you told us").
+- `GET /api/sites/:id/brand-os` returns `designMemory` (number of decisions, languages being rotated away from, taste)
+  so the owner can see what Kora remembers and why.
+
+## Backfill for older sites
+
+`POST /api/sites/:id/brand-os/backfill` writes Brand OS version 1 for a site whose newest version is v1 or v2. Colours
+and type are **read from the site** (v2 palette and pairing; v1 primary and accent), strategy and voice come from the
+facts on the site, and the record is marked `provenance.createdBy = "inferred-from-site"` with
+`provenance.inferred.unknown` listing what could not be known (whether the colours were chosen on purpose, the logo,
+what the owner would never say). It never republishes, never edits the old version and never overwrites an existing
+Brand OS. "Try a new Kora design" backfills first, so the before/after comparison in the upgrade response is against a
+recorded brand: history then reads version 1 (inferred) and version 2 (new).
+
+## Owner-friendly changes
+
+Beyond the original four (premium, bolder, calmer, playful) the owner can ask for warmer, cooler, darker, lighter, more
+editorial, product first and more minimal, in the buttons or in plain words ("make it warmer"). Colour changes pick
+another colour set **from the same design language**, so the brand keeps its voice and every text pair stays legible;
+if the language has nothing warmer or darker, the owner is told so rather than the brand being bent. Structure changes
+move the genome only within its vocabulary and never touch the facts.
 
 ## Owner surface
 
-Brand page: the essence, positioning, swatches, type, signature device, always/never rules, one-tap nudges
-(premium, bolder, calmer, playful), history, and the matching-set creator. Advanced fields stay hidden.
+Brand page: the essence, positioning, swatches, type, signature device, always/never rules, the change buttons above,
+history, "Tell Kora what you need" (a plain-language campaign proposal, see CREATIVE-OS.md), the matching-set creator,
+the logo and photo library, and for older sites a button that writes down their brand from their website. Advanced
+fields stay hidden.
 
 ## Not done
 
-Brand OS for sites that are still v1/v2 is not backfilled (their Brand Kit continues to work); the Brand Center does
-not yet edit individual genome fields (nudges and the structured edit API do); logo upload exists as a reference field
-only.
+The Brand Center does not edit individual genome fields (the nudges and the structured edit API do).
