@@ -10,7 +10,10 @@ import {
 import { join, extname } from "node:path";
 import { createRequire } from "node:module";
 const req = createRequire(import.meta.url);
-const { chromium } = req("@playwright/test");
+const pw = req("@playwright/test");
+// BROWSER=chromium|firefox|webkit. Playwright's Linux WebKit/Firefox builds are engines, not real devices.
+const BROWSER = process.env.BROWSER ?? "chromium";
+const chromium = pw[BROWSER];
 const AxeBuilder =
   req("@axe-core/playwright").default ?? req("@axe-core/playwright");
 
