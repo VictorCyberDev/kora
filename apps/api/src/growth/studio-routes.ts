@@ -19,6 +19,7 @@ import {
   buildPresenceGraph,
   generateContent,
   motionFrameSvg,
+  motionStyleFromGenome,
   previewTimes,
   renderAssetSvg,
   staticAssetQuality,
@@ -37,6 +38,7 @@ import type { PlatformStore } from "../platform/store.js";
 import type { BillingService } from "../platform/billing.js";
 import type { GrowthStore } from "./store.js";
 import type { StudioStore } from "./studio-store.js";
+import { BrandOsStore } from "../platform/brand-os-store.js";
 import type { Rasterizer } from "./rasterizer.js";
 import { requireFeature } from "./entitlements.js";
 import type { createGatherer } from "./gather.js";
@@ -95,6 +97,17 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
     if (!site) throw notFound();
     requireOrgRole(req, site.orgId, min);
     return site;
+  };
+  const brandOs = new BrandOsStore(platform.sql);
+  /** How this brand moves, from its Brand OS genome. Absent for sites that have no Brand OS (older designs). */
+  const brandMotion = async (siteId: string) => {
+    const latest = await brandOs.latest(siteId);
+    return latest
+      ? {
+          style: motionStyleFromGenome(latest.brandOs.genome),
+          brandOs: { version: latest.version, hash: latest.hash },
+        }
+      : null;
   };
   /** The studios work from the business profile and a saved Brand Kit; without them there is nothing true to write or draw. */
   const base = async (
@@ -354,10 +367,13 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
   // ---- Motion Studio --------------------------------------------------------
   app.post("/api/sites/:id/motion/preview", async (req) => {
     const site = await siteFor(req);
-    const spec = MotionSpecSchema.parse(req.body);
+    const parsed = MotionSpecSchema.parse(req.body);
+    const bm = await brandMotion(site.id);
+    const spec = bm && !parsed.style ? { ...parsed, style: bm.style } : parsed;
     const { kit, graph } = await base(site);
     return {
       data: {
+        brandOs: bm?.brandOs ?? null,
         frames: previewTimes(spec).map((t) => ({
           t,
           svg: motionFrameSvg(spec, kit.kit, graph.identity.name, t).svg,
@@ -369,7 +385,9 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
   app.post("/api/sites/:id/motion", async (req, reply) => {
     const site = await siteFor(req, "MEMBER");
     await requireFeature(billing, site.orgId, "motion.studio");
-    const spec = MotionSpecSchema.parse(req.body);
+    const parsed = MotionSpecSchema.parse(req.body);
+    const bm = await brandMotion(site.id);
+    const spec = bm && !parsed.style ? { ...parsed, style: bm.style } : parsed;
     if (!(await d.ffmpeg()))
       throw new HttpError(
         409,

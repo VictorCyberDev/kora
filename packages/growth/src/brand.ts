@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VOICES } from "@kora/site-schema";
 import {
   PAIRINGS,
   contrast,
@@ -69,6 +70,69 @@ const VOICE_BY_PERSONALITY: Record<string, BrandVoice> = {
 
 /** Derives a brand kit from what a published site already uses, so the website and marketing share one identity. */
 export function deriveBrandKit(spec: AnySiteSpec): BrandKit {
+  if (spec.version === 3) {
+    const p = spec.design.palette;
+    const g = spec.design.genome;
+    const voice = VOICES[g.typeVoice];
+    const tone: BrandVoice =
+      g.accentScarcity === "frequent" && g.motionIntensity !== "restrained"
+        ? "playful"
+        : [
+              "editorial-luxury",
+              "soft-luxury",
+              "high-fashion",
+              "classical-roman",
+            ].includes(g.typeVoice)
+          ? "premium"
+          : [
+                "condensed-utility",
+                "poster-condensed",
+                "technical-grotesk",
+                "wide-futurist",
+                "local-commerce",
+              ].includes(g.typeVoice)
+            ? "direct"
+            : g.density === "airy" || g.paletteBehavior === "soft-neutral"
+              ? "warm"
+              : "professional";
+    return BrandKitSchema.parse({
+      colors: {
+        ink: p.foreground,
+        canvas: p.background,
+        primary: p.primary,
+        primaryText: p.primaryForeground,
+        accent: p.accent,
+        accentText: p.accentForeground,
+        muted: p.mutedForeground,
+      },
+      typography: {
+        pairing: `v3-${g.typeVoice}`,
+        displayFamily: voice.display.family,
+        bodyFamily: voice.body.family,
+      },
+      shape:
+        g.radiusStyle === "none" || g.radiusStyle === "slight"
+          ? "sharp"
+          : g.radiusStyle === "soft" || g.radiusStyle === "arch"
+            ? "soft"
+            : "rounded",
+      voice: {
+        tone,
+        avoid: spec.brand.strategy.antiTraits
+          .slice(0, 8)
+          .map((x) => x.slice(0, 40)),
+      },
+      imagery: {
+        style:
+          g.imageDominance === "dominant"
+            ? "photo-led"
+            : g.imageDominance === "none"
+              ? "abstract"
+              : "minimal",
+        seed: spec.design.seed % 999_999,
+      },
+    });
+  }
   if (spec.version === 2) {
     const d = spec.design;
     const p = d.palette;

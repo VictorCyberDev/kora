@@ -73,7 +73,8 @@ afterAll(async () => {
   await stopHost();
 });
 
-async function publishedSite(email: string, name: string) {
+async function publishedSite(email: string, name: string, hh: Harness = h) {
+  const h = hh;
   const o = await h.signup(email, `${name} Org`);
   const site = (
     await h.call("POST", "/api/sites", {
@@ -93,6 +94,124 @@ async function publishedSite(email: string, name: string) {
     { cookie: o.cookie },
   );
   return { o, site, v1, pub1 };
+}
+
+async function recoversFromBadRelease(
+  h: Harness,
+  email: string,
+  name: string,
+  edit: Record<string, unknown>,
+) {
+  const { o, site, v1 } = await publishedSite(email, name, h);
+  const v2 = (
+    await h.call("POST", `/api/sites/${site.id}/edit`, {
+      cookie: o.cookie,
+      body: edit,
+    })
+  ).json.data.version;
+  expect(
+    (
+      await h.call("POST", `/api/sites/${site.id}/versions/${v2.id}/publish`, {
+        cookie: o.cookie,
+      })
+    ).json.data.verification.status,
+  ).toBe("MATCH");
+  const live = `${hostBase}/s/${site.slug}/`;
+  await h.runtime.monitors.checkNow(site.id);
+
+  // Controlled test is requested through the control plane and applied by the host.
+  const started = await h.call("POST", `/api/sites/${site.id}/chaos`, {
+    cookie: o.cookie,
+    body: { mode: "http_500", ttlSeconds: 60 },
+  });
+  expect(started.status).toBe(200);
+  expect(started.json.data.label).toBe("Controlled test");
+  expect((await fetch(live)).status).toBe(500); // the public site really fails
+  // ...while the control plane stays up.
+  expect((await h.call("GET", "/health")).status).toBe(200);
+  expect(
+    (await h.call("GET", "/api/auth/me", { cookie: o.cookie })).status,
+  ).toBe(200);
+
+  await h.runtime.monitors.checkNow(site.id);
+  await h.runtime.monitors.checkNow(site.id);
+  await h.runtime.monitors.settle();
+  const incidents = (
+    await h.call("GET", `/api/sites/${site.id}/incidents`, {
+      cookie: o.cookie,
+    })
+  ).json.data;
+  expect(incidents).toHaveLength(1);
+  const view = (
+    await h.call("GET", `/api/incidents/${incidents[0].id}`, {
+      cookie: o.cookie,
+    })
+  ).json.data;
+  expect(view.whatHappened).toMatch(/internal error/);
+  expect(view.whatChanged.length).toBeGreaterThan(0);
+  expect(view.recommendedAction).toMatchObject({
+    type: "republish_site_version",
+    state: "AWAITING_APPROVAL",
+  });
+  expect(view.recommendedAction.policy.decision).toBe("REQUIRE_APPROVAL");
+  const actionId = view.recommendedAction.actionId as string;
+  expect(v1.id).toBe(
+    (await h.call("GET", `/api/actions/${actionId}`, { cookie: o.cookie })).json
+      .data.parameters.versionId,
+  );
+
+  await h.call("POST", `/api/actions/${actionId}/approve`, {
+    cookie: o.cookie,
+    body: {},
+  });
+  const executed = await h.call("POST", `/api/actions/${actionId}/execute`, {
+    cookie: o.cookie,
+  });
+  expect(executed.json.data.state).toBe("VERIFYING");
+  expect(executed.json.data.executions[0].executor).toBe("kora-site-host");
+  // The host now serves the previous version; nothing has declared recovery yet.
+  expect(
+    (await h.sql`SELECT state FROM incidents WHERE id=${incidents[0].id}`)[0]!
+      .state,
+  ).not.toBe("RESOLVED");
+  expect(
+    (await h.call("GET", `/api/actions/${actionId}`, { cookie: o.cookie })).json
+      .data.state,
+  ).toBe("VERIFYING");
+  // The fault was bound to v2; v1 is a different version, so the host now serves it.
+  expect((await fetch(live)).status).toBe(200);
+
+  await h.runtime.monitors.checkNow(site.id);
+  await h.runtime.monitors.checkNow(site.id);
+  await h.runtime.monitors.settle();
+  const done = (
+    await h.call("GET", `/api/actions/${actionId}`, { cookie: o.cookie })
+  ).json.data;
+  expect(done.state).toBe("RECOVERY_VERIFIED");
+  expect(done.recoveryVerification.observationIds).toHaveLength(2);
+
+  const passport = await h.call(
+    "GET",
+    `/incidents/${incidents[0].id}/passport`,
+    { cookie: o.cookie },
+  );
+  expect(passport.json.schema).toBe("kora.incident-passport/v2");
+  const file = join(
+    mkdtempSync(join(tmpdir(), "kora-passport-")),
+    "passport.json",
+  );
+  writeFileSync(file, JSON.stringify(passport.json));
+  expect(spawnSync("node", [cli, file], { encoding: "utf8" }).status).toBe(0);
+  const audit = (
+    await h.call("GET", `/api/orgs/${o.orgId}/audit`, { cookie: o.cookie })
+  ).json.data.map((a: { action: string }) => a.action);
+  expect(audit).toEqual(
+    expect.arrayContaining([
+      "chaos.started",
+      "action.approved",
+      "action.recovery_verified",
+    ]),
+  );
 }
 
 d("independent Site Host", () => {
@@ -197,119 +316,24 @@ d("independent Site Host", () => {
   });
 
   it("recovers a bad release across the service boundary, from new observations only", async () => {
-    const { o, site, v1 } = await publishedSite("sh-2@example.com", "Host Two");
-    const v2 = (
-      await h.call("POST", `/api/sites/${site.id}/edit`, {
-        cookie: o.cookie,
-        body: { instruction: "Make the primary colour red" },
-      })
-    ).json.data.version;
-    expect(
-      (
-        await h.call(
-          "POST",
-          `/api/sites/${site.id}/versions/${v2.id}/publish`,
-          { cookie: o.cookie },
-        )
-      ).json.data.verification.status,
-    ).toBe("MATCH");
-    const live = `${hostBase}/s/${site.slug}/`;
-    await h.runtime.monitors.checkNow(site.id);
-
-    // Controlled test is requested through the control plane and applied by the host.
-    const started = await h.call("POST", `/api/sites/${site.id}/chaos`, {
-      cookie: o.cookie,
-      body: { mode: "http_500", ttlSeconds: 60 },
+    await recoversFromBadRelease(h, "sh-2@example.com", "Host Two", {
+      instruction: "Make the primary colour red",
     });
-    expect(started.status).toBe(200);
-    expect(started.json.data.label).toBe("Controlled test");
-    expect((await fetch(live)).status).toBe(500); // the public site really fails
-    // ...while the control plane stays up.
-    expect((await h.call("GET", "/health")).status).toBe(200);
-    expect(
-      (await h.call("GET", "/api/auth/me", { cookie: o.cookie })).status,
-    ).toBe(200);
-
-    await h.runtime.monitors.checkNow(site.id);
-    await h.runtime.monitors.checkNow(site.id);
-    await h.runtime.monitors.settle();
-    const incidents = (
-      await h.call("GET", `/api/sites/${site.id}/incidents`, {
-        cookie: o.cookie,
-      })
-    ).json.data;
-    expect(incidents).toHaveLength(1);
-    const view = (
-      await h.call("GET", `/api/incidents/${incidents[0].id}`, {
-        cookie: o.cookie,
-      })
-    ).json.data;
-    expect(view.whatHappened).toMatch(/internal error/);
-    expect(view.whatChanged.length).toBeGreaterThan(0);
-    expect(view.recommendedAction).toMatchObject({
-      type: "republish_site_version",
-      state: "AWAITING_APPROVAL",
-    });
-    expect(view.recommendedAction.policy.decision).toBe("REQUIRE_APPROVAL");
-    const actionId = view.recommendedAction.actionId as string;
-    expect(v1.id).toBe(
-      (await h.call("GET", `/api/actions/${actionId}`, { cookie: o.cookie }))
-        .json.data.parameters.versionId,
-    );
-
-    await h.call("POST", `/api/actions/${actionId}/approve`, {
-      cookie: o.cookie,
-      body: {},
-    });
-    const executed = await h.call("POST", `/api/actions/${actionId}/execute`, {
-      cookie: o.cookie,
-    });
-    expect(executed.json.data.state).toBe("VERIFYING");
-    expect(executed.json.data.executions[0].executor).toBe("kora-site-host");
-    // The host now serves the previous version; nothing has declared recovery yet.
-    expect(
-      (await h.sql`SELECT state FROM incidents WHERE id=${incidents[0].id}`)[0]!
-        .state,
-    ).not.toBe("RESOLVED");
-    expect(
-      (await h.call("GET", `/api/actions/${actionId}`, { cookie: o.cookie }))
-        .json.data.state,
-    ).toBe("VERIFYING");
-    // The fault was bound to v2; v1 is a different version, so the host now serves it.
-    expect((await fetch(live)).status).toBe(200);
-
-    await h.runtime.monitors.checkNow(site.id);
-    await h.runtime.monitors.checkNow(site.id);
-    await h.runtime.monitors.settle();
-    const done = (
-      await h.call("GET", `/api/actions/${actionId}`, { cookie: o.cookie })
-    ).json.data;
-    expect(done.state).toBe("RECOVERY_VERIFIED");
-    expect(done.recoveryVerification.observationIds).toHaveLength(2);
-
-    const passport = await h.call(
-      "GET",
-      `/incidents/${incidents[0].id}/passport`,
-      { cookie: o.cookie },
-    );
-    expect(passport.json.schema).toBe("kora.incident-passport/v2");
-    const file = join(
-      mkdtempSync(join(tmpdir(), "kora-passport-")),
-      "passport.json",
-    );
-    writeFileSync(file, JSON.stringify(passport.json));
-    expect(spawnSync("node", [cli, file], { encoding: "utf8" }).status).toBe(0);
-    const audit = (
-      await h.call("GET", `/api/orgs/${o.orgId}/audit`, { cookie: o.cookie })
-    ).json.data.map((a: { action: string }) => a.action);
-    expect(audit).toEqual(
-      expect.arrayContaining([
-        "chaos.started",
-        "action.approved",
-        "action.recovery_verified",
-      ]),
-    );
   }, 60_000);
+
+  it("the same recovery holds for a v3 (Brand OS) site: release, bad release, approval, rollback, verified recovery, passport", async () => {
+    const h3 = await startHarness({
+      publisher,
+      env: { KORA_CREATIVE_ENGINE: "v3" },
+    });
+    try {
+      await recoversFromBadRelease(h3, "sh-v3@example.com", "Host V3", {
+        designEdit: { kind: "nudge", nudge: "premium" },
+      });
+    } finally {
+      await h3.close();
+    }
+  }, 120_000);
 
   it("controlled-test faults expire on their own", async () => {
     const { o, site } = await publishedSite("sh-3@example.com", "Host Three");
