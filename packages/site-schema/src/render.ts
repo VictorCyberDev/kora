@@ -274,18 +274,8 @@ export function lintArtifact(files: SiteFiles): string[] {
   const problems: string[] = [];
   for (const [path, content] of Object.entries(files)) {
     if (path.endsWith(".html")) {
-      // The only inline <script> allowed is a JSON-LD data block, which no browser executes; its `<` is escaped.
-      if (
-        /<script(?![^>]*\bsrc=)(?![^>]*\btype="application\/ld\+json")/i.test(
-          content,
-        )
-      )
+      if (/<script(?![^>]*\bsrc=)/i.test(content))
         problems.push(`${path}: inline script`);
-      for (const m of content.matchAll(
-        /<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi,
-      ))
-        if (m[1]!.includes("<"))
-          problems.push(`${path}: unescaped markup in JSON-LD`);
       // Quoted attribute values are removed first: escaped text such as
       // `onerror=` inside a value is data, only a real attribute counts.
       const tags = content.match(/<[a-z][^>]*>/gi) ?? [];

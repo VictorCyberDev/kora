@@ -23,8 +23,7 @@ const brief = {
   whatsapp: "+2348012345678",
   hours: [{ days: "Mon-Sat", hours: "9am-8pm" }],
 };
-async function ready(email: string, withKit = true, hh: Harness = h) {
-  const h = hh;
+async function ready(email: string, withKit = true) {
   const a = await h.signup(email, "Org");
   const s = (
     await h.call("POST", "/api/sites", {
@@ -314,62 +313,4 @@ d("motion studio", () => {
       ).status,
     ).toBe(200);
   }, 90_000);
-});
-
-d("motion follows the Brand OS", () => {
-  it("a v3 site's motion uses its Brand OS (palette, type, pace) and records which brand version; older sites are unchanged", async () => {
-    const h3 = await startHarness({ env: { KORA_CREATIVE_ENGINE: "v3" } });
-    try {
-      const { a, s } = await ready("st-v3-motion@example.com", true, h3);
-      const spec = {
-        template: "offer_reveal",
-        format: "square",
-        headline: "Weekday lunch",
-        subline: "Rice and stew",
-        cta: "Order now",
-        contact: "+2348012345678",
-        durationSec: 5,
-      };
-      const r = await h3.call("POST", `/api/sites/${s.id}/motion/preview`, {
-        cookie: a.cookie,
-        body: spec,
-      });
-      expect(r.status).toBe(200);
-      const bos = (
-        await h3.call("GET", `/api/sites/${s.id}/brand-os`, {
-          cookie: a.cookie,
-        })
-      ).json.data.current;
-      expect(r.json.data.brandOs).toEqual({
-        version: bos.version,
-        hash: bos.hash,
-      });
-      const svg = r.json.data.frames[2].svg as string;
-      // the brand's own colours reach the frame
-      expect(svg.toLowerCase()).toContain(
-        bos.brandOs.visual.palette.primary.toLowerCase(),
-      );
-      // an explicit style from the client cannot exceed the schema's bounds
-      const bad = await h3.call("POST", `/api/sites/${s.id}/motion/preview`, {
-        cookie: a.cookie,
-        body: { ...spec, style: { speed: 99 } },
-      });
-      expect(bad.status).toBe(400);
-    } finally {
-      await h3.close();
-    }
-    // a v2 deployment has no Brand OS: no style is added and the response says so
-    const { a, s } = await ready("st-v2-motion@example.com");
-    const r = await h.call("POST", `/api/sites/${s.id}/motion/preview`, {
-      cookie: a.cookie,
-      body: {
-        template: "offer_reveal",
-        format: "square",
-        headline: "Weekday lunch",
-        durationSec: 5,
-      },
-    });
-    expect(r.status).toBe(200);
-    expect(r.json.data.brandOs).toBeNull();
-  }, 60_000);
 });

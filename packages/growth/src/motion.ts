@@ -26,59 +26,6 @@ export type MotionTemplate = (typeof MOTION_TEMPLATES)[number];
 export const FPS = 24;
 
 const line = (n: number) => z.string().trim().max(n);
-
-/**
- * How a brand moves. Derived from the Brand OS design genome so a calm editorial brand does not bounce and a loud
- * poster brand does not drift. Pure data; every value is bounded, so a bad value can never produce a broken frame.
- */
-export const MotionStyleSchema = z
-  .object({
-    /** 0.8 = slower and calmer, 1.25 = quicker and more energetic. */
-    speed: z.number().min(0.8).max(1.25).default(1),
-    /** Buttons and cards may overshoot slightly on arrival. Restrained brands never do. */
-    overshoot: z.boolean().default(true),
-    /** Headlines in capitals, as the brand sets them everywhere else. */
-    uppercase: z.boolean().default(false),
-    /** Corner radius in pixels for the button, overriding the kit's shape. */
-    radius: z.number().int().min(0).max(60).optional(),
-    /** Entrance distance: restrained brands rise a little, energetic ones travel further. */
-    travel: z.number().min(0.5).max(1.5).default(1),
-  })
-  .strict();
-export type MotionStyle = z.infer<typeof MotionStyleSchema>;
-
-export function motionStyleFromGenome(g: {
-  motionIntensity: string;
-  motionCharacter: string;
-  headlineBehavior: string;
-  radiusStyle: string;
-}): MotionStyle {
-  const calm =
-    g.motionIntensity === "restrained" || g.motionIntensity === "none";
-  const loud =
-    g.motionIntensity === "expressive" || g.motionIntensity === "dramatic";
-  const radius =
-    g.radiusStyle === "none"
-      ? 0
-      : g.radiusStyle === "slight"
-        ? 6
-        : g.radiusStyle === "soft"
-          ? 14
-          : g.radiusStyle === "round"
-            ? 28
-            : g.radiusStyle === "pill" || g.radiusStyle === "arch"
-              ? 44
-              : undefined;
-  return MotionStyleSchema.parse({
-    speed: calm ? 0.85 : loud ? 1.2 : 1,
-    overshoot:
-      !calm && g.motionCharacter !== "fade" && g.motionCharacter !== "reveal",
-    uppercase: g.headlineBehavior === "uppercase",
-    ...(radius !== undefined ? { radius } : {}),
-    travel: calm ? 0.6 : loud ? 1.3 : 1,
-  });
-}
-
 export const MotionSpecSchema = z
   .object({
     template: z.enum(MOTION_TEMPLATES),
@@ -90,8 +37,6 @@ export const MotionSpecSchema = z
     cta: line(28).default(""),
     contact: line(60).default(""),
     durationSec: z.number().min(4).max(12).default(7),
-    /** Set from the Brand OS genome when the site has one; absent for brand kits made before it. */
-    style: MotionStyleSchema.optional(),
   })
   .strict();
 export type MotionSpec = z.infer<typeof MotionSpecSchema>;
@@ -115,11 +60,8 @@ export function motionFrameSvg(
   spec: MotionSpec,
   kit: BrandKit,
   business: string,
-  t0: number,
+  t: number,
 ): { svg: string; width: number; height: number } {
-  const st = spec.style ?? MotionStyleSchema.parse({});
-  // slower brands still finish their entrance before the video ends
-  const t = t0 >= spec.durationSec - 0.5 ? Math.max(t0, 4.2) : t0 * st.speed;
   const { width: W, height: H } = MOTION_FORMATS[spec.format];
   const tall = spec.format === "story";
   const pad = Math.round(W * 0.09);
@@ -127,10 +69,7 @@ export function motionFrameSvg(
   const p = paletteFor(kit, spec.colorway, "bold");
   const display = resolveFont(kit.typography.displayFamily);
   const body = resolveFont(kit.typography.bodyFamily);
-  const radius =
-    st.radius ??
-    (kit.shape === "sharp" ? 0 : kit.shape === "rounded" ? 40 : 14);
-  const head = (x: string) => (st.uppercase ? x.toUpperCase() : x);
+  const radius = kit.shape === "sharp" ? 0 : kit.shape === "rounded" ? 40 : 14;
   const els: string[] = [];
   const grp = (opacity: number, dy: number, inside: string) =>
     opacity <= 0.001
@@ -197,7 +136,7 @@ export function motionFrameSvg(
   }));
   const blocks: StackBlock[] = [
     {
-      text: head(spec.headline),
+      text: spec.headline,
       start: Math.round(unit * (tall ? 0.115 : 0.095)),
       min: Math.round(unit * 0.045),
       maxLines: tall ? 5 : 3,
@@ -239,19 +178,13 @@ export function motionFrameSvg(
       : "";
     const x = isItem ? pad + Math.round(pb.size * 0.9) : pad;
     els.push(
-      grp(
-        pr,
-        (1 - pr) * (n === 0 ? 60 : 30) * st.travel,
-        bullet + textEls(x, pb, p.fg),
-      ),
+      grp(pr, (1 - pr) * (n === 0 ? 60 : 30), bullet + textEls(x, pb, p.fg)),
     );
   });
   let fy = footerTop;
   if (spec.cta) {
     const bw = Math.min(inner, Math.round(spec.cta.length * cs * 0.6 + cs * 2));
-    const cp = st.overshoot
-      ? easeBack(prog(t, 3.0, 0.6))
-      : easeOut(prog(t, 3.0, 0.6));
+    const cp = easeBack(prog(t, 3.0, 0.6));
     const scale = 0.85 + 0.15 * clamp(cp, 0, 1.15);
     els.push(
       grp(

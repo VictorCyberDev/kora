@@ -12,13 +12,6 @@ type Direction = {
   summary: string;
   swatches: string[];
   previewUrl: string;
-  /** Present when the v3 creative engine designed it. */
-  engine?: string;
-  recommended?: boolean;
-  essence?: string;
-  signature?: string;
-  why?: string;
-  avoids?: string[];
 };
 
 type Brief = {
@@ -288,25 +281,7 @@ export function NewSiteV6() {
                   />
                   <div>
                     <strong>{direction.name}</strong>
-                    {direction.recommended && (
-                      <span className="chip" style={{ marginLeft: 8 }}>
-                        Kora recommends this
-                      </span>
-                    )}
                     <div className="small muted">{direction.summary}</div>
-                    {direction.essence && (
-                      <div className="small" style={{ marginTop: 6 }}>
-                        {direction.essence}
-                      </div>
-                    )}
-                    {direction.signature && (
-                      <div className="small muted">
-                        Signature: {direction.signature}
-                        {direction.avoids?.length
-                          ? ` · Avoids: ${direction.avoids.slice(0, 3).join(", ")}`
-                          : ""}
-                      </div>
-                    )}
                   </div>
                   <span className="chips" aria-hidden="true">
                     <span className="chip sw">

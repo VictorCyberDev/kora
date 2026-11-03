@@ -76,32 +76,3 @@ export const money = (minor: number, currency: string) =>
   new Intl.NumberFormat(undefined, { style: "currency", currency }).format(
     minor / 100,
   );
-
-/** Upload a picture as raw bytes. The server decides what the file really is; the declared type is only a hint. */
-export async function uploadMedia(
-  siteId: string,
-  file: File,
-  kind: "logo" | "photo",
-): Promise<J> {
-  const res = await fetch(
-    `/api/sites/${siteId}/media-library?kind=${kind}&filename=${encodeURIComponent(file.name)}`,
-    {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {
-        "x-requested-with": "kora",
-        "content-type": file.type || "application/octet-stream",
-      },
-      body: file,
-    },
-  );
-  const json: J = await res.json().catch(() => null);
-  if (!res.ok)
-    throw new ApiError(
-      res.status,
-      json?.error ?? "error",
-      json?.message ?? friendly(res.status),
-      json,
-    );
-  return json?.data;
-}

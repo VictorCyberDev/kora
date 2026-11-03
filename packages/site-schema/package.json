@@ -15,8 +15,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "zod": "^4.1.12",
-    "@kora/creative": "workspace:*"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

@@ -115,27 +115,6 @@ export function Build() {
       setTab("chat");
       versions.reload();
     });
-  /** Plain-words before/after for the owner. The "before" is read from the old site and says so. */
-  const compare = (c: J | undefined) => {
-    if (!c?.before || !c?.after) return "";
-    const type = (t: string) => t.replace(/-/g, " ");
-    return ` Before (worked out from your current site): ${type(c.before.typeVoice)} type, ${c.before.tone} tone, main colour ${c.before.palette.primary}. After: ${type(c.after.typeVoice)} type, ${c.after.tone} tone, main colour ${c.after.palette.primary}, built around "${c.after.essence}". Kept from your site: ${c.keptFromYourSite.join(", ")}.`;
-  };
-  const tryNew = () =>
-    void run(async () => {
-      const r = await api(
-        "POST",
-        `/api/sites/${id}/versions/${current}/upgrade-v3`,
-        {},
-      );
-      say(
-        "kora",
-        `Made a new draft in the "${r.direction}" direction (version ${r.version.number}). ${r.note}${compare(r.comparison)}`,
-      );
-      setSel(r.version.id);
-      setTab("chat");
-      versions.reload();
-    });
   const live = site.data?.publishedVersionId as string | null | undefined;
   const liveNumber = list.find((v) => v.id === live)?.number;
   const home = spec?.pages?.find((p: J) => p.slug === "home");
@@ -200,7 +179,7 @@ export function Build() {
                 Colours, button text, adding a service and renaming work without
                 AI. Bigger rewrites need the AI model.
               </p>
-              {spec && spec.version === 1 && (
+              {spec && !isV2 && (
                 <Notice kind="info">
                   This version uses the earlier design.{" "}
                   <button className="btn sm" disabled={busy} onClick={upgrade}>
@@ -211,21 +190,6 @@ export function Build() {
                     not change until you publish it.
                   </div>
                 </Notice>
-              )}
-              {spec && spec.version !== 3 && (
-                <p className="small">
-                  <button
-                    className="btn sm ghost"
-                    disabled={busy}
-                    onClick={tryNew}
-                  >
-                    Try a new Kora design
-                  </button>{" "}
-                  <span className="muted">
-                    A new draft from the newest design engine, built from the
-                    same facts. You can compare it and roll back.
-                  </span>
-                </p>
               )}
             </div>
           )}
@@ -346,9 +310,8 @@ export function Build() {
               </div>
             ) : (
               <Notice>
-                {spec?.version === 3
-                  ? "This website uses Kora's newest design system. Change how it looks from Brand (more premium, bolder, calmer), or ask Kora in plain words."
-                  : "Design controls are available on the updated design. Open the Ask Kora tab to upgrade this version."}
+                Design controls are available on the updated design. Open the
+                Ask Kora tab to upgrade this version.
               </Notice>
             ))}
 

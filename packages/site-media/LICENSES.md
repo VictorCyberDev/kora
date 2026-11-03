@@ -12,5 +12,3 @@ re-encoded as WebP. Photographs showing another business's name or logo were rej
 | cafe-minimal-daylight.webp     | Orlova Maria        | https://www.pexels.com/photo/wooden-furniture-in-cozy-minimalist-cafeteria-4940753/          |
 | hospitality-sunlit-hall.webp   | Bertelli Fotografia | https://www.pexels.com/photo/sunlit-hall-with-windows-13871340/                              |
 | repair-bench-microscope.webp   | Tima Miroshnichenko | https://www.pexels.com/photo/a-person-repairing-a-smartphone-6754839/                        |
-
-Note (2026-11): barber-shop-service.webp was re-encoded at WebP quality 68 (same pixels, 250 KB to 167 KB) to cut mobile load time. No other change.

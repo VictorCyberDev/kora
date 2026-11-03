@@ -35,4 +35,3 @@ export * from "./pilot.js";
 export * from "./managed.js";
 export * from "./scale.js";
 export * from "./mediagen.js";
-export * from "./proposal.js";

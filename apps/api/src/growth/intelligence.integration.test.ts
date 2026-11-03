@@ -26,11 +26,7 @@ const brief = {
   whatsapp: "+2348012345678",
   hours: [{ days: "Mon-Sat", hours: "9am-8pm" }],
 };
-async function readyOn(
-  h: Harness,
-  email: string,
-  connect: string[] = ["facebook"],
-) {
+async function ready(email: string, connect: string[] = ["facebook"]) {
   const a = await h.signup(email, "Org");
   const s = (
     await h.call("POST", "/api/sites", {
@@ -85,154 +81,121 @@ async function readyOn(
   }
   return { a, s };
 }
-const beaconOn = (h: Harness, siteId: string, body: unknown, ua = BROWSER) =>
+const beacon = (siteId: string, body: unknown, ua = BROWSER) =>
   fetch(`${h.base}/api/public/sites/${siteId}/events`, {
     method: "POST",
     headers: { "content-type": "text/plain;charset=UTF-8", "user-agent": ua },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
-const ready = (email: string, connect?: string[]) => readyOn(h, email, connect);
-const beacon = (siteId: string, body: unknown, ua = BROWSER) =>
-  beaconOn(h, siteId, body, ua);
 const day = (n: number) =>
   new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
 
-async function attributionFlow(h: Harness, tag: string) {
-  const ready = (email: string) => readyOn(h, email);
-  const beacon = (siteId: string, body: unknown, ua = BROWSER) =>
-    beaconOn(h, siteId, body, ua);
-  const { a, s } = await ready(`in1-${tag}@example.com`);
-  const made = await h.call("POST", `/api/sites/${s.id}/campaigns`, {
-    cookie: a.cookie,
-    body: {
-      name: "Lunch launch",
-      offerId: "lunch",
-      channels: ["facebook"],
-      startOn: day(1),
-      endOn: day(8),
-    },
-  });
-  expect(made.status).toBe(201);
-  const items = (
-    await h.call("GET", `/api/sites/${s.id}/campaigns/${made.json.data.id}`, {
-      cookie: a.cookie,
-    })
-  ).json.data.items as Array<{ caption: { body: string } }>;
-  const url = /https?:\/\/\S+/.exec(items[0]!.caption.body)![0];
-  const u = new URL(url);
-  const code = u.searchParams.get("k")!;
-  expect(code).toMatch(/^[a-z]{8}$/);
-  expect(u.searchParams.get("utm_source")).toBe("facebook");
-  expect(u.searchParams.get("utm_campaign")).toBe("lunch-launch");
-  // one code per channel, shared by the campaign's posts
-  expect(
-    new Set(
-      items.map((i) =>
-        new URL(/https?:\/\/\S+/.exec(i.caption.body)![0]).searchParams.get(
-          "k",
-        ),
-      ),
-    ).size,
-  ).toBe(1);
-
-  expect((await beacon(s.id, { k: code, t: "visit" })).status).toBe(204);
-  await beacon(s.id, { k: code, t: "visit" });
-  await beacon(s.id, { k: code, t: "whatsapp" });
-  await beacon(s.id, { k: code, t: "call" });
-  // none of these count: a bot, an unknown code, malformed bodies, another site's id
-  await beacon(s.id, { k: code, t: "visit" }, "facebookexternalhit/1.1");
-  await beacon(s.id, { k: "zzzzzzzz", t: "visit" });
-  await beacon(s.id, "not json");
-  await beacon(s.id, { k: code, t: "purchase" });
-  const other = await ready(`in1b-${tag}@example.com`);
-  await beacon(other.s.id, { k: code, t: "visit" });
-  // a form submitted by a visitor who arrived through the link
-  await fetch(`${h.base}/api/public/sites/${s.id}/forms`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      name: "Ada",
-      phone: "+2348055500001",
-      message: "How much?",
-      k: code,
-    }),
-  });
-  await fetch(`${h.base}/api/public/sites/${s.id}/forms`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ name: "Spoof", message: "x", k: "bad-code-1" }),
-  });
-
-  const rep = await h.call("GET", `/api/sites/${s.id}/attribution?days=7`, {
-    cookie: a.cookie,
-  });
-  expect(rep.status).toBe(200);
-  expect(rep.json.data.summary).toMatchObject({
-    links: 1,
-    visits: 2,
-    whatsappTaps: 1,
-    callTaps: 1,
-    enquiries: 1,
-  });
-  expect(rep.json.data.note).toMatch(/only people who arrived through a link/);
-  expect(JSON.stringify(rep.json)).not.toMatch(/revenue|sales generated/i);
-  // the invalid code never reached storage
-  expect(
-    Number(
-      (
-        await h.sql`SELECT COUNT(*)::int AS n FROM form_submissions WHERE site_id=${s.id} AND fields ? 'k'`
-      )[0]!.n,
-    ),
-  ).toBe(1);
-
-  const brief2 = (
-    await h.call("GET", `/api/sites/${s.id}/marketing/brief`, {
-      cookie: a.cookie,
-    })
-  ).json.data.brief;
-  expect(JSON.stringify(brief2.sections)).toContain(
-    "2 visits from links Kora created",
-  );
-
-  const bb = await h.signup(`in1c-${tag}@example.com`, "C");
-  expect(
-    (
-      await h.call("GET", `/api/sites/${s.id}/attribution`, {
-        cookie: bb.cookie,
-      })
-    ).status,
-  ).toBe(404);
-}
-
 d("attribution", () => {
   it("puts a tracked link in campaign posts and counts only what arrives through it", async () => {
-    await attributionFlow(h, "v2");
-  });
-
-  it("the same attribution, lead capture and isolation hold on a v3 (Brand OS) site", async () => {
-    const h3 = await startHarness({
-      env: { KORA_SANDBOX_CHANNELS: "true", KORA_CREATIVE_ENGINE: "v3" },
+    const { a, s } = await ready("in1@example.com");
+    const made = await h.call("POST", `/api/sites/${s.id}/campaigns`, {
+      cookie: a.cookie,
+      body: {
+        name: "Lunch launch",
+        offerId: "lunch",
+        channels: ["facebook"],
+        startOn: day(1),
+        endOn: day(8),
+      },
     });
-    try {
-      await attributionFlow(h3, "v3");
-      // the published v3 page really carries the form, the tracking meta tag and the script
-      const { a, s } = await readyOn(h3, "in-v3-html@example.com");
-      const vs = (
-        await h3.call("GET", `/api/sites/${s.id}/versions`, {
-          cookie: a.cookie,
+    expect(made.status).toBe(201);
+    const items = (
+      await h.call("GET", `/api/sites/${s.id}/campaigns/${made.json.data.id}`, {
+        cookie: a.cookie,
+      })
+    ).json.data.items as Array<{ caption: { body: string } }>;
+    const url = /https?:\/\/\S+/.exec(items[0]!.caption.body)![0];
+    const u = new URL(url);
+    const code = u.searchParams.get("k")!;
+    expect(code).toMatch(/^[a-z]{8}$/);
+    expect(u.searchParams.get("utm_source")).toBe("facebook");
+    expect(u.searchParams.get("utm_campaign")).toBe("lunch-launch");
+    // one code per channel, shared by the campaign's posts
+    expect(
+      new Set(
+        items.map((i) =>
+          new URL(/https?:\/\/\S+/.exec(i.caption.body)![0]).searchParams.get(
+            "k",
+          ),
+        ),
+      ).size,
+    ).toBe(1);
+
+    expect((await beacon(s.id, { k: code, t: "visit" })).status).toBe(204);
+    await beacon(s.id, { k: code, t: "visit" });
+    await beacon(s.id, { k: code, t: "whatsapp" });
+    await beacon(s.id, { k: code, t: "call" });
+    // none of these count: a bot, an unknown code, malformed bodies, another site's id
+    await beacon(s.id, { k: code, t: "visit" }, "facebookexternalhit/1.1");
+    await beacon(s.id, { k: "zzzzzzzz", t: "visit" });
+    await beacon(s.id, "not json");
+    await beacon(s.id, { k: code, t: "purchase" });
+    const other = await ready("in1b@example.com");
+    await beacon(other.s.id, { k: code, t: "visit" });
+    // a form submitted by a visitor who arrived through the link
+    await fetch(`${h.base}/api/public/sites/${s.id}/forms`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: "Ada",
+        phone: "+2348055500001",
+        message: "How much?",
+        k: code,
+      }),
+    });
+    await fetch(`${h.base}/api/public/sites/${s.id}/forms`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Spoof", message: "x", k: "bad-code-1" }),
+    });
+
+    const rep = await h.call("GET", `/api/sites/${s.id}/attribution?days=7`, {
+      cookie: a.cookie,
+    });
+    expect(rep.status).toBe(200);
+    expect(rep.json.data.summary).toMatchObject({
+      links: 1,
+      visits: 2,
+      whatsappTaps: 1,
+      callTaps: 1,
+      enquiries: 1,
+    });
+    expect(rep.json.data.note).toMatch(
+      /only people who arrived through a link/,
+    );
+    expect(JSON.stringify(rep.json)).not.toMatch(/revenue|sales generated/i);
+    // the invalid code never reached storage
+    expect(
+      Number(
+        (
+          await h.sql`SELECT COUNT(*)::int AS n FROM form_submissions WHERE site_id=${s.id} AND fields ? 'k'`
+        )[0]!.n,
+      ),
+    ).toBe(1);
+
+    const brief2 = (
+      await h.call("GET", `/api/sites/${s.id}/marketing/brief`, {
+        cookie: a.cookie,
+      })
+    ).json.data.brief;
+    expect(JSON.stringify(brief2.sections)).toContain(
+      "2 visits from links Kora created",
+    );
+
+    const bb = await h.signup("in1c@example.com", "C");
+    expect(
+      (
+        await h.call("GET", `/api/sites/${s.id}/attribution`, {
+          cookie: bb.cookie,
         })
-      ).json.data as Array<{ id: string }>;
-      const v = (
-        await h3.call("GET", `/api/sites/${s.id}/versions/${vs[0]!.id}`, {
-          cookie: a.cookie,
-        })
-      ).json.data;
-      expect(v.spec.version).toBe(3);
-      expect(v.files).toContain("site.js");
-    } finally {
-      await h3.close();
-    }
-  }, 90_000);
+      ).status,
+    ).toBe(404);
+  });
 
   it("v2 sites carry the tracking script and meta tag; v1 output is untouched", async () => {
     const { a, s } = await ready("in2@example.com");

@@ -108,7 +108,7 @@ export function factsFromSpec(spec: AnySiteSpec): BusinessFacts {
   const services: string[] = [];
   for (const page of spec.pages)
     for (const s of page.sections)
-      if (s.type === "services" || s.type === "offer" || s.type === "products")
+      if (s.type === "services")
         for (const it of s.items) {
           const title = "title" in it ? it.title : "";
           if (title && !services.includes(title)) services.push(title);
