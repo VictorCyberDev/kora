@@ -16,6 +16,9 @@ import {
   gradeByDimension,
   planSiteV3,
   sectionV3Schema,
+  applyStructuredEditV3,
+  ruleBasedEditV3,
+  EditV3Error,
 } from "../src/index.js";
 import {
   composeDirections,
@@ -527,5 +530,47 @@ describe("composition follows the assets", () => {
     const plain = planDirectionsV3(fashion).directions[0]!;
     expect(d.brandOs.visual.logoAssetId).toBe("logo-1");
     expect(brandOsHashOf(d.brandOs)).not.toBe(brandOsHashOf(plain.brandOs));
+  });
+});
+
+describe("owner-friendly design nudges", () => {
+  const base = () => planDirectionsV3(barber).directions[0]!.spec;
+  it("maps everyday words to validated edits", () => {
+    for (const [t, n] of [
+      ["make it warmer", "warmer"],
+      ["a bit darker please", "darker"],
+      ["more editorial", "editorial"],
+      ["focus on the products", "product-focused"],
+      ["keep it minimal", "minimal"],
+      ["make it lighter", "lighter"],
+    ] as const)
+      expect(ruleBasedEditV3(t)).toEqual({ kind: "nudge", nudge: n });
+  });
+  it("palette nudges move within the design language and keep text legible", () => {
+    const spec = base();
+    let moved = 0;
+    for (const n of ["warmer", "cooler", "darker", "lighter"] as const) {
+      try {
+        const out = applyStructuredEditV3(spec, { kind: "nudge", nudge: n });
+        expect(out.design.colorwayId).not.toBe(spec.design.colorwayId);
+        expect(out.brand.grammarId).toBe(spec.brand.grammarId);
+        expect(criticV3(out).filter((i) => i.severity === "block")).toEqual([]);
+        moved++;
+      } catch (e) {
+        // honest refusal when the language has nothing warmer/darker; never a bent brand
+        expect(e).toBeInstanceOf(EditV3Error);
+      }
+    }
+    expect(moved).toBeGreaterThan(0);
+    expect(spec.design.colorwayId).toBe(base().design.colorwayId);
+  });
+  it("structure nudges change the genome and never the facts", () => {
+    const spec = base();
+    for (const n of ["editorial", "product-focused", "minimal"] as const) {
+      const out = applyStructuredEditV3(spec, { kind: "nudge", nudge: n });
+      expect(out.business).toEqual(spec.business);
+      expect(out.design.genome).not.toEqual(spec.design.genome);
+      expect(() => parseSiteSpecV3(out)).not.toThrow();
+    }
   });
 });

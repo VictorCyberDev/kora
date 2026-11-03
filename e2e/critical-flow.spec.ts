@@ -26,7 +26,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   // 1. Landing communicates the product, then sign up.
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Look world-class/ }),
+    page.getByRole("heading", { name: /A brand, a website and the campaigns to match/ }),
   ).toBeVisible();
   await shot(page, "01-landing");
   await page.getByRole("link", { name: "Build my website" }).first().click();

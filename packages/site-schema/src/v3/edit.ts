@@ -10,6 +10,9 @@ import {
   findCliches,
   ctaLabel,
   resolveVertical,
+  hexToRgb,
+  luminance,
+  type Colorway,
   type DesignGenome,
 } from "@kora/creative";
 import { paletteFromColorway } from "./palette.js";
@@ -24,6 +27,13 @@ export const NUDGES = [
   "more-image",
   "stronger-whatsapp",
   "more-contrast",
+  "warmer",
+  "cooler",
+  "darker",
+  "lighter",
+  "editorial",
+  "product-focused",
+  "minimal",
 ] as const;
 export type Nudge = (typeof NUDGES)[number];
 
@@ -136,12 +146,99 @@ function nudge(g: DesignGenome, n: Nudge): DesignGenome {
     case "stronger-whatsapp":
       x.mobileStrategy = "action-dock";
       break;
+    case "editorial":
+      x.headlineBehavior = "mixed-italic";
+      x.typeContrast = "high";
+      x.alignment = "mixed";
+      x.spacingRhythm = "dramatic";
+      x.density = x.density === "dense" ? "balanced" : x.density;
+      if (
+        ![
+          "editorial-luxury",
+          "modern-serif",
+          "heritage-serif",
+          "high-fashion",
+          "soft-luxury",
+        ].includes(x.typeVoice)
+      )
+        x.typeVoice = "modern-serif";
+      break;
+    case "product-focused":
+      x.imageDominance = "dominant";
+      x.headlineBehavior =
+        x.headlineBehavior === "oversized" ? "sentence" : x.headlineBehavior;
+      x.density = x.density === "airy" ? "balanced" : x.density;
+      break;
+    case "minimal":
+      x.density = "airy";
+      x.borderStyle = "hairline";
+      x.radiusStyle = "none";
+      x.accentScarcity = "rare";
+      x.motionIntensity = "restrained";
+      x.headlineBehavior = "sentence";
+      x.typeContrast = x.typeContrast === "extreme" ? "high" : x.typeContrast;
+      break;
     case "more-contrast":
       x.typeContrast = x.typeContrast === "low" ? "medium" : "high";
       x.borderStyle = x.borderStyle === "none" ? "hairline" : x.borderStyle;
       break;
   }
   return x;
+}
+
+const hueOf = (hex: string): number => {
+  const [r, g, b] = hexToRgb(hex).map((v) => v / 255) as [
+    number,
+    number,
+    number,
+  ];
+  const mx = Math.max(r, g, b);
+  const d = mx - Math.min(r, g, b);
+  if (d < 0.02) return 0;
+  const h =
+    mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  return (h * 60 + 360) % 360;
+};
+/** 1 at orange-red (25 degrees), 0 at the opposite blue-cyan side. Greys count as neutral (0.5). */
+const warmth = (hex: string): number => {
+  const [r, g, b] = hexToRgb(hex);
+  if (Math.max(r, g, b) - Math.min(r, g, b) < 14) return 0.5;
+  const d = Math.abs(((hueOf(hex) - 25 + 540) % 360) - 180);
+  return d / 180;
+};
+const palWarmth = (c: { primary: string; accent: string; bg: string }) =>
+  warmth(c.primary) * 0.5 + warmth(c.accent) * 0.3 + warmth(c.bg) * 0.2;
+
+/**
+ * Palette nudges choose another colour set that belongs to the same design language, so the brand keeps its voice and
+ * every text pair stays legible. When no such set exists the owner is told, rather than the brand being bent.
+ */
+function colorwayNudge(
+  grammarId: string | undefined,
+  currentId: string | undefined,
+  n: Nudge,
+): Colorway {
+  const gram = GRAMMARS.find((g) => g.id === grammarId);
+  const sets = gram?.colorways ?? [];
+  const cur = sets.find((c) => c.id === currentId) ?? sets[0];
+  if (!cur) throw new EditV3Error("This design has no alternative colours.");
+  const score = (c: Colorway) =>
+    n === "warmer"
+      ? palWarmth(c)
+      : n === "cooler"
+        ? -palWarmth(c)
+        : n === "darker"
+          ? -luminance(c.bg)
+          : luminance(c.bg);
+  const better = sets
+    .filter((c) => c.id !== cur.id && score(c) > score(cur) + 0.02)
+    .sort((a, b) => score(b) - score(a));
+  const pick = better[0];
+  if (!pick)
+    throw new EditV3Error(
+      `This design language has no ${n} colours than the ones you have. Try a different direction for that.`,
+    );
+  return pick;
 }
 
 export function applyStructuredEditV3(
@@ -176,7 +273,16 @@ export function applyStructuredEditV3(
       if (e.location) next.business.location = e.location;
       break;
     case "nudge":
-      next.design.genome = nudge(next.design.genome, e.nudge);
+      if (["warmer", "cooler", "darker", "lighter"].includes(e.nudge)) {
+        const cw = colorwayNudge(
+          next.brand.grammarId,
+          next.design.colorwayId,
+          e.nudge,
+        );
+        next.design.palette = paletteFromColorway(cw);
+        next.design.colorwayId = cw.id;
+        next.design.mode = cw.mode;
+      } else next.design.genome = nudge(next.design.genome, e.nudge);
       break;
     case "colorway": {
       const gram = GRAMMARS.find((g) => g.id === next.brand.grammarId);
@@ -244,6 +350,16 @@ export function ruleBasedEditV3(instruction: string): StructuredEditV3 | null {
     [/bolder|more bold|louder|stronger look|punchier|more energy/, "bolder"],
     [/calm|quiet|softer|more subtle|less busy|relax/, "calmer"],
     [/playful|fun\b|friendlier|more fun|cheerful/, "playful"],
+    [/warmer|cosier|cozier|more warmth|warm(er)? colou?rs?/, "warmer"],
+    [/cooler|colder|fresher colou?rs?/, "cooler"],
+    [/darker|moodier|more dramatic|dark mode|night/, "darker"],
+    [/lighter|brighter|more airy colou?rs?|paler/, "lighter"],
+    [/editorial|magazine|more (stylish|refined)/, "editorial"],
+    [
+      /product[- ]focus|focus on (the )?products?|sell(ing)? (the )?products?/,
+      "product-focused",
+    ],
+    [/minimal|cleaner|stripped|less clutter/, "minimal"],
     [/less text|fewer words|shorter|simpler/, "less-text"],
     [
       /show .*(product|photo|image|picture)|more (image|photo|picture)s?|bigger (image|photo)/,

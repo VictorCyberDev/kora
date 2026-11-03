@@ -16,6 +16,12 @@ const NUDGES: Array<[string, string]> = [
   ["bolder", "Bolder"],
   ["calmer", "Calmer"],
   ["playful", "More playful"],
+  ["warmer", "Warmer"],
+  ["darker", "Darker"],
+  ["lighter", "Lighter"],
+  ["editorial", "More editorial"],
+  ["product-focused", "Product first"],
+  ["minimal", "More minimal"],
 ];
 
 /** The owner-facing Brand OS: "this is how Kora represents my business". Advanced fields stay hidden. */
