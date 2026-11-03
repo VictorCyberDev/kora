@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { api, when, type J } from "../api";
 import { Async, Empty, Notice, Status, errText, useLoad } from "../ui";
-import { BrandOsPanel, CreativeSetPanel } from "./brand-os";
+import { BrandOsPanel, CampaignAskPanel, CreativeSetPanel } from "./brand-os";
 import { MediaLibraryPanel } from "./media-library";
 
 const KIND: Record<string, "ok" | "warn" | "bad" | "wait"> = {
@@ -428,6 +428,7 @@ export function BrandPage() {
           <div className="stack">
             <BrandOsPanel siteId={String(id)} />
             <MediaLibraryPanel siteId={String(id)} />
+            <CampaignAskPanel siteId={String(id)} />
             <CreativeSetPanel siteId={String(id)} />
             <section className="card stack" aria-labelledby="brand-h">
               <p className="k-overline">

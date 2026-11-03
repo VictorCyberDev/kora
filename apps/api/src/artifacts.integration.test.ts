@@ -202,4 +202,52 @@ d("ArtifactSpec through the real API", () => {
     });
     expect(own.status).toBe(201);
   });
+
+  it("turns a plain request into a campaign PROPOSAL and creates, posts and spends nothing", async () => {
+    const { o, site } = await setup("proposal@example.com");
+    const countAssets = async () =>
+      (
+        await h.sql`SELECT count(*)::int AS n FROM media_assets WHERE site_id=${site.id}`
+      )[0]!.n as number;
+    const before = await countAssets();
+    const r = await h.call("POST", `/api/sites/${site.id}/campaign-proposal`, {
+      cookie: o.cookie,
+      body: { request: "I need more clean fades bookings next week" },
+    });
+    expect(r.status).toBe(200);
+    const p = r.json.data;
+    expect(p.status).toBe("PROPOSED");
+    expect(p.autoPublish).toBe(false);
+    expect(p.spends).toBe(false);
+    expect(p.understood.goal).toBe("booking");
+    expect(p.understood.subjectInProfile).toBe(true);
+    expect(p.pieces.length).toBeGreaterThanOrEqual(3);
+    expect(p.brand.version).toBe(1);
+    // nothing was made
+    expect(await countAssets()).toBe(before);
+    // each draft is a valid request the artifacts API accepts once the owner agrees
+    const first = p.pieces[0].draft;
+    const made = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: first,
+    });
+    expect(made.status).toBe(201);
+    // unclear requests are asked about, not guessed
+    const bad = await h.call(
+      "POST",
+      `/api/sites/${site.id}/campaign-proposal`,
+      {
+        cookie: o.cookie,
+        body: { request: "do something good for me" },
+      },
+    );
+    expect(bad.status).toBe(422);
+    // other tenants cannot use this site
+    const other = await h.signup("proposal-other@example.com");
+    const x = await h.call("POST", `/api/sites/${site.id}/campaign-proposal`, {
+      cookie: other.cookie,
+      body: { request: "I need more clean fades bookings next week" },
+    });
+    expect([403, 404]).toContain(x.status);
+  });
 });

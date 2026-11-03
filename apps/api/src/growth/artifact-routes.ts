@@ -16,6 +16,7 @@ import {
   type ArtifactSpec,
 } from "@kora/creative";
 import { parseAnySiteSpec } from "@kora/site-schema";
+import { proposeCampaign } from "@kora/growth";
 import {
   HttpError,
   notFound,
@@ -461,5 +462,67 @@ export function registerArtifactRoutes(
       }
     }
     return reply.code(201).send({ data: { campaignId, results } });
+  });
+
+  // "I need more birthday cake orders next week": a coordinated PROPOSAL, never an action. Nothing is created, posted,
+  // scheduled or spent here; each piece is a draft the owner later submits to the artifacts endpoints and approves.
+  app.post("/api/sites/:id/campaign-proposal", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    await requireFeature(billing, site.orgId, "brand.studio");
+    const { request } = z
+      .object({ request: z.string().trim().min(3).max(400) })
+      .strict()
+      .parse(req.body);
+    const row = site.currentVersionId
+      ? await platform.getVersionRow(site.id, site.currentVersionId)
+      : null;
+    const spec = row ? parseAnySiteSpec(row.spec) : null;
+    const offerings: string[] = [];
+    const add = (t: unknown) => {
+      if (typeof t === "string" && t.trim() && !offerings.includes(t.trim()))
+        offerings.push(t.trim());
+    };
+    if (spec)
+      for (const p of spec.pages)
+        for (const sec of p.sections as Array<Record<string, unknown>>) {
+          if (
+            ["services", "offer", "products"].includes(String(sec.type)) &&
+            Array.isArray(sec.items)
+          )
+            for (const it of sec.items as Array<Record<string, unknown>>)
+              add(it.title ?? it.name);
+          if (sec.type === "ticker" && Array.isArray(sec.items))
+            for (const t of sec.items) add(t);
+          if (sec.type === "hero" && Array.isArray(sec.highlights))
+            for (const t of sec.highlights) add(t);
+        }
+    const biz = spec?.business;
+    const result = proposeCampaign(request, {
+      businessName: biz?.name ?? site.name,
+      offerings,
+      whatsapp: Boolean(biz?.whatsapp),
+      phone: Boolean(biz?.phone),
+      today: new Date(),
+    });
+    if ("error" in result)
+      throw new HttpError(422, result.error, result.message);
+    const latest = await brandOs.latest(site.id);
+    return {
+      data: {
+        ...result,
+        // the brand every piece would be made in; older sites without a Brand OS are told how to get one
+        brand: latest
+          ? { version: latest.version, name: latest.brandOs.name }
+          : null,
+        ...(latest
+          ? {}
+          : {
+              needsFromOwner: [
+                ...result.needsFromOwner,
+                "Create your brand system first (Brand page: Work out my brand from my website), so every piece uses the same brand.",
+              ],
+            }),
+      },
+    };
   });
 }

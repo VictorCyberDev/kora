@@ -329,3 +329,105 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
     </section>
   );
 }
+
+/** "I need more birthday cake orders next week": Kora proposes a coordinated set; nothing is made until the owner says so. */
+export function CampaignAskPanel({ siteId }: { siteId: string }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [proposal, setProposal] = useState<J | null>(null);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const ask = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    setProposal(null);
+    try {
+      setProposal(
+        await api<J>("POST", `/api/sites/${siteId}/campaign-proposal`, {
+          request: text,
+        }),
+      );
+    } catch (x) {
+      setMsg({ ok: false, text: errText(x) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  const make = async () => {
+    if (!proposal) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const campaignId = `c-${Date.now().toString(36)}`;
+      for (const p of proposal.pieces as J[])
+        await api("POST", `/api/sites/${siteId}/artifacts`, {
+          ...p.draft,
+          campaignId,
+        });
+      setMsg({
+        ok: true,
+        text: "Drafts made. Review each one below; nothing has been posted.",
+      });
+      setProposal(null);
+    } catch (x) {
+      setMsg({ ok: false, text: errText(x) });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <section className="card stack" aria-labelledby="ask-h">
+      <h2 id="ask-h">Tell Kora what you need</h2>
+      <form className="row" onSubmit={(e) => void ask(e)}>
+        <label className="grow">
+          <span className="small muted">
+            For example: I need more birthday cake orders next week
+          </span>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={400}
+            required
+            minLength={3}
+            aria-label="Describe what you want"
+          />
+        </label>
+        <button className="btn" disabled={busy}>
+          Plan it
+        </button>
+      </form>
+      {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
+      {proposal && (
+        <div className="stack">
+          <p>
+            Goal: <strong>{proposal.understood.goal}</strong> · About:{" "}
+            <strong>{proposal.understood.subject}</strong> · When:{" "}
+            <strong>{proposal.understood.window.label}</strong>
+          </p>
+          <ol className="small">
+            {(proposal.pieces as J[]).map((p) => (
+              <li key={p.format}>
+                <strong>{FORMAT_LABEL[p.format] ?? p.format}</strong>, around{" "}
+                {p.suggestedOn}: {p.purpose}
+              </li>
+            ))}
+          </ol>
+          <div>
+            <p className="small">Kora still needs from you:</p>
+            <ul className="small">
+              {(proposal.needsFromOwner as string[]).map((n) => (
+                <li key={n}>{n}</li>
+              ))}
+            </ul>
+          </div>
+          <p className="small muted">{proposal.next}</p>
+          <div className="row">
+            <button className="btn" disabled={busy} onClick={() => void make()}>
+              Make these drafts
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}

@@ -522,6 +522,7 @@ d("Creative engine v3 through the real API", () => {
           text: reply,
           inputTokens: 12,
           outputTokens: 8,
+          model: "stub",
         });
       },
     };

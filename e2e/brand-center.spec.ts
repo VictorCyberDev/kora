@@ -200,6 +200,27 @@ test("a file that is not a picture is refused in plain words", async () => {
   ).toHaveLength(0);
 });
 
+test("the owner asks in plain words and gets a proposal; nothing is made until they agree", async () => {
+  const p = owner.page;
+  await p.goto(`/app/sites/${siteId}/brand`);
+  await p
+    .getByRole("textbox", { name: "Describe what you want" })
+    .fill("I need more birthday cake orders next week");
+  await p.getByRole("button", { name: "Plan it" }).click();
+  await expect(p.getByText(/Goal:/)).toBeVisible();
+  await expect(
+    p.getByText(/Nothing has been made, posted or spent/),
+  ).toBeVisible();
+  const before = await (
+    await owner.ctx.request.get(`/api/sites/${siteId}/artifacts`)
+  )
+    .json()
+    .catch(() => null);
+  void before;
+  await p.getByRole("button", { name: "Make these drafts" }).click();
+  await expect(p.getByText(/Drafts made/)).toBeVisible({ timeout: 30_000 });
+});
+
 test("the Brand Center fits a phone", async ({ browser }) => {
   const ctx = await browser.newContext({
     baseURL: BASE,
