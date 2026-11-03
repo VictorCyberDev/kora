@@ -587,8 +587,22 @@ const v = (
   cluster,
   match,
   grammars,
-  antiTraits,
+  antiTraits: [...antiTraits, ...(CLUSTER_ANTI[cluster] ?? [])],
 });
+
+/**
+ * What a whole kind of business should never be dressed as. A builder, a clinic, a law firm or a mechanic is never
+ * offered a cartoon or a children's-party language because it happens to be "different" from the other directions.
+ */
+const CLUSTER_ANTI: Partial<Record<Cluster, string[]>> = {
+  trades: ["playful or cartoon styling"],
+  mobility: ["playful or cartoon styling"],
+  professional: ["playful or cartoon styling"],
+  health: ["playful or cartoon styling"],
+  tech: ["playful or cartoon styling"],
+  creative: ["playful or cartoon styling"],
+  hospitality: ["playful or cartoon styling"],
+};
 
 export const VERTICALS: readonly VerticalIntel[] = [
   // ---- beauty & personal care

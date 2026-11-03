@@ -317,3 +317,84 @@ describe("rendered research corpus (computed observations of real sites)", () =>
       expect(r.desktop, r.url).toBeUndefined();
   });
 });
+
+import { sentenceCase, offerPhrase } from "../src/index.js";
+describe("sentence casing keeps what the owner capitalised on purpose", () => {
+  it("keeps acronyms, internal capitals and digits; lowercases the rest", () => {
+    expect(sentenceCase("AC Install")).toBe("AC install");
+    expect(sentenceCase("CCTV and Alarm Systems")).toBe(
+      "CCTV and alarm systems",
+    );
+    expect(sentenceCase("WhatsApp Orders")).toBe("WhatsApp orders");
+    expect(sentenceCase("3D Printing")).toBe("3D printing");
+    expect(sentenceCase("Birthday Cakes")).toBe("birthday cakes");
+  });
+  it("an acronym in a service name survives into the offer phrase", () => {
+    const truth = buildTruth({
+      name: "CoolBreeze Air",
+      description: "We install and repair air conditioners in Lagos.",
+      services: ["AC install", "AC repair"],
+    } as never);
+    const v = resolveVertical("CoolBreeze Air AC install and AC repair");
+    expect(offerPhrase(truth, v)).toBe("AC install and AC repair");
+  });
+});
+
+describe("different never means unsuited", () => {
+  const brief = (name: string, description: string, feel?: string) =>
+    ({
+      name,
+      description,
+      ...(feel ? { feel } : {}),
+      whatsapp: "+2348033000000",
+      location: "Lagos",
+    }) as never;
+  const grammars = (b: never) => composeDirections(b).map((d) => d.grammarId);
+  it("a builder, clinic, law firm, accountant, interior designer and hotel are never offered the nursery language", () => {
+    for (const b of [
+      brief("Solid Rock Builders", "Renovation, roofing and tiling in Ibadan."),
+      brief(
+        "Dele Auto Care",
+        "Servicing, brake repair and auto electrical in Ibadan.",
+      ),
+      brief(
+        "City Clinic",
+        "A family medical clinic with GPs, a lab and a pharmacy.",
+      ),
+      brief(
+        "Adeyemi & Co",
+        "A corporate law firm focused on commercial disputes.",
+      ),
+      brief(
+        "Okafor Tax Advisory",
+        "Tax and bookkeeping for small businesses.",
+        "clear friendly",
+      ),
+      brief("Studio Oma", "Interior design for homes and small offices."),
+      brief(
+        "Palmview Hotel",
+        "Garden rooms, suites and a restaurant in Calabar.",
+      ),
+    ])
+      expect(grammars(b), b.name).not.toContain("play-school");
+  });
+  it("but an owner who asks for playful gets it, and a children's business suits it", () => {
+    expect(
+      grammars(
+        brief(
+          "Little Sprinkles",
+          "Cupcakes and character cakes for children's parties.",
+          "playful kids",
+        ),
+      ),
+    ).toContain("play-school");
+    expect(
+      grammars(
+        brief(
+          "Bright Start Nursery",
+          "A nursery and primary school for ages 2 to 11.",
+        ),
+      ),
+    ).toContain("play-school");
+  });
+});

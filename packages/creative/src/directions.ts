@@ -117,8 +117,13 @@ export function scoreGrammars(
       reasons.push("matches how the business describes itself");
     }
     const hits = g.tags.filter((t) => avoid.has(t));
+    // The owner can ask for something this kind of business usually avoids, but only by naming it ("playful"):
+    // a vague word like "friendly" that a grammar's feel pattern happens to match is not a request for a cartoon.
+    const asksForConflict = hits.some((tag) =>
+      AVOID_MAP.some(([re, t]) => t === tag && re.test(explicitFeel)),
+    );
     if (hits.length) {
-      score -= (explicitFeel && hit.test(explicitFeel) ? 0 : 8) * hits.length;
+      score -= (asksForConflict ? 0 : 8) * hits.length;
       reasons.push(
         `conflicts with what this vertical must avoid (${hits.join(", ")})`,
       );

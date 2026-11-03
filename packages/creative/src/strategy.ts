@@ -42,10 +42,28 @@ const verbsRe = (v: VerticalIntel) =>
   );
 
 /** What the business offers, in the owner's own words; falls back to the vertical's plain name. */
+/**
+ * Lower-cases a phrase for use inside a sentence while keeping what the owner wrote in capitals on purpose:
+ * acronyms (AC, CCTV, HVAC, DJ), words with an internal capital (WhatsApp, iPhone) and words with digits (3D, 4x4).
+ */
+export function sentenceCase(s: string): string {
+  return s
+    .split(/(\s+)/)
+    .map((w) =>
+      /^[A-Z]{2,}[.,;:!?]?$/.test(w) ||
+      /^\p{Ll}+\p{Lu}/u.test(w) ||
+      /^\p{Lu}+\p{Ll}+\p{Lu}/u.test(w) ||
+      /\d/.test(w)
+        ? w
+        : w.toLowerCase(),
+    )
+    .join("");
+}
+
 export function offerPhrase(truth: BusinessTruth, v: VerticalIntel): string {
   const services = truth.brief.services ?? [];
   if (services.length >= 2)
-    return `${services[0]!.toLowerCase()} and ${services[1]!.toLowerCase()}`;
+    return `${sentenceCase(services[0]!)} and ${sentenceCase(services[1]!)}`;
   const m = verbsRe(v).exec(truth.brief.description);
   if (m?.[1])
     return m[1]
@@ -55,7 +73,7 @@ export function offerPhrase(truth: BusinessTruth, v: VerticalIntel): string {
       )
       .replace(/[,\s]+$/, "")
       .trim()
-      .toLowerCase();
+      .replace(/^.*$/s, (x) => sentenceCase(x));
   return v.label.toLowerCase();
 }
 
