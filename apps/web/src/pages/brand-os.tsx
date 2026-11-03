@@ -160,6 +160,11 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
     "flyer-a5",
   ]);
   const [out, setOut] = useState<J | null>(null);
+  const lib = useLoad(
+    () => api<J>("GET", `/api/sites/${siteId}/media-library`),
+    [siteId],
+  );
+  const [photoId, setPhotoId] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const toggle = (f: string) =>
@@ -209,6 +214,22 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
           placeholder="e.g. Book a haircut"
         />
       </label>
+      {lib.data?.items?.some((x: J) => x.kind === "photo") && (
+        <label>
+          Picture to use (optional)
+          <select value={photoId} onChange={(e) => setPhotoId(e.target.value)}>
+            <option value="">No picture: a brand graphic</option>
+            {lib.data.items
+              .filter((x: J) => x.kind === "photo")
+              .map((x: J, i: number) => (
+                <option key={x.id} value={x.id}>
+                  Photo {i + 1}
+                  {x.alt ? `: ${x.alt}` : ""}
+                </option>
+              ))}
+          </select>
+        </label>
+      )}
       <fieldset className="row" style={{ border: 0, padding: 0 }}>
         <legend className="small muted">Formats</legend>
         {Object.entries(FORMAT_LABEL).map(([f, label]) => (

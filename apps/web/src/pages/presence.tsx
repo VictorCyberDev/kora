@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { api, when, type J } from "../api";
 import { Async, Empty, Notice, Status, errText, useLoad } from "../ui";
 import { BrandOsPanel, CreativeSetPanel } from "./brand-os";
+import { MediaLibraryPanel } from "./media-library";
 
 const KIND: Record<string, "ok" | "warn" | "bad" | "wait"> = {
   OK: "ok",
@@ -426,6 +427,7 @@ export function BrandPage() {
         return (
           <div className="stack">
             <BrandOsPanel siteId={String(id)} />
+            <MediaLibraryPanel siteId={String(id)} />
             <CreativeSetPanel siteId={String(id)} />
             <section className="card stack" aria-labelledby="brand-h">
               <p className="k-overline">
