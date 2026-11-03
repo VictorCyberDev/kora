@@ -318,7 +318,7 @@ describe("rendered research corpus (computed observations of real sites)", () =>
   });
 });
 
-import { sentenceCase, offerPhrase } from "../src/index.js";
+import { sentenceCase, offerPhrase, type CreativeBrief } from "../src/index.js";
 describe("sentence casing keeps what the owner capitalised on purpose", () => {
   it("keeps acronyms, internal capitals and digits; lowercases the rest", () => {
     expect(sentenceCase("AC Install")).toBe("AC install");
@@ -341,15 +341,20 @@ describe("sentence casing keeps what the owner capitalised on purpose", () => {
 });
 
 describe("different never means unsuited", () => {
-  const brief = (name: string, description: string, feel?: string) =>
+  const brief = (
+    name: string,
+    description: string,
+    feel?: string,
+  ): CreativeBrief & { name: string } =>
     ({
       name,
       description,
       ...(feel ? { feel } : {}),
       whatsapp: "+2348033000000",
       location: "Lagos",
-    }) as never;
-  const grammars = (b: never) => composeDirections(b).map((d) => d.grammarId);
+    }) as CreativeBrief & { name: string };
+  const grammars = (b: CreativeBrief) =>
+    composeDirections(b).map((d) => d.grammarId);
   it("a builder, clinic, law firm, accountant, interior designer and hotel are never offered the nursery language", () => {
     for (const b of [
       brief("Solid Rock Builders", "Renovation, roofing and tiling in Ibadan."),
