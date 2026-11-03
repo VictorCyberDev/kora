@@ -506,4 +506,62 @@ d("Creative engine v3 through the real API", () => {
     ).json.data;
     expect(v1.brandOs.provenance.createdBy).toBe("inferred-from-site");
   });
+
+  it("model-assisted opening copy is used only when it passes the facts check; otherwise the deterministic copy stays", async () => {
+    let reply = JSON.stringify({
+      heading: "Clean fades and beard care in Lekki",
+      subheading: "Book a chair on WhatsApp.",
+    });
+    let fail = false;
+    const llm = {
+      model: "stub",
+      provider: "stub",
+      complete() {
+        if (fail) return Promise.reject(new Error("model down"));
+        return Promise.resolve({
+          text: reply,
+          inputTokens: 12,
+          outputTokens: 8,
+        });
+      },
+    };
+    const h = await startHarness({
+      env: { KORA_CREATIVE_ENGINE: "v3", KORA_COPY_ASSIST: "true" },
+      llm,
+    });
+    try {
+      const make = async (email: string) => {
+        const { o, site } = await newSite(h, email);
+        const g = await h.call("POST", `/api/sites/${site.id}/generate`, {
+          cookie: o.cookie,
+          body: brief,
+        });
+        expect(g.status).toBe(201);
+        const v = (
+          await h.call(
+            "GET",
+            `/api/sites/${site.id}/versions/${g.json.data.version.id}`,
+            { cookie: o.cookie },
+          )
+        ).json.data;
+        return { g, hero: v.spec.pages[0].sections[0] };
+      };
+      const clean = await make("assist-clean@example.com");
+      expect(clean.g.json.data.source).toBe("MODEL");
+      expect(clean.hero.heading).toBe("Clean fades and beard care in Lekki");
+      reply = JSON.stringify({
+        heading: "Award-winning barber, 500 happy clients",
+        subheading: "Voted best in Lagos since 2009.",
+      });
+      const hostile = await make("assist-hostile@example.com");
+      expect(hostile.g.json.data.source).toBe("DETERMINISTIC");
+      expect(hostile.hero.heading).not.toMatch(/Award|500/);
+      fail = true;
+      const down = await make("assist-down@example.com");
+      expect(down.g.json.data.source).toBe("DETERMINISTIC");
+      expect(down.hero.heading).toBe(hostile.hero.heading);
+    } finally {
+      await h.close();
+    }
+  });
 });

@@ -23,6 +23,7 @@ import {
   type SiteSpecV2,
   type SiteSpecV3,
   type StructuredEdit,
+  assistCopy,
 } from "@kora/site-schema";
 import type { BrandOS, CreativeDirection } from "@kora/creative";
 
@@ -250,10 +251,11 @@ export class SiteAuthor {
    * v3 creative engine. Deterministic by design: the strategy, genome and copy are produced by Kora's own engine from
    * the owner's facts, so an unavailable model can never make this path worse. Models are not given authority here.
    */
-  generateV3(
+  async generateV3(
     rawBrief: unknown,
     direction: 0 | 1 | 2 = 0,
     o: PlanV3Options = {},
+    assist = false,
   ): Promise<
     Authored & {
       brandOs: BrandOS;
@@ -265,19 +267,45 @@ export class SiteAuthor {
     const brief = designBriefSchema.parse(rawBrief);
     const { directions } = planDirectionsV3(brief, o);
     const d = directions[direction]!;
-    return Promise.resolve({
-      spec: d.spec,
-      source: "DETERMINISTIC",
-      inputTokens: null,
-      outputTokens: null,
-      note: `Designed by Kora's creative engine: ${d.name}`,
+    // Optional: a model may propose the opening headline. Whatever it says is checked against the owner's facts;
+    // anything that cannot be traced to them is dropped and the deterministic copy stays.
+    let spec = d.spec;
+    let source: Authored["source"] = "DETERMINISTIC";
+    let inputTokens: number | null = null;
+    let outputTokens: number | null = null;
+    let note = `Designed by Kora's creative engine: ${d.name}`;
+    const llm = this.llm;
+    if (assist && llm) {
+      const r = await assistCopy(d.spec, async (system, user) => {
+        const res = await llm.complete({ system, user, maxOutputTokens: 300 });
+        return {
+          text: res.text,
+          inputTokens: res.inputTokens,
+          outputTokens: res.outputTokens,
+        };
+      });
+      inputTokens = r.inputTokens;
+      outputTokens = r.outputTokens;
+      if (r.used) {
+        spec = r.spec;
+        source = "MODEL";
+        note +=
+          ". The opening headline was suggested by the AI and checked against what you told us.";
+      }
+    }
+    return {
+      spec,
+      source,
+      inputTokens,
+      outputTokens,
+      note,
       brandOs: d.brandOs,
       directionName: d.name,
       traits: traceOf(d.direction),
       passedOver: directions
         .filter((x) => x.index !== d.index)
         .map((x) => traceOf(x.direction)),
-    });
+    };
   }
 
   async generate(rawBrief: unknown): Promise<Authored> {

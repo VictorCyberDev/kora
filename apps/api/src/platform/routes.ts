@@ -541,6 +541,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
             { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
             extra.direction ?? 0,
             await ownerPlan(site.id, site.orgId),
+            config.KORA_COPY_ASSIST,
           )
           .then((r) => {
             decided.v3 = {
