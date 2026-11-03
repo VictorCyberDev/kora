@@ -343,4 +343,65 @@ d("Creative engine v3 through the real API", () => {
     const live = await (await fetch(back.json.data.publicUrl)).text();
     expect(live).toContain("Fade Lab");
   });
+
+  it("remembers design choices, rotates away from a language the account keeps receiving, and keeps other accounts unaffected", async () => {
+    const o = await v3.signup("v3-fatigue@example.com");
+    const preview = async () =>
+      (
+        await v3.call("POST", "/api/design/directions", {
+          cookie: o.cookie,
+          body: { orgId: o.orgId, ...brief },
+        })
+      ).json;
+    const first = await preview();
+    const names = first.data.map((x: { name: string }) => x.name);
+    // a brand-new account: nothing remembered, nothing changes
+    expect((await preview()).data.map((x: { name: string }) => x.name)).toEqual(
+      names,
+    );
+    const make = async (n: number) => {
+      const site = (
+        await v3.call("POST", "/api/sites", {
+          cookie: o.cookie,
+          body: { orgId: o.orgId, name: `Fade Lab ${n}` },
+        })
+      ).json.data;
+      const g = await v3.call("POST", `/api/sites/${site.id}/generate`, {
+        cookie: o.cookie,
+        body: { ...brief, name: `Fade Lab ${n}`, direction: 0 },
+      });
+      expect(g.status).toBe(201);
+      return site.id as string;
+    };
+    // one choice is a data point: still nothing changes
+    const s1 = await make(1);
+    const after1 = (await preview()).data.map((x: { name: string }) => x.name);
+    // every decision is stored in design terms (language, type, colour, composition)
+    const rows =
+      await v3.sql`SELECT kind, detail FROM creative_feedback WHERE site_id=${s1}`;
+    const chosen = rows.filter((r) => r.kind === "DIRECTION_CHOSEN");
+    const passed = rows.filter((r) => r.kind === "DIRECTION_REJECTED");
+    expect(chosen).toHaveLength(1);
+    expect(passed).toHaveLength(2);
+    expect(Object.keys(chosen[0]!.detail.traits).sort()).toEqual([
+      "colorwayId",
+      "compositionMode",
+      "grammarId",
+      "name",
+      "typeVoice",
+    ]);
+    expect(after1[0]).toBe(names[0]);
+    // choosing the same first direction again makes the language "recent"; the account is steered away from it
+    await make(2);
+    const after2 = (await preview()).data.map((x: { name: string }) => x.name);
+    expect(after2).not.toContain(names[0]);
+    expect(new Set(after2).size).toBe(3);
+    // another account is unaffected by this account's history
+    const other = await v3.signup("v3-fatigue-other@example.com");
+    const r = await v3.call("POST", "/api/design/directions", {
+      cookie: other.cookie,
+      body: { orgId: other.orgId, ...brief },
+    });
+    expect(r.json.data.map((x: { name: string }) => x.name)).toEqual(names);
+  });
 });

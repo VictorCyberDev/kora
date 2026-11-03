@@ -1,6 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type postgres from "postgres";
-import { BrandOSSchema, brandOsHash, type BrandOS } from "@kora/creative";
+import {
+  BrandOSSchema,
+  brandOsHash,
+  type BrandOS,
+  type DesignTrace,
+} from "@kora/creative";
 import { withBrandOs, type SiteSpecV3 } from "@kora/site-schema";
 
 const toJson = (v: unknown) =>
@@ -90,6 +95,39 @@ export class BrandOsStore {
   ) {
     await this
       .sql`INSERT INTO creative_feedback (id, site_id, org_id, kind, subject, detail, created_by) VALUES (${randomUUID()}, ${site.id}, ${site.orgId}, ${kind}, ${subject.slice(0, 80)}, ${this.sql.json(toJson(detail))}, ${userId})`;
+  }
+  /**
+   * Every remembered design decision for an organisation over the last year, newest first. Decisions made before
+   * traits were recorded carry no design facts and are skipped rather than guessed at.
+   */
+  async designHistory(orgId: string, now = Date.now()): Promise<DesignTrace[]> {
+    const rows = await this
+      .sql`SELECT kind, detail, created_at FROM creative_feedback
+        WHERE org_id=${orgId} AND kind IN ('DIRECTION_CHOSEN','DIRECTION_REJECTED')
+          AND created_at > to_timestamp(${(now - 365 * 86_400_000) / 1000})
+        ORDER BY created_at DESC LIMIT 200`;
+    const out: DesignTrace[] = [];
+    for (const r of rows) {
+      const d = r.detail as Record<string, unknown> | null;
+      const t = d?.traits as Record<string, unknown> | undefined;
+      if (
+        !t ||
+        typeof t.grammarId !== "string" ||
+        typeof t.typeVoice !== "string" ||
+        typeof t.colorwayId !== "string" ||
+        typeof t.compositionMode !== "string"
+      )
+        continue;
+      out.push({
+        grammarId: t.grammarId,
+        typeVoice: t.typeVoice,
+        colorwayId: t.colorwayId,
+        compositionMode: t.compositionMode,
+        outcome: r.kind === "DIRECTION_CHOSEN" ? "chosen" : "rejected",
+        at: new Date(r.created_at as string | Date).getTime(),
+      });
+    }
+    return out;
   }
   async feedbackSummary(siteId: string) {
     const rows = await this

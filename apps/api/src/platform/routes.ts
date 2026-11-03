@@ -27,6 +27,9 @@ import {
 import { budgetBreaches } from "@kora/growth";
 import { BrandOsStore, learnedTaste } from "./brand-os-store.js";
 import { previewDirections } from "./directions.js";
+import { fatigueAvoid, tasteSignals } from "@kora/creative";
+import { designContext } from "./design-context.js";
+import type { DirectionTrace } from "./author.js";
 import { loadOwnerMedia, mediaBase } from "./owner-media-loader.js";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
@@ -427,9 +430,14 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     config.KORA_MEDIA_PUBLIC_URL ?? config.KORA_PUBLIC_URL,
   );
   /** The owner's good pictures and logo, in the planner's terms. Empty when no https media origin is configured. */
-  const ownerPlan = async (siteId: string) => {
+  const ownerPlan = async (siteId: string, orgId: string) => {
     const m = await loadOwnerMedia(platform.sql, siteId, mediaBaseUrl);
-    return { ownerPhotos: m.photos, ...(m.logo ? { ownerLogo: m.logo } : {}) };
+    const ctx = await designContext(brandOs, orgId);
+    return {
+      ownerPhotos: m.photos,
+      ...(m.logo ? { ownerLogo: m.logo } : {}),
+      ...ctx,
+    };
   };
   const buildVersion = async (
     site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
@@ -500,12 +508,28 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       config.KORA_CREATIVE_ENGINE === "v3" &&
       extra.format === undefined &&
       !extra.intelligence;
+    const decided: {
+      v3?: {
+        name: string;
+        traits: DirectionTrace;
+        passedOver: DirectionTrace[];
+      };
+    } = {};
     const authored = useV3
-      ? await author.generateV3(
-          { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
-          extra.direction ?? 0,
-          await ownerPlan(site.id),
-        )
+      ? await author
+          .generateV3(
+            { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
+            extra.direction ?? 0,
+            await ownerPlan(site.id, site.orgId),
+          )
+          .then((r) => {
+            decided.v3 = {
+              name: r.directionName,
+              traits: r.traits,
+              passedOver: r.passedOver,
+            };
+            return r;
+          })
       : extra.format === 1
         ? await author.generate(brief)
         : await author.generateV2(
@@ -563,6 +587,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       requestId: req.id,
       metadata: { source: authored.source },
     });
+    if (decided.v3) {
+      const d = decided.v3;
+      // The decision is remembered in design terms. Directions are counted as passed over only when the owner
+      // actually picked one of three on screen (an explicit direction), never when Kora chose the default.
+      await brandOs.feedback(
+        site,
+        "DIRECTION_CHOSEN",
+        d.name,
+        { via: "generate", traits: d.traits },
+        a.userId,
+      );
+      if (extra.direction !== undefined)
+        for (const o of d.passedOver)
+          await brandOs.feedback(
+            site,
+            "DIRECTION_REJECTED",
+            o.name,
+            { via: "generate", traits: o },
+            a.userId,
+          );
+    }
     return reply.code(201).send({
       data: {
         version,
@@ -601,7 +646,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     const { directions: planned, recommended } = previewDirections(
       config.KORA_CREATIVE_ENGINE,
       brief,
-      await ownerPlan(site.id),
+      await ownerPlan(site.id, site.orgId),
     );
     const token = randomBytes(16).toString("hex");
     for (const [k, v] of directionPreviews)
@@ -733,7 +778,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       const authored = await author.generateV3(
         brief,
         parsed.direction ?? 0,
-        await ownerPlan(site.id),
+        await ownerPlan(site.id, site.orgId),
       );
       const version = await buildVersion(
         site,
@@ -755,7 +800,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         site,
         "DIRECTION_CHOSEN",
         authored.directionName,
-        { via: "upgrade-v3" },
+        { via: "upgrade-v3", traits: authored.traits },
         a.userId,
       );
       return reply.code(201).send({
@@ -771,10 +816,11 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   // Owner-facing Brand OS: the current brand system and its history for one site.
   app.get("/api/sites/:id/brand-os", async (req) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id);
-    const [latest, history, fb] = await Promise.all([
+    const [latest, history, fb, designHist] = await Promise.all([
       brandOs.latest(site.id),
       brandOs.list(site.id),
       brandOs.feedbackSummary(site.id),
+      brandOs.designHistory(site.orgId),
     ]);
     return {
       data: {
@@ -788,6 +834,12 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
           : null,
         history,
         taste: learnedTaste(fb),
+        // transparency: what Kora remembers about this account's design decisions and how it uses them
+        designMemory: {
+          decisions: designHist.length,
+          rotatingAwayFrom: fatigueAvoid(designHist),
+          taste: tasteSignals(designHist),
+        },
       },
     };
   });

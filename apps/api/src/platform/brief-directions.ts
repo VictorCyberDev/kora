@@ -3,6 +3,8 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { designBriefSchema } from "@kora/site-schema";
 import { previewDirections } from "./directions.js";
+import { BrandOsStore } from "./brand-os-store.js";
+import { designContext } from "./design-context.js";
 import type { BillingService } from "./billing.js";
 import { HttpError, notFound, requireOrgRole, requireUser } from "./http.js";
 import { sendArtifact } from "./hosting.js";
@@ -58,6 +60,9 @@ export function registerBriefDirectionRoutes(
     const { directions: planned, recommended } = previewDirections(
       d.engine ?? "v2",
       brief,
+      d.engine === "v3"
+        ? await designContext(new BrandOsStore(d.platform.sql), body.orgId)
+        : {},
     );
     const token = randomBytes(16).toString("hex");
 

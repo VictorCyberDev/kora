@@ -7,6 +7,7 @@ export * from "./strategy.js";
 export * from "./artdirection.js";
 export * from "./palette.js";
 export * from "./directions.js";
+export * from "./history.js";
 export * from "./copy.js";
 export * from "./brandos.js";
 export * from "./artifact.js";

@@ -10,6 +10,7 @@ import {
   buildTruth,
   chooseForMe,
   composeDirections,
+  rerankByTaste,
   ctaLabel,
   offerPhrase,
   resolveVertical,
@@ -18,6 +19,7 @@ import {
   type ComposeOptions,
   type CreativeBrief,
   type CreativeDirection,
+  type TasteSignals,
   type HeroLayout,
   type PageKind,
   type VerticalIntel,
@@ -93,6 +95,8 @@ export interface PlanV3Options {
   canonicalOrigin?: string;
   /** Overrides for the engine (owner re-rolled one direction, recent-design avoidance). */
   compose?: ComposeOptions;
+  /** What this owner has repeatedly chosen (three or more judgements). Only moves the recommendation. */
+  taste?: TasteSignals;
   previousBrandOsVersion?: number;
 }
 
@@ -1164,7 +1168,18 @@ export function planDirectionsV3(
   recommended: { index: number; reason: string };
 } {
   const dirs = composeDirections(input, opts.compose ?? {});
-  const rec = chooseForMe(dirs, input);
+  const base = chooseForMe(dirs, input);
+  const tasted = opts.taste
+    ? rerankByTaste(dirs, base.scores, opts.taste)
+    : null;
+  const rec =
+    tasted?.changed && tasted.because
+      ? {
+          ...base,
+          index: tasted.index,
+          reason: `${dirs[tasted.index]!.name}: ${tasted.because}, and it still fits what you told us.`,
+        }
+      : base;
   const directions = dirs.map((d) => {
     const { spec, brandOs } = planSiteV3(input, d, opts);
     return {

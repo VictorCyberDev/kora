@@ -24,7 +24,23 @@ import {
   type SiteSpecV3,
   type StructuredEdit,
 } from "@kora/site-schema";
-import type { BrandOS } from "@kora/creative";
+import type { BrandOS, CreativeDirection } from "@kora/creative";
+
+/** The design facts of one direction, stored so later sessions can rotate away from it or learn from the choice. */
+export interface DirectionTrace {
+  grammarId: string;
+  typeVoice: string;
+  colorwayId: string;
+  compositionMode: string;
+  name: string;
+}
+export const traceOf = (d: CreativeDirection): DirectionTrace => ({
+  grammarId: d.grammarId,
+  typeVoice: d.genome.typeVoice,
+  colorwayId: d.colorwayId,
+  compositionMode: d.genome.compositionMode,
+  name: d.name,
+});
 import type { LlmClient } from "@kora/reasoner";
 import { sanitizeUntrusted } from "@kora/reasoner";
 
@@ -238,7 +254,14 @@ export class SiteAuthor {
     rawBrief: unknown,
     direction: 0 | 1 | 2 = 0,
     o: PlanV3Options = {},
-  ): Promise<Authored & { brandOs: BrandOS; directionName: string }> {
+  ): Promise<
+    Authored & {
+      brandOs: BrandOS;
+      directionName: string;
+      traits: DirectionTrace;
+      passedOver: DirectionTrace[];
+    }
+  > {
     const brief = designBriefSchema.parse(rawBrief);
     const { directions } = planDirectionsV3(brief, o);
     const d = directions[direction]!;
@@ -250,6 +273,10 @@ export class SiteAuthor {
       note: `Designed by Kora's creative engine: ${d.name}`,
       brandOs: d.brandOs,
       directionName: d.name,
+      traits: traceOf(d.direction),
+      passedOver: directions
+        .filter((x) => x.index !== d.index)
+        .map((x) => traceOf(x.direction)),
     });
   }
 
