@@ -278,6 +278,9 @@ function adaptHero(
   },
 ): HeroLayout {
   if (FUNCTIONAL_HEROES.includes(want)) return want;
+  // A menu card is the fallback for having no picture; with a good one the picture leads.
+  if (want === "menu-focus" && a.hasHeroPhoto)
+    return alt.includes("arch-portrait") ? "arch-portrait" : "editorial-split";
   if (
     a.ownerHero &&
     !PHOTO_HEROES.includes(want) &&
