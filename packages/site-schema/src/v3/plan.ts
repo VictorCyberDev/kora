@@ -53,8 +53,6 @@ const CATALOG: Record<string, string> = {
   catering: "catering",
   barber: "barber",
   law: "law",
-  accounting: "accounting",
-  consulting: "consulting",
   "electronics-repair": "electronics-repair",
   gadgets: "phone-accessories",
 };
@@ -272,7 +270,12 @@ const FUNCTIONAL_HEROES: readonly HeroLayout[] = [
 function adaptHero(
   want: HeroLayout,
   alt: readonly HeroLayout[],
-  a: { hasHeroPhoto: boolean; photoTrust: boolean; ownerHero: boolean },
+  a: {
+    hasHeroPhoto: boolean;
+    photoTrust: boolean;
+    ownerHero: boolean;
+    quiet: boolean;
+  },
 ): HeroLayout {
   if (FUNCTIONAL_HEROES.includes(want)) return want;
   if (
@@ -281,7 +284,11 @@ function adaptHero(
     want !== "minimal-statement"
   )
     return alt.find((h) => PHOTO_HEROES.includes(h)) ?? "editorial-split";
-  if (!a.hasHeroPhoto && PHOTO_HEROES.includes(want) && a.photoTrust)
+  if (
+    !a.hasHeroPhoto &&
+    PHOTO_HEROES.includes(want) &&
+    (a.photoTrust || a.quiet)
+  )
     return alt.find((h) => TYPE_HEROES.includes(h)) ?? "type-dominant";
   return want;
 }
@@ -410,7 +417,9 @@ export function planSiteV3(
     (v.primaryIntent === "call" || v.primaryIntent === "quote") &&
     (truth.can.phone || truth.can.whatsapp) &&
     g.mobileStrategy === "action-dock" &&
-    !["cinematic", "arch-portrait"].includes(g.heroPhilosophy)
+    !["cinematic", "arch-portrait"].includes(g.heroPhilosophy) &&
+    // one in four call-led businesses opens differently (the phone stays one tap away in the action dock)
+    fnvH(`${seed}|hero`) % 4 !== 3
       ? "call-first"
       : g.heroPhilosophy;
   const gram = GRAMMARS.find((x) => x.id === direction.grammarId);
@@ -419,6 +428,8 @@ export function planSiteV3(
       hasHeroPhoto: !!mp.hero,
       photoTrust: v.photoTrust,
       ownerHero: mp.source === "owner" && !!mp.hero,
+      quiet:
+        g.accentScarcity === "rare" || g.paletteBehavior === "soft-neutral",
     }),
     {
       hasMedia: !!mp.hero,
@@ -463,6 +474,7 @@ export function planSiteV3(
           ...(secondary ? { secondaryCta: secondary } : {}),
         }),
     highlights: o.ctas === false ? [] : highlights,
+    variant: layout === "call-first" ? fnvH(`${seed}|cv`) % 3 : 0,
     ...(heroMedia && layout !== "type-dominant"
       ? { media: { ...heroMedia, role: "hero" as const } }
       : {}),
@@ -790,7 +802,11 @@ export function planSiteV3(
       cta(),
       contact(),
     ],
-    "stacked-utility": [main(), proof(), gallery(), faq(), contact()],
+    "stacked-utility": [
+      [main(), proof(), gallery(), faq(), contact()],
+      [statement(), main(), process(), faq(), contact()],
+      [main(), gallery(), proof(), visit(), contact()],
+    ][fnvH(`${seed}|seq`) % 3]!,
     "menu-led": [main(), story(), gallery(), visit(), contact()],
     monograph: [gallery(), statement(), main(), story(), proof(), contact()],
   };

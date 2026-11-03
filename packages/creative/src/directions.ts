@@ -268,6 +268,7 @@ export function composeDirections(
       index,
       `${b.feel ?? ""} ${b.description}`,
       used,
+      v.cluster,
     );
     used.push(colorway);
     const strategy = deriveBrandStrategy(truth, v, g);

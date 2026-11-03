@@ -57,7 +57,7 @@ const ids = readdirSync(root).filter(
   (d) => d !== "index.json" && (!filter || filter.test(d)),
 );
 for (const id of ids)
-  for (const idx of [0, 1, 2])
+  for (const idx of (process.env.IDX ?? "0,1,2").split(",").map(Number))
     for (const w of widths) {
       const ctx = await browser.newContext({
         viewport: { width: w, height: w < 600 ? 800 : 900 },

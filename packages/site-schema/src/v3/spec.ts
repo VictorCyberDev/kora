@@ -151,6 +151,8 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
     primaryCta: link.optional(),
     secondaryCta: link.optional(),
     highlights: z.array(line(60)).max(5).default([]),
+    /** Which arrangement of the same layout family (e.g. where the call box sits). Chosen deterministically by the planner. */
+    variant: z.number().int().min(0).max(3).default(0),
     ...visual,
   }),
   z.object({

@@ -90,6 +90,18 @@ function visual(
   return `<div class="frame plate-w ${ar} ${opts.cls ?? ""}">${plateSvg(plate.kind as never, plate.seed, c.spec.design.palette, c.letter, c.quiet)}</div>`;
 }
 
+/**
+ * Quiet brands never show an empty placeholder in the opening: with no real picture the opening is typographic.
+ * Loud brands keep their flat graphic plates, which read as posters rather than broken images.
+ */
+function heroVisual(
+  v: Parameters<typeof visual>[0],
+  c: Ctx,
+  opts: Parameters<typeof visual>[2] = {},
+): string {
+  return c.quiet && !v.media ? "" : visual(v, c, opts);
+}
+
 const kickLabel: Record<string, string> = {
   offer: "What we do",
   products: "Products",
@@ -134,7 +146,7 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
     case "type-dominant":
       return `${o}<div class="w">${eyebrow}${h1}<div class="under">${sub}<div>${ctas}${hl}</div></div></div></section>`;
     case "minimal-statement":
-      return `${o}<div class="w"><div class="top"><div>${eyebrow}${h1}</div><div>${sub}${ctas}</div></div><div class="wide">${visual(s, c, { eager, ar: "wide" })}</div></div></section>`;
+      return `${o}<div class="w"><div class="top"><div>${eyebrow}${h1}</div><div>${sub}${ctas}</div></div>${heroVisual(s, c, { eager, ar: "wide" }) ? `<div class="wide">${heroVisual(s, c, { eager, ar: "wide" })}</div>` : ""}</div></section>`;
     case "menu-focus": {
       const items = s.highlights.length ? s.highlights : [];
       const card = items.length
@@ -201,12 +213,23 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
       return `${o}<div class="w gridh"><div>${copy}</div><div class="stack">${three}${stamp}</div></div></section>`;
     }
     case "arch-portrait":
-    case "poster":
-      return `${o}<div class="w gridh"><div>${copy}</div><div class="vis">${visual(s, c, { eager, ar: s.layout === "poster" ? "square" : "arch" })}${stamp}</div></div></section>`;
+    case "poster": {
+      const v = heroVisual(s, c, {
+        eager,
+        ar: s.layout === "poster" ? "square" : "arch",
+      });
+      return v
+        ? `${o}<div class="w gridh"><div>${copy}</div><div class="vis">${v}${stamp}</div></div></section>`
+        : `${o}<div class="w gridh nv"><div>${copy}</div></div></section>`;
+    }
     case "ticker-energy":
     case "editorial-split":
-    case "product-dominant":
-      return `${o}<div class="w gridh"><div>${copy}</div><div class="vis">${visual(s, c, { eager })}</div></div></section>`;
+    case "product-dominant": {
+      const v = heroVisual(s, c, { eager });
+      return v
+        ? `${o}<div class="w gridh"><div>${copy}</div><div class="vis">${v}</div></div></section>`
+        : `${o}<div class="w gridh nv"><div>${copy}</div></div></section>`;
+    }
     case "call-first": {
       const tel = telLink(c.spec) || waLink(c.spec);
       const label = b.phone ?? b.whatsapp ?? "";
@@ -216,7 +239,8 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
       const ck = s.highlights.length
         ? `<ul class="ck">${s.highlights.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`
         : "";
-      return `${o}<div class="w gridh"><div>${eyebrow}${h1}${sub}${ck}</div>${box}</div></section>`;
+      const cv = s.variant;
+      return `${o.replace("h-call-first", `h-call-first cv${cv}`)}<div class="w gridh"><div>${eyebrow}${h1}${sub}${ck}</div>${box}</div></section>`;
     }
     default:
       return `${o}<div class="w">${copy}</div></section>`;

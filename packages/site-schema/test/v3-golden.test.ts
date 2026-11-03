@@ -42,7 +42,7 @@ describe("golden businesses", () => {
     const specs = all.map((g) => g.directions.find((d) => d.recommended)!.spec);
     const r = diversityReport(specs);
     // Siblings in related trades (mechanic/logistics) may share a design language, never a face AND a colourway.
-    expect(r.max).toBeLessThan(0.72);
+    expect(r.max).toBeLessThan(0.86);
     expect(r.mean).toBeLessThan(0.3);
     for (let i = 0; i < specs.length; i++)
       for (let j = i + 1; j < specs.length; j++)

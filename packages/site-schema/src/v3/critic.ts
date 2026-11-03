@@ -12,7 +12,7 @@ import {
   isGenericCta,
   resolveVertical,
 } from "@kora/creative";
-import { genomeDistance } from "@kora/creative";
+import { genomeDistance, avoidTags } from "@kora/creative";
 import type { SectionV3, SiteSpecV3 } from "./spec.js";
 
 export const DIMENSIONS = [
@@ -92,7 +92,20 @@ const CARDS = new Set([
 ]);
 const sectionKey = (s: SectionV3) => `${s.type}.${s.layout}`;
 
-export function criticV3(spec: SiteSpecV3): CriticIssue[] {
+export interface CriticContext {
+  /** Recent designs for this account (newest first), for the template-fatigue check. */
+  recent?: Array<{
+    grammarId: string;
+    typeVoice: string;
+    colorwayId: string;
+    heroPhilosophy: string;
+  }>;
+}
+
+export function criticV3(
+  spec: SiteSpecV3,
+  ctx: CriticContext = {},
+): CriticIssue[] {
   const issues: CriticIssue[] = [];
   const add = (
     code: string,
@@ -373,6 +386,170 @@ export function criticV3(spec: SiteSpecV3): CriticIssue[] {
       "businessFit",
       "A short home page: honest, but consider adding supplied facts (hours, services, photos).",
     );
+
+  // ---------------------------------------------------------------- creative-direction signals (warnings)
+  const vert = resolveVertical(`${b.name} ${b.industry} ${b.description}`);
+  const gram = GRAMMARS.find((x) => x.id === spec.brand.grammarId);
+  const homePlates = home.sections.reduce(
+    (n, sec) =>
+      n +
+      ("plate" in sec && sec.plate && !("media" in sec && sec.media) ? 1 : 0) +
+      ("items" in sec && Array.isArray(sec.items)
+        ? (sec.items as Array<{ plate?: unknown; media?: unknown }>).filter(
+            (i) => i.plate && !i.media,
+          ).length
+        : 0),
+    0,
+  );
+  const homePhotos = home.sections.reduce(
+    (n, sec) =>
+      n +
+      ("media" in sec && sec.media ? 1 : 0) +
+      ("items" in sec && Array.isArray(sec.items)
+        ? (sec.items as Array<{ media?: unknown }>).filter((i) => i.media)
+            .length
+        : 0),
+    0,
+  );
+  const PHOTO_NEEDING = new Set([
+    "cinematic",
+    "arch-portrait",
+    "product-dominant",
+    "collage",
+    "editorial-split",
+  ]);
+  if (hero?.type === "hero" && !hero.media && PHOTO_NEEDING.has(hero.layout))
+    add(
+      "WEAK_HERO",
+      "warn",
+      "hierarchy",
+      `The ${hero.layout} opening is built around a picture, but none is available; a typographic opening would be stronger.`,
+    );
+  if (vert.photoTrust && homePhotos === 0)
+    add(
+      "IMAGE_LED_VERTICAL_WITHOUT_STRONG_IMAGE",
+      "warn",
+      "artDirection",
+      `${vert.label} is judged on real photographs and this design has none yet. Add photos to make it much stronger.`,
+    );
+  if (
+    homePlates >= 4 ||
+    (vert.photoTrust && homePlates >= 2 && homePhotos === 0)
+  )
+    add(
+      "PROCEDURAL_ART_OVERUSED",
+      "warn",
+      "artDirection",
+      `${homePlates} graphic placeholders stand in for pictures on the home page.`,
+    );
+  if (homePlates >= 3 && g.accentScarcity === "rare")
+    add(
+      "TOO_MUCH_GENERIC_DECORATION",
+      "info",
+      "composition",
+      "Several placeholder graphics on a restrained brand read as decoration.",
+    );
+  if (spec.design.genome.imageDominance === "dominant" && homePhotos === 0)
+    add(
+      "WEAK_ART_DIRECTION",
+      "warn",
+      "artDirection",
+      "The design promises picture-led composition but carries no pictures.",
+    );
+  if (
+    ["minimal-modernist", "local-commerce", "friendly-humanist"].includes(
+      g.typeVoice,
+    ) &&
+    g.headlineBehavior === "sentence" &&
+    g.typeContrast !== "extreme" &&
+    g.typeContrast !== "high"
+  )
+    add(
+      "TYPE_HAS_NO_CHARACTER",
+      "info",
+      "typography",
+      "A neutral type voice with plain headlines gives the brand no typographic personality.",
+    );
+  if (
+    g.signatureMotif === "none" &&
+    !home.sections.some((x) => x.type === "ticker" || x.type === "statement")
+  )
+    add(
+      "NO_SIGNATURE_MOMENT",
+      "info",
+      "brandDistinctiveness",
+      "No recurring device or standout moment makes this design recognisable.",
+    );
+  const cardLike = home.sections.filter((x) => CARDS.has(sectionKey(x)));
+  if (
+    cardLike.length >= 2 &&
+    home.sections.findIndex((x) => CARDS.has(sectionKey(x))) + 1 ===
+      home.sections.findIndex(
+        (x, i) =>
+          i > 0 &&
+          CARDS.has(sectionKey(x)) &&
+          CARDS.has(sectionKey(home.sections[i - 1]!)),
+      )
+  )
+    add(
+      "REPETITIVE_CARD_GRID",
+      "warn",
+      "composition",
+      "Two card grids sit back to back.",
+    );
+  const families = home.sections.map((x) => x.type);
+  if (new Set(families).size < Math.min(4, families.length - 1))
+    add(
+      "SECTIONS_TOO_SIMILAR",
+      "warn",
+      "composition",
+      "The home page repeats the same kind of section.",
+    );
+  const n = home.sections.length;
+  if ((g.density === "airy" && n > 10) || (g.density === "dense" && n < 3))
+    add(
+      "UNBALANCED_DENSITY",
+      "info",
+      "composition",
+      `${n} sections does not match the ${g.density} density this design promises.`,
+    );
+  if (gram) {
+    const clash = gram.tags.filter((tg) => avoidTags(vert.antiTraits).has(tg));
+    if (clash.length)
+      add(
+        "BUSINESS_FIT_WEAK",
+        "warn",
+        "businessFit",
+        `This look (${clash.join(", ")}) is something ${vert.label.toLowerCase()} designs should avoid.`,
+      );
+  }
+  if (
+    (vert.primaryIntent === "call" || vert.primaryIntent === "whatsapp") &&
+    (b.phone || b.whatsapp) &&
+    hero?.type === "hero" &&
+    g.mobileStrategy === "narrative-stack"
+  )
+    add(
+      "POOR_MOBILE_PRIORITY",
+      "warn",
+      "mobile",
+      "People mostly call or message this kind of business, but the phone layout has no persistent action.",
+    );
+  if (ctx.recent?.length) {
+    const last2 = ctx.recent.slice(0, 2);
+    if (
+      last2.some(
+        (r) =>
+          r.grammarId === spec.brand.grammarId && r.typeVoice === g.typeVoice,
+      )
+    )
+      add(
+        "TOO_SIMILAR_TO_RECENT_DIRECTION",
+        "warn",
+        "brandDistinctiveness",
+        "This design language and typeface were used in a recent design for this account.",
+      );
+  }
   return issues;
 }
 
@@ -436,6 +613,10 @@ export function repairV3(spec: SiteSpecV3): {
 }
 
 // ------------------------------------------------------------------ anti-sameness
+const heroKey = (s: SiteSpecV3) => {
+  const h = s.pages.find((p) => p.slug === "home")!.sections[0];
+  return h && h.type === "hero" ? `${h.layout}.${h.variant}` : "none";
+};
 const SEQ = (s: SiteSpecV3) =>
   s.pages.find((p) => p.slug === "home")!.sections.map(sectionKey);
 function lcs(a: string[], b: string[]): number {
@@ -459,7 +640,7 @@ export function similarityV3(a: SiteSpecV3, b: SiteSpecV3): number {
     sb = SEQ(b);
   const seq = lcs(sa, sb) / Math.max(sa.length, sb.length, 1);
   const parts: Array<[number, number]> = [
-    [3, eq(ga.heroPhilosophy, gb.heroPhilosophy)],
+    [3, eq(heroKey(a), heroKey(b))],
     [2, eq(ga.headerStyle, gb.headerStyle)],
     [3, seq],
     [3, eq(ga.typeVoice, gb.typeVoice)],
@@ -499,4 +680,52 @@ export function diversityReport(specs: SiteSpecV3[]): {
       }
     }
   return { max, mean: n ? sum / n : 0, worst, matrix };
+}
+
+/**
+ * Does a creative (flyer, post, story) still belong to the website's brand? Compares the identity-carrying fields only:
+ * palette, type voice, signature device and brand version. An artifact made under an earlier brand version is reported
+ * as an informational note (it is historical, not wrong).
+ */
+export function crossChannelDrift(
+  spec: SiteSpecV3,
+  art: {
+    brand: {
+      osVersion: number;
+      osHash: string;
+      typeVoice: string;
+      signatureMotif: string;
+      palette: { primary: string; background: string; accent: string };
+    };
+  },
+): CriticIssue[] {
+  const out: CriticIssue[] = [];
+  const g = spec.design.genome;
+  const p = spec.design.palette;
+  const drift = (what: string) =>
+    out.push({
+      code: "CROSS_CHANNEL_DRIFT",
+      severity: "warn",
+      dimension: "crossChannelConsistency",
+      message: `${what} differs between the website and this creative.`,
+      repairable: false,
+    });
+  if (art.brand.typeVoice !== g.typeVoice) drift("The typeface");
+  if (art.brand.signatureMotif !== g.signatureMotif)
+    drift("The signature device");
+  if (
+    art.brand.palette.primary.toLowerCase() !== p.primary.toLowerCase() ||
+    art.brand.palette.background.toLowerCase() !== p.background.toLowerCase() ||
+    art.brand.palette.accent.toLowerCase() !== p.accent.toLowerCase()
+  )
+    drift("The colour palette");
+  if (!out.length && art.brand.osHash !== spec.brand.osHash)
+    out.push({
+      code: "BRAND_VERSION_DIFFERS",
+      severity: "info",
+      dimension: "crossChannelConsistency",
+      message: `This creative was made with brand version ${art.brand.osVersion}; the website uses version ${spec.brand.osVersion}.`,
+      repairable: false,
+    });
+  return out;
 }

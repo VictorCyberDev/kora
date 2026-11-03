@@ -69,3 +69,21 @@ export const mix = (a: string, b: string, t: number) => {
   const [r2, g2, b2] = hexToRgb(b);
   return rgbToHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t);
 };
+
+/**
+ * A colour close to `c` that reaches `min` contrast on EVERY surface it can land on (a section background and the card
+ * sitting on it). Fitting surfaces one after another can land on a grey that fails on both; this searches both
+ * directions and takes the nearest colour that satisfies all of them, else the best pure black or white.
+ */
+export function legibleOnAll(c: string, surfaces: string[], min = 4.5): string {
+  const worst = (x: string) => Math.min(...surfaces.map((s) => contrast(x, s)));
+  if (worst(c) >= min) return c;
+  const [r, g, b] = hexToRgb(c);
+  const steps: string[] = [];
+  for (let t = 0.05; t <= 1.0001; t += 0.05)
+    for (const m of [255, 0])
+      steps.push(rgbToHex(r + (m - r) * t, g + (m - g) * t, b + (m - b) * t));
+  const ok = steps.find((x) => worst(x) >= min);
+  if (ok) return ok;
+  return worst("#000000") >= worst("#ffffff") ? "#000000" : "#ffffff";
+}

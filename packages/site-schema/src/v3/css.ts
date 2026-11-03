@@ -1,6 +1,7 @@
 import {
   contrast,
   ensureContrast,
+  legibleOnAll,
   luminance,
   mix,
   readableOn,
@@ -34,8 +35,7 @@ function toneVars(p: Palette, mode: "light" | "dark", tone: Tone): string {
         ? mix(bg, fg, 0.06)
         : mix(bg, luminance(fg) < 0.4 ? "#ffffff" : "#000000", 0.1);
   // Text must hold on the tone's background AND on the card surface that sits on it.
-  const onBoth = (c: string) =>
-    ensureContrast(ensureContrast(c, bg, 4.5), sf, 4.5);
+  const onBoth = (c: string) => legibleOnAll(c, [bg, sf], 4.5);
   const mf = onBoth(mix(fg, bg, 0.3));
   const ac = onBoth(p.accent);
   const bd = mix(bg, fg, tone === "dark" || mode === "dark" ? 0.28 : 0.2);
