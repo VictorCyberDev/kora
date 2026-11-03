@@ -62,6 +62,13 @@ export const ARTIFACT_FORMATS = {
     safe: { t: 110, r: 110, b: 110, l: 110 },
     kind: "print",
   },
+  "og-image": {
+    label: "Social preview",
+    width: 1200,
+    height: 630,
+    safe: { t: 56, r: 72, b: 56, l: 72 },
+    kind: "banner",
+  },
   "carousel-cover": {
     label: "Carousel cover",
     width: 1080,
@@ -170,6 +177,9 @@ export const ArtifactSpecSchema = z.object({
       /** Which stored asset the API should embed; the renderer never fetches anything itself. */
       assetId: z.string().max(80).optional(),
       alt: t(200).default(""),
+      focal: z
+        .object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) })
+        .optional(),
       reviewStatus: z
         .enum(["owner-approved", "unreviewed", "kora-curated", "n/a"])
         .default("n/a"),
@@ -202,7 +212,10 @@ export interface ComposeInput {
   imageKind?: "owner-supplied" | "licensed-stock" | "ai-generated";
   imageReview?: "owner-approved" | "unreviewed" | "kora-curated";
   assetId?: string;
+  focal?: { x: number; y: number };
   campaignId?: string;
+  /** Layout override chosen by the owner. */
+  composition?: Composition;
   seed?: number;
   print?: boolean;
 }
@@ -259,13 +272,15 @@ export function chooseComposition(i: {
 export function composeArtifact(i: ComposeInput): ArtifactSpec {
   const g = i.brand.genome;
   const bullets = (i.content.bullets ?? []).slice(0, 6);
-  const composition = chooseComposition({
-    format: i.format,
-    genome: g,
-    hasImage: !!i.hasImage,
-    bullets: bullets.length,
-    offer: !!i.content.offer,
-  });
+  const composition =
+    i.composition ??
+    chooseComposition({
+      format: i.format,
+      genome: g,
+      hasImage: !!i.hasImage,
+      bullets: bullets.length,
+      offer: !!i.content.offer,
+    });
   return ArtifactSpecSchema.parse({
     schema: "kora.artifact/1",
     format: i.format,
@@ -292,6 +307,7 @@ export function composeArtifact(i: ComposeInput): ArtifactSpec {
       ? {
           kind: i.imageKind ?? "owner-supplied",
           ...(i.assetId ? { assetId: i.assetId } : {}),
+          ...(i.focal ? { focal: i.focal } : {}),
           alt: "",
           reviewStatus:
             i.imageReview ??
@@ -577,6 +593,11 @@ export interface RenderOpts {
   imageDataUri?: string;
   /** Natural width/height of that image so it can be covered without distortion. */
   imageSize?: { width: number; height: number };
+  /** Where the subject is, 0-1. Used to choose the crop in every format. */
+  focal?: { x: number; y: number };
+  /** The owner's logo as a PNG data URI (resolved by the API from the Brand OS version). */
+  logoDataUri?: string;
+  logoSize?: { width: number; height: number };
 }
 export interface RenderedArtifact {
   svg: string;
@@ -713,6 +734,9 @@ export function renderArtifactSvg(
     const s = Math.max(w / iw, h / ih);
     const dw = iw * s,
       dh = ih * s;
+    // the owner's focal point decides what stays in frame when the picture is cropped to this format
+    const fx = Math.min(1, Math.max(0, o.focal?.x ?? 0.5)),
+      fy = Math.min(1, Math.max(0, o.focal?.y ?? 0.5));
     const id = `c${els.length}`;
     defs.push(
       clip
@@ -720,7 +744,7 @@ export function renderArtifactSvg(
         : `<clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath>`,
     );
     els.push(
-      `<g clip-path="url(#${id})"><image href="${o.imageDataUri}" x="${(x + (w - dw) / 2).toFixed(1)}" y="${(y + (h - dh) / 2).toFixed(1)}" width="${dw.toFixed(1)}" height="${dh.toFixed(1)}" preserveAspectRatio="xMidYMid slice"/></g>`,
+      `<g clip-path="url(#${id})"><image href="${o.imageDataUri}" x="${(x - (dw - w) * fx).toFixed(1)}" y="${(y - (dh - h) * fy).toFixed(1)}" width="${dw.toFixed(1)}" height="${dh.toFixed(1)}" preserveAspectRatio="xMidYMid slice"/></g>`,
     );
     return true;
   };
@@ -790,7 +814,21 @@ export function renderArtifactSvg(
     size: number,
     fill: string,
     anchor: "start" | "middle" | "end" = "start",
-  ) =>
+  ) => {
+    if (o.logoDataUri) {
+      // The owner's own logo, unaltered, in place of the typographic wordmark.
+      const lw = o.logoSize?.width ?? 400,
+        lh = o.logoSize?.height ?? 200;
+      const h = Math.round(size * 1.9);
+      const w = Math.min(Math.round((lw / lh) * h), 420);
+      const hh = Math.round(w * (lh / lw));
+      const lx = anchor === "end" ? x - w : anchor === "middle" ? x - w / 2 : x;
+      els.push(
+        `<image href="${o.logoDataUri}" x="${lx.toFixed(1)}" y="${(y - hh * 0.8).toFixed(1)}" width="${w}" height="${hh}" preserveAspectRatio="xMidYMid meet"/>`,
+      );
+      boxes.push({ role: "brand", x: lx, y: y - hh * 0.8, w, h: hh });
+      return;
+    }
     text("brand", [spec.brand.name], x, y, size, {
       family: v.display,
       weight: v.weight,
@@ -799,6 +837,7 @@ export function renderArtifactSvg(
       w: v.w,
       upper: isUpper,
     });
+  };
   const cta = (
     x: number,
     y: number,

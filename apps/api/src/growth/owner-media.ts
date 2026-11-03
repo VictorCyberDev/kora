@@ -107,7 +107,13 @@ async function measure(
   const spread = stats.channels[0]?.stdev ?? 40;
   const lap = await small
     .clone()
-    .convolve({ width: 3, height: 3, kernel: [0, 1, 0, 1, -4, 1, 0, 1, 0], scale: 1, offset: 128 })
+    .convolve({
+      width: 3,
+      height: 3,
+      kernel: [0, 1, 0, 1, -4, 1, 0, 1, 0],
+      scale: 1,
+      offset: 128,
+    })
     .raw()
     .toBuffer({ resolveWithObject: true });
   const d = lap.data;

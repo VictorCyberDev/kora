@@ -421,4 +421,145 @@ d("owner media: logo and photos", () => {
     ).json.data.spec;
     expect(JSON.stringify(s)).not.toContain("/m/");
   });
+
+  it("artifacts use the brand's logo, the owner's picture and its focal point; edits keep the brand; history is stable", async () => {
+    const { o, site } = await setup("om-art@example.com");
+    const ask = {
+      format: "social-square",
+      objective: "offer",
+      headline: "Birthday cakes this week",
+      cta: "Order on WhatsApp",
+    };
+    const svgOf = async (id: string) =>
+      await (
+        await fetch(`${h.base}/api/sites/${site.id}/assets/${id}/file?as=svg`, {
+          headers: { cookie: o.cookie },
+        })
+      ).text();
+    await h.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: brief,
+    });
+    const plain = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: ask,
+    });
+    expect(plain.status).toBe(201);
+    const plainSvg = await svgOf(plain.json.data.asset.id);
+    expect(plainSvg).not.toContain("data:image/png");
+    // add a logo and rebuild: Brand OS version moves, new artifacts carry the logo, the old one is unchanged
+    const logo = await upload(
+      o.cookie,
+      site.id,
+      await png(600, 200, true),
+      "kind=logo&filename=logo.png",
+    );
+    expect(logo.status).toBe(201);
+    await h.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: brief,
+    });
+    const withLogo = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: ask,
+    });
+    expect(withLogo.json.data.asset.brandVersion).toBeGreaterThan(
+      plain.json.data.asset.brandVersion,
+    );
+    expect(await svgOf(withLogo.json.data.asset.id)).toContain(
+      "data:image/png",
+    );
+    expect(await svgOf(plain.json.data.asset.id)).toBe(plainSvg);
+    // an owner picture, with two different focal points, crops differently
+    const ph = await upload(
+      o.cookie,
+      site.id,
+      stock("bakery-cake-frosting.webp"),
+      "kind=photo&filename=cake-product.webp",
+    );
+    const pid = ph.json.data!.id as string;
+    const story = { ...ask, format: "story", photoId: pid };
+    await h.call("PATCH", `/api/sites/${site.id}/media-library/${pid}`, {
+      cookie: o.cookie,
+      body: { focal: { x: 0.1, y: 0.5 } },
+    });
+    const left = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: story,
+    });
+    await h.call("PATCH", `/api/sites/${site.id}/media-library/${pid}`, {
+      cookie: o.cookie,
+      body: { focal: { x: 0.9, y: 0.5 } },
+    });
+    const right = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: story,
+    });
+    expect(left.status).toBe(201);
+    const ls = await svgOf(left.json.data.asset.id);
+    const rs = await svgOf(right.json.data.asset.id);
+    expect(ls).toContain("data:image/webp");
+    const xOf = (svg: string) =>
+      Number(
+        /<image href="data:image\/webp[^"]+" x="(-?[\d.]+)"/.exec(svg)![1],
+      );
+    expect(xOf(ls)).toBeGreaterThan(xOf(rs));
+    // edit one artifact: wording and layout change, the brand stays the artifact's own, a NEW asset is created
+    const ed = await h.call(
+      "POST",
+      `/api/sites/${site.id}/artifacts/${left.json.data.asset.id}/edit`,
+      {
+        cookie: o.cookie,
+        body: { headline: "Order your cake now", composition: "split-panel" },
+      },
+    );
+    expect(ed.status).toBe(201);
+    expect(ed.json.data.asset.id).not.toBe(left.json.data.asset.id);
+    expect(ed.json.data.asset.brandVersion).toBe(
+      left.json.data.asset.brandVersion,
+    );
+    expect(await svgOf(ed.json.data.asset.id)).toMatch(/order your cake/i);
+    expect(await svgOf(left.json.data.asset.id)).toBe(ls);
+    expect(
+      (
+        await h.call(
+          "POST",
+          `/api/sites/${site.id}/artifacts/${left.json.data.asset.id}/edit`,
+          { cookie: o.cookie, body: { headline: "<script>", bogus: 1 } },
+        )
+      ).status,
+    ).toBe(400);
+    const other = await h.signup("om-art-other@example.com");
+    expect(
+      (
+        await h.call(
+          "POST",
+          `/api/sites/${site.id}/artifacts/${left.json.data.asset.id}/edit`,
+          { cookie: other.cookie, body: { headline: "x" } },
+        )
+      ).status,
+    ).toBeGreaterThanOrEqual(403);
+    // a picture from another business is not usable
+    const them = await setup("om-art-them@example.com");
+    const foreign = await upload(
+      them.o.cookie,
+      them.site.id,
+      stock("barber-detail-grooming.webp"),
+      "kind=photo&filename=x.webp",
+    );
+    const steal = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: { ...ask, photoId: foreign.json.data!.id },
+    });
+    expect(steal.status).toBe(404);
+    // social preview format exists at 1200x630
+    const og = await h.call("POST", `/api/sites/${site.id}/artifacts`, {
+      cookie: o.cookie,
+      body: { ...ask, format: "og-image" },
+    });
+    expect(og.status).toBe(201);
+    expect([og.json.data.asset.width, og.json.data.asset.height]).toEqual([
+      1200, 630,
+    ]);
+  });
 });
