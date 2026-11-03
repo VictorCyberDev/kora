@@ -692,6 +692,32 @@ export function renderPageV3(
     ? `${spec.seo.canonicalOrigin}${slug === "home" ? "/" : `/${slug}/`}`
     : "";
   const b = spec.business;
+  // Social preview picture: only a real picture of this business (its hero photo, else its logo), by absolute URL.
+  // With no such picture there is no og:image at all; a generated placeholder would misrepresent the business.
+  const heroMedia =
+    hero0?.type === "hero" && hero0.media?.url ? hero0.media : undefined;
+  const absolute = (u: string) =>
+    u.startsWith("https://")
+      ? u
+      : spec.seo.canonicalOrigin && u.startsWith("/")
+        ? `${spec.seo.canonicalOrigin}${u}`
+        : "";
+  const og = heroMedia
+    ? {
+        url: absolute(heroMedia.url),
+        alt: heroMedia.alt || b.name,
+        width: heroMedia.width,
+        height: heroMedia.height,
+      }
+    : b.logo?.url
+      ? {
+          url: absolute(b.logo.url),
+          alt: `${b.name} logo`,
+          width: b.logo.width,
+          height: b.logo.height,
+        }
+      : null;
+  const ogImage = og && og.url ? og : null;
   const ld = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -701,6 +727,7 @@ export function renderPageV3(
     ...(b.email ? { email: b.email } : {}),
     ...(b.location ? { address: b.location } : {}),
     ...(b.logo ? { logo: b.logo.url } : {}),
+    ...(ogImage ? { image: ogImage.url } : {}),
     ...(b.social.length
       ? {
           sameAs: b.social
@@ -724,7 +751,7 @@ ${canon ? `<link rel="canonical" href="${esc(canon)}">\n<meta property="og:url" 
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:site_name" content="${esc(b.name)}">
-<meta name="twitter:card" content="summary">
+${ogImage ? `<meta property="og:image" content="${esc(ogImage.url)}">\n<meta property="og:image:alt" content="${esc(ogImage.alt)}">\n${ogImage.width && ogImage.height ? `<meta property="og:image:width" content="${ogImage.width}">\n<meta property="og:image:height" content="${ogImage.height}">\n` : ""}` : ""}<meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">
 <meta name="theme-color" content="${esc(spec.design.palette.background)}">
 <link rel="icon" href="${root}favicon.svg" type="image/svg+xml">
 ${preload}

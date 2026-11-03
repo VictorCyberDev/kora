@@ -18,6 +18,7 @@ import {
   sectionV3Schema,
   applyStructuredEditV3,
   inferBrandOs,
+  finalizeForPublish,
   planDirections,
   generateSpecFromBrief,
   parseSiteSpec,
@@ -613,5 +614,98 @@ describe("Brand OS backfill for older sites", () => {
     expect(brandOsHashOf(inferBrandOs(v2).brandOs)).toBe(
       brandOsHashOf(inferBrandOs(v2).brandOs),
     );
+  });
+});
+
+describe("social preview, structured data, sitemap and robots stay factual", () => {
+  const ph = (id: string) => ({
+    id,
+    role: "product",
+    url: `https://media.test.example/api/public/sites/s/m/${id.padEnd(64, "a")}/w1280.webp`,
+    srcset: [] as Array<{ url: string; width: number }>,
+    alt: "A fade in progress",
+    width: 1800,
+    height: 1200,
+    focal: { x: 0.5, y: 0.5 },
+    quality: {
+      score: 92,
+      heroReady: true,
+      orientation: "landscape" as const,
+      flags: [] as string[],
+    },
+  });
+  const ld = (html: string) => {
+    const m = /<script type="application\/ld\+json">(.*?)<\/script>/s.exec(
+      html,
+    )!;
+    return JSON.parse(m[1]!) as Record<string, unknown>;
+  };
+  it("with no picture of the business there is no og:image and the card is plain", () => {
+    const html = renderSiteV3(planDirectionsV3(law).directions[0]!.spec)[
+      "index.html"
+    ]!;
+    // stock photos are bundled relative paths; with no known origin they are not advertised
+    expect(html).not.toContain("og:image");
+    expect(html).toContain('name="twitter:card" content="summary"');
+    expect(ld(html).image).toBeUndefined();
+  });
+  it("an owner hero photo becomes the social picture, with its description and size", () => {
+    const d = planDirectionsV3(barber, {
+      ownerPhotos: [ph("p1"), ph("p2"), ph("p3")],
+    }).directions.find((x) => {
+      const h = x.spec.pages[0]!.sections[0]!;
+      return h.type === "hero" && h.media;
+    });
+    expect(d).toBeDefined();
+    if (!d) return;
+    const html = renderSiteV3(d.spec)["index.html"]!;
+    expect(html).toMatch(
+      /property="og:image" content="https:\/\/media\.test\.example\//,
+    );
+    expect(html).toContain(
+      'property="og:image:alt" content="A fade in progress"',
+    );
+    expect(html).toContain('property="og:image:width" content="1800"');
+    expect(html).toContain('content="summary_large_image"');
+    expect(ld(html).image).toMatch(/^https:\/\/media\.test\.example\//);
+  });
+  it("structured data contains only facts the owner supplied and cannot break out of the script tag", () => {
+    const spec = planDirectionsV3({
+      ...barber,
+      name: "Fade </script><script>alert(1)</script> Lab",
+    }).directions[0]!.spec;
+    const html = renderSiteV3(spec)["index.html"]!;
+    expect(html.match(/<script type="application\/ld\+json">/g)).toHaveLength(
+      1,
+    );
+    const data = ld(html);
+    expect(data["@type"]).toBe("LocalBusiness");
+    expect(data.telephone).toBe(barber.phone);
+    for (const k of [
+      "aggregateRating",
+      "review",
+      "priceRange",
+      "openingHours",
+      "award",
+    ])
+      expect(data[k]).toBeUndefined();
+    expect(html).not.toContain("</script><script>alert");
+  });
+  it("sitemap and robots list the real pages for the real origin only", () => {
+    const spec = planDirectionsV3(barber).directions[0]!.spec;
+    const files = finalizeForPublish(
+      renderSiteV3(spec),
+      spec,
+      "https://fadelab.example/",
+    );
+    expect(files["robots.txt"]).toContain(
+      "Sitemap: https://fadelab.example/sitemap.xml",
+    );
+    const locs = [
+      ...files["sitemap.xml"]!.matchAll(/<loc>([^<]+)<\/loc>/g),
+    ].map((m) => m[1]);
+    expect(locs[0]).toBe("https://fadelab.example/");
+    expect(locs.length).toBe(spec.pages.length);
+    for (const l of locs) expect(l).toMatch(/^https:\/\//);
   });
 });
