@@ -17,7 +17,7 @@ const done = new Set(
     : [],
 );
 const todo = list.filter((x) => !done.has(x.url));
-const u = new URL(process.env.HTTPS_PROXY);
+const u = new URL(process.env.HTTPS_PROXY ?? "http://127.0.0.1:1");
 const proxy = {
   server: `${u.protocol}//${u.host}`,
   username: decodeURIComponent(u.username),
@@ -394,7 +394,7 @@ async function observe(browser, site) {
   }
 }
 
-const browser = await chromium.launch({ proxy });
+const browser = await chromium.launch(process.env.NOPROXY ? {} : { proxy });
 let i = 0;
 let ok = 0;
 const conc = Number(concArg || 5);

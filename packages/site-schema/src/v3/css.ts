@@ -54,10 +54,12 @@ const PAD = {
   dense: "clamp(32px,5vw,60px)",
 } as const;
 const SCALE: Record<DesignGenome["typeContrast"], [number, number, number]> = {
-  low: [2.2, 5.2, 3.8],
-  medium: [2.4, 6.4, 4.8],
-  high: [2.6, 7.6, 6],
-  extreme: [2.8, 10.5, 9],
+  // Calibrated against 182 rendered real sites (docs/research/SITE-OBSERVATIONS-2026.md): the first version of this
+  // scale put the median headline at twice the width of the studied sites' and above their 90th percentile.
+  low: [2.2, 4.8, 3.4],
+  medium: [2.4, 5.4, 4.1],
+  high: [2.6, 6.4, 5.1],
+  extreme: [2.8, 8.8, 7.4],
 };
 const RADIUS = {
   none: "0",

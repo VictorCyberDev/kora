@@ -6,7 +6,14 @@ const raw = readFileSync("docs/research/data/site-observations-2026.jsonl", "utf
   .split("\n")
   .filter(Boolean)
   .map((l) => JSON.parse(l));
-const ok = raw.filter((r) => r.result === "ok");
+// A page only counts as studied if it really rendered the site: no bot-challenge or error interstitial in the
+// title or headline, and enough links to be a real page rather than an empty shell.
+const INTERSTITIAL = /just a moment|access denied|attention required|captcha|security check|verify you|forbidden|unusual traffic|pardon our|are you a robot/i;
+const studied = (r) =>
+  r.result === "ok" &&
+  !INTERSTITIAL.test(`${r.desktop.title} ${r.desktop.type.h1?.text ?? ""}`) &&
+  r.desktop.page.links >= 8;
+const ok = raw.filter(studied);
 const host = (u) => new URL(u).hostname.replace(/^www\./, "");
 const pct = (n, d) => (d ? Math.round((n / d) * 100) : 0);
 const median = (xs) => {
@@ -59,7 +66,7 @@ const stats = {
   studied: ok.length,
   blocked: raw.filter((r) => r.result === "blocked").length,
   errors: raw.filter((r) => r.result === "error").length,
-  thin: raw.filter((r) => r.result === "thin").length,
+  thin: raw.filter((r) => !studied(r) && (r.result === "ok" || r.result === "thin")).length,
   withMobileMeasurement: ok.filter((r) => r.mobile).length,
   categories: Object.fromEntries(
     [...new Set(ok.map((r) => r.category))].sort().map((c) => [c, ok.filter((r) => r.category === c).length]),

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   VERTICALS,
@@ -236,15 +237,15 @@ describe("reference atlas", () => {
   it("has at least 100 structured entries and states its evidence honestly", () => {
     const s = referenceStats();
     expect(s.total).toBeGreaterThanOrEqual(100);
-    expect(s.fetched).toBe(23);
-    expect(s.fetched + s.searchLead + s.analyst).toBe(s.total);
+    expect(s.directSiteReview).toBe(23);
+    expect(s.directSiteReview + s.searchLead + s.analystMemory).toBe(s.total);
     expect(new Set(REFERENCES.map((r) => r.id)).size).toBe(REFERENCES.length);
     for (const r of REFERENCES) {
       expect(r.principle.length, r.id).toBeGreaterThan(10);
       expect(r.doNotCopy).toMatch(/principle only/i);
     }
   });
-  it("every grammar is informed by at least three references, and fetched entries carry observed tokens", () => {
+  it("every grammar is informed by at least three references, and directly reviewed entries carry observed tokens", () => {
     for (const g of GRAMMARS)
       expect(
         REFERENCES.filter((r) => r.informs.includes(g.id)).length,
@@ -252,8 +253,67 @@ describe("reference atlas", () => {
       ).toBeGreaterThanOrEqual(3);
     for (const r of REFERENCES.filter(
       (x) =>
-        x.evidence === "fetched" && !["spotify", "godaddy-airo"].includes(x.id),
+        x.evidence === "DIRECT_SITE_REVIEW" &&
+        !["spotify", "godaddy-airo"].includes(x.id),
     ))
       expect(r.observed, r.id).toBeDefined();
+  });
+});
+
+describe("rendered research corpus (computed observations of real sites)", () => {
+  const root = new URL("../../../docs/research/data/", import.meta.url);
+  const summary = JSON.parse(
+    readFileSync(new URL("summary.json", root), "utf8"),
+  ) as {
+    attempted: number;
+    studied: number;
+    blocked: number;
+    errors: number;
+    thin: number;
+    categories: Record<string, number>;
+    hosts: string[];
+  };
+  const raw = readFileSync(
+    new URL("site-observations-2026.jsonl", root),
+    "utf8",
+  )
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => JSON.parse(l) as Record<string, any>);
+  it("studied at least 100 real sites across at least 12 kinds of business", () => {
+    expect(summary.studied).toBeGreaterThanOrEqual(100);
+    expect(Object.keys(summary.categories).length).toBeGreaterThanOrEqual(12);
+    expect(summary.hosts.length).toBe(summary.studied);
+    expect(new Set(summary.hosts).size).toBe(summary.hosts.length);
+  });
+  it("the counts add up: every attempt is accounted for as studied, blocked, errored or thin", () => {
+    expect(raw.length).toBe(summary.attempted);
+    expect(
+      summary.studied + summary.blocked + summary.errors + summary.thin,
+    ).toBe(summary.attempted);
+  });
+  it("every studied record carries structured, computed observations, not prose", () => {
+    const studied = raw.filter(
+      (r) =>
+        r.result === "ok" &&
+        summary.hosts.includes(
+          new URL(r.finalUrl ?? r.url).hostname.replace(/^www\./, ""),
+        ),
+    );
+    expect(studied.length).toBeGreaterThanOrEqual(summary.studied);
+    for (const r of studied) {
+      const d = r.desktop;
+      expect(d.type.bodyFont, r.url).toBeTruthy();
+      expect(d.colour.page, r.url).toMatch(/^#[0-9a-f]{6}$/);
+      expect(typeof d.hero.mediaShareOfViewport, r.url).toBe("number");
+      expect(Array.isArray(d.header.navLabels), r.url).toBe(true);
+      expect(typeof d.page.links, r.url).toBe("number");
+    }
+  });
+  it("blocked and failed sites are recorded as such, never as studied", () => {
+    for (const r of raw.filter(
+      (x) => x.result === "blocked" || x.result === "error",
+    ))
+      expect(r.desktop, r.url).toBeUndefined();
   });
 });
