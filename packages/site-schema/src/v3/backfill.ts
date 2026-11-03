@@ -45,7 +45,7 @@ export function briefFromOldSpec(
     ...("hours" in b && Array.isArray(b.hours) && b.hours.length
       ? { hours: b.hours }
       : {}),
-  }) as CreativeBrief;
+  });
 }
 
 const dist = (a: string, b: string) => {

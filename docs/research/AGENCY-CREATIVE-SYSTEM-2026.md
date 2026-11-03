@@ -18,13 +18,13 @@ These are COMPUTED values, not read from source. Raw data: `docs/research/data/s
 of every site, with a derived fingerprint: `docs/research/SITE-OBSERVATIONS-2026.md`. Counts are pinned by tests that
 read the data file.
 
-| Outcome                                                    | Count |
-| ---------------------------------------------------------- | ----- |
-| Attempted (254 sites in 16 kinds of business)              | 254   |
+| Outcome                                                    | Count   |
+| ---------------------------------------------------------- | ------- |
+| Attempted (254 sites in 16 kinds of business)              | 254     |
 | **Studied: rendered, measured at desktop and phone width** | **182** |
-| Blocked by the site (403/429) and recorded as blocked      | 46    |
-| Network or other errors, recorded as errors                | 18    |
-| Rendered but not counted (bot challenge, empty JS shell)   | 8     |
+| Blocked by the site (403/429) and recorded as blocked      | 46      |
+| Network or other errors, recorded as errors                | 18      |
+| Rendered but not counted (bot challenge, empty JS shell)   | 8       |
 
 Evidence class for the 182: **DIRECT_SITE_REVIEW** (live page rendered and measured). One page per site, the home
 page: this is a study of first impressions and page systems, not of whole sites. Consent banners were dismissed when a
@@ -35,11 +35,11 @@ repository.
 entries, each with `whyItWorks`, `whenItFails`, `smallBusinessApplicability`, the grammars it informed and a
 `doNotCopy` line. Their evidence classes are stated and are NOT counted as studied unless they are the first kind:
 
-| Evidence class      | Count | What it means                                                                                                  |
-| ------------------- | ----- | -------------------------------------------------------------------------------------------------------------- |
-| `DIRECT_SITE_REVIEW`| 23    | Static HTML and CSS of the live site were retrieved and read (2026-11-02). Superseded in strength by study 1.   |
-| `SEARCH_LEAD`       | 28    | Named by a search result. The site itself was **not opened**. Kept as a lead; **not counted as studied**.       |
-| `ANALYST_MEMORY`    | 55    | Kora's analysis from general knowledge. **Not re-verified live; not counted as studied.**                       |
+| Evidence class       | Count | What it means                                                                                                 |
+| -------------------- | ----- | ------------------------------------------------------------------------------------------------------------- |
+| `DIRECT_SITE_REVIEW` | 23    | Static HTML and CSS of the live site were retrieved and read (2026-11-02). Superseded in strength by study 1. |
+| `SEARCH_LEAD`        | 28    | Named by a search result. The site itself was **not opened**. Kept as a lead; **not counted as studied**.     |
+| `ANALYST_MEMORY`     | 55    | Kora's analysis from general knowledge. **Not re-verified live; not counted as studied.**                     |
 
 `CASE_STUDY_REVIEW` and `SECONDARY_DESIGN_ANALYSIS` are not used: no published case study or secondary analysis was
 read as a source in this research, so none is claimed.
@@ -94,38 +94,36 @@ generation.
 Awwwards, CSS Design Awards and SiteInspire searches returned no usable collections; entries for those are pattern
 notes only. Webflow, 10Web, Adobe Express and VistaCreate were not researched live.
 
-
 ## Kora measured with the same instrument
 
 The 54 golden pages (18 businesses x 3 directions, plain mode: no owner photographs) were rendered and measured by the
 same script as the studied sites. This is a calibration check, not a claim of superiority.
 
-| measure | studied sites | Kora v3 golden |
-| --- | --- | --- |
-| n | 182 | 54 |
-| dark page % | 8 | 20 |
-| uppercase headline % | 13 | 9 |
-| italic headline % | 0 | 0 |
-| centred headline % | 33 | 7 |
-| median headline words | 5 | 5 |
-| median headline size (% viewport width) | 3.6 | 6.1 |
-| median body px | 16 | 18 |
-| square button % | 49 | 72 |
-| pill button % | 26 | 11 |
-| image-led first screen % | 62 | 2 |
-| text/product-led first screen % | 21 | 76 |
-| sticky header % | 40 | 0 |
-| median nav items | 5 | 5 |
-| median page length (screens) | 6.5 | 4 |
-| JSON-LD % | 77 | 100 |
-| og:image % | 75 | 0 |
-| phone menu button % | 80 | 0 |
-| phone sticky bottom bar % | 29 | 26 |
-| phone overflow % | 0 | 0 |
+| measure                                 | studied sites | Kora v3 golden |
+| --------------------------------------- | ------------- | -------------- |
+| n                                       | 182           | 54             |
+| dark page %                             | 8             | 20             |
+| uppercase headline %                    | 13            | 9              |
+| italic headline %                       | 0             | 0              |
+| centred headline %                      | 33            | 7              |
+| median headline words                   | 5             | 5              |
+| median headline size (% viewport width) | 3.6           | 6.1            |
+| median body px                          | 16            | 18             |
+| square button %                         | 49            | 72             |
+| pill button %                           | 26            | 11             |
+| image-led first screen %                | 62            | 2              |
+| text/product-led first screen %         | 21            | 76             |
+| sticky header %                         | 40            | 0              |
+| median nav items                        | 5             | 5              |
+| median page length (screens)            | 6.5           | 4              |
+| JSON-LD %                               | 77            | 100            |
+| og:image %                              | 75            | 0              |
+| phone menu button %                     | 80            | 0              |
+| phone sticky bottom bar %               | 29            | 26             |
+| phone overflow %                        | 0             | 0              |
 
 Kora distinct (heading font, page colour, headline case, button radius) combinations: 43 of 54
 Studied sites distinct combinations: 172 of 182
-
 
 What this changed and what it did not:
 

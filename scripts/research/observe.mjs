@@ -2,7 +2,12 @@
 // what the page actually shows at desktop and phone width, not what its source code declares.
 // Output is a JSONL file; failures are recorded as failures (blocked/error), never silently dropped or invented.
 import { createRequire } from "node:module";
-import { readFileSync, appendFileSync, existsSync, writeFileSync } from "node:fs";
+import {
+  readFileSync,
+  appendFileSync,
+  existsSync,
+  writeFileSync,
+} from "node:fs";
 const req = createRequire(import.meta.url);
 const { chromium } = req("@playwright/test");
 
@@ -72,8 +77,7 @@ function measure() {
     const r = e.getBoundingClientRect();
     return r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw;
   };
-  const first = (v) =>
-    (v || "").split(",")[0].replace(/["']/g, "").trim();
+  const first = (v) => (v || "").split(",")[0].replace(/["']/g, "").trim();
   const text = (e) => (e.textContent || "").replace(/\s+/g, " ").trim();
 
   // headline: first visible h1, else the largest visible heading in view
@@ -224,14 +228,17 @@ function measure() {
   return {
     title: document.title.slice(0, 120),
     description:
-      document.querySelector('meta[name="description"]')?.content?.slice(0, 200) || "",
+      document
+        .querySelector('meta[name="description"]')
+        ?.content?.slice(0, 200) || "",
     lang: document.documentElement.lang || "",
     themeColor:
       document.querySelector('meta[name="theme-color"]')?.content || "",
     hasJsonLd: !!document.querySelector('script[type="application/ld+json"]'),
     hasOgImage: !!document.querySelector('meta[property="og:image"]'),
     page: {
-      lengthInScreens: Math.round((document.documentElement.scrollHeight / vh) * 10) / 10,
+      lengthInScreens:
+        Math.round((document.documentElement.scrollHeight / vh) * 10) / 10,
       sections: document.querySelectorAll("section").length,
       links: document.querySelectorAll("a[href]").length,
       images: document.querySelectorAll("img").length,
@@ -240,22 +247,30 @@ function measure() {
     type: {
       headingFont: hs ? first(hs.fontFamily) : null,
       bodyFont: first(body.fontFamily),
-      buttonFont: firstBtn ? first(getComputedStyle(firstBtn).fontFamily) : null,
+      buttonFont: firstBtn
+        ? first(getComputedStyle(firstBtn).fontFamily)
+        : null,
       h1: h1
         ? {
             text: text(h1).slice(0, 110),
             words: text(h1).split(" ").length,
             sizePx: Math.round(parseFloat(hs.fontSize)),
-            sizeVsViewport: Math.round((parseFloat(hs.fontSize) / vw) * 1000) / 1000,
+            sizeVsViewport:
+              Math.round((parseFloat(hs.fontSize) / vw) * 1000) / 1000,
             weight: hs.fontWeight,
             letterSpacingEm:
               hs.letterSpacing === "normal"
                 ? 0
-                : Math.round((parseFloat(hs.letterSpacing) / parseFloat(hs.fontSize)) * 100) / 100,
+                : Math.round(
+                    (parseFloat(hs.letterSpacing) / parseFloat(hs.fontSize)) *
+                      100,
+                  ) / 100,
             lineHeight:
               hs.lineHeight === "normal"
                 ? null
-                : Math.round((parseFloat(hs.lineHeight) / parseFloat(hs.fontSize)) * 100) / 100,
+                : Math.round(
+                    (parseFloat(hs.lineHeight) / parseFloat(hs.fontSize)) * 100,
+                  ) / 100,
             transform: hs.textTransform,
             align: hs.textAlign,
             italic: hs.fontStyle === "italic",
@@ -309,12 +324,17 @@ function measureMobile() {
   }).length;
   const h1 = document.querySelector("h1");
   return {
-    horizontalOverflowPx: Math.max(0, document.documentElement.scrollWidth - vw),
+    horizontalOverflowPx: Math.max(
+      0,
+      document.documentElement.scrollWidth - vw,
+    ),
     elementsPastRightEdge: bad,
     menuButton: burger,
     stickyBottomBars: fixedBottom,
     h1SizePx: h1 ? Math.round(parseFloat(getComputedStyle(h1).fontSize)) : null,
-    lengthInScreens: Math.round((document.documentElement.scrollHeight / innerHeight) * 10) / 10,
+    lengthInScreens:
+      Math.round((document.documentElement.scrollHeight / innerHeight) * 10) /
+      10,
   };
 }
 
@@ -323,7 +343,8 @@ async function settle(page) {
   // dismiss the most common consent banners so the first screen is the site, not the banner
   await page
     .evaluate(() => {
-      const re = /^(accept( all)?( cookies)?|allow all|agree|i agree|got it|ok|okay|accept & continue|reject all)$/i;
+      const re =
+        /^(accept( all)?( cookies)?|allow all|agree|i agree|got it|ok|okay|accept & continue|reject all)$/i;
       for (const b of document.querySelectorAll("button, a[role=button]")) {
         if (re.test((b.textContent || "").trim())) {
           b.click();
@@ -336,7 +357,11 @@ async function settle(page) {
 }
 
 async function observe(browser, site) {
-  const rec = { url: site.url, category: site.category, observedAt: new Date().toISOString() };
+  const rec = {
+    url: site.url,
+    category: site.category,
+    observedAt: new Date().toISOString(),
+  };
   const ctx = await browser.newContext({
     viewport: { width: 1440, height: 900 },
     ignoreHTTPSErrors: true,
@@ -349,11 +374,15 @@ async function observe(browser, site) {
     return t === "media" || t === "websocket" ? r.abort() : r.continue();
   });
   try {
-    const resp = await page.goto(site.url, { timeout: 30000, waitUntil: "domcontentloaded" });
+    const resp = await page.goto(site.url, {
+      timeout: 30000,
+      waitUntil: "domcontentloaded",
+    });
     rec.status = resp ? resp.status() : 0;
     rec.finalUrl = page.url();
     if (rec.status >= 400) {
-      rec.result = rec.status === 403 || rec.status === 429 ? "blocked" : "error";
+      rec.result =
+        rec.status === 403 || rec.status === 429 ? "blocked" : "error";
       return rec;
     }
     await settle(page);
@@ -371,7 +400,10 @@ async function observe(browser, site) {
       r.request().resourceType() === "media" ? r.abort() : r.continue(),
     );
     try {
-      await mp.goto(site.url, { timeout: 30000, waitUntil: "domcontentloaded" });
+      await mp.goto(site.url, {
+        timeout: 30000,
+        waitUntil: "domcontentloaded",
+      });
       await settle(mp);
       rec.mobile = await mp.evaluate(measureMobile);
     } catch (e) {
@@ -380,7 +412,8 @@ async function observe(browser, site) {
       await m.close();
     }
     const h1 = rec.desktop.type.h1;
-    const bodyish = (rec.desktop.page.links || 0) + (rec.desktop.page.images || 0);
+    const bodyish =
+      (rec.desktop.page.links || 0) + (rec.desktop.page.images || 0);
     if (!h1 && bodyish < 8) {
       rec.result = "thin";
     } else rec.result = "ok";

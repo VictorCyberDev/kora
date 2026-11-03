@@ -15,7 +15,9 @@ const ids = [
       .filter((f) => f.endsWith(`-${idx}-${w}.png`))
       .map((f) => f.replace(`-${idx}-${w}.png`, "")),
   ),
-].filter((id) => !filter || filter.test(id)).sort();
+]
+  .filter((id) => !filter || filter.test(id))
+  .sort();
 const cell = w === "1280" ? Math.floor(1700 / cols) - 10 : 200;
 const img = (id) =>
   `data:image/png;base64,${readFileSync(join(dir, `${id}-${idx}-${w}.png`)).toString("base64")}`;

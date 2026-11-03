@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
@@ -334,7 +335,7 @@ describe("sentence casing keeps what the owner capitalised on purpose", () => {
       name: "CoolBreeze Air",
       description: "We install and repair air conditioners in Lagos.",
       services: ["AC install", "AC repair"],
-    } as never);
+    });
     const v = resolveVertical("CoolBreeze Air AC install and AC repair");
     expect(offerPhrase(truth, v)).toBe("AC install and AC repair");
   });
@@ -345,14 +346,13 @@ describe("different never means unsuited", () => {
     name: string,
     description: string,
     feel?: string,
-  ): CreativeBrief & { name: string } =>
-    ({
-      name,
-      description,
-      ...(feel ? { feel } : {}),
-      whatsapp: "+2348033000000",
-      location: "Lagos",
-    }) as CreativeBrief & { name: string };
+  ): CreativeBrief & { name: string } => ({
+    name,
+    description,
+    ...(feel ? { feel } : {}),
+    whatsapp: "+2348033000000",
+    location: "Lagos",
+  });
   const grammars = (b: CreativeBrief) =>
     composeDirections(b).map((d) => d.grammarId);
   it("a builder, clinic, law firm, accountant, interior designer and hotel are never offered the nursery language", () => {

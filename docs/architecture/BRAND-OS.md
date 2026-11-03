@@ -40,7 +40,7 @@ adds the index).
   got before.
 - **Taste.** Nothing is claimed from fewer than three judgements (ADR-028). From three, `tasteSignals` reports repeated
   preferences (design language, type voice) and repeated passes (weighted 1.5 or more). `rerankByTaste` only moves
-  which direction is *recommended*, by at most +1.5 / -1.5 on a fit score whose own spread for a poor match is larger:
+  which direction is _recommended_, by at most +1.5 / -1.5 on a fit score whose own spread for a poor match is larger:
   taste can break a near tie, never recommend a bad fit, and the owner can always pick any of the three. The reason
   shown says so ("it is close to the directions you have chosen before, and it still fits what you told us").
 - `GET /api/sites/:id/brand-os` returns `designMemory` (number of decisions, languages being rotated away from, taste)

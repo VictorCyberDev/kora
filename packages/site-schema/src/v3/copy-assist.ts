@@ -25,8 +25,7 @@ export function factsOf(spec: SiteSpecV3): string {
     ...(b.hours ?? []).flatMap((h) => [h.days, h.hours]),
   ];
   for (const p of spec.pages)
-    for (const s of p.sections)
-      parts.push(JSON.stringify(s, (_k, v) => (typeof v === "string" ? v : v)));
+    for (const s of p.sections) parts.push(JSON.stringify(s));
   return parts.join(" \n ").toLowerCase();
 }
 

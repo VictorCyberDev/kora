@@ -40,7 +40,6 @@ requests.
 Pixel-diff regression is not implemented (dynamic images make it brittle); the stable guarantees are layout metrics,
 contrast, overflow and the budgets above. The screenshots are a point-in-time artefact, not a CI baseline.
 
-
 ## Final review of the golden set (current engine)
 
 Sheets in `docs/design/v7/`: `golden-desktop-direction-1..3.png` (18 businesses x 3 directions), `golden-mobile-direction-1.png`,

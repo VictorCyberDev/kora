@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startHarness, type Harness } from "./test-support/platform-harness.js";
 

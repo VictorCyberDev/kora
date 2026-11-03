@@ -600,7 +600,7 @@ describe("Brand OS backfill for older sites", () => {
         name: barber.name,
         description: barber.description,
         whatsapp: barber.whatsapp,
-      } as never),
+      }),
     );
     const { brandOs } = inferBrandOs(v1);
     expect(brandOs.visual.palette.primary).toBe(v1.brand.primaryColor);
