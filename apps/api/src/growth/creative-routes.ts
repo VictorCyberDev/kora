@@ -32,6 +32,7 @@ import {
   gradeFindings,
   parseAnySiteSpec,
 } from "@kora/site-schema";
+import { criticV3 } from "@kora/site-schema";
 import {
   HttpError,
   notFound,
@@ -205,6 +206,12 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         const spec = parseAnySiteSpec(pub.spec);
         if (spec.version === 2)
           grade = gradeFindings(creativeFindings(spec)).grade;
+        else if (spec.version === 3) {
+          const issues = criticV3(spec);
+          const blocks = issues.filter((i) => i.severity === "block").length;
+          const warns = issues.filter((i) => i.severity === "warn").length;
+          grade = blocks ? "K1" : warns >= 4 ? "K3" : warns >= 1 ? "K4" : "K5";
+        }
       } catch {
         grade = null;
       }
