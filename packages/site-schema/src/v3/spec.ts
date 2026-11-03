@@ -69,6 +69,19 @@ export const mediaV3Schema = z.object({
   focalPoint: z
     .object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1) })
     .optional(),
+  /** Responsive variants of the same picture (https only); the browser picks by width. */
+  srcset: z
+    .array(
+      z.object({
+        url: z
+          .string()
+          .max(500)
+          .regex(/^https:\/\/[^\s"'<>,]+$/),
+        width: z.number().int().min(100).max(4000),
+      }),
+    )
+    .max(4)
+    .optional(),
   role: z.enum(MEDIA_ROLES).default("feature"),
   treatment: z.enum(MEDIA_TREATMENTS).default("none"),
   provenance: z
@@ -289,6 +302,19 @@ export const siteSpecV3Schema = z
         .max(10)
         .default([]),
       social: z.array(link).max(8).default([]),
+      /** The owner's own logo, re-encoded by Kora. Never generated, never altered. */
+      logo: z
+        .object({
+          url: z
+            .string()
+            .max(500)
+            .regex(/^https:\/\/[^\s"'<>]+$/),
+          alt: text(120).default(""),
+          assetId: z.string().max(60),
+          width: z.number().int().min(1).max(4000),
+          height: z.number().int().min(1).max(4000),
+        })
+        .optional(),
       language: z
         .string()
         .regex(/^[a-z]{2}(-[A-Z]{2})?$/)

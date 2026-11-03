@@ -69,7 +69,7 @@ function visual(
       | undefined;
   },
   c: Ctx,
-  opts: { cls?: string; eager?: boolean; ar?: string } = {},
+  opts: { cls?: string; eager?: boolean; ar?: string; sizes?: string } = {},
 ): string {
   const g = c.spec.design.genome;
   const ar = `ar-${opts.ar ?? g.imageCrop}`;
@@ -77,14 +77,14 @@ function visual(
     const m = v.media;
     let fp = "";
     if (m.focalPoint) {
-      const x = Math.round((m.focalPoint.x * 100) / 25) * 25;
-      const y = Math.round((m.focalPoint.y * 100) / 25) * 25;
+      const x = Math.round((m.focalPoint.x * 100) / 10) * 10;
+      const y = Math.round((m.focalPoint.y * 100) / 10) * 10;
       fp = ` fp-${x}-${y}`;
       c.focals.add(`${x}-${y}`);
     }
     const dims =
       m.width && m.height ? ` width="${m.width}" height="${m.height}"` : "";
-    return `<div class="frame ${ar} tr-${m.treatment}${fp} ${opts.cls ?? ""}"><img src="${esc(m.url)}" alt="${esc(m.alt)}"${dims} ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"'}></div>`;
+    return `<div class="frame ${ar} tr-${m.treatment}${fp} ${opts.cls ?? ""}"><img src="${esc(m.url)}"${m.srcset?.length ? ` srcset="${esc(m.srcset.map((x) => `${x.url} ${x.width}w`).join(", "))}" sizes="${esc(opts.sizes ?? "(min-width: 860px) 50vw, 100vw")}"` : ""} alt="${esc(m.alt)}"${dims} ${opts.eager ? 'fetchpriority="high"' : 'loading="lazy" decoding="async"'}></div>`;
   }
   const plate = v.plate ?? { kind: "arch", seed: 1 };
   return `<div class="frame plate-w ${ar} ${opts.cls ?? ""}">${plateSvg(plate.kind as never, plate.seed, c.spec.design.palette, c.letter, c.quiet)}</div>`;
@@ -130,7 +130,7 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
   const o = `<section class="sec hero h-${s.layout} t-${tone}" id="hero">`;
   switch (s.layout) {
     case "cinematic":
-      return `${o}<div class="bgv">${visual(s, c, { eager, ar: "wide" }).replace(/class="frame[^"]*"/, 'class="bgf"')}</div><div class="w">${copy}</div></section>`;
+      return `${o}<div class="bgv">${visual(s, c, { eager, ar: "wide", sizes: "100vw" }).replace(/class="frame[^"]*"/, 'class="bgf"')}</div><div class="w">${copy}</div></section>`;
     case "type-dominant":
       return `${o}<div class="w">${eyebrow}${h1}<div class="under">${sub}<div>${ctas}${hl}</div></div></div></section>`;
     case "minimal-statement":
@@ -517,7 +517,10 @@ function header(
     : g.headerStyle === "overlay"
       ? "minimal-bar"
       : g.headerStyle;
-  const brand = `<a class="brand" href="${esc(relFrom(from, "home"))}">${seal}${esc(spec.business.name)}</a>`;
+  const mark = spec.business.logo
+    ? `<img class="logo" src="${esc(spec.business.logo.url)}" alt="${esc(spec.business.logo.alt || spec.business.name)}" width="${spec.business.logo.width}" height="${spec.business.logo.height}">`
+    : `${seal}${esc(spec.business.name)}`;
+  const brand = `<a class="brand" href="${esc(relFrom(from, "home"))}">${mark}</a>`;
   const menu = `<details class="menu"><summary>Menu</summary><ul>${bits.join("")}${cta}</ul></details>`;
   const nav = `<ul class="nav-d" aria-label="Main">${bits.join("")}${cta}</ul>`;
   return `<header class="hd hs-${style} t-${style === "overlay" ? "dark" : "light"}"><div class="w bar">${brand}${nav}${menu}</div></header>`;
@@ -673,6 +676,7 @@ export function renderPageV3(
     ...(b.phone ? { telephone: b.phone } : {}),
     ...(b.email ? { email: b.email } : {}),
     ...(b.location ? { address: b.location } : {}),
+    ...(b.logo ? { logo: b.logo.url } : {}),
     ...(b.social.length
       ? {
           sameAs: b.social

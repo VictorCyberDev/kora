@@ -26,6 +26,7 @@ import { registerStudioRoutes } from "./studio-routes.js";
 import { registerTruthRoutes } from "./truth-routes.js";
 import { registerCreativeRoutes } from "./creative-routes.js";
 import { registerArtifactRoutes } from "./artifact-routes.js";
+import { registerOwnerMediaRoutes } from "./owner-media-routes.js";
 import { registerMediaRoutes } from "./media-routes.js";
 import { mediaProvidersFromEnv, type MediaProvider } from "@kora/growth";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
@@ -79,6 +80,12 @@ export function registerGrowth(
     raster,
     ffmpeg,
     contentModel: null,
+  });
+  registerOwnerMediaRoutes(app, {
+    platform,
+    billing,
+    sql: platform.sql,
+    publicUrl: config.KORA_MEDIA_PUBLIC_URL ?? config.KORA_PUBLIC_URL,
   });
   registerArtifactRoutes(app, {
     platform,

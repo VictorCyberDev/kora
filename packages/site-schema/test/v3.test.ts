@@ -17,7 +17,10 @@ import {
   planSiteV3,
   sectionV3Schema,
 } from "../src/index.js";
-import { composeDirections } from "@kora/creative";
+import {
+  composeDirections,
+  brandOsHash as brandOsHashOf,
+} from "@kora/creative";
 
 const barber = {
   name: "Fade Lab",
@@ -413,5 +416,116 @@ describe("type voices stay in step between website and artifacts", () => {
         v.body.family,
       );
     }
+  });
+});
+
+describe("composition follows the assets", () => {
+  const fashion = {
+    name: "Ife Studio",
+    description:
+      "A womenswear boutique making ready-to-wear dresses with African prints.",
+    whatsapp: "+2348023232323",
+    services: ["Ready-to-wear dresses", "Custom orders"],
+    feel: "elegant editorial",
+  };
+  const photo = (
+    id: string,
+    o: Partial<{
+      score: number;
+      heroReady: boolean;
+      flags: string[];
+      role: string;
+    }> = {},
+  ) => ({
+    id,
+    role: o.role ?? "product",
+    url: `https://media.test.example/api/public/sites/s/m/${id.padEnd(64, "a")}/w1280.webp`,
+    srcset: [
+      {
+        url: `https://media.test.example/api/public/sites/s/m/${id.padEnd(64, "a")}/w640.webp`,
+        width: 640,
+      },
+    ],
+    alt: "",
+    width: 1800,
+    height: 1200,
+    focal: { x: 0.4, y: 0.5 },
+    quality: {
+      score: o.score ?? 90,
+      heroReady: o.heroReady ?? true,
+      orientation: "landscape" as const,
+      flags: o.flags ?? [],
+    },
+  });
+  const hero = (opts?: Parameters<typeof planDirectionsV3>[1]) =>
+    planDirectionsV3(fashion, opts).directions.map(
+      (d) => d.spec.pages[0]!.sections[0]!,
+    );
+  it("no pictures: image-led brands go typographic or graphic; strong owner photos make them photo-led", () => {
+    const without = hero();
+    const withPhotos = hero({
+      ownerPhotos: [photo("a1"), photo("b2"), photo("c3")],
+    });
+    const photoLed = (h: ReturnType<typeof hero>[number]) =>
+      h.type === "hero" && !!h.media;
+    expect(withPhotos.filter(photoLed).length).toBeGreaterThan(
+      without.filter(photoLed).length,
+    );
+    for (const h of withPhotos)
+      if (h.type === "hero" && h.media)
+        expect(h.media.provenance.sourceType).toBe("owner-supplied");
+  });
+  it("a weak picture is never the hero: blurry and low-score pictures are skipped, low-resolution ones are not heroes", () => {
+    const weak = [
+      photo("d4", {
+        score: 30,
+        heroReady: false,
+        flags: ["BLURRY", "LOW_RESOLUTION"],
+      }),
+      photo("e5", { score: 55, heroReady: false, flags: ["LOW_RESOLUTION"] }),
+    ];
+    const specs = planDirectionsV3(fashion, {
+      ownerPhotos: weak,
+    }).directions.map((d) => d.spec);
+    for (const s of specs) {
+      const h = s.pages[0]!.sections[0]!;
+      expect((h.type === "hero" && h.media?.url) || "").not.toContain("d4");
+      expect((h.type === "hero" && h.media?.url) || "").not.toContain("e5");
+      expect(JSON.stringify(s)).not.toContain("d4".padEnd(64, "a"));
+    }
+  });
+  it("focal point and responsive variants reach the HTML; owner media is described for accessibility", () => {
+    const d = planDirectionsV3(fashion, {
+      ownerPhotos: [photo("f6"), photo("g7"), photo("h8")],
+    }).directions[0]!;
+    const files = renderSiteV3(d.spec, ctx);
+    const html = files["index.html"]!;
+    expect(html).toMatch(/srcset="[^"]+ 640w/);
+    expect(html).toMatch(/fp-40-50/);
+    expect(files["styles.css"]).toContain(
+      ".fp-40-50 img{object-position:40% 50%}",
+    );
+    expect(html).not.toMatch(/<img[^>]+alt=""/);
+    expect(lintArtifact(files)).toEqual([]);
+  });
+  it("an owner logo replaces the typographic wordmark and is part of the brand", () => {
+    const logo = {
+      id: "logo-1",
+      url:
+        "https://media.test.example/api/public/sites/s/m/" +
+        "b".repeat(64) +
+        "/logo.png",
+      alt: "",
+      width: 600,
+      height: 200,
+    };
+    const d = planDirectionsV3(fashion, { ownerLogo: logo }).directions[0]!;
+    const html = renderSiteV3(d.spec, ctx)["index.html"]!;
+    expect(html).toContain('class="logo"');
+    expect(html).toContain('alt="Ife Studio logo"');
+    expect(d.spec.business.logo?.assetId).toBe("logo-1");
+    const plain = planDirectionsV3(fashion).directions[0]!;
+    expect(d.brandOs.visual.logoAssetId).toBe("logo-1");
+    expect(brandOsHashOf(d.brandOs)).not.toBe(brandOsHashOf(plain.brandOs));
   });
 });

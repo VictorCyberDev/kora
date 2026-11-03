@@ -43,6 +43,7 @@ export function brandOsOfSpec(
     version > 1 ? ({ version: version - 1 } as unknown as BrandOS) : undefined;
   return brandOsFromDirection(d, {
     name: spec.business.name,
+    logoAssetId: spec.business.logo?.assetId ?? null,
     palette: {
       background: p.background,
       foreground: p.foreground,

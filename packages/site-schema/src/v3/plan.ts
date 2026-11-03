@@ -59,9 +59,35 @@ const CATALOG: Record<string, string> = {
   gadgets: "phone-accessories",
 };
 
+export interface OwnerPhotoInput {
+  id: string;
+  role: string;
+  url: string;
+  srcset: Array<{ url: string; width: number }>;
+  alt: string;
+  width: number;
+  height: number;
+  focal: { x: number; y: number };
+  quality: {
+    score: number;
+    heroReady: boolean;
+    orientation: "landscape" | "portrait" | "square";
+    flags: string[];
+  };
+}
+export interface OwnerLogoInput {
+  id: string;
+  url: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+
 export interface PlanV3Options {
   /** Owner-supplied pictures, already validated (https/bundled + alt). Used before any stock. */
-  ownerMedia?: MediaV3[];
+  /** The owner's own photos, already validated and re-encoded by the API. Used before any stock. */
+  ownerPhotos?: OwnerPhotoInput[];
+  ownerLogo?: OwnerLogoInput;
   /** Real reviews the owner supplied. Without them no testimonial section exists. */
   quotes?: Array<{ quote: string; author: string; role?: string }>;
   /** Real figures the owner supplied ("Since 2015", "3 branches") as value/label pairs. */
@@ -109,36 +135,155 @@ function servicesOf(truth: BusinessTruth, thing: string): string[] {
   return parts.length >= 2 ? parts.slice(0, 6) : [];
 }
 
+const ROLE_WORD: Record<string, string> = {
+  product: "Product photo",
+  service: "Photo of our work",
+  portfolio: "Portfolio photo",
+  team: "Photo of the team",
+  location: "Photo of the place",
+  environment: "Photo of the space",
+  process: "Photo of the process",
+  gallery: "Photo",
+  general: "Photo",
+};
+const MEDIA_ROLE: Record<string, MediaV3["role"]> = {
+  product: "product",
+  team: "about",
+  gallery: "gallery",
+  portfolio: "gallery",
+};
+
+/** Usable owner pictures, best first: hero-ready ones lead, then by quality score. Blurry or tiny ones are left out. */
+function ownerMedia(
+  opts: PlanV3Options,
+  name: string,
+): { all: MediaV3[]; hero: MediaV3 | undefined } {
+  const usable = (opts.ownerPhotos ?? []).filter(
+    (p) => p.quality.score >= 40 && !p.quality.flags.includes("BLURRY"),
+  );
+  const ranked = [...usable].sort(
+    (a, b) =>
+      Number(b.quality.heroReady) - Number(a.quality.heroReady) ||
+      b.quality.score - a.quality.score,
+  );
+  const toMedia = (p: OwnerPhotoInput): MediaV3 => ({
+    url: p.url,
+    alt: p.alt.trim() || `${ROLE_WORD[p.role] ?? "Photo"} from ${name}`,
+    width: p.width,
+    height: p.height,
+    focalPoint: p.focal,
+    ...(p.srcset.length ? { srcset: p.srcset } : {}),
+    role: MEDIA_ROLE[p.role] ?? "feature",
+    treatment: "none",
+    provenance: {
+      sourceType: "owner-supplied",
+      reviewStatus: "owner-approved",
+    },
+  });
+  const heroPick = ranked.find((p) => p.quality.heroReady && p.role !== "team");
+  const all = ranked.map(toMedia);
+  const hero = heroPick ? toMedia(heroPick) : undefined;
+  // hero first, then the rest in rank order (without repeating it)
+  return {
+    all: hero ? [hero, ...all.filter((m) => m.url !== hero.url)] : all,
+    hero,
+  };
+}
+
+/**
+ * Media hierarchy: the owner's real, good pictures first; then licensed stock that genuinely matches the trade;
+ * otherwise nothing (the design then leads with type and honest graphics). A weak picture is never used just because
+ * it exists: blurry and tiny ones are skipped, and a low-resolution one is never the hero.
+ */
 function mediaFor(
   vertical: VerticalIntel,
   mode: "light" | "dark",
   opts: PlanV3Options,
-): MediaV3[] {
-  // Owner media keeps its own provenance and review status; Kora never upgrades an unreviewed image.
-  const owner = opts.ownerMedia ?? [];
-  if (owner.length) return owner;
+  name: string,
+): {
+  media: MediaV3[];
+  hero: MediaV3 | undefined;
+  source: "owner" | "stock" | "none";
+  ownerCount: number;
+} {
+  const own = ownerMedia(opts, name);
+  if (own.all.length)
+    return {
+      media: own.all,
+      hero: own.hero,
+      source: "owner",
+      ownerCount: own.all.length,
+    };
   const recipe = CATALOG[vertical.id];
-  if (!recipe) return [];
+  if (!recipe)
+    return { media: [], hero: undefined, source: "none", ownerCount: 0 };
   const ex = CATALOG_EXCLUDE[vertical.id];
-  return catalogMediaSetFor(recipe, mode, 8)
+  const stock = catalogMediaSetFor(recipe, mode, 8)
     .filter((m) => !ex || !ex.test(m.alt))
     .slice(0, 4)
-    .map((m) => ({
+    .map((m): MediaV3 => ({
       url: m.url,
       alt: m.alt,
       ...(m.width ? { width: m.width } : {}),
       ...(m.height ? { height: m.height } : {}),
       ...(m.focalPoint ? { focalPoint: m.focalPoint } : {}),
-      role: "feature" as const,
-      treatment: "none" as const,
+      role: "feature",
+      treatment: "none",
       provenance: {
-        sourceType: "licensed-stock" as const,
+        sourceType: "licensed-stock",
         provider: "Pexels",
         ...(m.license ? { license: m.license } : {}),
         ...(m.attribution ? { attribution: m.attribution } : {}),
-        reviewStatus: "kora-curated" as const,
+        reviewStatus: "kora-curated",
       },
     }));
+  return {
+    media: stock,
+    hero: stock[0],
+    source: stock.length ? "stock" : "none",
+    ownerCount: 0,
+  };
+}
+
+const PHOTO_HEROES: readonly HeroLayout[] = [
+  "cinematic",
+  "arch-portrait",
+  "product-dominant",
+  "collage",
+  "editorial-split",
+];
+const TYPE_HEROES: readonly HeroLayout[] = [
+  "type-dominant",
+  "poster",
+  "ticker-energy",
+  "menu-focus",
+  "location-focus",
+  "minimal-statement",
+];
+const FUNCTIONAL_HEROES: readonly HeroLayout[] = [
+  "call-first",
+  "booking-focus",
+];
+
+/**
+ * The composition follows the assets. A strong owner photograph makes the design photography-led; no usable picture
+ * makes it typographic or graphic. Function-first heroes (call, booking) are never swapped.
+ */
+function adaptHero(
+  want: HeroLayout,
+  alt: readonly HeroLayout[],
+  a: { hasHeroPhoto: boolean; photoTrust: boolean; ownerHero: boolean },
+): HeroLayout {
+  if (FUNCTIONAL_HEROES.includes(want)) return want;
+  if (
+    a.ownerHero &&
+    !PHOTO_HEROES.includes(want) &&
+    want !== "minimal-statement"
+  )
+    return alt.find((h) => PHOTO_HEROES.includes(h)) ?? "editorial-split";
+  if (!a.hasHeroPhoto && PHOTO_HEROES.includes(want) && a.photoTrust)
+    return alt.find((h) => TYPE_HEROES.includes(h)) ?? "type-dominant";
+  return want;
 }
 
 function resolveHero(
@@ -179,7 +324,8 @@ export function planSiteV3(
   const palette = paletteFromColorway(colorway);
   const thing = offerPhrase(truth, v);
   const services = servicesOf(truth, thing);
-  const media = mediaFor(v, colorway.mode, opts);
+  const mp = mediaFor(v, colorway.mode, opts, b.name);
+  const media = mp.media;
   const hasMedia = media.length > 0;
   const seed = direction.seed;
   const homeBased = HOME_BASED.test(b.description);
@@ -267,11 +413,19 @@ export function planSiteV3(
     !["cinematic", "arch-portrait"].includes(g.heroPhilosophy)
       ? "call-first"
       : g.heroPhilosophy;
-  const heroLayout = resolveHero(wantHero, {
-    hasMedia,
-    truth,
-    highlights: highlights.length,
-  });
+  const gram = GRAMMARS.find((x) => x.id === direction.grammarId);
+  const heroLayout = resolveHero(
+    adaptHero(wantHero, gram?.alternates.hero ?? [], {
+      hasHeroPhoto: !!mp.hero,
+      photoTrust: v.photoTrust,
+      ownerHero: mp.source === "owner" && !!mp.hero,
+    }),
+    {
+      hasMedia: !!mp.hero,
+      truth,
+      highlights: highlights.length,
+    },
+  );
   const plateKinds = [
     "arch",
     "circles",
@@ -286,7 +440,7 @@ export function planSiteV3(
     kind: plateKinds[(seed + i * 3) % plateKinds.length]!,
     seed: (seed + i * 17) % 999_999,
   });
-  const heroMedia = media[0];
+  const heroMedia = mp.hero;
 
   const hero = (
     layout: HeroLayout,
@@ -877,21 +1031,41 @@ export function planSiteV3(
     70,
   );
   const strategy = direction.strategy;
-  const osBase = brandOsFromDirection(direction, {
-    name: b.name,
-    palette: {
-      background: palette.background,
-      foreground: palette.foreground,
-      primary: palette.primary,
-      secondary: palette.secondary,
-      accent: palette.accent,
+  // With several good owner photographs the design becomes photography-led; with none it stays typographic or graphic.
+  const effGenome =
+    mp.source === "owner" &&
+    mp.ownerCount >= 3 &&
+    g.imageDominance !== "dominant"
+      ? { ...g, imageDominance: "dominant" as const }
+      : g;
+  const logo = opts.ownerLogo
+    ? {
+        url: opts.ownerLogo.url,
+        alt: opts.ownerLogo.alt || `${b.name} logo`,
+        assetId: opts.ownerLogo.id,
+        width: opts.ownerLogo.width,
+        height: opts.ownerLogo.height,
+      }
+    : undefined;
+  const osBase = brandOsFromDirection(
+    { ...direction, genome: effGenome },
+    {
+      ...(logo ? { logoAssetId: logo.assetId } : {}),
+      name: b.name,
+      palette: {
+        background: palette.background,
+        foreground: palette.foreground,
+        primary: palette.primary,
+        secondary: palette.secondary,
+        accent: palette.accent,
+      },
+      mode: colorway.mode,
+      ctas: [primaryLabel],
+      ...(opts.previousBrandOsVersion
+        ? { previous: { version: opts.previousBrandOsVersion } as never }
+        : {}),
     },
-    mode: colorway.mode,
-    ctas: [primaryLabel],
-    ...(opts.previousBrandOsVersion
-      ? { previous: { version: opts.previousBrandOsVersion } as never }
-      : {}),
-  });
+  );
 
   const spec = parseSiteSpecV3({
     version: 3,
@@ -907,6 +1081,7 @@ export function planSiteV3(
       hours: b.hours ?? [],
       social: [],
       language: "en",
+      ...(logo ? { logo } : {}),
     },
     brand: {
       osVersion: osBase.version,
@@ -917,13 +1092,17 @@ export function planSiteV3(
       strategy,
     },
     design: {
-      genome: g,
+      genome: effGenome,
       palette,
       colorwayId: colorway.id,
       mode: colorway.mode,
       seed: fnvH(`${seed}`),
     },
-    artDirection: direction.artDirection,
+    artDirection: direction.artDirection.map((x) =>
+      mp.source === "owner"
+        ? { ...x, preferredSource: "owner-supplied" as const }
+        : x,
+    ),
     seo: {
       title,
       description: cap(sents.slice(0, 2).join(" ") || b.description, 175),

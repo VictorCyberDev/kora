@@ -22,6 +22,8 @@ export const platformConfigSchema = z.object({
   KORA_TRUST_PROXY: bool,
   /** Creative engine for NEW designs. v2 keeps the previous designer; v3 is the Brand OS / SiteSpec v3 engine. Existing sites are never converted. */
   KORA_CREATIVE_ENGINE: z.enum(["v2", "v3"]).optional(),
+  /** Public https origin that serves owner pictures to published sites. Defaults to KORA_PUBLIC_URL; owner pictures are only embedded in designs when this is https. */
+  KORA_MEDIA_PUBLIC_URL: z.string().url().optional(),
   KORA_SIGNUP_ENABLED: bool,
   ACTION_VERIFICATION_TIMEOUT_MS: z.coerce
     .number()

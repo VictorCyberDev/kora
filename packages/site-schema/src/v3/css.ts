@@ -190,6 +190,7 @@ ${tones}
 .hs-minimal-bar{border-bottom:var(--bw) solid var(--fg)}.hs-minimal-bar .bar{padding-block:12px}.hs-minimal-bar .nav-d a{font-size:.84rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
 .hs-sticker .brand{background:var(--bb);color:var(--bf);padding:.5em .9em;border:2px solid var(--fg);transform:rotate(-2deg);box-shadow:3px 3px 0 var(--fg)}
 .hs-overlay{position:absolute;inset:0 0 auto 0;background:transparent;border:0;color:#fff}.hs-overlay .nav-d a,.hs-overlay .menu summary{color:#fff}.hs-overlay .menu ul{color:var(--fg)}
+.brand img.logo{height:clamp(28px,4.2vw,44px);width:auto;max-width:min(60vw,240px);object-fit:contain}.ft .brand img.logo{height:clamp(36px,5vw,56px)}
 .seal{display:inline-grid;place-items:center;width:1.9em;height:1.9em;border:1.5px solid currentColor;border-radius:50%;font:var(--hw) .9em/1 var(--fd);font-style:normal}
 /* footer */
 .ft{background:var(--bg);color:var(--fg);padding-block:clamp(40px,7vw,88px) 28px;border-top:var(--bw) solid var(--bd)}

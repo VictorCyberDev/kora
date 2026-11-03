@@ -27,6 +27,7 @@ import {
 import { budgetBreaches } from "@kora/growth";
 import { BrandOsStore, learnedTaste } from "./brand-os-store.js";
 import { previewDirections } from "./directions.js";
+import { loadOwnerMedia, mediaBase } from "./owner-media-loader.js";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
 import { sendArtifact } from "./hosting.js";
@@ -422,6 +423,14 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
 
   // ---- builder ----------------------------------------------------------------
   const brandOs = new BrandOsStore(platform.sql);
+  const mediaBaseUrl = mediaBase(
+    config.KORA_MEDIA_PUBLIC_URL ?? config.KORA_PUBLIC_URL,
+  );
+  /** The owner's good pictures and logo, in the planner's terms. Empty when no https media origin is configured. */
+  const ownerPlan = async (siteId: string) => {
+    const m = await loadOwnerMedia(platform.sql, siteId, mediaBaseUrl);
+    return { ownerPhotos: m.photos, ...(m.logo ? { ownerLogo: m.logo } : {}) };
+  };
   const buildVersion = async (
     site: NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>,
     spec: AnySiteSpec,
@@ -495,6 +504,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       ? await author.generateV3(
           { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
           extra.direction ?? 0,
+          await ownerPlan(site.id),
         )
       : extra.format === 1
         ? await author.generate(brief)
@@ -591,6 +601,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     const { directions: planned, recommended } = previewDirections(
       config.KORA_CREATIVE_ENGINE,
       brief,
+      await ownerPlan(site.id),
     );
     const token = randomBytes(16).toString("hex");
     for (const [k, v] of directionPreviews)
@@ -719,7 +730,11 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         ...(services.length ? { services: services.slice(0, 12) } : {}),
         ...("hours" in b && b.hours.length ? { hours: b.hours } : {}),
       });
-      const authored = await author.generateV3(brief, parsed.direction ?? 0);
+      const authored = await author.generateV3(
+        brief,
+        parsed.direction ?? 0,
+        await ownerPlan(site.id),
+      );
       const version = await buildVersion(
         site,
         authored.spec,

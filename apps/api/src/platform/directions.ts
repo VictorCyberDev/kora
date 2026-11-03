@@ -3,6 +3,7 @@ import {
   planDirectionsV3,
   renderAnySite,
   type DesignBrief,
+  type PlanV3Options,
 } from "@kora/site-schema";
 
 export interface PlannedDirection {
@@ -24,6 +25,7 @@ export interface PlannedDirection {
 export function previewDirections(
   engine: "v2" | "v3",
   brief: DesignBrief,
+  plan: PlanV3Options = {},
 ): {
   directions: PlannedDirection[];
   recommended: { index: number; reason: string } | null;
@@ -36,7 +38,7 @@ export function previewDirections(
     return files;
   };
   if (engine === "v3") {
-    const r = planDirectionsV3(brief);
+    const r = planDirectionsV3(brief, plan);
     return {
       recommended: r.recommended,
       directions: r.directions.map((d) => ({
