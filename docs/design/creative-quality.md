@@ -39,3 +39,24 @@ requests.
 
 Pixel-diff regression is not implemented (dynamic images make it brittle); the stable guarantees are layout metrics,
 contrast, overflow and the budgets above. The screenshots are a point-in-time artefact, not a CI baseline.
+
+
+## Final review of the golden set (current engine)
+
+Sheets in `docs/design/v7/`: `golden-desktop-direction-1..3.png` (18 businesses x 3 directions), `golden-mobile-direction-1.png`,
+`golden-enriched-with-photos.png` (same briefs with owner photographs: composition changes), `same-industry-*.png` (five
+bakeries, five salons, five professional firms, five trades), `before-v2-designer.png` (the previous designer on the same
+briefs), `cross-channel-*.png`, `brand-center-*.png`, `landing-*.png`.
+
+Chromium captures with axe (WCAG 2 A/AA), overflow and console: golden 108, enriched 36, same-industry 120, **zero
+problems** at 390 and 1280 px. The before set (v2 designer) shows real contrast failures (for example the plumber page),
+which is part of the case for v3, not a v3 defect. Firefox and WebKit engines: 108 captures each, zero overflow.
+Slow-4G with 4x CPU throttling on 18 golden sites: median LCP about 1.0 s, worst 2.5 s (a 167 KB photograph; the bundled
+photo was re-encoded from 250 KB), CLS 0.
+
+Defects found by looking and fixed in this closure: header call-to-action losing its padding and border on most
+sites; "Ac install" for "AC install"; nursery language offered to builders and clinics; oversized type; hotel hero
+actions misaligned; call number below the first screen. Known weaker spots, stated plainly: sibling trades share one
+call-first structure (they differ in colour, type, header and layout variant, but a plumber and an electrician are
+recognisably the same family), and text-only heroes without photographs are plainer than agency work with
+photography. Owners are asked for photographs for this reason.

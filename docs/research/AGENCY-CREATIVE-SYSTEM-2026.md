@@ -93,3 +93,51 @@ generation.
 
 Awwwards, CSS Design Awards and SiteInspire searches returned no usable collections; entries for those are pattern
 notes only. Webflow, 10Web, Adobe Express and VistaCreate were not researched live.
+
+
+## Kora measured with the same instrument
+
+The 54 golden pages (18 businesses x 3 directions, plain mode: no owner photographs) were rendered and measured by the
+same script as the studied sites. This is a calibration check, not a claim of superiority.
+
+| measure | studied sites | Kora v3 golden |
+| --- | --- | --- |
+| n | 182 | 54 |
+| dark page % | 8 | 20 |
+| uppercase headline % | 13 | 9 |
+| italic headline % | 0 | 0 |
+| centred headline % | 33 | 7 |
+| median headline words | 5 | 5 |
+| median headline size (% viewport width) | 3.6 | 6.1 |
+| median body px | 16 | 18 |
+| square button % | 49 | 72 |
+| pill button % | 26 | 11 |
+| image-led first screen % | 62 | 2 |
+| text/product-led first screen % | 21 | 76 |
+| sticky header % | 40 | 0 |
+| median nav items | 5 | 5 |
+| median page length (screens) | 6.5 | 4 |
+| JSON-LD % | 77 | 100 |
+| og:image % | 75 | 0 |
+| phone menu button % | 80 | 0 |
+| phone sticky bottom bar % | 29 | 26 |
+| phone overflow % | 0 | 0 |
+
+Kora distinct (heading font, page colour, headline case, button radius) combinations: 43 of 54
+Studied sites distinct combinations: 172 of 182
+
+
+What this changed and what it did not:
+
+- **Changed.** The first type scale put Kora's median headline at about twice the studied sites' width (7.1% against
+  3.6% of the viewport) and above their 90th percentile. The scale was reduced (to 6.1%), the two oversized hero
+  families were pulled in, and call-first heroes were scaled down so the phone number sits on the first screen.
+  Headlines remain larger than the corpus on purpose: they are short (median five words, like the corpus) and a
+  small business gains more from a clear statement than from a corporate-size one.
+- **Not changed, and why.** Image-led first screens are 2% for Kora against 62% in the corpus because plain mode has
+  no owner photographs; with photographs the first screen becomes picture-led (see the enriched sheet). Kora pages are
+  shorter (4 against 6.5 screens) and have no sticky header; both are deliberate for one-page small businesses and
+  are listed as design decisions, not defects. "Phone menu button 0%" is a measurement limit: Kora's menu is a
+  `<details>` control, which the probe does not count.
+- **Diversity.** 43 of 54 golden pages differ in (heading font, page colour, headline case, button radius); the
+  studied sites: 172 of 182.
