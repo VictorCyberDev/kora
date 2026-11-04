@@ -1,5 +1,18 @@
 # v7 execution ledger and honest limits
 
+## Production update, 2026-11-04 14:40 UTC
+
+The API recovered after the database connection was corrected in the Rumpty console (done outside this repository; the exact
+cause was not captured by me and no secret appears in any file here). Observed from outside: `kora-api` and `kora-site-host`
+both report commit `e2b62df` at `/__kora`; API `/health` 200, landing 200, `/api/auth/me` 401 when signed out.
+
+**Production baseline (flag v2): 8 passed, 0 failed**, run with `scripts/commission-v7.mjs` against
+`https://kora-api.rumptycloud.app`: v2 generation, publish with live-byte MATCH, no Brand OS leaking into a v2 site, upgrade
+refused while the flag is v2, three v2 directions. Evidence: `docs/live/v7-production-baseline-2026-11-04.json`.
+Status: baseline **PRODUCTION_ACCEPTED**. The v3 and rollback phases are **EXTERNAL_ACCEPTANCE_PENDING** until
+`KORA_CREATIVE_ENGINE=v3` (with an https `KORA_MEDIA_PUBLIC_URL`) is set in the console. Also pending: rotating the database
+credential that was exposed in a tool response (update `DATABASE_URL` on both services at once), and a verified backup.
+
 Status words follow repository truth conventions: **IMPLEMENTED** (code exists), **STUB_TESTED** (tested against a fake
 provider), **LOCAL_ACCEPTED** (tests and local browser checks pass), **PRODUCTION_ACCEPTED**, **EXTERNAL_ACCEPTANCE_PENDING**,
 **NOT_DONE**. Exact test counts and the head they were run on are in the PR description and `__TESTS__` below.

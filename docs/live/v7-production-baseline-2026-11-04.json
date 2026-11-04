@@ -1,0 +1,68 @@
+{
+ "base": "https://kora-api.rumptycloud.app",
+ "phase": "baseline",
+ "startedAt": "2026-11-04T14:40:33.809Z",
+ "steps": [
+  {
+   "name": "runtime claim",
+   "ok": true,
+   "detail": "commit e2b62df7d43f58c803d6709d453c90b69e5174aa env production",
+   "at": "2026-11-04T14:40:34.944Z"
+  },
+  {
+   "name": "health",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:40:35.616Z"
+  },
+  {
+   "name": "signup (throwaway)",
+   "ok": true,
+   "detail": "201",
+   "at": "2026-11-04T14:40:36.118Z"
+  },
+  {
+   "name": "baseline: new site is a v2 design while the flag is v2",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:40:37.209Z"
+  },
+  {
+   "name": "baseline: publish and live-byte verification",
+   "ok": true,
+   "detail": "MATCH",
+   "at": "2026-11-04T14:40:38.012Z"
+  },
+  {
+   "name": "baseline: no Brand OS exists for a v2 site (nothing v3 leaks in)",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:40:38.225Z"
+  },
+  {
+   "name": "baseline: upgrade to v3 is refused while the flag is v2",
+   "ok": true,
+   "detail": "409",
+   "at": "2026-11-04T14:40:38.447Z"
+  },
+  {
+   "name": "baseline: three v2 directions, none of them v3",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:40:38.690Z"
+  }
+ ],
+ "claim": {
+  "schema": "kora.runtime-claim/v1",
+  "service": "kora-api",
+  "environment": "production",
+  "commit": "e2b62df7d43f58c803d6709d453c90b69e5174aa",
+  "commitSource": "build-info",
+  "builtAt": "2026-11-03T16:25:47.986Z",
+  "startedAt": "2026-11-04T14:38:45.289Z",
+  "uptimeSeconds": 109
+ },
+ "finishedAt": "2026-11-04T14:40:38.913Z",
+ "passed": 8,
+ "failed": 0
+}
