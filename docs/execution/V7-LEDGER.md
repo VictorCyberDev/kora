@@ -1,6 +1,28 @@
 # v7 execution ledger and honest limits
 
-## Current production gate — 2026-11-04
+## Authenticated recovery update — 2026-11-04
+
+The owner completed console sign-in. The failed main deployment's startup log
+shows `ECONNREFUSED` to PostgreSQL at `10.107.249.99:5432`; the image build
+completed. The configured internal host and `sslmode=require`, port 8080 and
+`/health` readiness match the documented settings. An API restart was requested,
+but no running instance was observed and the API remained HTTP 503.
+
+The database is READY and read-only SQL succeeds. `brand_os_versions` and
+`owner_media` exist; `creative_feedback` has three indexes. This is schema
+presence evidence, not full migration acceptance. Snapshot requests did not
+produce a confirmation or a listed snapshot, so **no backup is claimed**.
+Do not redeploy the migration start command or change the database until a
+backup is verified. No application, environment or database contents were edited.
+
+CI on recovery documentation head `9b1caa6` is not green: Docker image checks
+passed, quality failed in `src/ui/ui.integration.test.ts:177` (expected four
+decision cards, received zero). API: 495 passed, 1 failed, 1 skipped; creative:
+41 passed; site-schema: 241 passed; growth: 149 passed. E2E was still running at
+inspection. These counts do not certify a later head. Local suites: 0 run;
+commissioning phases: 0 run. See `docs/live/v7-recovery-2026-11-04.json`.
+
+## Initial production gate — 2026-11-04
 
 **EXTERNAL_ACCEPTANCE_PENDING.** Read-only preflight of main
 `e2b62df7d43f58c803d6709d453c90b69e5174aa` found:
