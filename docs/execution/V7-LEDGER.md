@@ -1,5 +1,30 @@
 # v7 execution ledger and honest limits
 
+## Current production gate — 2026-11-04
+
+**EXTERNAL_ACCEPTANCE_PENDING.** Read-only preflight of main
+`e2b62df7d43f58c803d6709d453c90b69e5174aa` found:
+
+- API `/health` and `/__kora`: HTTP 503, RumptyCloud "This app did not start".
+- Site Host, after waking: `/health` HTTP 200 with `database: ok`; `/__kora`
+  HTTP 200 claiming that exact main commit from `build-info`.
+- Console sign-in is required. The secure authentication request was declined;
+  runtime logs, environment settings, memory limits and migration state were not inspected.
+- No production setting, database row, release or feature flag was changed.
+- Tests run in this recovery session: **0**. Commissioning phases run: **0**.
+  No visual review, Docker rehearsal or CI acceptance is claimed for this head.
+
+Evidence: `docs/live/v7-preflight-2026-11-04.json`. The historical acceptance
+table below has **not been revalidated** by this preflight. Its unmerged-PR
+production description is stale: git history shows merge `79c29ff`, revert
+`70f3a68`, then reapplication `e2b62df`.
+
+Resume with authenticated console access and the API startup log. Establish the
+failure before proposing a fix; verify database backup before any database
+change. Confirm both services healthy on main, then resume the requested
+audit, production-image rehearsal and baseline/v3/rollback commissioning.
+Do not merge or enable v3 while this gate remains unresolved.
+
 Status words follow repository truth conventions: **IMPLEMENTED** (code exists), **STUB_TESTED** (tested against a fake
 provider), **LOCAL_ACCEPTED** (tests and local browser checks pass), **PRODUCTION_ACCEPTED**, **EXTERNAL_ACCEPTANCE_PENDING**,
 **NOT_DONE**. Exact test counts and the head they were run on are in the PR description and `__TESTS__` below.
