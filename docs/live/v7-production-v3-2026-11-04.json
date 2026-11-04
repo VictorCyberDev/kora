@@ -1,0 +1,212 @@
+{
+ "base": "https://kora-api.rumptycloud.app",
+ "phase": "v3",
+ "startedAt": "2026-11-04T14:53:13.473Z",
+ "steps": [
+  {
+   "name": "runtime claim",
+   "ok": true,
+   "detail": "commit e2b62df7d43f58c803d6709d453c90b69e5174aa env production",
+   "at": "2026-11-04T14:53:14.319Z"
+  },
+  {
+   "name": "health",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:14.953Z"
+  },
+  {
+   "name": "login (same throwaway account)",
+   "ok": true,
+   "detail": "200",
+   "at": "2026-11-04T14:53:15.410Z"
+  },
+  {
+   "name": "existing v2 site: upgrade makes a NEW v3 draft with a before/after comparison",
+   "ok": true,
+   "detail": "201",
+   "at": "2026-11-04T14:53:16.416Z"
+  },
+  {
+   "name": "existing v2 site: the live version did not change",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:16.627Z"
+  },
+  {
+   "name": "existing v2 site: the old version is byte-identical",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:16.856Z"
+  },
+  {
+   "name": "three different v3 directions, with a recommendation and reason",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:17.358Z"
+  },
+  {
+   "name": "owner logo accepted and re-encoded by the server",
+   "ok": true,
+   "detail": "201",
+   "at": "2026-11-04T14:53:17.846Z"
+  },
+  {
+   "name": "three owner photos accepted with quality scores",
+   "ok": true,
+   "detail": "201,201,201",
+   "at": "2026-11-04T14:53:23.840Z"
+  },
+  {
+   "name": "library lists the logo and photos with plain-language advice",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:24.060Z"
+  },
+  {
+   "name": "a file that is not a picture is refused",
+   "ok": true,
+   "detail": "415",
+   "at": "2026-11-04T14:53:24.274Z"
+  },
+  {
+   "name": "generate on v3 with owner media",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:24.634Z"
+  },
+  {
+   "name": "site is SiteSpec v3, stamped with Brand OS version 1 and its hash",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:25.026Z"
+  },
+  {
+   "name": "owner logo is part of the brand",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:25.027Z"
+  },
+  {
+   "name": "Brand OS version 1 recorded with a hash",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:25.235Z"
+  },
+  {
+   "name": "creative quality: structured critic result, no blocking issue",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:25.485Z"
+  },
+  {
+   "name": "publish v3 and verify the live bytes (MATCH)",
+   "ok": true,
+   "detail": "MATCH",
+   "at": "2026-11-04T14:53:26.610Z"
+  },
+  {
+   "name": "the public page serves, and loads no third-party script, stylesheet or font",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:27.722Z"
+  },
+  {
+   "name": "structured data present and factual",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:27.723Z"
+  },
+  {
+   "name": "monitoring reports the v3 site Healthy",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:28.170Z"
+  },
+  {
+   "name": "cross-channel set (feed, story, flyer, status) rendered from the same Brand OS",
+   "ok": true,
+   "detail": ",,,",
+   "at": "2026-11-04T14:53:29.333Z"
+  },
+  {
+   "name": "brand change creates a new draft",
+   "ok": true,
+   "detail": "201",
+   "at": "2026-11-04T14:53:29.914Z"
+  },
+  {
+   "name": "Brand OS version 2 recorded; version 1 unchanged",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:30.361Z"
+  },
+  {
+   "name": "an artifact made before the change still points at brand version 1",
+   "ok": true,
+   "detail": "1",
+   "at": "2026-11-04T14:53:30.569Z"
+  },
+  {
+   "name": "and its bytes are exactly what they were (history is never rewritten)",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:30.806Z"
+  },
+  {
+   "name": "the new brand version publishes and verifies (MATCH)",
+   "ok": true,
+   "detail": "MATCH",
+   "at": "2026-11-04T14:53:31.596Z"
+  },
+  {
+   "name": "plain-language request becomes a PROPOSAL; nothing posted or spent",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:31.834Z"
+  },
+  {
+   "name": "controlled test: the public v3 site really fails (HTTP 500)",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:32.730Z"
+  },
+  {
+   "name": "monitor opens exactly one incident by itself",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:48.425Z"
+  },
+  {
+   "name": "owner explanation in plain words, remediation needs approval",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:53:49.439Z"
+  },
+  {
+   "name": "approved rollback executed",
+   "ok": true,
+   "detail": "200",
+   "at": "2026-11-04T14:53:51.210Z"
+  },
+  {
+   "name": "recovery verified from new observations only",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-04T14:54:03.565Z"
+  }
+ ],
+ "claim": {
+  "schema": "kora.runtime-claim/v1",
+  "service": "kora-api",
+  "environment": "production",
+  "commit": "e2b62df7d43f58c803d6709d453c90b69e5174aa",
+  "commitSource": "build-info",
+  "builtAt": "2026-11-04T14:50:35.514Z",
+  "startedAt": "2026-11-04T14:52:31.896Z",
+  "uptimeSeconds": 42
+ },
+ "finishedAt": "2026-11-04T14:54:03.566Z",
+ "passed": 32,
+ "failed": 0
+}

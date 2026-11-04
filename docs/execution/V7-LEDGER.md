@@ -1,5 +1,20 @@
 # v7 execution ledger and honest limits
 
+## Production: v3 engine switched on, 2026-11-04 14:52 UTC
+
+`KORA_CREATIVE_ENGINE=v3` was set on `kora-api` in the console and the API restarted at 14:52:31Z on commit `e2b62df`.
+**Production v3 commissioning: 32 passed, 0 failed**, run with `scripts/commission-v7.mjs` against the real URL: three v3
+directions with a recommendation, owner logo and three photos accepted and re-encoded, a non-picture refused (415), generate
+and publish with live-byte MATCH, no third-party scripts or fonts, structured data factual, monitoring Healthy, a cross-channel
+set from one Brand OS, a brand change writing Brand OS version 2 while version 1 and the earlier artifact's bytes stay
+unchanged, a plain-language campaign PROPOSAL that posts and spends nothing, a controlled failure (HTTP 500) opening exactly
+one incident by itself, an approved rollback, recovery verified from new observations only, and a v2 site upgraded to a v3
+**draft** with the live version unchanged. Evidence: `docs/live/v7-production-v3-2026-11-04.json`.
+Status: v3 creative engine **PRODUCTION_ACCEPTED** (with the baseline above). **Not run in production:** the flag rollback
+phase (setting the flag back to v2 and re-running), because the flag was deliberately left on; the rollback was proven in the local
+production-image rehearsal. Still pending: rotating the exposed database credential and a verified backup. The test account
+and test sites created by the commissioning runs are throwaway and remain in the production database.
+
 ## Production update, 2026-11-04 14:40 UTC
 
 The API recovered after the database connection was corrected in the Rumpty console (done outside this repository; the exact
