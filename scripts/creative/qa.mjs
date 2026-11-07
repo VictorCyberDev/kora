@@ -29,8 +29,11 @@ const [out, dirIx = "0"] = process.argv.slice(2);
 const browser = await chromium.launch();
 const rows = [];
 for (const c of matrix) {
-  const d = planDirectionsV3({ name: c.name, description: c.description })
-    .directions[Number(dirIx)];
+  const d = planDirectionsV3({
+    name: c.name,
+    description: c.description,
+    ...(process.env.KORA_QA_PHONE ? { phone: process.env.KORA_QA_PHONE } : {}),
+  }).directions[Number(dirIx)];
   const files = renderSiteV3(d.spec, {
     formEndpoint: "https://kora.example/api/public/sites/s1/forms",
   });

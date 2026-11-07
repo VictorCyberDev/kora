@@ -33,6 +33,7 @@ for (const w of wanted) {
   const { directions } = planDirectionsV3({
     name: c.name,
     description: c.description,
+    ...(process.env.KORA_QA_PHONE ? { phone: process.env.KORA_QA_PHONE } : {}),
   });
   const d = directions[Number(dirIx)];
   const files = renderSiteV3(d.spec, {
@@ -114,6 +115,10 @@ for (const w of wanted) {
           await new Promise((r) => setTimeout(r, 60));
         }
         window.scrollTo(0, 0);
+        // a full-page capture can outrun lazy images; force them and wait so the picture shows what a visitor sees
+        const imgs = [...document.images];
+        imgs.forEach((i) => (i.loading = "eager"));
+        await Promise.all(imgs.map((i) => i.decode().catch(() => {})));
       });
       await page.waitForTimeout(300);
       row.brokenImages.push(
