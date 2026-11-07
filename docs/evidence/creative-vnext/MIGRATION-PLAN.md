@@ -3,10 +3,10 @@
 Two new migrations, both additive and idempotent (`IF NOT EXISTS`); neither deletes, rewrites or locks existing data beyond
 a metadata-only `ADD COLUMN` of nullable columns.
 
-| #   | File                              | Change                                                                                      | Risk                                                              |
-| --- | --------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 028 | `028_site_deletion.sql`           | `sites.deleted_at timestamptz`, `sites.deleted_by uuid REFERENCES users`, partial index on `org_id WHERE deleted_at IS NULL` | none for existing rows (NULL = not deleted); index build is small |
-| 029 | `029_media_provider_quota.sql`    | new table `media_provider_quota`                                                            | none; unused unless the Unsplash provider is switched on          |
+| #   | File                           | Change                                                                                                                       | Risk                                                              |
+| --- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 028 | `028_site_deletion.sql`        | `sites.deleted_at timestamptz`, `sites.deleted_by uuid REFERENCES users`, partial index on `org_id WHERE deleted_at IS NULL` | none for existing rows (NULL = not deleted); index build is small |
+| 029 | `029_media_provider_quota.sql` | new table `media_provider_quota`                                                                                             | none; unused unless the Unsplash provider is switched on          |
 
 Verified locally: the repository's migration integration test (order, byte-stability, upgrade from 024, schema) passes
 with both files; the full suite runs against a database migrated from empty. **Not done:** applying to any production or

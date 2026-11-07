@@ -4,36 +4,17 @@ apps/web typecheck$ tsc -p tsconfig.json --noEmit
 packages/creative typecheck$ tsc -p tsconfig.json --noEmit
 packages/event-schema typecheck$ tsc -p tsconfig.json --noEmit
 packages/passport typecheck$ tsc -p tsconfig.json --noEmit
-packages/passport typecheck: Done
-packages/runtime-claim typecheck$ tsc -p tsconfig.json --noEmit
 packages/event-schema typecheck: Done
+packages/runtime-claim typecheck$ tsc -p tsconfig.json --noEmit
+packages/passport typecheck: Done
 packages/site-fonts typecheck$ tsc -p tsconfig.json --noEmit
-packages/site-fonts typecheck: Done
-packages/site-media typecheck$ tsc -p tsconfig.json --noEmit
 packages/creative typecheck: Done
+packages/site-media typecheck$ tsc -p tsconfig.json --noEmit
+packages/site-fonts typecheck: Done
 packages/site-serving typecheck$ tsc -p tsconfig.json --noEmit
 packages/runtime-claim typecheck: Done
 packages/topology typecheck$ tsc -p tsconfig.json --noEmit
-packages/site-media typecheck: Done
-services/action-executor typecheck$ tsc -p tsconfig.json --noEmit
-packages/topology typecheck: Done
-services/incident-engine typecheck$ tsc -p tsconfig.json --noEmit
 packages/site-serving typecheck: Done
-services/policy-engine typecheck$ tsc -p tsconfig.json --noEmit
-services/action-executor typecheck: Done
-services/reasoner typecheck$ tsc -p tsconfig.json --noEmit
-services/incident-engine typecheck: Done
-services/policy-engine typecheck: Done
-apps/web typecheck: Done
-services/reasoner typecheck: Done
-apps/demo-service typecheck$ tsc -p tsconfig.json --noEmit
-packages/site-schema typecheck$ tsc -p tsconfig.json --noEmit
-apps/demo-service typecheck: Done
-packages/site-schema typecheck: Done
-apps/site-host typecheck$ tsc -p tsconfig.json --noEmit
-packages/growth typecheck$ tsc -p tsconfig.json --noEmit
-apps/site-host typecheck: Done
-packages/growth typecheck: Done
-apps/api typecheck$ tsc -p tsconfig.json --noEmit
-apps/api typecheck: Done
-EXIT=0
+services/action-executor typecheck$ tsc -p tsconfig.json --noEmit
+packages/site-media typecheck: Done
+services/incident-engine typecheck$ tsc -p tsconfig.json --noEmit

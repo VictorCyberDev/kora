@@ -170,12 +170,17 @@ export class UnsplashProvider implements MediaProvider {
         `Unsplash could not be reached: ${(e as Error).name}`,
       );
     }
-    const remaining = Number(res.headers.get("x-ratelimit-remaining"));
-    if (
-      Number.isFinite(remaining) &&
-      res.headers.get("x-ratelimit-remaining") !== null
-    )
-      await this.quota.observe(this.id, remaining, c.limitPerHour, this.now());
+    const rawRemaining = res.headers.get("x-ratelimit-remaining");
+    const remaining = Number(rawRemaining);
+    if (rawRemaining !== null && Number.isFinite(remaining)) {
+      // A hostile or buggy header must not break accounting: clamp, and never let a counter failure fail a search.
+      const safe = Math.min(c.limitPerHour, Math.max(0, Math.trunc(remaining)));
+      try {
+        await this.quota.observe(this.id, safe, c.limitPerHour, this.now());
+      } catch {
+        /* the provider answered; accounting is best-effort here */
+      }
+    }
     if (res.status === 429) {
       this.stats.rateLimited++;
       await this.quota.exhaust(this.id, this.now());
@@ -243,8 +248,12 @@ export class UnsplashProvider implements MediaProvider {
           p.user.links.html,
           p.links.download_location,
         ]) {
-          const h = new URL(u).hostname;
-          if (!/(^|\.)unsplash\.com$/.test(h)) throw new Error("foreign host");
+          const url = new URL(u);
+          if (
+            url.protocol !== "https:" ||
+            !/(^|\.)unsplash\.com$/.test(url.hostname)
+          )
+            throw new Error("foreign host");
         }
       } catch {
         continue; // never trust a URL from a provider response that points anywhere else
@@ -291,7 +300,11 @@ export class UnsplashProvider implements MediaProvider {
         "This picture has no download location",
       );
     const u = new URL(c.downloadLocation);
-    if (!/(^|\.)unsplash\.com$/.test(u.hostname))
+    if (
+      u.protocol !== "https:" ||
+      !/(^|\.)unsplash\.com$/.test(u.hostname) ||
+      !/^\/photos\/[A-Za-z0-9_-]+\/download$/.test(u.pathname)
+    )
       throw new ProviderError(
         "invalid_response",
         "Unexpected download location",

@@ -295,6 +295,91 @@ describe("page limit and owner editing", () => {
       }),
     ).toThrow(EditV3Error);
   });
+  it("attestation is explicit: text with no declared author is treated as model-written and may not assert claims", () => {
+    const idx = base.pages
+      .find((p) => p.slug === "about")!
+      .sections.findIndex((s) => s.type === "story");
+    const claim = "Award-winning bakers, guaranteed.";
+    expect(() =>
+      applyStructuredEditV3(base, {
+        kind: "section-text",
+        page: "about",
+        index: idx,
+        body: [claim],
+      }),
+    ).toThrow(EditV3Error);
+    expect(() =>
+      applyStructuredEditV3(base, {
+        kind: "section-text",
+        page: "about",
+        index: idx,
+        body: ["Award\u200b-winning bakers, guaranteed."],
+      }),
+    ).toThrow(EditV3Error);
+    expect(() =>
+      applyStructuredEditV3(base, {
+        kind: "hero-text",
+        heading: "Award-winning cakes",
+      }),
+    ).toThrow(EditV3Error);
+    expect(
+      JSON.stringify(
+        applyStructuredEditV3(base, {
+          kind: "section-text",
+          page: "about",
+          index: idx,
+          body: [claim],
+          author: "owner",
+        }),
+      ),
+    ).toContain("Award-winning bakers");
+  });
+  it("a stock photo can only come from the provider it credits", () => {
+    const idx = base.pages
+      .find((p) => p.slug === "gallery")!
+      .sections.findIndex((s) => s.type === "gallery");
+    const mk = (url: string, creatorUrl: string) => ({
+      kind: "replace-media" as const,
+      page: "gallery",
+      index: idx,
+      item: 0,
+      media: {
+        url,
+        alt: "Cake",
+        role: "gallery" as const,
+        treatment: "none" as const,
+        provenance: {
+          sourceType: "licensed-stock" as const,
+          provider: "Unsplash",
+          creatorName: "A",
+          creatorUrl,
+          providerUrl: "https://unsplash.com/?utm_source=k",
+          reviewStatus: "owner-approved" as const,
+        },
+      },
+    });
+    expect(() =>
+      applyStructuredEditV3(
+        base,
+        mk(
+          "https://images.unsplash.com/photo-1?ixid=a",
+          "https://unsplash.com/@a?utm_source=k",
+        ),
+      ),
+    ).not.toThrow();
+    expect(() =>
+      applyStructuredEditV3(
+        base,
+        mk("https://tracker.example/pixel.gif", "https://unsplash.com/@a"),
+      ),
+    ).toThrow(EditV3Error);
+    expect(() =>
+      applyStructuredEditV3(
+        base,
+        mk("https://images.unsplash.com/photo-1", "https://evil.example/phish"),
+      ),
+    ).toThrow(EditV3Error);
+  });
   it("replaces a picture through the same validation as generation", () => {
     const idx = base.pages
       .find((p) => p.slug === "gallery")!

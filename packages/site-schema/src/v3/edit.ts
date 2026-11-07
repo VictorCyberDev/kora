@@ -49,6 +49,8 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     kind: z.literal("hero-text"),
     heading: z.string().trim().min(1).max(110).optional(),
     subheading: z.string().trim().max(280).optional(),
+    /** Defaults to "model": a caller must explicitly attest that the owner wrote the text to assert claims. */
+    author: z.enum(["owner", "model"]).default("model"),
   }),
   z.object({
     kind: z.literal("contact"),
@@ -94,7 +96,7 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     intro: z.string().trim().max(300).optional(),
     body: z.array(z.string().trim().min(1).max(900)).min(1).max(4).optional(),
     /** Text written by the owner is theirs to assert. Text proposed by a model must not read as an unsupplied claim. */
-    author: z.enum(["owner", "model"]).default("owner"),
+    author: z.enum(["owner", "model"]).default("model"),
   }),
   z.object({
     kind: z.literal("replace-media"),
@@ -290,11 +292,16 @@ export function applyStructuredEditV3(
       const hero = home.sections[0];
       if (!hero || hero.type !== "hero")
         throw new EditV3Error("This page has no hero to edit.");
-      for (const t of [e.heading, e.subheading])
+      for (const t of [e.heading, e.subheading]) {
         if (t && findCliches(t).length)
           throw new EditV3Error(
             `"${findCliches(t)[0]}" is a generic phrase; say what you actually do.`,
           );
+        if (t && e.author === "model" && claimIssues(t).length)
+          throw new EditV3Error(
+            `Suggested wording must not state ${claimIssues(t)[0]} the owner has not supplied.`,
+          );
+      }
       if (e.heading) hero.heading = e.heading;
       if (e.subheading !== undefined) hero.subheading = e.subheading;
       break;
@@ -435,6 +442,34 @@ export function applyStructuredEditV3(
         )
       )
         throw new EditV3Error("There is no picture to replace there.");
+      const pv = e.media.provenance;
+      if (
+        pv.sourceType === "licensed-stock" &&
+        !e.media.url.startsWith("/_kora/media/")
+      ) {
+        const host = (u?: string) => {
+          try {
+            return u ? new URL(u).hostname : "";
+          } catch {
+            return "";
+          }
+        };
+        const unsplash = (h: string) =>
+          h === "unsplash.com" || h.endsWith(".unsplash.com");
+        if (
+          host(e.media.url) !== "images.unsplash.com" ||
+          (pv.creatorUrl && !unsplash(host(pv.creatorUrl))) ||
+          (pv.providerUrl && !unsplash(host(pv.providerUrl)))
+        )
+          throw new EditV3Error(
+            "A stock photo can only come from the provider it is credited to.",
+          );
+      }
+      for (const t of [e.media.alt, pv.attribution])
+        if (t && claimIssues(t).some((c) => c !== "a number"))
+          throw new EditV3Error(
+            "Picture text must not state unsupplied claims.",
+          );
       target.media = e.media;
       delete target.plate;
       break;

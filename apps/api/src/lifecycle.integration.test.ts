@@ -2,6 +2,8 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startHarness, type Harness } from "./test-support/platform-harness.js";
 import { PlatformStore, SiteAllowanceError } from "./platform/store.js";
+import { SiteHostStore } from "@kora/site-host";
+import { KoraHostedPublisher } from "./platform/publisher.js";
 
 const enabled = Boolean(process.env.DATABASE_URL);
 const d = enabled ? describe : describe.skip;
@@ -299,6 +301,65 @@ d(
           })
         ).status,
       ).toBe(200);
+    });
+
+    it("a publish racing a delete can never bring a deleted site back, and the Site Host would not serve it even if it did", async () => {
+      const o = await h.signup("life-race-pub@example.com");
+      const site = await mk(o.cookie, o.orgId, "Race Publish");
+      await h.call("DELETE", `/api/sites/${site.id}`, {
+        cookie: o.cookie,
+        body: { confirm: "Race Publish" },
+      });
+      await new PlatformStore(h.sql).setSiteStatus(site.id, "PUBLISHED", {
+        publicUrl: "https://x.example/",
+        publishedVersionId: crypto.randomUUID(),
+      });
+      const row = (
+        await h.sql`SELECT status,published_version_id FROM sites WHERE id=${site.id}`
+      )[0]!;
+      expect(row.status).toBe("UNPUBLISHED");
+      expect(row.published_version_id).toBeNull();
+      await h.sql`UPDATE sites SET status='PUBLISHED',published_version_id=${crypto.randomUUID()} WHERE id=${site.id}`;
+      expect(await new SiteHostStore(h.sql).siteBySlug(site.slug)).toBeNull();
+    });
+
+    it("when the publisher serves from its own storage, delete asks it to take the site down and says so honestly if it cannot", async () => {
+      const hh = await startHarness({
+        env: { KORA_CREATIVE_ENGINE: "v3" },
+        publisher: (base) => {
+          const p = new KoraHostedPublisher(base, "test");
+          Object.defineProperty(p, "name", { value: "rumpty-bucket" });
+          (p as unknown as { unpublish: () => Promise<void> }).unpublish = () =>
+            Promise.reject(new Error("unsupported"));
+          return p;
+        },
+      });
+      try {
+        const o = await hh.signup("life-provider@example.com");
+        const s = (
+          await hh.call("POST", "/api/sites", {
+            cookie: o.cookie,
+            body: { orgId: o.orgId, name: "Bucket Site" },
+          })
+        ).json.data;
+        await hh.sql`UPDATE sites SET status='PUBLISHED',public_url='https://bucket.example/b/' WHERE id=${s.id}`;
+        const impact = (
+          await hh.call("GET", `/api/sites/${s.id}/deletion-impact`, {
+            cookie: o.cookie,
+          })
+        ).json.data;
+        expect(impact.explanation.join(" ")).toMatch(/hosting provider/);
+        const del = await hh.call("DELETE", `/api/sites/${s.id}`, {
+          cookie: o.cookie,
+          body: { confirm: "Bucket Site" },
+        });
+        expect(del.status).toBe(200);
+        expect(del.json.data.providerAction).toBe(
+          "REQUIRES_MANUAL_PROVIDER_ACTION",
+        );
+      } finally {
+        await hh.close();
+      }
     });
   },
 );

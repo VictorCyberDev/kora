@@ -1520,7 +1520,9 @@ export const CLAIM_PATTERNS: Array<[RegExp, string]> = [
 ];
 
 export function claimIssues(text: string): string[] {
-  return CLAIM_PATTERNS.filter(([re]) => re.test(text)).map(([, why]) => why);
+  // Invisible format characters and look-alike forms must not hide a claim from the patterns.
+  const t = text.normalize("NFKC").replace(/\p{Cf}/gu, "");
+  return CLAIM_PATTERNS.filter(([re]) => re.test(t)).map(([, why]) => why);
 }
 
 export function knowledgeStrings(p: IndustryProfile): string[] {

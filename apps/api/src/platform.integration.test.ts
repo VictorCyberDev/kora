@@ -269,12 +269,19 @@ d("builder: generate, edit, preview, versions, publish", () => {
         body: { orgId: o.orgId, name: "Q Shop" },
       })
     ).json.data;
+    // Nothing to go on: still asks, and asks only for the description.
     const r = await h.call("POST", `/api/sites/${site.id}/generate`, {
       cookie: o.cookie,
-      body: { description: "shoes" },
+      body: { description: "a" },
     });
     expect(r.status).toBe(422);
     expect(r.json.missing).toEqual(["description"]);
+    // A single word is enough to proceed (vNext: owners are not made to write paragraphs).
+    const one = await h.call("POST", `/api/sites/${site.id}/generate`, {
+      cookie: o.cookie,
+      body: { description: "shoes" },
+    });
+    expect(one.status).toBe(201);
   });
   it("builds, edits (rule-based, honest about limits), previews the stored artifact, and keeps versions immutable", async () => {
     const o = await h.signup("builder@example.com");

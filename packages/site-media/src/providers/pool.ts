@@ -24,6 +24,8 @@ export class InMemoryPoolCache implements PoolCache {
     return Promise.resolve(e.v);
   }
   set(key: string, v: MediaCandidate[]): Promise<void> {
+    // Bounded: keys come from callers, so the oldest entries are dropped first.
+    while (this.m.size >= 500) this.m.delete(this.m.keys().next().value!);
     this.m.set(key, { at: this.now(), v });
     return Promise.resolve();
   }

@@ -334,3 +334,39 @@ describe("candidate pool: few searches, shared across directions, honest when pr
     expect(ranked.map((r) => r.id)).toEqual(["1"]);
   });
 });
+
+describe("Unsplash adapter: hostile provider responses", () => {
+  it("drops http:// URLs and refuses a download location outside /photos/<id>/download", async () => {
+    const http1 = photo("h1", "cake");
+    http1.urls.raw = "http://images.unsplash.com/photo-h1?ixid=1";
+    const odd = photo("o1", "cake");
+    odd.links.download_location = "https://api.unsplash.com/me?x=1";
+    const s = await startFakeServer(() => ({
+      body: { results: [http1, odd, photo("good", "cake")] },
+    }));
+    close = s.close;
+    const p = new UnsplashProvider({ config: cfg(s.url) });
+    const found = await p.search({ query: "cake" });
+    expect(found.map((x) => x.id)).toEqual(["o1", "good"]);
+    await expect(p.recordSelection(found[0]!)).rejects.toMatchObject({
+      code: "invalid_response",
+    });
+    expect(s.requests.some((r) => r.url.startsWith("/me"))).toBe(false);
+  });
+  it("a hostile X-Ratelimit-Remaining value cannot break the search or the accounting", async () => {
+    const s = await startFakeServer(() => ({
+      body: { results: [] },
+      headers: { "x-ratelimit-remaining": "-99999999999999" },
+    }));
+    close = s.close;
+    const p = new UnsplashProvider({
+      config: cfg(s.url),
+      quota: new InMemoryQuota(),
+      now: () => 77_000_000,
+    });
+    await expect(p.search({ query: "a" })).resolves.toEqual([]);
+    await expect(p.search({ query: "b" })).rejects.toMatchObject({
+      code: "quota_reserved",
+    });
+  });
+});

@@ -54,25 +54,38 @@ export function registerMediaRoutes(
   // What was last offered, so a selection refers to a server-held candidate and never to client-supplied URLs.
   const offered = new Map<string, { at: number; c: MediaCandidate }>();
   const key = (orgId: string, p: string, id: string) => `${orgId}:${p}:${id}`;
-  const perUser = new Map<string, number[]>();
-  const limited = (u: string) => {
+  // Sliding-window limiter: `max` hits per `windowMs` for one key. Empty keys are dropped so the map stays small.
+  const windows = new Map<string, number[]>();
+  const limited = (key: string, max: number, windowMs: number) => {
     const now = Date.now();
-    const arr = (perUser.get(u) ?? []).filter((t) => now - t < 60_000);
-    if (arr.length >= 10) return true;
+    const arr = (windows.get(key) ?? []).filter((t) => now - t < windowMs);
+    if (arr.length >= max) {
+      windows.set(key, arr);
+      return true;
+    }
     arr.push(now);
-    perUser.set(u, arr);
+    windows.set(key, arr);
+    if (windows.size > 5000)
+      for (const [k, v] of windows)
+        if (!v.some((t) => now - t < windowMs)) windows.delete(k);
     return false;
   };
+  const OFFER_TTL = 30 * 60_000;
+  const recorded = new Set<string>();
 
   app.get("/api/media/providers", (req) => {
-    requireUser(req);
+    const a = requireUser(req);
+    const isAdmin = [...a.memberships.values()].some(
+      (r) => r === "ADMIN" || r === "OWNER",
+    );
     return {
       data: {
         providers: providers.map((p) => ({
           id: p.id,
           status: p.available() ? "AVAILABLE" : "NOT_CONFIGURED",
         })),
-        configurationProblems: problems,
+        // Configuration detail is for administrators only.
+        ...(isAdmin ? { configurationProblems: problems } : {}),
       },
     };
   });
@@ -80,11 +93,16 @@ export function registerMediaRoutes(
   app.post("/api/sites/:id/media/candidates", async (req) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     const { site } = await d.siteFor(req, id, "MEMBER");
-    if (limited(requireUser(req).userId))
+    // One account must not be able to spend the application-wide hourly allowance for everyone: searches are limited
+    // per user per minute and per organisation per hour, and only the server-derived intents are used when none given.
+    if (
+      limited(`u:${requireUser(req).userId}`, 10, 60_000) ||
+      limited(`o:${site.orgId}`, 6, 3_600_000)
+    )
       throw new HttpError(
         429,
         "rate_limited",
-        "Too many searches. Try again in a minute.",
+        "Too many image searches. Try again later.",
       );
     const body = z
       .object({
@@ -109,7 +127,8 @@ export function registerMediaRoutes(
     for (const c of pool.candidates)
       offered.set(key(site.orgId, c.provider, c.id), { at: Date.now(), c });
     for (const [k, v] of offered)
-      if (Date.now() - v.at > 30 * 60_000) offered.delete(k);
+      if (Date.now() - v.at > OFFER_TTL) offered.delete(k);
+    while (offered.size > 2000) offered.delete(offered.keys().next().value!);
     return {
       data: {
         intents,
@@ -141,8 +160,14 @@ export function registerMediaRoutes(
         alt: z.string().trim().max(200).optional(),
       })
       .parse(req.body);
+    if (limited(`s:${requireUser(req).userId}`, 20, 60_000))
+      throw new HttpError(
+        429,
+        "rate_limited",
+        "Too many selections. Slow down.",
+      );
     const hit = offered.get(key(site.orgId, body.provider, body.id));
-    if (!hit)
+    if (!hit || Date.now() - hit.at > OFFER_TTL)
       throw new HttpError(
         410,
         "candidate_expired",
@@ -152,8 +177,14 @@ export function registerMediaRoutes(
     if (!provider) throw new HttpError(404, "provider_not_found");
     try {
       // The person has chosen this picture: this is the moment the provider requires a download event.
-      if (hit.c.placement === "owner-approval")
+      // One download event per organisation and picture, however often the selection is repeated.
+      const once = key(site.orgId, hit.c.provider, hit.c.id);
+      if (hit.c.placement === "owner-approval" && !recorded.has(once)) {
         await provider.recordSelection?.(hit.c);
+        recorded.add(once);
+        if (recorded.size > 5000)
+          recorded.delete(recorded.keys().next().value!);
+      }
     } catch (e) {
       if (e instanceof ProviderError)
         throw new HttpError(

@@ -31,7 +31,7 @@ export class SiteHostStore {
   async siteBySlug(slug: string): Promise<HostedSite | null> {
     const r = (
       await this
-        .sql`SELECT id,slug,published_version_id FROM sites WHERE slug=${slug} AND status='PUBLISHED' AND published_version_id IS NOT NULL`
+        .sql`SELECT id,slug,published_version_id FROM sites WHERE slug=${slug} AND status='PUBLISHED' AND deleted_at IS NULL AND published_version_id IS NOT NULL`
     )[0];
     return r
       ? {
@@ -45,7 +45,7 @@ export class SiteHostStore {
     const r = (
       await this
         .sql`SELECT s.id,s.slug,s.published_version_id FROM domains d JOIN sites s ON s.id=d.site_id
-        WHERE d.hostname=${hostname.toLowerCase()} AND d.state IN ('ACTIVE','VERIFYING') AND s.status='PUBLISHED' AND s.published_version_id IS NOT NULL`
+        WHERE d.hostname=${hostname.toLowerCase()} AND d.state IN ('ACTIVE','VERIFYING') AND s.status='PUBLISHED' AND s.deleted_at IS NULL AND s.published_version_id IS NOT NULL`
     )[0];
     return r
       ? {

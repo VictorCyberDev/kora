@@ -116,6 +116,7 @@ export function registerIntelRoutes(app: FastifyInstance, d: IntelDeps) {
         if (!p.success) return reply.code(204).send();
         if ((await intel.siteOfCode(p.data.k)) !== id)
           return reply.code(204).send();
+        if (!(await platform.getSite(id))) return reply.code(204).send();
         await intel.record(
           p.data.k,
           id,

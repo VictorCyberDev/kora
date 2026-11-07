@@ -98,6 +98,9 @@ export function formEndpointFor(
     : undefined;
 }
 
+const hostedByKora = (name: string) =>
+  name === "kora-hosted" || name === "kora-site-host" || name === "fake";
+
 export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   const {
     platform,
@@ -410,7 +413,9 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         ...impact,
         explanation: [
           site.status === "PUBLISHED" && site.publicUrl
-            ? `${site.publicUrl} will stop showing your website straight away.`
+            ? hostedByKora(publisher.name)
+              ? `${site.publicUrl} will stop showing your website straight away.`
+              : `${site.publicUrl} is served from your hosting provider. Kora will ask the provider to take it down, and tell you if that needs a manual step.`
             : "This website is not published, so nothing public changes.",
           "Your site will disappear from your account and its place in your plan is freed, so you can create a replacement.",
           "Past versions and any enquiries it received are kept for your records and are not shown on the public web.",
@@ -448,10 +453,23 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       requestId: req.id,
     });
     if (!r.deleted) throw notFound();
+    // The database flag stops Kora-hosted serving at once. A publisher that serves from its own storage must also be
+    // asked to take the files down; where it cannot, the owner is told the provider needs a manual step.
+    let providerAction:
+      "NONE" | "UNPUBLISHED" | "REQUIRES_MANUAL_PROVIDER_ACTION" = "NONE";
+    if (existing.status === "PUBLISHED" && !hostedByKora(publisher.name)) {
+      try {
+        await publisher.unpublish({ id: existing.id, slug: existing.slug });
+        providerAction = "UNPUBLISHED";
+      } catch {
+        providerAction = "REQUIRES_MANUAL_PROVIDER_ACTION";
+      }
+    }
     const after = await billing.entitlements(existing.orgId);
     return {
       data: {
         ...r,
+        providerAction,
         canCreateSite: after.entitlements.canCreateSite,
       },
     };

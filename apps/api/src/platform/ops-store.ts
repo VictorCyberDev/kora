@@ -191,7 +191,7 @@ export class OpsStore {
   async siteForService(serviceId: string) {
     const r = (
       await this
-        .sql`SELECT s.id AS site_id,s.org_id,s.slug,s.name FROM services sv JOIN sites s ON s.id=sv.site_id WHERE sv.id=${serviceId}`
+        .sql`SELECT s.id AS site_id,s.org_id,s.slug,s.name FROM services sv JOIN sites s ON s.id=sv.site_id WHERE sv.id=${serviceId} AND s.deleted_at IS NULL`
     )[0];
     return r
       ? {

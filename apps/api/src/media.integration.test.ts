@@ -287,4 +287,78 @@ d("stock photos: owner-approved, attributed, quota-safe", () => {
     await a.observe("unsplash", 3, 50, now);
     expect((await b.tryConsume("unsplash", 50, 10, now)).allowed).toBe(false);
   });
+
+  it("one account cannot drain the shared allowance: searches are limited per organisation, and selecting twice records one download", async () => {
+    const o = await h.signup("media-abuse@example.com");
+    const site = (
+      await h.call("POST", "/api/sites", {
+        cookie: o.cookie,
+        body: {
+          orgId: o.orgId,
+          name: "Abuse Cakes",
+          description: "I bake cakes and pastries.",
+        },
+      })
+    ).json.data;
+    const statuses: number[] = [];
+    for (let i = 0; i < 8; i++)
+      statuses.push(
+        (
+          await h.call("POST", `/api/sites/${site.id}/media/candidates`, {
+            cookie: o.cookie,
+            body: { intents: [`fresh query ${i} ${crypto.randomUUID()}`] },
+          })
+        ).status,
+      );
+    expect(statuses.filter((x) => x === 200)).toHaveLength(6);
+    expect(statuses.filter((x) => x === 429)).toHaveLength(2);
+
+    const o2 = await h.signup("media-dedupe@example.com");
+    const s2 = (
+      await h.call("POST", "/api/sites", {
+        cookie: o2.cookie,
+        body: {
+          orgId: o2.orgId,
+          name: "Dedupe Cakes",
+          description: "I bake cakes and pastries.",
+        },
+      })
+    ).json.data;
+    await h.call("POST", `/api/sites/${s2.id}/media/candidates`, {
+      cookie: o2.cookie,
+      body: { intents: ["dedupe cake"] },
+    });
+    const before = fake.requests.filter((r) =>
+      r.url.includes("/photos/p2/download"),
+    ).length;
+    for (let i = 0; i < 3; i++)
+      expect(
+        (
+          await h.call("POST", `/api/sites/${s2.id}/media/select`, {
+            cookie: o2.cookie,
+            body: { provider: "unsplash", id: "p2" },
+          })
+        ).status,
+      ).toBe(200);
+    expect(
+      fake.requests.filter((r) => r.url.includes("/photos/p2/download"))
+        .length - before,
+    ).toBe(1);
+  });
+
+  it("shows configuration detail to an administrator and not to a plain member", async () => {
+    const owner = await h.signup("media-cfg-owner@example.com");
+    const r1 = await h.call("GET", "/api/media/providers", {
+      cookie: owner.cookie,
+    });
+    expect(r1.json.data.configurationProblems).toEqual([]);
+    // a user who is only a MEMBER everywhere: drop their own admin membership so no ADMIN/OWNER role remains
+    const member = await h.signup("media-cfg-member@example.com");
+    await h.sql`UPDATE organization_memberships SET role='MEMBER' WHERE user_id=${member.userId}`;
+    const r2 = await h.call("GET", "/api/media/providers", {
+      cookie: member.cookie,
+    });
+    expect(r2.status).toBe(200);
+    expect(r2.json.data).not.toHaveProperty("configurationProblems");
+  });
 });

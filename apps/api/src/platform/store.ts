@@ -317,7 +317,7 @@ export class PlatformStore {
     } = {},
   ) {
     await this
-      .sql`UPDATE sites SET status=${status},public_url=COALESCE(${extra.publicUrl ?? null},public_url),published_version_id=COALESCE(${extra.publishedVersionId ?? null},published_version_id),updated_at=now() WHERE id=${id}`;
+      .sql`UPDATE sites SET status=${status},public_url=COALESCE(${extra.publicUrl ?? null},public_url),published_version_id=COALESCE(${extra.publishedVersionId ?? null},published_version_id),updated_at=now() WHERE id=${id} AND deleted_at IS NULL`;
   }
   async listPublishedSites() {
     return (

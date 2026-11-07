@@ -311,7 +311,7 @@ export function registerOwnerMediaRoutes(
       "thumb.webp": "thumb",
     }[file];
     const r = (
-      await sql`SELECT v640, v1280, v1920, logo_png, thumb FROM owner_media WHERE site_id=${sid} AND sha256=${sha} ORDER BY created_at DESC LIMIT 1`
+      await sql`SELECT v640, v1280, v1920, logo_png, thumb FROM owner_media WHERE site_id=${sid} AND sha256=${sha} AND NOT EXISTS (SELECT 1 FROM sites s WHERE s.id=${sid} AND s.deleted_at IS NOT NULL) ORDER BY created_at DESC LIMIT 1`
     )[0];
     const bytes = r ? (r[col] as Buffer | null) : null;
     if (!bytes) throw notFound();

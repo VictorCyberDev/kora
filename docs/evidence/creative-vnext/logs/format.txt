@@ -4,5 +4,7 @@
 > prettier --check .
 
 Checking formatting...
-All matched files use Prettier code style!
-EXIT=0
+[warn] docs/research/CREATIVE-ENGINE-VNEXT.md
+[warn] Code style issues found in the above file. Run Prettier with --write to fix.
+ ELIFECYCLE  Command failed with exit code 1.
+EXIT=1
