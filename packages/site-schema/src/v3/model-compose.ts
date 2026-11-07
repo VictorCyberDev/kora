@@ -102,6 +102,7 @@ Rules:
 - Write plain, natural English for the customer.`;
 
 const bounded = (s: string, n: number) =>
+  // eslint-disable-next-line no-control-regex -- stripping control characters from owner text is the purpose
   s.replace(/[\u0000-\u001f]/g, " ").slice(0, n);
 
 export function buildComposeRequest(
@@ -164,7 +165,7 @@ function setPath(spec: SiteSpecV3, id: string, text: string): boolean {
   for (const part of path.slice(0, -1)) {
     cur = (cur as Record<string, unknown>)?.[
       /^\d+$/.test(part) ? Number(part) : part
-    ] as unknown;
+    ];
     if (cur == null) return false;
   }
   const last = path[path.length - 1]!;

@@ -10,11 +10,7 @@ import {
   type BusinessBlueprint,
   type IndustryProfile,
 } from "@kora/creative";
-import {
-  catalogExclude,
-  catalogMediaPool,
-  recipeForVertical,
-} from "../v2/catalog.js";
+import { catalogExclude, catalogMediaPool } from "../v2/catalog.js";
 import { EditV3Error } from "./errors.js";
 import type { SectionV3, SiteSpecV3 } from "./spec.js";
 
@@ -113,7 +109,7 @@ export function composeSection(
         heading: `About ${b.name}`.slice(0, 100),
         body: [body],
         values: [],
-      } as SectionV3;
+      };
     }
     case "faq": {
       const items = k.profile.faq.slice(0, 6).map((f) => ({
@@ -179,7 +175,7 @@ export function composeSection(
         heading: k.vertical.offerHeading.slice(0, 90),
         intro: "",
         items,
-      } as SectionV3;
+      };
     }
     case "gallery": {
       const topics = k.bp.confirmedOfferCategories
@@ -226,7 +222,7 @@ export function composeSection(
             },
           },
         })),
-      } as SectionV3;
+      };
     }
     case "cta": {
       const hero = spec.pages[0]?.sections[0];
@@ -314,7 +310,7 @@ export function composePage(spec: SiteSpecV3, kind: AddablePage): Page {
         subheading: "",
         highlights: [],
         variant: 0,
-      } as SectionV3,
+      },
     ],
   };
   for (const s of d.sections)

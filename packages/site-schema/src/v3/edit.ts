@@ -626,9 +626,9 @@ export function applyStructuredEditV3(
         if (old.type === "offer" || old.type === "products") {
           const oi = old.items as Array<Record<string, unknown>>;
           (fresh.items as Array<Record<string, unknown>>).forEach((it, k) => {
-            if (oi[k]?.media) it.media = oi[k]!.media;
-            if (oi[k]?.plate) it.plate = oi[k]!.plate;
-            if (oi[k]?.price) it.price = oi[k]!.price;
+            if (oi[k]?.media) it.media = oi[k].media;
+            if (oi[k]?.plate) it.plate = oi[k].plate;
+            if (oi[k]?.price) it.price = oi[k].price;
           });
         }
         page.sections[i] = fresh as unknown as SectionV3;

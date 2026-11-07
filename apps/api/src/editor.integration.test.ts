@@ -39,11 +39,15 @@ d("the visual editor's operations, through the real API", () => {
       });
       expect(r.status, JSON.stringify(r.json)).toBe(201);
       head = r.json.data.version.id;
-      return (
-        await h.call("GET", `/api/sites/${site.id}/versions/${head}`, {
+      const got = await h.call(
+        "GET",
+        `/api/sites/${site.id}/versions/${head}`,
+        {
           cookie: o.cookie,
-        })
-      ).json.data.spec;
+        },
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- test harness JSON is untyped
+      return got.json.data.spec;
     };
     let spec = await edit({
       kind: "page-meta",

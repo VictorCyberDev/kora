@@ -649,7 +649,6 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   return `<footer class="ft t-${g.paletteBehavior === "dark-field" ? "dark" : "light"} fs-${g.footerStyle}"><div class="w">${body}</div></footer>`;
 }
 function dock(spec: SiteSpecV3): string {
-  const g = spec.design.genome;
   if (!wantsDock(spec)) return "";
   const parts = [
     spec.business.phone

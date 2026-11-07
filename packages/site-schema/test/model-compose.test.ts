@@ -30,14 +30,16 @@ const specOf = (key: string, dir = 0): SiteSpecV3 => {
 };
 const stub =
   (edits: Array<{ id: string; text: string }>, tokens = [900, 400]): ModelFn =>
-  async () => ({
-    text: JSON.stringify({ edits }),
-    inputTokens: tokens[0]!,
-    outputTokens: tokens[1]!,
-  });
+  () =>
+    Promise.resolve({
+      text: JSON.stringify({ edits }),
+      inputTokens: tokens[0]!,
+      outputTokens: tokens[1]!,
+    });
 const raw =
   (text: string): ModelFn =>
-  async () => ({ text, inputTokens: 10, outputTokens: 5 });
+  () =>
+    Promise.resolve({ text, inputTokens: 10, outputTokens: 5 });
 
 describe("model-assisted composition", () => {
   const spec = specOf("bakery");
@@ -148,9 +150,10 @@ describe("model-assisted composition", () => {
   });
 
   it("falls back cleanly when the model is down, slow, malformed, empty, or ignores the schema", async () => {
-    const fail: ModelFn = async () => {
-      throw Object.assign(new Error("down"), { name: "LlmUnavailableError" });
-    };
+    const fail: ModelFn = () =>
+      Promise.reject(
+        Object.assign(new Error("down"), { name: "LlmUnavailableError" }),
+      );
     for (const m of [
       fail,
       raw("not json"),

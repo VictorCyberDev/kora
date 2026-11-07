@@ -15,6 +15,7 @@ beforeAll(async () => {
     llm: {
       model: "stub-model",
       provider: "stub",
+      // eslint-disable-next-line @typescript-eslint/require-await -- the LLM interface is async; the stub has nothing to await
       complete: async (req) => {
         calls.push({ system: req.system, user: req.user });
         if (mode === "down") throw new Error("provider unavailable");

@@ -1,11 +1,10 @@
-### build: pnpm build
 
 > kora@0.1.0 build /home/user/kora
 > pnpm -r build
 
 Scope: 18 of 19 workspace projects
-packages/creative build$ tsc -p tsconfig.json
 apps/web build$ tsc -p tsconfig.json --noEmit && vite build
+packages/creative build$ tsc -p tsconfig.json
 packages/event-schema build$ tsc -p tsconfig.json
 packages/passport build$ tsc -p tsconfig.json
 packages/event-schema build: Done
@@ -27,21 +26,21 @@ services/policy-engine build$ tsc -p tsconfig.json
 services/action-executor build: Done
 services/reasoner build$ tsc -p tsconfig.json
 services/incident-engine build: Done
-apps/web build: vite v7.3.7 building client environment for production...
 services/policy-engine build: Done
+apps/web build: vite v7.3.7 building client environment for production...
 apps/web build: transforming...
 apps/web build: /_kora/fonts/dm-serif-display-latin-400-normal.woff2 referenced in /_kora/fonts/dm-serif-display-latin-400-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
 apps/web build: /_kora/fonts/manrope-latin-400-normal.woff2 referenced in /_kora/fonts/manrope-latin-400-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
 apps/web build: /_kora/fonts/manrope-latin-600-normal.woff2 referenced in /_kora/fonts/manrope-latin-600-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
 apps/web build: /_kora/fonts/manrope-latin-800-normal.woff2 referenced in /_kora/fonts/manrope-latin-800-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
-apps/web build: ✓ 66 modules transformed.
+apps/web build: ✓ 68 modules transformed.
 services/reasoner build: Done
 apps/web build: rendering chunks...
 apps/web build: computing gzip size...
 apps/web build: dist/index.html                   0.73 kB │ gzip:   0.42 kB
-apps/web build: dist/assets/index-DmiKbL3w.css   71.92 kB │ gzip:  15.27 kB
-apps/web build: dist/assets/index-roWnnZkR.js   344.82 kB │ gzip: 104.27 kB
-apps/web build: ✓ built in 1.78s
+apps/web build: dist/assets/index-C8T_Xhz1.css   76.65 kB │ gzip:  16.22 kB
+apps/web build: dist/assets/index-09HOU7ou.js   362.27 kB │ gzip: 109.10 kB
+apps/web build: ✓ built in 2.36s
 apps/web build: Done
 apps/demo-service build$ tsc -p tsconfig.json
 packages/site-schema build$ tsc -p tsconfig.json
@@ -53,4 +52,3 @@ apps/site-host build: Done
 packages/growth build: Done
 apps/api build$ tsc -p tsconfig.json && node -e "require('node:fs').cpSync('src/db/migrations','dist/db/migrations',{recursive:true})"
 apps/api build: Done
-EXIT=0
