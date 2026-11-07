@@ -1,4 +1,5 @@
 import type { Media } from "./spec.js";
+import { EXTRA_CATALOG } from "./catalog-extra.js";
 
 /**
  * Kora's curated photograph catalogue.
@@ -28,7 +29,7 @@ export interface CatalogEntry {
 }
 const L = "https://www.pexels.com/license/";
 
-export const MEDIA_CATALOG: readonly CatalogEntry[] = [
+const CORE_CATALOG: readonly CatalogEntry[] = [
   {
     id: "restaurant-timber-ceiling",
     file: "restaurant-timber-ceiling.webp",
@@ -214,6 +215,12 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
 ];
 
+/** Core photographs plus the vetted additions (see catalog-extra.ts and packages/site-media/catalog-source). */
+export const MEDIA_CATALOG: readonly CatalogEntry[] = [
+  ...CORE_CATALOG,
+  ...EXTRA_CATALOG,
+];
+
 export const MEDIA_URL_PREFIX = "/_kora/media/";
 
 function toMedia(entry: CatalogEntry): Media {
@@ -254,6 +261,51 @@ export function catalogTopicsForUrl(
 ): readonly string[] | undefined {
   return MEDIA_CATALOG.find((e) => `${MEDIA_URL_PREFIX}${e.file}` === url)
     ?.topics;
+}
+
+/**
+ * A coherent pool of pictures for one business: pictures made for its trade (recipe) plus pictures tagged for the specific
+ * offerings the owner confirmed (topic), so a bakery that bakes cakes and small chops draws both. Interleaved by topic so the
+ * first few (hero, then offers) cover different subjects instead of five cakes in a row.
+ */
+export function catalogMediaPool(
+  recipeId: string | undefined,
+  topicIds: readonly string[],
+  mode: "light" | "dark",
+  limit = 18,
+): Media[] {
+  const fits = MEDIA_CATALOG.filter(
+    (e) =>
+      (recipeId && e.recipes.includes(recipeId)) ||
+      e.topics?.some((t) => topicIds.includes(t)),
+  );
+  const toneScore = (e: CatalogEntry) =>
+    e.tone === mode ? 2 : e.tone === "any" ? 1 : 0;
+  const groups = new Map<string, CatalogEntry[]>();
+  for (const e of fits) {
+    const key =
+      topicIds.find((t) => e.topics?.includes(t)) ?? e.topics?.[0] ?? "general";
+    groups.set(key, [...(groups.get(key) ?? []), e]);
+  }
+  const order = [
+    ...topicIds,
+    ...[...groups.keys()].filter((k) => !topicIds.includes(k)),
+  ].filter((k) => groups.has(k));
+  for (const k of order)
+    groups.get(k)!.sort((a, b) => toneScore(b) - toneScore(a));
+  const out: CatalogEntry[] = [];
+  for (let i = 0; out.length < Math.min(limit, fits.length); i++) {
+    let added = false;
+    for (const k of order) {
+      const e = groups.get(k)![i];
+      if (e && !out.includes(e)) {
+        out.push(e);
+        added = true;
+      }
+    }
+    if (!added) break;
+  }
+  return out.slice(0, limit).map(toMedia);
 }
 
 /** Backwards-compatible single-photo selector used by the deterministic planner. */

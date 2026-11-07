@@ -1,0 +1,286 @@
+[
+  {
+    "pexelsId": "34772940",
+    "reason": "Street vendor face/figure is the dominant subject and a red logo appears on the green apron; background shopfronts/cars; not a restaurant food subject."
+  },
+  {
+    "pexelsId": "36707708",
+    "reason": "Jollof pot photo has a woman's legs and a chair at top and is outdoor roadside cooking; unclear commercial restaurant relevance; portrait crop would cut pot."
+  },
+  {
+    "pexelsId": "36707706",
+    "reason": "Large outdoor stew pot with a hand stirring; packaging text visible on a bag near the fire; weaker restaurant relevance."
+  },
+  {
+    "pexelsId": "37538487",
+    "reason": "Cafe table scene shows a readable branded water bottle (Swan) and a laptop; brand/business identity visible."
+  },
+  {
+    "pexelsId": "17952748",
+    "reason": "Near-duplicate of accepted 17952746 (same plate, same shot)."
+  },
+  {
+    "pexelsId": "37624176",
+    "reason": "Takeaway box shows packaging; possible branded packaging/lettering and weaker subject clarity; not selected."
+  },
+  {
+    "pexelsId": "32634871",
+    "reason": "Hands with fork over yam and egg dish: subject label uncertain (Pexels says yam and egg), surplus; not selected."
+  },
+  {
+    "pexelsId": "28736731",
+    "reason": "Banquet buffet with staff faces and gloves visible; people are dominant, not selected."
+  },
+  {
+    "pexelsId": "40786344",
+    "reason": "Roadside street vendor display with a labelled can and bucket; clutter and visible packaging text."
+  },
+  {
+    "pexelsId": "32289598",
+    "reason": "Portrait of a woman in ankara top in a living room with decorative wall art and plants; face dominant and busy background; surplus."
+  },
+  {
+    "pexelsId": "36456207",
+    "reason": "Woman in black blazer and ankara trousers crouching, face looking up; garment partly hidden by blazer; weak fashion clarity."
+  },
+  {
+    "pexelsId": "32853982",
+    "reason": "Studio portrait holding a quilted designer-style handbag with a visible clasp logo; possible third-party brand; not selected."
+  },
+  {
+    "pexelsId": "36455561",
+    "reason": "Gazebo outdoor portrait; full-body pose cannot be cropped to 3:2 without cutting the garment; near-duplicate of 36420121 and 34249446."
+  },
+  {
+    "pexelsId": "37616473",
+    "reason": "Dark studio pose in brown ankara dress with red drape; face/pose dominant; surplus."
+  },
+  {
+    "pexelsId": "34249446",
+    "reason": "Gazebo portrait, near-duplicate of 36455561/36420121; full-body crop issue."
+  },
+  {
+    "pexelsId": "36420121",
+    "reason": "Gazebo portrait, full-body pose, near-duplicate of 36455561; crop would cut subject."
+  },
+  {
+    "pexelsId": "30865963",
+    "reason": "Man in tank top and ankara shorts, full-body studio pose; garment only a small part; crop would cut subject."
+  },
+  {
+    "pexelsId": "35259733",
+    "reason": "Portrait of a woman in a purple ankara dress; face dominant; surplus after 33939066 and 37550056."
+  },
+  {
+    "pexelsId": "4671331",
+    "reason": "Head of a young child with triangle-part braids from above; child, rejected conservatively."
+  },
+  {
+    "pexelsId": "8422336",
+    "reason": "Woman with box braids and hair over face, face dominant; no salon context; surplus."
+  },
+  {
+    "pexelsId": "11482128",
+    "reason": "Hands braiding hair of a person who appears to be a child; rejected conservatively."
+  },
+  {
+    "pexelsId": "7078204",
+    "reason": "Woman with green braids looking at camera; face dominant; outdoors not salon; surplus."
+  },
+  {
+    "pexelsId": "10810251",
+    "reason": "Close-up of a woman's eyes and purple cornrows; face dominant; surplus."
+  },
+  {
+    "pexelsId": "5301531",
+    "reason": "Arm holding long braid ponytail on white background; acceptable but surplus after better braid shots."
+  },
+  {
+    "pexelsId": "34191088",
+    "reason": "Twists back view: texture so detailed the WebP exceeds 230 KB even at quality 54 (365 KB); a second person's head also in frame; dropped."
+  },
+  {
+    "pexelsId": "16563139",
+    "reason": "Overhead cornrows crop: overexposed with a handwritten paper tag cut off at the left edge, and 310 KB at default quality; dropped."
+  },
+  {
+    "pexelsId": "20092122",
+    "reason": "Red hair clips show brand lettering; rejected for readable brand text."
+  },
+  {
+    "pexelsId": "10028673",
+    "reason": "Stylist blow-drying hair, stylist's face prominent; surplus."
+  },
+  {
+    "pexelsId": "4783329",
+    "reason": "Salon with blue shelves of product bottles (brand labels possible) and an older woman's face; surplus."
+  },
+  {
+    "pexelsId": "23349912",
+    "reason": "Comb through brown hair close-up, similar to accepted 6487888; surplus."
+  },
+  {
+    "pexelsId": "29096366",
+    "reason": "Stylist posing with a model with blonde curly wig; faces dominant, not a clear salon service."
+  },
+  {
+    "pexelsId": "7195812",
+    "reason": "Salon interior with shelves of products and brand labels possible; not selected after checking only on a contact sheet."
+  },
+  {
+    "pexelsId": "7195805",
+    "reason": "Salon interior near-duplicate of 7195812; same reason."
+  },
+  {
+    "pexelsId": "35844833",
+    "reason": "PNG download failed (corrupt/short JPEG data); not viewed."
+  },
+  {
+    "pexelsId": "3993320",
+    "reason": "Woman getting a haircut in a salon with face/clients and mirrors; surplus."
+  },
+  {
+    "pexelsId": "3993462",
+    "reason": "Haircut with wet hair; dark and ordinary; surplus."
+  },
+  {
+    "pexelsId": "5149734",
+    "reason": "Makeup artist and client in dark ring-light shot; faces dominant; surplus."
+  },
+  {
+    "pexelsId": "33722921",
+    "reason": "Male makeup artist and model posed; faces dominant; surplus."
+  },
+  {
+    "pexelsId": "37710473",
+    "reason": "Bride getting makeup with robe; face dominant; surplus."
+  },
+  {
+    "pexelsId": "5732998",
+    "reason": "Mirror and brush kit; mirror shows faces and tools; busy; surplus."
+  },
+  {
+    "pexelsId": "39190655",
+    "reason": "Wide studio makeup scene; small subjects; surplus."
+  },
+  {
+    "pexelsId": "35538643",
+    "reason": "Makeup artist applying lipstick to a bride; faces dominant; surplus."
+  },
+  {
+    "pexelsId": "32009285",
+    "reason": "Three young women, one applying blush; faces dominant; surplus."
+  },
+  {
+    "pexelsId": "36719922",
+    "reason": "Makeup artist in hijab applying makeup with ring light; faces dominant; surplus."
+  },
+  {
+    "pexelsId": "34025144",
+    "reason": "Makeup station with bottles that may show brand labels; faces dominant."
+  },
+  {
+    "pexelsId": "20593111",
+    "reason": "Black and white beautician applying makeup, faces dominant; surplus."
+  },
+  {
+    "pexelsId": "33078826",
+    "reason": "Tailor in a workshop, small subject at a distance in a cluttered, dark room; surplus."
+  },
+  {
+    "pexelsId": "7775480",
+    "reason": "Chalk marking fabric close-up; near-duplicate subject of accepted 9849651; surplus."
+  },
+  {
+    "pexelsId": "7775462",
+    "reason": "Woman marking blue fabric in an atelier; near-duplicate subject; surplus."
+  },
+  {
+    "pexelsId": "8527517",
+    "reason": "Cutting floral fabric with scissors; faces absent but portrait crop would cut the scene; surplus."
+  },
+  {
+    "pexelsId": "30902518",
+    "reason": "Marking pattern with pen, close-up; surplus."
+  },
+  {
+    "pexelsId": "36356352",
+    "reason": "Hand sewing detail; surplus."
+  },
+  {
+    "pexelsId": "18181977",
+    "reason": "Vintage sewing machine with readable brand name ELMAS; brand text visible."
+  },
+  {
+    "pexelsId": "3738096",
+    "reason": "Woman sewing, face partly visible; surplus."
+  },
+  {
+    "pexelsId": "8769361",
+    "reason": "Woman holding thread at table; face dominant; surplus."
+  },
+  {
+    "pexelsId": "34835304",
+    "reason": "Leopard-print nails; good but surplus (beauty set is capped at six); similar to accepted 34971940."
+  },
+  {
+    "pexelsId": "34885844",
+    "reason": "Nails: dark background, simple; surplus."
+  },
+  {
+    "pexelsId": "34871553",
+    "reason": "Red nails; surplus."
+  },
+  {
+    "pexelsId": "34835283",
+    "reason": "Pink glitter nails; surplus."
+  },
+  {
+    "pexelsId": "34835299",
+    "reason": "Leopard nails near-duplicate of 34835304; surplus."
+  },
+  {
+    "pexelsId": "34835286",
+    "reason": "Pink glitter nails on fluffy red; surplus."
+  },
+  {
+    "pexelsId": "34885842",
+    "reason": "Floral nails; surplus."
+  },
+  {
+    "pexelsId": "34871570",
+    "reason": "Red nails; surplus."
+  },
+  {
+    "pexelsId": "14534753",
+    "reason": "Window display of coloured shirts with reflections and partially readable neon/sign text; not selected."
+  },
+  {
+    "pexelsId": "5531709",
+    "reason": "Boutique interior with a hand-painted 'STEVE' sign visible on the wall; business identity visible."
+  },
+  {
+    "pexelsId": "8306359",
+    "reason": "Hangers detail, blurred; weak subject."
+  },
+  {
+    "pexelsId": "38672187",
+    "reason": "Mannequins with scarves, dark; not selected as surplus."
+  },
+  {
+    "pexelsId": "5531541",
+    "reason": "Dark clothing store interior, busy; surplus."
+  },
+  {
+    "pexelsId": "35741386",
+    "reason": "Colourful rail of dresses; good, but rail looks Indian-style kurtas, not ankara; surplus."
+  },
+  {
+    "pexelsId": "8306065",
+    "reason": "Clothes store window; not selected."
+  },
+  {
+    "pexelsId": "32549955",
+    "reason": "Storefront image; mall-style signage; not selected."
+  }
+]

@@ -17,7 +17,7 @@ import {
   type SiteSpecV3,
 } from "../src/index.js";
 import { lintArtifact } from "../src/index.js";
-import { MEDIA_CATALOG } from "../src/v2/catalog.js";
+import { MEDIA_CATALOG, catalogTopicsForUrl } from "../src/v2/catalog.js";
 
 interface Case {
   key: string;
@@ -142,10 +142,24 @@ describe("bakery acceptance case", () => {
       expect(JSON.stringify(d.spec)).not.toContain('"type":"proof"');
     }
   });
-  it("shows a photo only on a page it honestly depicts: no cake pictures on the small-chops page", () => {
+  it("shows a photo only on a page it honestly depicts: every picture on a topic page is tagged for that topic", () => {
     for (const d of directions) {
-      const sc = d.spec.pages.find((p) => p.slug === "small-chops")!;
-      expect(JSON.stringify(sc)).not.toMatch(/\/_kora\/media\//);
+      for (const [slug, topic] of [
+        ["cakes", "cakes"],
+        ["small-chops", "small-chops"],
+      ] as const) {
+        const pg = d.spec.pages.find((p) => p.slug === slug)!;
+        const urls = [
+          ...JSON.stringify(pg).matchAll(/\/_kora\/media\/[a-z0-9-]+\.webp/g),
+        ].map((m) => m[0]);
+        expect(urls.length, `${d.name}/${slug} has pictures`).toBeGreaterThan(
+          0,
+        );
+        for (const u of urls)
+          expect(catalogTopicsForUrl(u) ?? [], `${slug}: ${u}`).toContain(
+            topic,
+          );
+      }
     }
   });
   it("labels stock photography as illustrative", () => {

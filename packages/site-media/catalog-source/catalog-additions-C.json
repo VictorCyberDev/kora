@@ -1,0 +1,400 @@
+[
+  {
+    "id": "studio-wireframe-notebook",
+    "file": "studio-wireframe-notebook.webp",
+    "alt": "A spiral notebook with hand-drawn website wireframes, two pens and a dark smartphone on a wooden table.",
+    "topics": [
+      "websites",
+      "design"
+    ],
+    "recipes": [
+      "digital-studio",
+      "agency"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.6,
+      "y": 0.4
+    },
+    "creator": "picjumbo.com",
+    "pexelsId": "196644",
+    "sourceUrl": "https://www.pexels.com/photo/notebook-beside-the-iphone-on-table-196644/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Hand-drawn page wireframes (image boxes, text lines, video thumbnails) on a notebook; phone screen off, no logos or readable text. Warm, light tone.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "studio-wireframe-closeup",
+    "file": "studio-wireframe-closeup.webp",
+    "alt": "A close-up of black-ink wireframe sketches on white paper showing image placeholders, text lines and a video play button.",
+    "topics": [
+      "websites",
+      "design"
+    ],
+    "recipes": [
+      "digital-studio",
+      "agency"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "creator": "picjumbo.com",
+    "pexelsId": "196645",
+    "sourceUrl": "https://www.pexels.com/photo/white-printer-paper-196645/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Greyscale close-up of hand-drawn wireframes with shallow depth of field; scribbled text is illegible, no brands.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "studio-designer-3d-furniture",
+    "file": "studio-designer-3d-furniture.webp",
+    "alt": "A person seen from behind the shoulder working at a desktop monitor that shows 3D furniture models, with a keyboard and material samples on the desk.",
+    "topics": [
+      "design",
+      "offices"
+    ],
+    "recipes": [
+      "digital-studio"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.68,
+      "y": 0.4
+    },
+    "creator": "cottonbro studio",
+    "pexelsId": "7504746",
+    "sourceUrl": "https://www.pexels.com/photo/a-man-using-a-computer-in-designing-7504746/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Designer at a monitor showing 3D furniture design (side tables, cabinets); no readable brand or screen text. Product/3D design rather than web design.",
+    "rejectedConcerns": "Subject is furniture/3D design software, not web design; person partly cropped (face edge only)."
+  },
+  {
+    "id": "studio-tablet-sketching",
+    "file": "studio-tablet-sketching.webp",
+    "alt": "A person sketching a figure with a stylus on a tablet while a laptop with design software sits on a side table behind.",
+    "topics": [
+      "design"
+    ],
+    "recipes": [
+      "digital-studio",
+      "agency"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.65,
+      "y": 0.62
+    },
+    "creator": "Artem Zhukov",
+    "pexelsId": "17774503",
+    "sourceUrl": "https://www.pexels.com/photo/man-painting-on-tablet-17774503/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Hands drawing on a tablet in a living room, laptop with blurred creative-software UI in the background; no readable text.",
+    "rejectedConcerns": "Laptop screen and stylus carry tiny unreadable UI/branding; kept because nothing is legible."
+  },
+  {
+    "id": "studio-colour-swatch-fan",
+    "file": "studio-colour-swatch-fan.webp",
+    "alt": "A close-up of a fan of colour swatch cards in red, pink, purple, green and blue shades on a violet background.",
+    "topics": [
+      "branding",
+      "design"
+    ],
+    "recipes": [
+      "digital-studio",
+      "agency"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "creator": "Viktorya Sergeeva",
+    "pexelsId": "10275089",
+    "sourceUrl": "https://www.pexels.com/photo/palette-color-swatch-fan-10275089/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Fanned colour sample cards, no text or logos. Saturated, abstract colour-palette subject.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "repair-phone-circuit-board",
+    "file": "repair-phone-circuit-board.webp",
+    "alt": "A close-up of a smartphone logic board with a metal shield frame being probed with tweezers on a dark surface.",
+    "topics": [
+      "screens"
+    ],
+    "recipes": [
+      "electronics-repair"
+    ],
+    "tone": "dark",
+    "focal": {
+      "x": 0.45,
+      "y": 0.55
+    },
+    "creator": "Tima Miroshnichenko",
+    "pexelsId": "6755138",
+    "sourceUrl": "https://www.pexels.com/photo/person-using-tweezers-on-a-circuit-board-6755138/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Macro of a phone circuit board with tweezers and a fingertip at the edge; shallow depth of field, no brand markings readable.",
+    "rejectedConcerns": "Topic id screens is the nearest available id for phone repair; photo shows a logic board rather than a display."
+  },
+  {
+    "id": "repair-phone-screwdriver",
+    "file": "repair-phone-screwdriver.webp",
+    "alt": "Two hands working on an opened smartphone with a small screwdriver on a teal repair mat.",
+    "topics": [
+      "screens"
+    ],
+    "recipes": [
+      "electronics-repair"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.5,
+      "y": 0.6
+    },
+    "creator": "Tima Miroshnichenko",
+    "pexelsId": "6755053",
+    "sourceUrl": "https://www.pexels.com/photo/person-holding-black-iphone-4-6755053/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Opened phone showing board and camera module, one hand steadying and one holding a precision screwdriver; no readable logos.",
+    "rejectedConcerns": "Topic id screens is the nearest available id for phone repair. Pexels slug calls it an iPhone 4 but no logo is visible."
+  },
+  {
+    "id": "trades-plumber-radiator-pipe",
+    "file": "trades-plumber-radiator-pipe.webp",
+    "alt": "A plumber in work overalls and white gloves fitting a threaded steel pipe connector to a white radiator, with blue pipe wrenches on the bench.",
+    "topics": [
+      "installs",
+      "homes"
+    ],
+    "recipes": [
+      "plumbing"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.35,
+      "y": 0.5
+    },
+    "creator": "Sergei Starostin",
+    "pexelsId": "29226620",
+    "sourceUrl": "https://www.pexels.com/photo/professional-plumber-installing-a-radiator-pipe-29226620/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Gloved hands joining a threaded pipe to a radiator with wrenches beside; no readable logos.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "trades-plumber-pipe-fittings",
+    "file": "trades-plumber-pipe-fittings.webp",
+    "alt": "Two hands tightening brass and steel pipe fittings under a sink area lined with foil insulation.",
+    "topics": [
+      "installs"
+    ],
+    "recipes": [
+      "plumbing"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.35,
+      "y": 0.6
+    },
+    "creator": "Anıl Karakaya",
+    "pexelsId": "6419128",
+    "sourceUrl": "https://www.pexels.com/photo/plumber-installs-pipe-fittings-6419128/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Close view of hands fitting a brass valve and steel pipes against foil insulation; moody lighting, only tiny engraved fitting numbers visible.",
+    "rejectedConcerns": "Tiny engraved numbers on fittings; no brand names."
+  },
+  {
+    "id": "trades-electrician-wall-sockets",
+    "file": "trades-electrician-wall-sockets.webp",
+    "alt": "An electrician's hands holding orange pliers and a wire above open wall socket boxes on a grey wall.",
+    "topics": [
+      "installs",
+      "homes"
+    ],
+    "recipes": [
+      "plumbing"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "creator": "Ksenia Chernaya",
+    "pexelsId": "5691588",
+    "sourceUrl": "https://www.pexels.com/photo/an-electrician-using-pliers-to-repair-the-ac-power-plugs-and-sockets-5691588/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Hands stripping a wire with pliers beside exposed wall sockets and a red back-box; no brands.",
+    "rejectedConcerns": "No electrician recipe id exists; filed under plumbing as the nearest trades recipe. Crop taken from a portrait original."
+  },
+  {
+    "id": "cleaning-living-room-team",
+    "file": "cleaning-living-room-team.webp",
+    "alt": "Two cleaners in orange overalls vacuuming and mopping the tiled floor of a modern living room.",
+    "topics": [
+      "homes"
+    ],
+    "recipes": [
+      "cleaning"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.4,
+      "y": 0.5
+    },
+    "creator": "Tima Miroshnichenko",
+    "pexelsId": "6195277",
+    "sourceUrl": "https://www.pexels.com/photo/women-in-orange-uniform-cleaning-the-floor-6195277/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Two uniformed cleaners with a yellow wet-dry vacuum and a mop in a bright living room; uniform and machine show no readable logos.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "cleaning-kitchen-team",
+    "file": "cleaning-kitchen-team.webp",
+    "alt": "Three cleaners in orange overalls mopping the floor and wiping the kitchen wall and a sliding window in a modern open-plan kitchen.",
+    "topics": [
+      "homes"
+    ],
+    "recipes": [
+      "cleaning"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.5,
+      "y": 0.5
+    },
+    "creator": "Tima Miroshnichenko",
+    "pexelsId": "6197108",
+    "sourceUrl": "https://www.pexels.com/photo/group-of-people-cleaning-a-dining-room-6197108/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Three uniformed cleaners with mop, buckets and cloths in a bright kitchen; no readable logos.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "cleaning-mirror-duster",
+    "file": "cleaning-mirror-duster.webp",
+    "alt": "A yellow-gloved hand holding a white feather duster in front of a round mirror and pendant lamps in a bathroom.",
+    "topics": [
+      "homes"
+    ],
+    "recipes": [
+      "cleaning"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.6,
+      "y": 0.5
+    },
+    "creator": "Karola G",
+    "pexelsId": "4239031",
+    "sourceUrl": "https://www.pexels.com/photo/crop-woman-dusting-lamp-during-housework-4239031/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Dusting a pendant lamp beside a round mirror in a white-tiled room; reflection of the cleaner is blurred.",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "photographer-dslr-viewfinder",
+    "file": "photographer-dslr-viewfinder.webp",
+    "alt": "A bearded photographer in a dark jacket and beanie looking through the viewfinder of a camera with a large lens in a cafe.",
+    "topics": [],
+    "recipes": [
+      "photographer"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.4,
+      "y": 0.4
+    },
+    "creator": "cottonbro studio",
+    "pexelsId": "3584932",
+    "sourceUrl": "https://www.pexels.com/photo/man-holding-black-dslr-camera-3584932/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Photographer in profile composing a shot; lens and body show no readable brand text.",
+    "rejectedConcerns": "No suitable topic id (portraits would imply portrait work), so topics left empty."
+  },
+  {
+    "id": "photographer-medium-format",
+    "file": "photographer-medium-format.webp",
+    "alt": "A curly-haired photographer looking down into the viewfinder of a medium-format camera in front of a large window.",
+    "topics": [],
+    "recipes": [
+      "photographer"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.5,
+      "y": 0.55
+    },
+    "creator": "Tima Miroshnichenko",
+    "pexelsId": "7205938",
+    "sourceUrl": "https://www.pexels.com/photo/a-photographer-using-a-vintage-professional-camera-7205938/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Photographer using a waist-level medium-format camera against bright windows; only a small model label (PRO II) is legible, no brand name.",
+    "rejectedConcerns": "No suitable topic id, so topics left empty. Small model marking on camera."
+  },
+  {
+    "id": "events-floral-long-table",
+    "file": "events-floral-long-table.webp",
+    "alt": "A long wooden banquet table with tall glass vases of roses and wildflowers, taper candles, teal goblets and cross-back chairs under hanging beaded lights.",
+    "topics": [
+      "events",
+      "weddings"
+    ],
+    "recipes": [
+      "events"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.45,
+      "y": 0.45
+    },
+    "creator": "Claudia Ferrer",
+    "pexelsId": "28998231",
+    "sourceUrl": "https://www.pexels.com/photo/elegant-floral-arrangement-on-wedding-table-28998231/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Banquet table decor with large floral arrangements, candles and teal glasses; no people, text or logos. Weddings topic taken from the Pexels title (wedding table).",
+    "rejectedConcerns": "none"
+  },
+  {
+    "id": "events-wicker-lamps-buffet",
+    "file": "events-wicker-lamps-buffet.webp",
+    "alt": "An event hall with hanging woven wicker lamps, vases of flowers on buffet tables and a set dining table with gold charger plates and wine glasses.",
+    "topics": [
+      "events"
+    ],
+    "recipes": [
+      "events"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.5,
+      "y": 0.4
+    },
+    "creator": "Claudia Ferrer",
+    "pexelsId": "28998261",
+    "sourceUrl": "https://www.pexels.com/photo/elegant-event-setting-with-floral-decorations-28998261/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Reception-style decor with wicker pendant lamps, flower arrangements and gold plates; no people, text or logos.",
+    "rejectedConcerns": "none"
+  }
+]

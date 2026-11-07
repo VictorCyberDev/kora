@@ -1,0 +1,230 @@
+[
+  {
+    "pexelsId": "17136624",
+    "reason": "Portrait original; monitor shows readable design-system UI text (Color, Typography); 3:2 crop would lose the desk."
+  },
+  {
+    "pexelsId": "16313661",
+    "reason": "Wacom brand name readable on box and tablet."
+  },
+  {
+    "pexelsId": "1714202",
+    "reason": "Photoshop-style UI and readable poster text on monitor."
+  },
+  {
+    "pexelsId": "16309660",
+    "reason": "Fashion/costume workshop, not relevant to web or software design."
+  },
+  {
+    "pexelsId": "20213729",
+    "reason": "Desk setup with no design work shown; phone with visible Apple logo and a paper with readable heading; portrait original."
+  },
+  {
+    "pexelsId": "3850211",
+    "reason": "Wacom brand name and measuring-tape marking readable."
+  },
+  {
+    "pexelsId": "9617366",
+    "reason": "Architectural drafting tools, not web/software design."
+  },
+  {
+    "pexelsId": "27436633",
+    "reason": "Anime character poster (third-party artwork) on wall, tiny screen UI and chart content visible; height after resize under 3:2."
+  },
+  {
+    "pexelsId": "36747234",
+    "reason": "Monitor shows Figma-style UI with browser tabs and URL, Windows taskbar icons and visible AMD FreeSync label."
+  },
+  {
+    "pexelsId": "23508096",
+    "reason": "Dock shows readable Adobe, Figma, Notion, Chrome and other app icons plus Apple Pencil text."
+  },
+  {
+    "pexelsId": "17724732",
+    "reason": "Whiteboard shoot from Walls.io: readable product-related board text (User-Generated Content / Social Wall) and company-logo shirts."
+  },
+  {
+    "pexelsId": "17724746",
+    "reason": "Same Walls.io shoot: company logo on shirt, brand-linked whiteboard text."
+  },
+  {
+    "pexelsId": "17724738",
+    "reason": "Same Walls.io shoot: company logo on shirt, brand-linked whiteboard text."
+  },
+  {
+    "pexelsId": "17724744",
+    "reason": "Same Walls.io shoot: company logo on shirt, brand-linked whiteboard text."
+  },
+  {
+    "pexelsId": "7698706",
+    "reason": "Corporate people in suits at a whiteboard; not a creative studio context and board content not visible; weak relevance."
+  },
+  {
+    "pexelsId": "6474454",
+    "reason": "Swatch holder carries readable German/Russian slogan text; rejected for possible brand wording."
+  },
+  {
+    "pexelsId": "6583351",
+    "reason": "Not used: portrait close-up of low-contrast paint chart with tiny printed codes."
+  },
+  {
+    "pexelsId": "6583367",
+    "reason": "Not used: portrait paint-colour fan for interior paint, duplicate subject of kept swatch image."
+  },
+  {
+    "pexelsId": "6583363",
+    "reason": "Not used: portrait paint fan with fabrics, interior-design rather than digital design."
+  },
+  {
+    "pexelsId": "6580015",
+    "reason": "Not used: portrait, tiny subject in blurred interior studio."
+  },
+  {
+    "pexelsId": "6044300",
+    "reason": "Not used: art drafting desk, not digital/web."
+  },
+  {
+    "pexelsId": "7971531",
+    "reason": "Portrait original; screen shows photo-editor UI that is brand-identifiable."
+  },
+  {
+    "pexelsId": "34411122",
+    "reason": "Monitor bezel shows BenQ brand and animation software UI; portrait original."
+  },
+  {
+    "pexelsId": "6593353",
+    "reason": "Not used: traditional ink drawing at desk, not digital/web design."
+  },
+  {
+    "pexelsId": "4348298",
+    "reason": "Not used: art-supplies studio table, not digital/web."
+  },
+  {
+    "pexelsId": "7504747",
+    "reason": "Not used: out-of-focus portrait of a person with a mood board."
+  },
+  {
+    "pexelsId": "14534828",
+    "reason": "Xiaomi MI logo readable on phone back."
+  },
+  {
+    "pexelsId": "6755137",
+    "reason": "Same shoot and scene as existing repair-bench-microscope.webp; sweatshirt print text partly legible."
+  },
+  {
+    "pexelsId": "6755075",
+    "reason": "Subject mostly out of focus and soft; near-duplicate of kept repair-phone-screwdriver."
+  },
+  {
+    "pexelsId": "6755056",
+    "reason": "Same technician and bench as existing repair-bench-microscope.webp; dropped to keep the count at 18 and avoid a near-duplicate look."
+  },
+  {
+    "pexelsId": "31862953",
+    "reason": "Apple logos readable on the battery of the disassembled phones."
+  },
+  {
+    "pexelsId": "31862950",
+    "reason": "Apple logos readable on the battery of the disassembled phones."
+  },
+  {
+    "pexelsId": "10568286",
+    "reason": "Apple logo visible on the phone back in the foreground; portrait original."
+  },
+  {
+    "pexelsId": "35290682",
+    "reason": "Portrait original; the device being repaired is not clearly a phone."
+  },
+  {
+    "pexelsId": "32942100",
+    "reason": "Laptop screen with readable UI text and Apple logo inside the phone."
+  },
+  {
+    "pexelsId": "40012869",
+    "reason": "Portrait original; shirt print and workshop background; subject not clearly electronics repair."
+  },
+  {
+    "pexelsId": "8486978",
+    "reason": "Portrait original; glove marking and subject is a posed portrait, 3:2 crop cannot show face and wrench together."
+  },
+  {
+    "pexelsId": "8486923",
+    "reason": "Portrait original; posed portrait, 3:2 crop cannot show face and wrench together."
+  },
+  {
+    "pexelsId": "32588548",
+    "reason": "Cyrillic company name readable on workwear bib; portrait original."
+  },
+  {
+    "pexelsId": "39885416",
+    "reason": "Portrait original; vice may carry a maker mark; 3:2 crop cuts hands and pipe."
+  },
+  {
+    "pexelsId": "7859953",
+    "reason": "Grundfos brand name and label text readable on pump."
+  },
+  {
+    "pexelsId": "34054464",
+    "reason": "TDM Electric brand text on contactor and multimeter model text readable."
+  },
+  {
+    "pexelsId": "7285965",
+    "reason": "Hobby soldering bench with loose wires rather than an electrician at work; not checked further."
+  },
+  {
+    "pexelsId": "6196694",
+    "reason": "Portrait original; same subject as kept cleaning photos, less variety."
+  },
+  {
+    "pexelsId": "6195275",
+    "reason": "Not used: duplicate scene of kept cleaning photo (vacuum in living room)."
+  },
+  {
+    "pexelsId": "6197122",
+    "reason": "Portrait original; same shoot as kept kitchen photo."
+  },
+  {
+    "pexelsId": "9462759",
+    "reason": "Hotel housekeeper making a bed, portrait original; hospitality rather than cleaning service."
+  },
+  {
+    "pexelsId": "14122231",
+    "reason": "Portrait original; cap logo visible and subject seen from behind."
+  },
+  {
+    "pexelsId": "16135635",
+    "reason": "Canon brand name readable on camera."
+  },
+  {
+    "pexelsId": "11971899",
+    "reason": "Heavy artistic swirl/blur effect, subject not clear."
+  },
+  {
+    "pexelsId": "19871897",
+    "reason": "Canon brand name readable on camera and lens; very dark."
+  },
+  {
+    "pexelsId": "36873712",
+    "reason": "Dark, vignetted and out of focus; portrait original."
+  },
+  {
+    "pexelsId": "37058552",
+    "reason": "Portrait original; centre of interest is a cropped bouquet, little event context."
+  },
+  {
+    "pexelsId": "13534760",
+    "reason": "Portrait original; 3:2 crop loses the table."
+  },
+  {
+    "pexelsId": "35985211",
+    "reason": "Good photo but dropped to stay within the 18-photo limit (events already has two)."
+  },
+  {
+    "pexelsId": "17294749",
+    "reason": "Not used: night lounge scene with mixed lighting, less clear as event decor."
+  },
+  {
+    "pexelsId": "39820645",
+    "reason": "Portrait original; ceremonial stage decor with cultural specificity and 3:2 crop cuts the fabric."
+  }
+]

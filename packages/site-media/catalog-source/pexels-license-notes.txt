@@ -1,0 +1,30 @@
+Pexels licence notes
+Source: https://www.pexels.com/license/ (page fetched once, 2026-11-07, titled "Free Stock Photo & Video License - Pexels")
+
+ALLOWED (as stated on the page)
+- All photos and videos on Pexels can be downloaded and used for free.
+- Attribution is not required (crediting the photographer or Pexels is "always appreciated").
+- Photos and videos may be modified / edited (cropping, resizing and re-encoding to WebP counts as modification).
+- Listed use cases: websites, blogs, apps, e-commerce shops, newsletters, e-books, presentations, templates you sell;
+  ads, banners and marketing campaigns; print marketing material (flyers, postcards, invitations, magazines, books);
+  sharing on social media.
+
+NOT ALLOWED (as stated on the page)
+- Identifiable people may not appear in a bad light or in a way that is offensive.
+- Do not sell unaltered copies of a photo or video (e.g. as a poster, print or on a physical product) without modifying it first.
+- Do not imply endorsement of your product by people or brands shown in the imagery.
+- Do not redistribute or sell the photos/videos on other stock photo or wallpaper platforms.
+- Do not use the photos/videos as part of a trademark, design-mark, trade name, business name or service mark.
+
+IMPLICATIONS FOR THE KORA CATALOGUE
+- Using the photos as website imagery for client sites is within the stated "website, blog or app" use.
+- Photos with identifiable people were avoided or are only accepted where the person is neutral/unidentifiable; the catalogue
+  must not present any pictured person as a customer, owner or endorser of a Kora client.
+- The catalogue should not be exposed as a standalone downloadable photo library (that would approach redistribution).
+- Do not use any photo inside a client's logo or business mark.
+- Attribution is optional; creator names and Pexels source URLs are still recorded per photo in catalog-additions-A.json.
+
+CAVEAT
+- The licence text above is the general Pexels licence page. Per-photo "Free to use" status was inferred from the photo being served
+  on Pexels search pages (which state "Completely Free to Use"); individual photo pages were not fetched (www.pexels.com blocks curl and
+  the scrape budget was limited). Sponsored (Getty/iStock) results on the search pages were ignored.

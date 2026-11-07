@@ -469,19 +469,29 @@ describe("composition follows the assets", () => {
     planDirectionsV3(fashion, opts).directions.map(
       (d) => d.spec.pages[0]!.sections[0]!,
     );
-  it("no pictures: image-led brands go typographic or graphic; strong owner photos make them photo-led", () => {
-    const without = hero();
+  it("strong owner photos make the design photo-led and are the hero; a trade with no catalogue stays typographic", () => {
     const withPhotos = hero({
       ownerPhotos: [photo("a1"), photo("b2"), photo("c3")],
     });
-    const photoLed = (h: ReturnType<typeof hero>[number]) =>
-      h.type === "hero" && !!h.media;
-    expect(withPhotos.filter(photoLed).length).toBeGreaterThan(
-      without.filter(photoLed).length,
-    );
-    for (const h of withPhotos)
+    for (const h of withPhotos) {
+      expect(h.type === "hero" && !!h.media).toBe(true);
       if (h.type === "hero" && h.media)
         expect(h.media.provenance.sourceType).toBe("owner-supplied");
+    }
+    // without owner photos the catalogue may stand in, and is labelled as curated stock, never as the owner's own
+    for (const h of hero())
+      if (h.type === "hero" && h.media)
+        expect(h.media.provenance.sourceType).toBe("licensed-stock");
+    // no catalogue photographs exist for this trade: nothing is pretended, the design leads with type
+    const cyber = planDirectionsV3({
+      name: "ShieldGrid",
+      description:
+        "Cybersecurity firm offering penetration testing and security audits for companies.",
+    }).directions;
+    for (const d of cyber) {
+      const h = d.spec.pages[0]!.sections[0]!;
+      expect(h.type === "hero" && !!h.media).toBe(false);
+    }
   });
   it("a weak picture is never the hero: blurry and low-score pictures are skipped, low-resolution ones are not heroes", () => {
     const weak = [

@@ -27,7 +27,7 @@ import {
   type HeroLayout,
   type VerticalIntel,
 } from "@kora/creative";
-import { catalogMediaSetFor, catalogTopicsForUrl } from "../v2/catalog.js";
+import { catalogMediaPool, catalogTopicsForUrl } from "../v2/catalog.js";
 import { extractServicesV2 } from "../v2/plan.js";
 import { paletteFromColorway } from "./palette.js";
 import { GRAMMARS } from "@kora/creative";
@@ -59,7 +59,18 @@ const CATALOG: Record<string, string> = {
   barber: "barber",
   law: "law",
   "electronics-repair": "electronics-repair",
-  gadgets: "phone-accessories",
+  gadgets: "electronics-repair",
+  salon: "salon",
+  nails: "nails",
+  makeup: "makeup",
+  fashion: "fashion",
+  tailor: "tailor",
+  plumbing: "plumbing",
+  cleaning: "cleaning",
+  photographer: "photographer",
+  events: "events",
+  "digital-studio": "digital-studio",
+  agency: "agency",
 };
 
 export interface OwnerPhotoInput {
@@ -234,6 +245,7 @@ function mediaFor(
   mode: "light" | "dark",
   opts: PlanV3Options,
   name: string,
+  topicIds: readonly string[] = [],
 ): {
   media: MediaV3[];
   hero: MediaV3 | undefined;
@@ -249,12 +261,11 @@ function mediaFor(
       ownerCount: own.all.length,
     };
   const recipe = CATALOG[vertical.id];
-  if (!recipe)
-    return { media: [], hero: undefined, source: "none", ownerCount: 0 };
   const ex = CATALOG_EXCLUDE[vertical.id];
-  const stock = catalogMediaSetFor(recipe, mode, 8)
+  // The trade's own pictures plus any picture tagged for an offering the owner confirmed (a bakery that sells small chops
+  // draws those too). Never a picture for something the owner did not say.
+  const stock = catalogMediaPool(recipe, topicIds, mode, 18)
     .filter((m) => !ex || !ex.test(m.alt))
-    .slice(0, 4)
     .map((m): MediaV3 => ({
       url: m.url,
       alt: m.alt,
@@ -369,7 +380,11 @@ export function planSiteV3(
   )!.colorways.find((c) => c.id === direction.colorwayId)!;
   const palette = paletteFromColorway(colorway);
   const thing = offerPhrase(truth, v);
-  const mp = mediaFor(v, colorway.mode, opts, b.name);
+  // What the owner said they offer decides which topic-tagged pictures are relevant, so the blueprint is read first.
+  const confirmedTopics = buildBlueprint(input)
+    .confirmedOfferCategories.map((c) => c.topicId)
+    .filter((t): t is string => !!t);
+  const mp = mediaFor(v, colorway.mode, opts, b.name, confirmedTopics);
   const media = mp.media;
   const hasMedia = media.length > 0;
   const bp = buildBlueprint(input, { mediaAvailable: media.length });
@@ -536,7 +551,8 @@ export function planSiteV3(
     plate: plateFor(0),
   });
   const lite = (title: string, sub: string, pic?: MediaV3): SectionV3 =>
-    hero(g.density === "airy" || pic ? "minimal-statement" : "type-dominant", {
+    // With a picture of its own the opening is a statement over the picture; without one it leads with type, never a placeholder.
+    hero(pic ? "minimal-statement" : "type-dominant", {
       heading: cap(title, 100),
       sub,
       ctas: false,
@@ -1138,6 +1154,8 @@ export function planSiteV3(
 
   // No picture appears more than twice on a site. A small pool is stretched with honest graphics and type, never with
   // the same photograph again and again; a gallery that would be left with fewer than two pictures is dropped.
+  // Pictures are claimed in order of how much a page needs them: the home opening, the gallery page, pages built for one
+  // offering (they may show only that offering), then everything else.
   {
     const uses = new Map<string, number>();
     const over = (m?: { url: string }) => {
@@ -1146,33 +1164,69 @@ export function planSiteV3(
       uses.set(m.url, n);
       return n > 2;
     };
-    let ix = 0;
-    // The gallery page exists to show pictures, so it claims its distinct photographs before any other page does.
-    const order = [...pages].sort(
-      (x, y) => Number(y.slug === "gallery") - Number(x.slug === "gallery"),
+    const topicSlugs = new Set(
+      bp.pageArchitecture.filter((p) => p.topicId).map((p) => p.slug),
     );
-    for (const pg of order)
-      pg.sections = pg.sections.flatMap((sec) => {
-        const a = sec as unknown as {
-          media?: { url: string };
-          plate?: unknown;
-          items?: Array<{ media?: { url: string }; plate?: unknown }>;
-        };
-        if (sec.type === "gallery") {
-          const kept = (a.items ?? []).filter((it) => !over(it.media));
-          return kept.length >= 2 ? [{ ...sec, items: kept } as SectionV3] : [];
+    const rank = (pg: Page, i: number) =>
+      pg.slug === "home" && i === 0
+        ? 0
+        : pg.slug === "gallery"
+          ? 1
+          : topicSlugs.has(pg.slug)
+            ? 2
+            : pg.slug === "home"
+              ? 3
+              : 4;
+    const slots = pages
+      .flatMap((pg) => pg.sections.map((_, i) => ({ pg, i })))
+      .sort(
+        (x, y) =>
+          rank(x.pg, x.i) - rank(y.pg, y.i) ||
+          pages.indexOf(x.pg) - pages.indexOf(y.pg) ||
+          x.i - y.i,
+      );
+    const dropped = new Set<SectionV3>();
+    let ix = 0;
+    for (const { pg, i } of slots) {
+      const sec = pg.sections[i]!;
+      const a = sec as unknown as {
+        media?: { url: string };
+        plate?: unknown;
+        items?: Array<{ media?: { url: string }; plate?: unknown }>;
+      };
+      if (sec.type === "gallery") {
+        const kept = (a.items ?? []).filter((it) => !over(it.media));
+        if (kept.length < 2) dropped.add(sec);
+        else (sec as unknown as { items: typeof kept }).items = kept;
+        continue;
+      }
+      if (over(a.media)) {
+        delete a.media;
+        // A page opening that loses its photograph leads with type; only content blocks get a graphic in its place.
+        if (sec.type !== "hero") a.plate = plateFor(++ix + 11);
+      }
+      for (const it of a.items ?? [])
+        if (over(it.media)) {
+          delete it.media;
+          it.plate = plateFor(++ix + 23);
         }
-        if (over(a.media)) {
-          delete a.media;
-          a.plate = plateFor(++ix + 11);
+    }
+    for (const pg of pages) {
+      pg.sections = pg.sections.filter((x) => !dropped.has(x));
+      // A gallery keeps its rows whole: a three-column grid holds three or six, anything else is shown two across.
+      for (const sec of pg.sections) {
+        if (sec.type !== "gallery") continue;
+        const n = sec.items.length;
+        if (sec.layout === "grid" || sec.layout === "mosaic") {
+          if (n === 2 || n === 4 || (sec.layout === "grid" && n === 5))
+            sec.layout = "pair";
+          if (sec.layout === "pair" && n === 5)
+            sec.items = sec.items.slice(0, 4);
+          if (sec.layout === "grid" && (n === 7 || n === 8))
+            sec.items = sec.items.slice(0, 6);
         }
-        for (const it of a.items ?? [])
-          if (over(it.media)) {
-            delete it.media;
-            it.plate = plateFor(++ix + 23);
-          }
-        return [sec];
-      });
+      }
+    }
     // A page that has lost everything but its heading and a button is not a page.
     for (let i = pages.length - 1; i > 0; i--) {
       const pg = pages[i]!;

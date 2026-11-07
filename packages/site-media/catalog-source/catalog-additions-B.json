@@ -1,0 +1,350 @@
+[
+  {
+    "id": "restaurant-grilled-chicken-rice-plate",
+    "file": "restaurant-grilled-chicken-rice-plate.webp",
+    "alt": "A white plate holding a grilled chicken leg, a mound of yellow seasoned rice and sauteed peppers and mushrooms on a wooden table.",
+    "topics": [
+      "menu"
+    ],
+    "recipes": [
+      "restaurant",
+      "bukka"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.5,
+      "y": 0.55
+    },
+    "creator": "Mohammad Fahim",
+    "pexelsId": "40262791",
+    "sourceUrl": "https://www.pexels.com/photo/grilled-chicken-with-jollof-rice-and-vegetables-40262791/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Single plated meal, sharp, warm light; rice looks yellow and spiced (Pexels title calls it jollof, alt text only states what is visible).",
+    "rejectedConcerns": "No text, logos or people. Rice colour is yellow rather than classic red jollof."
+  },
+  {
+    "id": "restaurant-spiced-rice-plantain-plate",
+    "file": "restaurant-spiced-rice-plantain-plate.webp",
+    "alt": "A rectangular white plate with a dome of brown spiced rice topped with a sauce, fried plantain pieces beside it and a small cup of red sauce with a spoon.",
+    "topics": [
+      "menu"
+    ],
+    "recipes": [
+      "restaurant",
+      "bukka"
+    ],
+    "tone": "dark",
+    "focal": {
+      "x": 0.6,
+      "y": 0.55
+    },
+    "creator": "Studio Saiz",
+    "pexelsId": "17952746",
+    "sourceUrl": "https://www.pexels.com/photo/diner-with-rice-and-fried-vegetables-17952746/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Close warm-lit restaurant plate, shallow depth of field, sharp on rice and plantain.",
+    "rejectedConcerns": "Background plate rim has faint blurred print, unreadable. No people. Cropped from taller portrait."
+  },
+  {
+    "id": "restaurant-stew-leaf-bowl",
+    "file": "restaurant-stew-leaf-bowl.webp",
+    "alt": "A leaf-shaped white bowl of orange-red stew with pieces of meat and a pool of finely chopped dark green leafy vegetable, on an orange woven mat.",
+    "topics": [
+      "menu"
+    ],
+    "recipes": [
+      "restaurant",
+      "bukka"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.5,
+      "y": 0.55
+    },
+    "creator": "Tochukwu Ekeh",
+    "pexelsId": "37648018",
+    "sourceUrl": "https://www.pexels.com/photo/traditional-african-soup-with-meat-and-vegetables-37648018/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Single dish close-up, sharp and well lit.",
+    "rejectedConcerns": "No text, logos or people. Exact dish name not determinable from the image."
+  },
+  {
+    "id": "restaurant-plantain-skewers-buffet",
+    "file": "restaurant-plantain-skewers-buffet.webp",
+    "alt": "Stainless steel buffet trays holding fried plantain slices and plantain skewers threaded with onion, tomato and green pepper.",
+    "topics": [
+      "menu",
+      "occasions"
+    ],
+    "recipes": [
+      "restaurant",
+      "bukka"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.35,
+      "y": 0.5
+    },
+    "creator": "Ndagi Idris",
+    "pexelsId": "36458103",
+    "sourceUrl": "https://www.pexels.com/photo/delicious-african-plantain-and-skewers-buffet-36458103/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Chafing-dish buffet, sharp, no people.",
+    "rejectedConcerns": "No text or logos; cropped from portrait so the bottom of the trays and left edge are trimmed."
+  },
+  {
+    "id": "fashion-ankara-ruffle-sleeves",
+    "file": "fashion-ankara-ruffle-sleeves.webp",
+    "alt": "A woman in a pink and silver wax-print dress with tiered ruffled sleeves and a matching head wrap, photographed against a brown studio backdrop.",
+    "topics": [
+      "womenswear",
+      "shoots"
+    ],
+    "recipes": [
+      "fashion",
+      "tailor"
+    ],
+    "tone": "dark",
+    "focal": {
+      "x": 0.5,
+      "y": 0.45
+    },
+    "creator": "real gayu",
+    "pexelsId": "33939066",
+    "sourceUrl": "https://www.pexels.com/photo/elegant-african-woman-in-traditional-ankara-dress-33939066/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Studio portrait of an adult model; garment and print clearly visible, crop shows head to waist.",
+    "rejectedConcerns": "Face is a dominant element: adult model in a normal commercial portrait. Pexels licence forbids implying endorsement/sensitive use. Tiny selvedge-style print text and a small emblem on the fabric are unreadable."
+  },
+  {
+    "id": "fashion-ankara-blue-print-dress",
+    "file": "fashion-ankara-blue-print-dress.webp",
+    "alt": "A smiling woman in a blue and grey leaf-print beaded top with a matching head wrap and black statement earrings and necklace, in front of blurred green hedges.",
+    "topics": [
+      "womenswear",
+      "shoots"
+    ],
+    "recipes": [
+      "fashion",
+      "tailor"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.45,
+      "y": 0.4
+    },
+    "creator": "Skylight Views",
+    "pexelsId": "37550056",
+    "sourceUrl": "https://www.pexels.com/photo/elegant-african-woman-in-traditional-ankara-attire-37550056/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Outdoor portrait, adult model, sharp, garment print and beading clearly visible.",
+    "rejectedConcerns": "Face is a dominant element: adult model in a normal commercial portrait. Pexels licence forbids implying endorsement/sensitive use. Some of the garment is cropped at the bottom."
+  },
+  {
+    "id": "fashion-tailor-cutting-pattern",
+    "file": "fashion-tailor-cutting-pattern.webp",
+    "alt": "Hands in white sleeves cutting orange fabric around a paper pattern piece on a wooden table, with large scissors, a notebook and printed photographs nearby.",
+    "topics": [],
+    "recipes": [
+      "tailor",
+      "fashion"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.55,
+      "y": 0.45
+    },
+    "creator": "Ron Lach",
+    "pexelsId": "9849651",
+    "sourceUrl": "https://www.pexels.com/photo/close-up-vew-of-fashion-designer-cutting-fabrics-9849651/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Tailoring workspace, faceless close-up, sharp.",
+    "rejectedConcerns": "No readable text; background prints are generic and unreadable. Person not identifiable."
+  },
+  {
+    "id": "fashion-sewing-atelier-mannequin",
+    "file": "fashion-sewing-atelier-mannequin.webp",
+    "alt": "A woman in a white shirt with a yellow tape measure marking black fabric on a large table in a small atelier with a dress form, a rail of clothes, a sewing machine and folded fabrics.",
+    "topics": [],
+    "recipes": [
+      "tailor",
+      "fashion"
+    ],
+    "tone": "any",
+    "focal": {
+      "x": 0.55,
+      "y": 0.5
+    },
+    "creator": "Pavel Danilyuk",
+    "pexelsId": "6461104",
+    "sourceUrl": "https://www.pexels.com/photo/woman-putting-markings-on-a-black-fabric-6461104/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Wide atelier scene, warm light, sharp enough at 1600px.",
+    "rejectedConcerns": "Adult worker shown looking down, not the dominant subject. No brand text readable (tiny labels in a box)."
+  },
+  {
+    "id": "fashion-boutique-dress-mannequin",
+    "file": "fashion-boutique-dress-mannequin.webp",
+    "alt": "A pink sundress on a mannequin in a shop doorway beside a rail of white, blue and floral dresses on hangers.",
+    "topics": [
+      "womenswear"
+    ],
+    "recipes": [
+      "fashion"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.2,
+      "y": 0.4
+    },
+    "creator": "Chris F",
+    "pexelsId": "8619007",
+    "sourceUrl": "https://www.pexels.com/photo/pink-dress-on-a-mannequin-8619007/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Shopfront display, sharp, no signage in the crop.",
+    "rejectedConcerns": "No signs, logos or people visible. Garments are not ankara; do not label them as such."
+  },
+  {
+    "id": "beauty-braids-orange-cornrows",
+    "file": "beauty-braids-orange-cornrows.webp",
+    "alt": "Top view of a head with cornrow braids that include thick peach-orange braiding extensions, with soft out-of-focus lights behind.",
+    "topics": [
+      "braids"
+    ],
+    "recipes": [
+      "salon"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.5,
+      "y": 0.55
+    },
+    "creator": "Diana",
+    "pexelsId": "35382770",
+    "sourceUrl": "https://www.pexels.com/photo/colorful-braided-hairstyle-with-bokeh-effect-35382770/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Faceless braiding result, sharp on braids, shallow depth of field, lens flare.",
+    "rejectedConcerns": "No face, text or logos. Age of the person is not determinable (head from above); no identifiable face."
+  },
+  {
+    "id": "beauty-braiding-boho-hands",
+    "file": "beauty-braiding-boho-hands.webp",
+    "alt": "Back view of a person with long boho-style braids and loose curly ends while a second person's hand tidies the tips; a blurred street is behind them.",
+    "topics": [
+      "braids"
+    ],
+    "recipes": [
+      "salon"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.45,
+      "y": 0.5
+    },
+    "creator": "Adenir Figueiredo Carvalho",
+    "pexelsId": "28383173",
+    "sourceUrl": "https://www.pexels.com/photo/styling-braided-hair-in-rio-de-janeiro-28383173/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Braided hair from behind with hands at work, sharp, daylight.",
+    "rejectedConcerns": "The stylist's face is partly visible at the right edge but out of focus and not identifiable. Street setting rather than a salon."
+  },
+  {
+    "id": "beauty-beaded-braids-side",
+    "file": "beauty-beaded-braids-side.webp",
+    "alt": "Close-up of thin braids finished with patterned wooden beads hanging beside an ear with a small hoop earring.",
+    "topics": [
+      "braids"
+    ],
+    "recipes": [
+      "salon"
+    ],
+    "tone": "dark",
+    "focal": {
+      "x": 0.65,
+      "y": 0.6
+    },
+    "creator": "Hannah Bickmore",
+    "pexelsId": "11268995",
+    "sourceUrl": "https://www.pexels.com/photo/close-up-shot-of-a-braided-hair-with-wooden-beads-11268995/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Faceless detail shot, warm low-key light, sharp on beads.",
+    "rejectedConcerns": "Only an ear and neck are visible; no face. Image is fairly dark."
+  },
+  {
+    "id": "beauty-salon-cutting-hands",
+    "file": "beauty-salon-cutting-hands.webp",
+    "alt": "Close-up of a hairdresser's hands holding a comb and thinning scissors to cut brown hair, with loose hair clippings in the air.",
+    "topics": [
+      "cuts"
+    ],
+    "recipes": [
+      "salon"
+    ],
+    "tone": "dark",
+    "focal": {
+      "x": 0.4,
+      "y": 0.45
+    },
+    "creator": "Matheus Wladeka",
+    "pexelsId": "6487888",
+    "sourceUrl": "https://www.pexels.com/photo/close-up-of-the-hands-of-a-hairdresser-at-work-6487888/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Hairdressing close-up, faceless, dark and warm, sharp on comb and scissors.",
+    "rejectedConcerns": "Foreground hand is out of focus. No text or logos. Dark image."
+  },
+  {
+    "id": "beauty-makeup-swatches-arm",
+    "file": "beauty-makeup-swatches-arm.webp",
+    "alt": "A forearm with six swatches of pink, red, orange and yellow makeup, with an eyeshadow palette and a hand blurred behind it.",
+    "topics": [],
+    "recipes": [
+      "makeup"
+    ],
+    "tone": "light",
+    "focal": {
+      "x": 0.45,
+      "y": 0.5
+    },
+    "creator": "George Milton",
+    "pexelsId": "6954002",
+    "sourceUrl": "https://www.pexels.com/photo/crop-makeup-artist-applying-multicolored-eyeshadows-on-wrist-of-customer-6954002/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Colour swatches in focus, faceless.",
+    "rejectedConcerns": "No faces, text or logos legible. Foreground and right side are intentionally blurred."
+  },
+  {
+    "id": "beauty-nails-teal",
+    "file": "beauty-nails-teal.webp",
+    "alt": "Close-up of a hand with long teal nails, one nail with white cloud detail and one pink nail with a teal palm-leaf design, wearing a thin gold and pearl ring.",
+    "topics": [],
+    "recipes": [
+      "nails"
+    ],
+    "tone": "dark",
+    "focal": {
+      "x": 0.5,
+      "y": 0.55
+    },
+    "creator": "Salim Da",
+    "pexelsId": "34971940",
+    "sourceUrl": "https://www.pexels.com/photo/close-up-of-stylish-turquoise-nail-art-34971940/",
+    "licenseVerified": "Pexels photo page read 2026-11-07: licence shown 'Free', Pexels contributor photo, not sponsored (see docs/evidence/creative-vnext/image-licence-audit.json)",
+    "viewedAndVerified": true,
+    "subjectNote": "Sharp nail-art macro on a dark background, faceless.",
+    "rejectedConcerns": "Bottom-edge fingertip is cropped. No text or logos."
+  }
+]

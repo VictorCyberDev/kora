@@ -1,0 +1,167 @@
+[
+  {
+    "pexelsId": "7711168",
+    "status": "rejected",
+    "reason": "Wedding cake (portrait): cake is taller than a 3:2 crop allows, so the top flowers or base would be cut off; background shows partial script lettering."
+  },
+  {
+    "pexelsId": "12616001",
+    "status": "rejected",
+    "reason": "Cake icing reads 'Happy Birthday David' (personal name in readable text) and a hand holding ribbon is in frame."
+  },
+  {
+    "pexelsId": "15419197",
+    "status": "rejected",
+    "reason": "Purple birthday cake with hand lighting a candle: portrait, subject spans most of the height so 3:2 crop would cut it; also shows a hand."
+  },
+  {
+    "pexelsId": "17952748",
+    "status": "rejected",
+    "reason": "Jollof-style rice with fried plantain: not small chops or bakery, shallow dark focus; out of requested coverage."
+  },
+  {
+    "pexelsId": "14043681",
+    "status": "rejected",
+    "reason": "Cake baking in a pan (portrait): unfinished-looking cake, weak composition at 3:2."
+  },
+  {
+    "pexelsId": "5847086",
+    "status": "rejected",
+    "reason": "Raw cookie dough on a tray (portrait): weak composition at 3:2 and low subject value."
+  },
+  {
+    "pexelsId": "19301032",
+    "status": "rejected",
+    "reason": "Autumn birthday cake with sparkler (portrait): cake plus candles span more than a 3:2 crop, would be cut off."
+  },
+  {
+    "pexelsId": "28736731",
+    "status": "rejected",
+    "reason": "Banquet buffet in Enugu: main-course serving with staff in frame; not a requested subject (not small chops or bakery)."
+  },
+  {
+    "pexelsId": "29445730",
+    "status": "rejected",
+    "reason": "Bakery display with chalkboard price labels and shop wording clearly readable (Vietnamese dong prices)."
+  },
+  {
+    "pexelsId": "30387653",
+    "status": "rejected",
+    "reason": "Stack of muffins on blue background (portrait): tall stack would be cut by a 3:2 crop."
+  },
+  {
+    "pexelsId": "31132630",
+    "status": "rejected",
+    "reason": "Bakery case with handwritten price cards ('Lemon Bars $4.75', 'Brownie $4.75') readable."
+  },
+  {
+    "pexelsId": "37324435",
+    "status": "rejected",
+    "reason": "Puff-puff with a poured drink in a printed takeaway box/paper that carries repeated printed branding text; rejected as possible brand and packaging text."
+  },
+  {
+    "pexelsId": "40786340",
+    "status": "rejected",
+    "reason": "Street food vendor bowl of round snacks on a stool: food type could not be verified from the photo, dirt and litter in frame, tomato tin label visible."
+  },
+  {
+    "pexelsId": "40786344",
+    "status": "rejected",
+    "reason": "Same scene as 40786340 with a motorcycle wheel in frame: food type unverified, litter, tin label visible."
+  },
+  {
+    "pexelsId": "36885265",
+    "status": "rejected",
+    "reason": "Cupcakes on a tiered stand (portrait): after a 3:2 crop the top-tier cupcakes were cut off at the frame edge."
+  },
+  {
+    "pexelsId": "37823183",
+    "status": "rejected",
+    "reason": "Chocolate batter being poured into a pan: crop dominated by an orange jug, weak composition."
+  },
+  {
+    "pexelsId": "20067069",
+    "status": "rejected",
+    "reason": "Fried breaded balls on a white platter with sauces on a black background: cuisine unclear (could be non-West-African), so not labelled small chops."
+  },
+  {
+    "pexelsId": "37068875",
+    "status": "rejected",
+    "reason": "Samosas in a catering tray: the tray front carries a stylised lettering-like pattern that could read as a brand or sign; withheld."
+  },
+  {
+    "pexelsId": "36254950",
+    "status": "rejected",
+    "reason": "Blue '80' candles on a chocolate cake: cake barely visible, blurred background has partial 'birthday' script and printed pastry artwork."
+  },
+  {
+    "pexelsId": "18281679",
+    "status": "rejected",
+    "reason": "Fondant cake with a cross motif: religious symbol limits general use, withheld."
+  },
+  {
+    "pexelsId": "3850413",
+    "status": "rejected",
+    "reason": "Unbaked croissants in a dark oven: very dark, sparse composition (surplus)."
+  },
+  {
+    "pexelsId": "33554551",
+    "status": "rejected",
+    "reason": "Swirled pastries in an oven (portrait, very dark): not processed after screening, surplus."
+  },
+  {
+    "pexelsId": "29051739",
+    "status": "not-included-surplus",
+    "reason": "Small white cakes with orchids: good quality, held back to keep to 20 images (similar to accepted wedding cakes)."
+  },
+  {
+    "pexelsId": "30233153",
+    "status": "not-included-surplus",
+    "reason": "Three white cakes with flowers and kiwi desserts: good quality, surplus."
+  },
+  {
+    "pexelsId": "19870076",
+    "status": "not-included-surplus",
+    "reason": "Cake on a dessert table outdoors: good quality, surplus."
+  },
+  {
+    "pexelsId": "29037272",
+    "status": "not-included-surplus",
+    "reason": "Samosas in colander (close-up): good quality, surplus (near-duplicate of 29037265)."
+  },
+  {
+    "pexelsId": "29037266",
+    "status": "not-included-surplus",
+    "reason": "Samosas in colander with spatula: good quality, surplus (near-duplicate)."
+  },
+  {
+    "pexelsId": "29037270",
+    "status": "not-included-surplus",
+    "reason": "Samosas in colander (portrait): good quality, surplus (near-duplicate)."
+  },
+  {
+    "pexelsId": "37153389",
+    "status": "not-included-surplus",
+    "reason": "Samosas on paper towel (overhead): good quality, surplus."
+  },
+  {
+    "pexelsId": "30350350",
+    "status": "not-included-surplus",
+    "reason": "Bread loaves on a cooling rack: good quality, surplus."
+  },
+  {
+    "pexelsId": "35815220",
+    "status": "not-included-surplus",
+    "reason": "Round floured loaves in a wicker basket: good quality, surplus."
+  },
+  {
+    "pexelsId": "30666738",
+    "status": "not-included-surplus",
+    "reason": "Decorative artisan bread assortment: good quality, surplus."
+  },
+  {
+    "pexelsId": "32626985",
+    "status": "not-included-surplus",
+    "reason": "Ciabatta on a bakery rack (portrait): good quality, surplus."
+  }
+]

@@ -630,7 +630,11 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
     ? `<div><h4>Get in touch</h4><ul>${contact}</ul></div>`
     : "";
   const credits = creditedMedia(spec);
-  const legal = `<p class="legal">${esc(spec.footer.text || `© ${b.name}`)}</p>${credits.length ? `<p class="legal credits">Photos: ${credits.map((x) => `<a href="${esc(x.creator)}" rel="noopener noreferrer">${esc(x.name)}</a> on <a href="${esc(x.providerUrl)}" rel="noopener noreferrer">${esc(x.provider)}</a>`).join(", ")}</p>` : ""}`;
+  // Pictures from Kora's catalogue stand in for the owner's own until they add theirs; the footer says so plainly.
+  const illustrative = JSON.stringify(spec.pages).includes(
+    '"reviewStatus":"kora-curated"',
+  );
+  const legal = `<p class="legal">${esc(spec.footer.text || `© ${b.name}`)}</p>${illustrative ? `<p class="legal credits">Photography on this site is illustrative.</p>` : ""}${credits.length ? `<p class="legal credits">Photos: ${credits.map((x) => `<a href="${esc(x.creator)}" rel="noopener noreferrer">${esc(x.name)}</a> on <a href="${esc(x.providerUrl)}" rel="noopener noreferrer">${esc(x.provider)}</a>`).join(", ")}</p>` : ""}`;
   const brand = `<div><a class="brand" href="${esc(relFrom(from, "home"))}">${esc(b.name)}</a></div>`;
   let body: string;
   if (g.footerStyle === "brand-heavy")
