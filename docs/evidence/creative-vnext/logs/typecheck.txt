@@ -18,3 +18,22 @@ packages/site-serving typecheck: Done
 services/action-executor typecheck$ tsc -p tsconfig.json --noEmit
 packages/site-media typecheck: Done
 services/incident-engine typecheck$ tsc -p tsconfig.json --noEmit
+packages/topology typecheck: Done
+services/policy-engine typecheck$ tsc -p tsconfig.json --noEmit
+services/action-executor typecheck: Done
+services/reasoner typecheck$ tsc -p tsconfig.json --noEmit
+services/incident-engine typecheck: Done
+apps/web typecheck: Done
+services/policy-engine typecheck: Done
+services/reasoner typecheck: Done
+apps/demo-service typecheck$ tsc -p tsconfig.json --noEmit
+packages/site-schema typecheck$ tsc -p tsconfig.json --noEmit
+apps/demo-service typecheck: Done
+packages/site-schema typecheck: Done
+apps/site-host typecheck$ tsc -p tsconfig.json --noEmit
+packages/growth typecheck$ tsc -p tsconfig.json --noEmit
+packages/growth typecheck: Done
+apps/site-host typecheck: Done
+apps/api typecheck$ tsc -p tsconfig.json --noEmit
+apps/api typecheck: Done
+EXIT=0
