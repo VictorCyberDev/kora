@@ -63,6 +63,8 @@ export interface BusinessTruth {
   missing: string[];
   inferences: Array<{ statement: string; basis: string }>;
   prohibited: string[];
+  /** Owner-supplied facts that contradict each other. Neither side is published; the owner is asked which is right. */
+  conflicts: string[];
   can: {
     phone: boolean;
     whatsapp: boolean;
@@ -101,8 +103,46 @@ export const NEVER_INVENT = [
 
 const digitsOf = (s: string) => s.match(/\d[\d,.]*/g) ?? [];
 
+/**
+ * The same days given with different hours ("Mon-Fri 9-5" and "Mon-Fri 10-8") cannot both be published, and Kora must not
+ * pick one. Every entry for such a day label is dropped, the conflict is recorded, and the site omits hours until the owner
+ * resolves it. Identical duplicates are simply merged.
+ */
+export function reconcileHours(brief: ParsedBrief): {
+  brief: ParsedBrief;
+  conflicts: string[];
+} {
+  const hours = brief.hours ?? [];
+  if (!hours.length) return { brief, conflicts: [] };
+  const norm = (x: string) => x.toLowerCase().replace(/\s+/g, " ").trim();
+  const byDays = new Map<string, Set<string>>();
+  for (const h of hours) {
+    const k = norm(h.days);
+    byDays.set(k, (byDays.get(k) ?? new Set()).add(norm(h.hours)));
+  }
+  const conflictDays = new Set(
+    [...byDays].filter(([, v]) => v.size > 1).map(([k]) => k),
+  );
+  const seen = new Set<string>();
+  const kept = hours.filter((h) => {
+    const k = norm(h.days);
+    if (conflictDays.has(k)) return false;
+    const id = `${k}|${norm(h.hours)}`;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+  });
+  const conflicts = [...conflictDays].map(
+    (d) => `Two different opening hours were given for ${d}`,
+  );
+  if (kept.length === hours.length && !conflicts.length)
+    return { brief, conflicts };
+  return { brief: { ...brief, hours: kept }, conflicts };
+}
+
 export function buildTruth(input: CreativeBrief): BusinessTruth {
-  const brief = briefSchema.parse(input);
+  const parsed = briefSchema.parse(input);
+  const { brief, conflicts } = reconcileHours(parsed);
   const facts: TruthFact[] = [
     { key: "name", value: brief.name, class: "owner-supplied" },
     { key: "description", value: brief.description, class: "owner-supplied" },
@@ -172,6 +212,7 @@ export function buildTruth(input: CreativeBrief): BusinessTruth {
     missing,
     inferences,
     prohibited: [...NEVER_INVENT],
+    conflicts,
     can,
     suppliedNumbers,
   };

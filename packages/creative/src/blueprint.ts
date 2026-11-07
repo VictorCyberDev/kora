@@ -685,7 +685,9 @@ export function buildBlueprint(
   const followUp =
     ambiguous && !(b.services ?? []).length
       ? "What are the main things you offer? One line is enough, and you can skip this."
-      : null;
+      : truth.conflicts.length
+        ? `${truth.conflicts[0]}, so none are shown. Which are right?`
+        : null;
 
   const provenance: ProvenanceRecord[] = [
     {

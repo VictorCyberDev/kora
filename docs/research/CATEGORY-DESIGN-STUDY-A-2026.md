@@ -1,0 +1,275 @@
+# Category Design Study A (2026-11-07)
+
+Scope: seven categories for Kora's generator: artisan bakery, celebration-cake business, small-chops / event catering, restaurant, premium hair salon, barbering business, fashion retail. Machine-readable rules: `docs/research/data/category-design-principles-A.json`.
+
+These are principles derived from structure, not designs to copy. No copy, layouts or assets are reproduced.
+
+## Method and limits (read first)
+
+- Sites were found through award lists, agency case studies and "best X websites" roundups (WebSearch, standard mode), then each homepage was fetched (WebFetch) on 2026-11-07. About 42 search/fetch calls were used.
+- WebFetch returns a text conversion of the page, summarised by a small model. So **section order, nav items, CTA labels, forms, trust elements and page links are reliable; typography (font families, scale, contrast), colour, image subject (alt text is often empty), sticky behaviour and true mobile layout are mostly not observable.** Where a finding says "inferred", it comes from markup clues (duplicated menu, mobile-only image files), not from seeing the phone layout. No typography claim about a specific font is made anywhere in this study.
+- Roundup articles are mostly written by website builders and agencies, so they were used to find candidates, never as evidence of design quality. Facts from search snippets (not fetched) are labelled as such and not counted in support figures.
+- "Support: n of m" counts only sites actually read for that category. Sites that failed to load or came back thin are excluded from m.
+
+## Evidence strength
+
+| Category | Strength | Why |
+|---|---|---|
+| Restaurant | Strong | 3 of 3 readable, consistent patterns (two use the same booking-platform form) |
+| Barbershop | Strong | 4 of 5 readable, 4 of 4 agree on booking and locations |
+| Celebration cakes | Medium to strong | 4 readable, but only 1 (Anges de Sucre) is a full bespoke-plus-ready-made model; Sylvia Weinstock thin, Lily Vanilli unreadable |
+| Bakery | Medium | 3 readable, but all three are multi-site or large; no small single-shop artisan bakery with a custom domain was read |
+| Fashion retail | Medium | 2 full reads plus 1 truncated; Reformation and COS blocked (403) |
+| Hair salon | Weak | 3 readable but all are retail-heavy hybrids; the one service-led premium salon tried (Meche) returned 503 |
+| Small chops / event catering | Weak for small chops, medium for event catering | Two real catering sites; the only small-chops page read is a small independent page, not an award-listed design; smallchops.ng could not be reached |
+
+## Sites that could not be read
+
+- smallchops.ng: DNS lookup blocked in this session (not in the allowed network domains).
+- mechesalon.com, huckle.co.uk: HTTP 503.
+- thereformation.com, cos.com: HTTP 403.
+- lilyvanilli.com: empty body (likely JS-rendered). zelieforshe.com: returned an unrelated page.
+- sylviaweinstock.com: loaded but only a founder letter and 4 links; not used for counts.
+- staud.clothing: loaded but truncated after three modules; counted only for what was seen.
+
+---
+
+## 1. Artisan bakery
+
+Sites read: Fabrique (fabrique.se), Tartine (tartinebakery.com), GAIL's (gails.com; the capture mixes a Breakfast collection banner with the homepage). All read 2026-11-07.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | Find the nearest shop and hours; pre-order or special-order a cake or bread; buy a gift; for the larger brands, catering and nationwide shipping. |
+| Homepage hierarchy | Fabrique: statement hero, where we are, image pair, gift cards, footer. Tartine: welcome hero with location cards, promo cluster (join, shipping, special-order cakes, pre-orders, gift cards), video, who we are, press quote, books, contact. GAIL's: gifting feature, three tiles, seasonal carousel, banners, gift guide by person, catering banner, newsletter. |
+| Navigation | 4, 5 and 6 top-level items. Labels are task-based: Locations, Craftsmanship/Bread, About, Order, Visit Us. Search and menu are utilities. Sticky: not determinable. |
+| Imagery | Tartine shows bakers at work next to cake and tart order blocks. Fabrique uses an image pair mid-page. GAIL's uses lifestyle, product and banner graphics (some headlines baked into images). Subjects mostly unreadable. |
+| Typography | Fabrique's hero headline is all caps; GAIL's has some caps headings. Font families and scale unreadable. |
+| Density | Fabrique is restrained (4 content blocks). Tartine and GAIL's are 9 to 12 promotional modules. |
+| Personality | Fabrique: plain, confident, short. Tartine: craft and authorship (books, press). GAIL's: seasonal, gifting-led, ethical sourcing. |
+| Page architecture | Locations (with per-site pages), About/story/bread, Journal, Press, Jobs, Gift cards, Corporate/catering, legal. |
+| Trust | No star ratings on any. Substitutes used: ingredient and method statement, press quote (Vogue), published books, producers and impact pages, allergen and FAQ pages, scarcity labels ("sold out"). |
+| Conversion | Fabrique: no ordering, phone and email in footer only. Tartine: Order button opens a location picker then external ordering; seven-day notice for special-order cakes; Goldbelly shipping; gift cards. GAIL's: basket with 20 pound minimum, 11am next-day cutoff, postcode check, pre-order hampers. No phone shown on Tartine or GAIL's homepage; no WhatsApp anywhere. |
+| Mobile | Menu toggle on all three; duplicated blocks suggest separate responsive variants (inferred). |
+
+### Rules (also in JSON)
+
+1. Navigation: keep to 4-6 task-named items; search and menu are utilities. (3 of 3)
+2. Architecture: "where to find us" is a nav item or sits directly under the hero. (3 of 3)
+3. Hero: a short statement plus one routing action, not many CTAs. (2 of 3)
+4. Conversion: split ordering by intent (walk-in, pre-order/special order, gifting, catering/shipping). (2 of 3)
+5. Conversion: state lead time, cutoff or minimum at the order entry. (2 of 3)
+6. Conversion: gift cards or gifting is visible. (3 of 3)
+7. Trust: with no reviews, use provenance (ingredients, method, producers, books, one press quote, founding year). (3 of 3)
+8. Imagery: show the making beside the finished product, near custom or special orders. (1 of 3 confirmed)
+9. Density: single-shop bakeries stay restrained; long promo stacks belong to multi-site or e-commerce bakeries. (1 of 3 minimal)
+10. Typography: short all-caps display headline, live text rather than baked into images; fonts unreadable. (2 of 3, casing only)
+
+---
+
+## 2. Celebration-cake business
+
+Sites read: Anges de Sucre (angesdesucre.com), Black Velvet Cakes (blackvelvetcakes.com.au), Peggy Porschen (peggyporschen.com, a parlour and shop hybrid), Charm City Cakes (charmcitycakes.com). Sylvia Weinstock (thin) and Lily Vanilli (empty) not counted.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | "I need a cake for [occasion] by [date]": pick a ready-made cake and have it delivered, or commission a bespoke design; some need it today. |
+| Homepage hierarchy | Anges de Sucre (the most complete model): hero cake photo with area eyebrow and two CTAs (Shop / Bespoke), tagline, three-track selector, seasonal feature, four priced favourites, press strip, bespoke feature with price and four-step process, baker story, newsletter. Black Velvet: delivery headline with volume claim, 16 occasion tiles, cupcake tiles, delivery/store blocks. Charm City: hero carousel, four order tiles, gallery teaser, classes, merch, Instagram grid. Peggy Porschen: ten stacked image tiles, brand statement. |
+| Navigation | Anges 6 (with a 53-link selector mega-menu by occasion, age, recipient, style, flavour); Black Velvet 6; Peggy Porschen 5 plus Book a Table; Charm City 9 (Order folder plus 8). Direct channels in nav: WhatsApp (Anges), phone bar and 24/7 chat (Black Velvet). |
+| Imagery | Cakes as the hero subject at Anges (full-width celebration cake) and Charm City (carousel of finished cakes). Peggy Porschen uses square tiles mixing cakes, tea and gifts. Others unreadable. |
+| Typography | Anges hero headline uppercase with large display headings. Fonts unreadable elsewhere. |
+| Density | Medium to long single scroll with card grids and tiles. |
+| Personality | Anges: refined, craft-led, "delivered by us, with care". Black Velvet: volume and speed. Charm City: playful, celebrity-founder. Peggy Porschen: heritage, feminine, boutique. |
+| Page architecture | Shop collections by product type and occasion, Bespoke/Custom page and gallery, Same-day, Weddings, Gift cards, Visit, About, FAQs, Care guides, Allergen, Contact. |
+| Trust | No star-review widget on any. Substitutes: press strip, "350,000+ celebrations", founder or TV brand, longevity, ingredient sourcing, Instagram grid. Black Velvet claims "Google 5-star" in copy only. |
+| Conversion | Anges: "From" prices, WhatsApp, same-day page, bespoke from 500 pounds with a four-step process, commission CTA. Charm City: custom cakes go to a separate inquiry page. Black Velvet: shop and delivery calculator; custom is a footer gallery. Peggy Porschen: online collections; no custom enquiry, phone or WhatsApp on homepage. Search snippets (not fetched) show other cake sites ask for date, size, flavour, dietary needs and inspiration images, state lead time, and sometimes quote a minimum price. |
+| Mobile | Drawer menus on 3 of 4 confirmed (Anges has accordion groups for the selector); separate responsive images (inferred). |
+
+### Rules (also in JSON)
+
+1. Two explicit paths: ready-made and bespoke. (2 of 4)
+2. Nav of 5-6 items. (3 of 4)
+3. Browse by occasion, age, recipient, style. (2 of 4)
+4. Bespoke path states a starting price and a numbered process. (1 of 4 on the homepage)
+5. Show "From" prices on 3-4 featured cakes. (1 of 4)
+6. Direct-contact channel in the header (WhatsApp, phone, chat). (2 of 4)
+7. State delivery or collection coverage and speed near the top. (2 of 4)
+8. Hero image is the cake itself. (2 of 4 confirmed)
+9. Trust without reviews: press strip, volume claim, credentials, longevity, Instagram. (4 of 4 use non-review cues)
+10. Named gallery destination, teased on the homepage. (2 of 4)
+
+---
+
+## 3. Small chops / event catering
+
+Sites read: Contigo Catering (contigocatering.com, Austin), a catering site at cravecatering.com that is actually the Minneapolis / Twin Cities operator (Kaskaid Hospitality, not the Austin brand named in a roundup), and a small independent small-chops page (lagraceevents.pages.dev/small-chops, Saki, Oyo State). The third is not an award-listed or agency-designed site; it is included because it is the only small-chops page that loaded and it shows the WhatsApp-first flow. smallchops.ng was unreachable. Treat small-chops-specific rules as weak.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | Event host or office manager sizing a quote: "can you cater my wedding / party / corporate lunch for N people, and what will it cost?" For small chops specifically: order platters or packs for a date, usually by messaging. |
+| Homepage hierarchy | Contigo: hero statement, intro, six service blocks with photos, quote block, Instagram, FAQs, footer. Crave: popups with call buttons, about, catering, service staff, slideshow, ~14-tile captioned gallery, newsletter, location, contact. La Grace: hero with one quote button, eight-item offer list, "ready to book" (WhatsApp / Call), 6-question FAQ, cross-sell cards, footer with floating WhatsApp. |
+| Navigation | Contigo: 3 items plus a highlighted START PLANNING and cart; dropdown of occasions (Weddings, Corporate, Private, Pizza Oven, Bar Carts, Add-Ons, Menus). Crave: 6 items. La Grace: about 7 plus contact strip with phone, WhatsApp, Instagram. |
+| Imagery | One photo per service block (Contigo); captioned event and food gallery (Crave); La Grace page photos not described in the capture. |
+| Typography | Unreadable on all three (heading hierarchy only). |
+| Density | Short single-page flows (anchor navigation at Crave and La Grace); Contigo longer but still a linear list of blocks. |
+| Personality | Contigo: hospitality and polished. Crave: warm, direct, phone-first. La Grace: friendly, practical, local. |
+| Page architecture | Occasion pages (weddings, corporate, private), menus, gallery/portfolio, venues/partners, FAQ, team, quote form, contact. |
+| Trust | No reviews or testimonials on any. Substitutes: Instagram thumbnails, captioned gallery, parent hospitality group or 12 partner restaurants, stated coverage area, FAQ answers, free quote offer. |
+| Conversion | Contigo: highlighted header CTA and mid-page button to a quote form, phone numbers in footer. Crave: tap-to-call repeated, email, no form, no online ordering. La Grace: hero button opens a pre-filled WhatsApp message, Call Us, floating WhatsApp, quote-only pricing, platters of 50 to 1,000+ pieces, guest-count prompt. Search results (not fetched) say Lagos small-chops vendors commonly take orders by WhatsApp. |
+| Mobile | Collapsed menu on all three (inferred); tap-to-call and a floating WhatsApp button at two. |
+
+### Rules (also in JSON)
+
+1. Primary CTA is a quote or enquiry, not add-to-cart. (3 of 3)
+2. For small chops, make WhatsApp the primary channel with a pre-filled message. (1 of 3 read; low confidence)
+3. Repeat the contact action in several places. (3 of 3)
+4. Nav of 7 or fewer; occasion pages in a dropdown. (3 of 3 count; 1 of 3 occasion pages)
+5. Offer as 6-8 cards or list items plus cross-sell. (2 of 3)
+6. No prices on the homepage; help sizing with platter sizes and guest-count prompts. (3 of 3 no prices)
+7. Homepage FAQ: coverage, minimum order, lead time, bundling. (2 of 3)
+8. Trust substitutes: gallery of real events, Instagram, affiliation, coverage area. (3 of 3)
+9. Real event and food photography, one per service or a captioned gallery. (2 of 3 confirmed)
+10. Mobile: collapsed menu plus a persistent contact action. (3 of 3 menu; 2 of 3 contact)
+
+---
+
+## 4. Restaurant
+
+Sites read: Pizzeria Vetri (pizzeriavetri.com), Gramercy Tavern (gramercytavern.com), Dishoom (dishoom.com). Vetri and Gramercy are on the same booking-platform template; Dishoom is a custom editorial site.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | See the menu, check location and hours, book a table (or order online/collect), find private dining or a gift voucher. |
+| Homepage hierarchy | Vetri: hero tagline and locations line, intro, dough, oven, seasonal items, limoncello with order link, footer, signup, reservation form. Gramercy: two stacked venue blocks (Dining Room, Tavern) each with View Menus, utility links, footer. Dishoom: hero with Book/View menus, manifesto, seasonal tiles, gallery, cafes list, seasonal feasts, chef collaboration, recipes, store, awards, newsletter, footer. |
+| Navigation | 7, 7 and 5 top-level items. Reservation/Book is a nav item or header button in all three; menus one click away. Vetri's mobile drawer lists 13 items against 7 on desktop. |
+| Imagery | Dishoom: large food and interior photography, looping galleries. Others unreadable (Gramercy's alt text mislabels the Tavern image). |
+| Typography | Hierarchy only. Dishoom uses uppercase eyebrow labels and large display headings per the structure; fonts unreadable. |
+| Density | Gramercy minimal (2 blocks), Vetri about 7, Dishoom 12+. |
+| Personality | Vetri: precise, process-driven ("4 days. 4 ingredients."). Gramercy: understated, classic. Dishoom: storytelling and warm. |
+| Page architecture | Menus, locations/venues, private dining/events/groups, classes, catering, gift cards, at-home/store, about/story, press, careers, contact, recipes/journal. |
+| Trust | No star reviews on any. Dishoom lists awards and B Corp. Vetri uses process claims. Gramercy only a Press link. |
+| Conversion | Reservation form with location, party size 1 to 8+, date, optional time, "Find A Table" (Vetri and Gramercy); Book a table repeated (Dishoom). Order Online is a nav item at Vetri. No phone number on any homepage. |
+| Mobile | Toggle/drawer on all three (inferred). |
+
+### Rules (also in JSON)
+
+1. Reservation or Order is a persistent header action, repeated through the page. (3 of 3)
+2. Nav of 5-7 items; menus one click away. (3 of 3)
+3. Structure by venue or room when there is more than one. (3 of 3)
+4. Secondary revenue (private dining, catering, classes, gift cards, at-home) lives in nav entries. (3 of 3)
+5. Hero is a short fragment, not a paragraph. (2 of 3)
+6. Take reservations through a form or widget; no homepage shows a phone number. (3 of 3)
+7. Trust: process claims, awards if real, press link; no review widgets. (3 of 3 avoid review widgets)
+8. Page length tracks the brand. (range across 3 of 3)
+9. Large real food and interior photography; 1-3 seasonal feature tiles. (1 of 3 confirmed imagery; 2 of 3 seasonal)
+10. Mobile: drawer, but keep Book visible outside it. (3 of 3)
+
+---
+
+## 5. Premium hair salon
+
+Sites read: Hershesons (hershesons.com), Bleach London (bleachlondon.com), Toni&Guy (toniandguy.com). **All three are retail-heavy hybrids.** A service-led premium salon (Meche) returned 503. Search results mentioned agency case studies (Veloura, Pro Hair Lab, Aurelia template) that follow a "hero, services, before/after, reviews, FAQ, booking form" pattern, but those were not fetched and are not counted.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | Book a stylist or find a nearby salon; judge quality (who cuts, results, ratings); for these brands, also buy products. |
+| Homepage hierarchy | Hershesons: announcement bar, hero with Shop/Book, mission, Our Spaces with rating, press logos, hero products, award badges, product spotlight with reviews, journal, six stylists, newsletter. Bleach: promo strip, shoppable colour tiles, advice, salon cards, testimonial carousel, founder, Instagram. Toni&Guy: promo strip, three entry tiles (Shop, Find a Salon, Our Experts), hero carousel, bestsellers, product carousel, brand strip, journal. |
+| Navigation | 7, 6 and 6 top-level items. Book is in nav at Hershesons (button, external system) and Toni&Guy; Bleach has no booking link on the homepage. |
+| Imagery | Model and stylist photography, product packshots, customer photos (Bleach); subjects mostly unreadable. |
+| Typography | Toni&Guy uses uppercase headlines with underline rules; Bleach uses all-caps labels. Fonts unreadable. |
+| Density | High (13 to 17 sections). |
+| Personality | Hershesons: accessible expertise ("Great Hair Made Easy"). Bleach: bold, playful, colour-led. Toni&Guy: heritage, professional. |
+| Page architecture | Salons/stores, services (not on the homepage), team/experts, academy, journal, shop, gift cards, careers. |
+| Trust | Hershesons: star rating and review counts, Google 4.8 from 1,684 reviews, nine press quotes plus logo strip, about two dozen award badges, named stylists. Bleach: review counts, testimonial carousel with photos, founder, PETA badge. Toni&Guy: 750+ salons, 60+ years, backstage-at-fashion-week content, no review data. |
+| Conversion | External booking link; Find a Salon tiles; no phone or WhatsApp on any homepage; no service prices on any. Two Toni&Guy Book buttons link back to the homepage (a defect). |
+| Mobile | Drawer with back-navigation (Hershesons, Toni&Guy); separate responsive images (inferred). |
+
+### Rules (also in JSON)
+
+1. Book as a persistent nav button plus hero button. (2 of 3)
+2. "Find a salon / our spaces" as its own entry. (3 of 3)
+3. Surface the people: stylist cards with specialties, or a founder profile. (2 of 3 team module)
+4. Lead trust with a number (rating and count, salons, years); without reviews use credentials, academy, awards, press. (3 of 3)
+5. No service prices on the homepage; link to a services page. (3 of 3)
+6. Editorial journal block. (3 of 3)
+7. Slim announcement bar. (3 of 3)
+8. Hero: short statement, two buttons; nav 6-7. (2 of 3 hero; 3 of 3 nav)
+9. Mobile drawer with Book visible outside it. (2 of 3 confirmed)
+10. Caution: these are dense retail hybrids; a service-only salon should drop product grids and keep hero, services, team, gallery, location, booking. (not a rule to copy)
+
+---
+
+## 6. Barbering business
+
+Sites read: Birds Barbershop (birdsbarbershop.com), Murdock London (murdocklondon.com), Blind Barber (blindbarber.com), Floyd's 99 (floydsbarbershop.com). Huckle (503) not read.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | Book a cut quickly (or walk in), choose the nearest shop, see the vibe and the work; for grooming brands, also buy products. |
+| Homepage hierarchy | Birds: hero, three value callouts, award badge, intro, five service tiles, testimonials, eleven location tiles, music strip, Instagram feed, closing CTA, footer. Floyd's: banner hero with promos, walk-in welcome, "Floyd's Promise" list, guarantee with 3-up haircut gallery, extras, hiring. Murdock: promo bar, locations mega-menu, promo hero, best sellers, barbering banner, new items, journal, newsletter. Blind Barber: fragrance hero, product grid, promo blocks, shops, bars, founder note, press. |
+| Navigation | Birds 5, Floyd's 4, Blind Barber 4 (service-led brands); Murdock 9 (product-led). Book is a button/first item in all four. |
+| Imagery | Birds uses illustrated icons plus location photos; Floyd's uses a 3-up haircut gallery and a team photo; product-led brands use packshots. Hero subjects mostly unreadable. |
+| Typography | Birds mixes caps and sentence-case headings with a casual headline voice. Fonts unreadable. |
+| Density | Medium. Service-led pages are 8-13 blocks; product-led pages are shop grids with one barbering banner. |
+| Personality | Birds: friendly, local, playful ("free beverages", music). Floyd's: casual and promise-led. Murdock: premium British grooming. Blind Barber: lifestyle (complimentary cocktail, bars). |
+| Page architecture | Services, locations/map, barbers (Murdock only), gift cards, shop (product brands), journal/blog, careers, accessibility. |
+| Trust | Birds: Austin Chronicle award badge, three named testimonials, "locally owned". Blind Barber: five press outlets, founder note. Floyd's: 7-day worry-free guarantee. Murdock: free delivery, payment logos. |
+| Conversion | Book Now persistent in the header at 4 of 4, opening a popup (Birds) or external system or app. Walk-ins welcomed at Birds and Floyd's. No phone number on any homepage; no prices on any. |
+| Mobile | Duplicate mobile menu markup at 4 of 4; Birds repeats Book Now and has separate mobile location tiles (inferred); Blind Barber promotes an app. |
+
+### Rules (also in JSON)
+
+1. Persistent Book Now in the header; repeat in hero and closing CTA. (4 of 4)
+2. Location choice first for multi-shop brands. (4 of 4)
+3. Name services by the cut; prices stay off the homepage. (2 of 4 name by cut; 0 of 4 prices)
+4. Say walk-ins are welcome if true. (2 of 4)
+5. Trust without a review wall: local award, guarantee, press, founder note, or 2-3 short named testimonials. (3 of 4)
+6. Personality through voice and amenities. (3 of 4)
+7. Decide product versus service up front. (2 of 4 service-led, 2 of 4 product-led)
+8. Service-led barbers use 4-5 nav items. (3 of 4)
+9. Real shop photography, a 3-up gallery of recent cuts, optional Instagram strip. (2 of 4; Instagram 1 of 4)
+10. Mobile: repeated Book buttons, booking in a popup or app. (4 of 4 menu markup; 2 of 4 repeated CTAs)
+
+---
+
+## 7. Fashion retail
+
+Sites read: GANNI (ganni.com, US), Staud (staud.clothing; capture truncated after three modules), Everlane (everlane.com, women's). Reformation and COS returned 403; Zelie for She was not read.
+
+| Dimension | Findings |
+|---|---|
+| Customer intent | Browse the new season, find a category fast, see price and colours, buy; secondary: gifts, sale, store locator, brand story. |
+| Homepage hierarchy | GANNI: welcome-offer bar, header utilities, model-led seasonal hero (one CTA), product carousel with quick buy, category tiles, bags carousel, more tiles, editorial promos, third carousel, collaboration banner, newsletter, footer. Everlane: promo bar, gift-guide hero, sale banner, brand statement, feature tiles, six flat-lay category tiles, favourites carousel, editorial 3-up, stores, UGC shop-the-look, impact report, newsletter. Staud: new-arrivals hero with one button, five category tiles, two feature blocks (rest unknown). |
+| Navigation | 9, 12 and 11 top-level mega-menu items with image tiles. Search, bag, and account or wishlist always visible. GANNI mobile uses a drill-down drawer with Back links. Sticky not determinable. |
+| Imagery | GANNI model-led hero and tiles, product shots in carousels. Everlane flat-lay category tiles and lifestyle/UGC. Staud unreadable. Separate mobile hero/feature image files at all three. |
+| Typography | Everlane: uppercase CTAs with arrow prefixes, headlines mix sentence case with uppercase emphasis. Others unreadable. |
+| Density | Long, 12 to 14 alternating modules at GANNI and Everlane. |
+| Personality | GANNI: playful, editorial. Everlane: transparent, responsible, plainspoken. Staud: unreadable. |
+| Page architecture | New In, categories, gifts, sale, collaborations, brand world/editorial, stores, help (delivery, returns), sustainability reports. |
+| Trust | No star reviews on either full homepage. Substitutes: free-shipping threshold and returns window (Everlane in the promo bar and cart), delivery and returns links, B Corp, impact report, store locator, live chat in help. |
+| Conversion | First-order incentive in a top bar and the newsletter at GANNI (15 percent) and Everlane (20 percent); quick buy with swatches at GANNI; shop-the-look quick view at Everlane. No WhatsApp. |
+| Mobile | Dedicated mobile image crops (3 of 3), drawer with drill-down (GANNI confirmed), others inferred. |
+
+### Rules (also in JSON)
+
+1. Hero: one seasonal image, one headline, one or two CTAs. (3 of 3)
+2. Category tiles (4-6) within the first few modules. (3 of 3)
+3. Deep mega-menu (9-12 items) with search, bag, account/wishlist always visible. (3 of 3)
+4. Product cards with price, swatches, badges, quick-buy or quick-view. (2 of 3)
+5. First-order incentive in the promo bar and newsletter. (2 of 3)
+6. Trust: shipping threshold, returns window, certifications, impact report, store locator; no review wall. (2 of 2 readable)
+7. Imagery by job: model-led for campaigns, flat-lay for browsing, optional UGC. (2 of 3 confirmed)
+8. About 12-14 alternating full-width and grid modules ending in newsletter and a long footer. (2 of 3 fully read)
+9. Separate mobile crops; drill-down drawer. (3 of 3 mobile assets; 1 of 3 drawer confirmed)
+10. Editorial layer between product modules. (2 of 3)
+
+---
+
+## Cross-category patterns (useful for the generator)
+
+- **A single primary action per business model:** reservation or order (restaurant), book (salon, barber), quote or WhatsApp (catering, small chops), order or commission (bakery, cakes), shop (fashion). It is persistent in the header and repeated at the end of the page.
+- **Reviews are rarely on the homepage.** Across the 23 homepages counted, almost none rely on a star-review widget as their main trust device (Hershesons and Bleach London are the exceptions, with review counts and testimonials; Birds shows three short testimonials). Real substitutes seen: provenance and process claims, press strips, awards, founder or baker story, numbers (salons, years, celebrations), guarantees, a local "best of" badge, captioned galleries of real work, Instagram grids, coverage area and FAQ answers. A generator can use these when a business has no reviews, but should not invent figures, awards or press.
+- **Phone numbers are almost never on the homepage** of the larger brands (restaurants, salons, barbers). The small or event-led operators (Crave, La Grace, Black Velvet, Charm City footer) do show phone or WhatsApp, which is the better fit for Kora's Nigerian small-business users.
+- **Prices:** service prices are kept off homepages (salon, barber, catering); "From" prices appear only on a few featured cakes.
+- **Defects seen on professionally built sites** (avoid): headlines baked into images (GAIL's), wrong alt text (Gramercy), Book buttons that link back to the homepage (Toni&Guy), unconfigured form messages (Charm City), template tags leaking into markup (Blind Barber, GANNI), mislinked tiles (Everlane).
+- **Gaps this study could not close:** typography (fonts, scale, contrast), real mobile layout, sticky behaviour, and a service-led premium salon. A follow-up with rendered screenshots would be needed for those.

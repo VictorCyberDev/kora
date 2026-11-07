@@ -4,6 +4,7 @@ import {
   assertKnowledgeSafe,
   blueprintIssues,
   buildBlueprint,
+  buildTruth,
   claimIssues,
   classifyVertical,
   MAX_PAGES,
@@ -163,5 +164,69 @@ describe("business blueprint", () => {
     });
     expect(bp.conversionStrategy.formOnly).toBe(true);
     expect(bp.confirmedFacts.some((f) => f.key === "phone")).toBe(false);
+  });
+});
+
+describe("conflicting owner facts", () => {
+  it("publishes neither of two different hours for the same days, and records the conflict", () => {
+    const t = buildTruth({
+      name: "Kora Fix",
+      description: "We repair phones.",
+      hours: [
+        { days: "Mon-Fri", hours: "9am-5pm" },
+        { days: "mon-fri", hours: "10am-8pm" },
+        { days: "Sat", hours: "10am-2pm" },
+        { days: "Sat", hours: "10am-2pm" },
+      ],
+    });
+    expect(t.conflicts).toHaveLength(1);
+    expect(t.brief.hours).toEqual([{ days: "Sat", hours: "10am-2pm" }]);
+  });
+  it("leaves a consistent brief untouched", () => {
+    const t = buildTruth({
+      name: "A",
+      description: "We repair phones.",
+      hours: [{ days: "Mon-Fri", hours: "9am-5pm" }],
+    });
+    expect(t.conflicts).toEqual([]);
+    expect(t.can.hours).toBe(true);
+  });
+  it("decides the trade from the owner's description, not from a contradicting services list, and keeps both as stated", () => {
+    const bp = buildBlueprint({
+      name: "Sweet Crumbs",
+      description: "I bake cakes and small chops.",
+      services: ["Pipe repair"],
+    });
+    expect(bp.classification.verticalId).toBe("bakery");
+    expect(bp.pageArchitecture.length).toBeLessThanOrEqual(7);
+  });
+  it("classifies a bakery as a bakery even when 'Bakery' is not in the name", () => {
+    expect(
+      classifyVertical("Sweet Crumbs I bake cakes and small chops.").vertical
+        .id,
+    ).toBe("bakery");
+  });
+  it("treats an unsupported trade as general and asks one question", () => {
+    const bp = buildBlueprint({
+      name: "Bluebird",
+      description: "We make quantum blockchain drones.",
+    });
+    expect(bp.classification.ambiguous).toBe(true);
+    expect(bp.followUp).not.toBeNull();
+    expect(bp.pageArchitecture.length).toBeGreaterThanOrEqual(MIN_PAGES);
+  });
+});
+
+describe("conflict follow-up", () => {
+  it("asks which hours are right instead of choosing", () => {
+    const bp = buildBlueprint({
+      name: "Kora Fix",
+      description: "We repair phones.",
+      hours: [
+        { days: "Mon-Fri", hours: "9-5" },
+        { days: "Mon-Fri", hours: "10-8" },
+      ],
+    });
+    expect(bp.followUp).toMatch(/opening hours/);
   });
 });

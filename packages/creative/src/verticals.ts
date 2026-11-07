@@ -689,7 +689,7 @@ export const VERTICALS: readonly VerticalIntel[] = [
     "bakery",
     "Bakery & cakes",
     "food",
-    "bak(?:ery|ers?|ing|ed|e)|cake|pastr|cupcake|bread|confection|dessert|donut|doughnut",
+    "bak(?:e|es|ed|ing) (?:\\w+ ){0,2}(?:cakes?|bread|pastr(?:y|ies)|cupcakes?)|bak(?:ery|ers?|ing|ed|e)|cake|pastr|cupcake|bread|confection|dessert|donut|doughnut",
     ["sunday-table", "handmade-modern", "fresh-market"],
     ["cheap", "cartoonish", "generic pink bakery", "corporate"],
     {
