@@ -1,7 +1,14 @@
 # Performance
 
-**What was measured** (`scripts/creative/qa.mjs`, real Chromium via Playwright, real renderer; output `qa-direction0.json`):
-22 acceptance businesses, direction 0, **130 pages**, desktop 1280 px and phone 390 px.
+**What was measured** (`scripts/creative/qa.mjs`, real Chromium via Playwright, real renderer; outputs
+`qa-direction0.json`, `qa-direction1.json`, `qa-direction2.json`): 22 acceptance businesses, **each of the 3 directions,
+130 pages per direction (390 pages)**, desktop 1280 px and phone 390 px. The table below is direction 0; directions 1 and 2
+had no overflow, broken images or console errors either, with site weight at most 53 KB and 50 KB.
+
+**Defect found and fixed by this check:** the first run of direction 1 reported 4 serious colour-contrast violations on one
+site (small chops, "Handmade Modern"): card descriptions at 85% opacity on the primary-coloured card measured 4.22:1 against
+the 4.5:1 minimum. The descriptions are new in this change, so they exposed a latent style. Fixed in `parts.ts`; the re-run is
+`qa-direction1.json` (0 violations).
 
 | Measure                                                     | Result                             |
 | ----------------------------------------------------------- | ---------------------------------- |
@@ -24,7 +31,7 @@ renderer behaviour, unchanged).
 - Photograph weight is not in the table: bundled catalogue photographs are 1600 px WebP (roughly 150-250 KB each) and
   Unsplash hotlinks are requested at `w=1600&fm=webp&q=75`. Responsive `srcset` for catalogue photographs was not added.
 - axe-core finds a subset of accessibility problems; keyboard-only and screen-reader walkthroughs were not performed.
-  Colour contrast is covered by axe on rendered pages only for the one direction tested (0).
+  axe was run on every page of every direction at both viewports; it does not test hover/focus states or text over photographs.
 - Generation cost: no model call, no token use. Planning all three directions for a business takes milliseconds
   (test suite: 22 businesses × 3 directions in well under a second). Unsplash: at most 4 searches per generation, shared
   hourly allowance, cached per query.

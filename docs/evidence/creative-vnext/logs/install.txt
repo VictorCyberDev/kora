@@ -11,5 +11,5 @@ Already up to date
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
-Done in 740ms using pnpm v10.18.3
+Done in 872ms using pnpm v10.18.3
 EXIT=0

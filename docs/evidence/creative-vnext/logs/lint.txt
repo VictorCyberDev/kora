@@ -1,6 +1,0 @@
-### lint: pnpm lint
-
-> kora@0.1.0 lint /home/user/kora
-> eslint .
-
-EXIT=0

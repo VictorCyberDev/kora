@@ -18,12 +18,7 @@
     "overflow": [],
     "broken": [],
     "consoleErrors": [],
-    "axe": [
-      "desktop:index.html:color-contrast(1)",
-      "desktop:menu/index.html:color-contrast(1)",
-      "phone:index.html:color-contrast(1)",
-      "phone:menu/index.html:color-contrast(1)"
-    ],
+    "axe": [],
     "formOnContact": true,
     "htmlKbMax": 7,
     "totalKb": 49

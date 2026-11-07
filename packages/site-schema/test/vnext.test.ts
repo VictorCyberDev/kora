@@ -494,3 +494,12 @@ describe("quality gate and bounded repair", () => {
     expect(r.remaining.map((i) => i.code)).toContain("UNSUPPLIED_CLAIM");
   });
 });
+
+describe("accessibility regression found by browser QA", () => {
+  it("offer-card descriptions keep full opacity on the primary-coloured card (axe measured 4.22:1 at .85 opacity)", () => {
+    const d = planDirectionsV3(brief(get("small-chops"))).directions[1]!;
+    const css = renderSiteV3(d.spec, ctx)["styles.css"]!;
+    if (css.includes(".bd p{"))
+      expect(css).toContain(".bd article:nth-child(4n+1) p{opacity:1}");
+  });
+});
