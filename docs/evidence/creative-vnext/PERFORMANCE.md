@@ -1,24 +1,27 @@
 # Performance
 
 **What was measured** (`scripts/creative/qa.mjs`, real Chromium via Playwright, real renderer; outputs
-`qa-direction0.json`, `qa-direction1.json`, `qa-direction2.json`): 22 acceptance businesses, **each of the 3 directions,
-130 pages per direction (390 pages)**, desktop 1280 px and phone 390 px. The table below is direction 0; directions 1 and 2
-had no overflow, broken images or console errors either, with site weight at most 53 KB and 50 KB.
+`qa-direction0.json`, `qa-direction1.json`, `qa-direction2.json`, exit codes in `logs/qa-exit-codes.txt`): 23 acceptance
+businesses, **each of the 3 directions, 140 pages per direction (420 pages)**, desktop 1280 px and phone 390 px, generated with
+a phone number supplied so the mobile quick-contact dock is exercised.
 
-**Defect found and fixed by this check:** the first run of direction 1 reported 4 serious colour-contrast violations on one
-site (small chops, "Handmade Modern"): card descriptions at 85% opacity on the primary-coloured card measured 4.22:1 against
-the 4.5:1 minimum. The descriptions are new in this change, so they exposed a latent style. Fixed in `parts.ts`; the re-run is
-`qa-direction1.json` (0 violations).
+| Measure                                                                                                                            | Result (all three directions) |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| Site code weight (HTML + CSS + JS + favicon, whole site)                                                                           | 44 KB min, 63 KB max          |
+| Largest single HTML page                                                                                                           | 13 KB (repo budget: 200 KB)   |
+| Horizontal overflow, either viewport                                                                                               | 0 pages                       |
+| Broken images (after loading every lazy image)                                                                                     | 0                             |
+| Console errors                                                                                                                     | 0                             |
+| axe-core WCAG 2.0/2.1/2.2 A/AA violations, serious/critical                                                                        | 0                             |
+| Contact page has a form                                                                                                            | 21 / 23 (see below)           |
+| Playwright e2e (8 viewport widths for Kora's own UI, editor, brand centre, local AI, design QA incl. a third-party-request budget) | 27 passed                     |
 
-| Measure                                                     | Result                             |
-| ----------------------------------------------------------- | ---------------------------------- |
-| Site code weight (HTML + CSS + JS + favicon, whole site)    | 39 KB min, 46 KB median, 62 KB max |
-| Largest single HTML page                                    | 14 KB (repo budget: 200 KB)        |
-| Horizontal overflow, either viewport                        | 0 pages                            |
-| Broken images after scrolling the page                      | 0                                  |
-| Console errors                                              | 0                                  |
-| axe-core WCAG 2.0/2.1/2.2 A/AA violations, serious/critical | 0                                  |
-| Contact page has a form                                     | 22 / 22                            |
+The two sites without a form are plumber and cleaning: when a phone number is supplied, call-led trades get the call-first
+contact layout, which pre-dates this work (`call-first` exists at the baseline commit). Without a phone number all 23 have a form.
+
+**Defects found and fixed by this process:** colour contrast of card text on primary-coloured cards (4.22:1, fixed in
+`parts.ts`, earlier pass); and in this pass the QA tool itself reported one broken image on a phone page that was a lazy-load
+timing artefact: the check now forces and waits for every image, and a genuinely missing file would still be reported.
 
 Images are lazy-loaded below the fold, the hero is `fetchpriority=high`, fonts are preloaded and self-hosted (pre-existing
 renderer behaviour, unchanged).
@@ -32,6 +35,6 @@ renderer behaviour, unchanged).
   Unsplash hotlinks are requested at `w=1600&fm=webp&q=75`. Responsive `srcset` for catalogue photographs was not added.
 - axe-core finds a subset of accessibility problems; keyboard-only and screen-reader walkthroughs were not performed.
   axe was run on every page of every direction at both viewports; it does not test hover/focus states or text over photographs.
-- Generation cost: no model call, no token use. Planning all three directions for a business takes milliseconds
+- Generation cost: no model call and no token use unless `KORA_MODEL_COMPOSE` is on (then one bounded call per generation). Planning all three directions for a business takes milliseconds
   (test suite: 22 businesses × 3 directions in well under a second). Unsplash: at most 4 searches per generation, shared
   hourly allowance, cached per query.

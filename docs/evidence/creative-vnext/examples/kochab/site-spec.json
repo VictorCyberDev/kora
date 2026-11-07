@@ -1,0 +1,864 @@
+{
+  "version": 3,
+  "business": {
+    "name": "Kochab Studio",
+    "description": "Kochab Studio is a creative technology agency helping startups and growing businesses build premium websites, powerful brands, and digital experiences. We combine software development, design, motion graphics, and marketing automation to help businesses attract customers and grow.",
+    "industry": "",
+    "locationKind": "premises",
+    "hours": [],
+    "social": [],
+    "language": "en"
+  },
+  "brand": {
+    "osVersion": 1,
+    "osHash": "b46eff11c60bf6b01e9e726ebb0df14703a0a4c4b46653ede005bd6ce805ec1e",
+    "directionId": "signal-product-sxpvhw-0",
+    "grammarId": "signal-product",
+    "directionName": "Clear Signal",
+    "strategy": {
+      "version": 1,
+      "brandEssence": "Creative technology studio, made legible",
+      "audience": "Someone choosing a creative partner by the quality of their work",
+      "positioning": "Kochab Studio: creative technology studio. Positioned as precise, capable, modern.",
+      "valuePromise": "See the work, feel the taste, then get in touch.",
+      "personality": ["precise", "capable", "modern"],
+      "voice": "clear, exact, unhyped",
+      "tone": "precise",
+      "emotionalGoal": "clarity",
+      "visualTension": "dense information × generous structure",
+      "differentiation": "Only what the owner supplied is claimed; the difference is shown through craft, specificity and clarity rather than superlatives.",
+      "trustStrategy": "Trust comes from real imagery and plain facts. Barrier to answer: Is their taste and quality right for my occasion or brand?",
+      "conversionMood": "rational: understand it, then talk",
+      "contentCharacter": "clear, exact, unhyped; use confident, understated, personal language; no superlatives.",
+      "antiTraits": [
+        "template portfolio",
+        "agency clichés",
+        "invented client lists",
+        "invented case studies",
+        "neighbourhood-market styling",
+        "playful or cartoon styling",
+        "purple gradients",
+        "fake dashboards",
+        "glassmorphism",
+        "stock circuit boards"
+      ],
+      "rationale": "Clear Signal suits creative technology studio because the customer's main job is \"see the work, feel the taste, then get in touch\", which asks for clarity. Precise, technical and quietly confident: complexity made legible.",
+      "basis": {
+        "suppliedByOwner": ["name", "description"],
+        "inferred": ["Customers most likely want to get in touch."],
+        "designDecisions": [
+          "Direction: Clear Signal",
+          "Visual tension: dense information × generous structure",
+          "Signature device: Index marks"
+        ],
+        "stillMissing": [
+          "a way for customers to reach you (phone, WhatsApp or email)",
+          "where you are or the area you serve",
+          "opening hours",
+          "a list of what you offer",
+          "a price list",
+          "your own photos",
+          "a logo",
+          "real customer reviews you are happy to show"
+        ]
+      }
+    }
+  },
+  "design": {
+    "genome": {
+      "version": 1,
+      "compositionMode": "split-narrative",
+      "grid": "modular",
+      "alignment": "left",
+      "density": "balanced",
+      "spacingRhythm": "steady",
+      "typeVoice": "wide-futurist",
+      "typeContrast": "medium",
+      "headlineBehavior": "tight-stack",
+      "imageDominance": "none",
+      "imageCrop": "natural",
+      "paletteBehavior": "duotone",
+      "accentScarcity": "rare",
+      "surfaceStyle": "outlined",
+      "borderStyle": "hairline",
+      "radiusStyle": "slight",
+      "shapeLanguage": "geometric",
+      "headerStyle": "minimal-bar",
+      "navigationPattern": "inline",
+      "buttonCharacter": "outline-fine",
+      "heroPhilosophy": "type-dominant",
+      "sectionRhythm": "alternating",
+      "proofPresentation": "spotlight",
+      "servicePresentation": "accordion",
+      "productPresentation": "rail",
+      "processPresentation": "numerals",
+      "footerStyle": "columns",
+      "motionIntensity": "restrained",
+      "motionCharacter": "draw",
+      "mobileStrategy": "narrative-stack",
+      "signatureMotif": "grain-dots"
+    },
+    "palette": {
+      "background": "#f2f6f5",
+      "foreground": "#0e1d1c",
+      "surface": "#f9fbfa",
+      "surfaceRaised": "#fdfefe",
+      "surfaceMuted": "#e0ecea",
+      "primary": "#0f7a6c",
+      "primaryForeground": "#ffffff",
+      "secondary": "#dbe9e6",
+      "secondaryForeground": "#111827",
+      "accent": "#e89a22",
+      "accentForeground": "#111827",
+      "muted": "#808a89",
+      "mutedForeground": "#606b6a",
+      "border": "#ced3d2",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "colorwayId": "slate-mint",
+    "mode": "light",
+    "seed": 1903598058
+  },
+  "artDirection": [
+    {
+      "subject": "a representative piece of the work (creative technology studio)",
+      "context": "workspace and screens",
+      "cameraDistance": "medium",
+      "cameraAngle": "eye-level",
+      "lighting": "warm indirect daylight",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "clean, minimal texture",
+      "humanPresence": "hands-only",
+      "colourRelationship": "harmonises with #0f7a6c and #e89a22 on #f2f6f5",
+      "negativeSpace": "left",
+      "cropStrategy": "natural",
+      "emotion": "clarity",
+      "brandRelationship": "Clear Signal: dense information × generous structure",
+      "placement": "hero",
+      "preferredSource": "procedural-illustration",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    },
+    {
+      "subject": "a representative piece of the work (creative technology studio)",
+      "context": "workspace and screens",
+      "cameraDistance": "medium",
+      "cameraAngle": "eye-level",
+      "lighting": "warm indirect daylight",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "clean, minimal texture",
+      "humanPresence": "hands-only",
+      "colourRelationship": "harmonises with #0f7a6c and #e89a22 on #f2f6f5",
+      "negativeSpace": "left",
+      "cropStrategy": "natural",
+      "emotion": "clarity",
+      "brandRelationship": "Clear Signal: dense information × generous structure",
+      "placement": "feature",
+      "preferredSource": "procedural-illustration",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    },
+    {
+      "subject": "a representative piece of the work (creative technology studio)",
+      "context": "workspace and screens",
+      "cameraDistance": "medium",
+      "cameraAngle": "eye-level",
+      "lighting": "warm indirect daylight",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "clean, minimal texture",
+      "humanPresence": "hands-only",
+      "colourRelationship": "harmonises with #0f7a6c and #e89a22 on #f2f6f5",
+      "negativeSpace": "left",
+      "cropStrategy": "natural",
+      "emotion": "clarity",
+      "brandRelationship": "Clear Signal: dense information × generous structure",
+      "placement": "gallery",
+      "preferredSource": "procedural-illustration",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    }
+  ],
+  "seo": {
+    "title": "Kochab Studio | Creative technology studio",
+    "description": "Kochab Studio is a creative technology agency helping startups and growing businesses build premium websites, powerful brands, and digital experiences.",
+    "keywords": [
+      "websites and digital experiences",
+      "brand identity",
+      "software development",
+      "motion graphics",
+      "marketing automation"
+    ]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Kochab Studio",
+      "purpose": "home",
+      "conversionGoal": "enquire",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Creative technology studio.",
+          "subheading": "Kochab Studio is a creative technology agency helping startups and growing businesses build premium websites, powerful brands, and digital experiences.",
+          "primaryCta": {
+            "label": "Send an enquiry",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See what we do",
+            "href": "#offer"
+          },
+          "highlights": [
+            "Websites and digital experiences",
+            "Brand identity",
+            "Software development"
+          ],
+          "variant": 0,
+          "plate": {
+            "kind": "lines",
+            "seed": 689225
+          }
+        },
+        {
+          "type": "offer",
+          "layout": "editorial-index",
+          "heading": "What we do",
+          "intro": "",
+          "items": [
+            {
+              "title": "Websites and digital experiences",
+              "text": "A website is often the first place a customer meets a business.",
+              "media": {
+                "url": "/_kora/media/studio-colour-swatch-fan.webp",
+                "alt": "A close-up of a fan of colour swatch cards in red, pink, purple, green and blue shades on a violet background.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Viktorya Sergeeva / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "title": "Brand identity",
+              "text": "A brand gives a business a consistent face: name, voice, colour and type that people recognise across every touchpoint.",
+              "media": {
+                "url": "/_kora/media/studio-designer-3d-furniture.webp",
+                "alt": "A person seen from behind the shoulder working at a desktop monitor that shows 3D furniture models, with a keyboard and material samples on the desk.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.68,
+                  "y": 0.4
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: cottonbro studio / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "title": "Software development",
+              "text": "Software projects work best when the problem is defined first.",
+              "media": {
+                "url": "/_kora/media/studio-wireframe-closeup.webp",
+                "alt": "A close-up of black-ink wireframe sketches on white paper showing image placeholders, text lines and a video play button.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: picjumbo.com / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "title": "Motion graphics",
+              "text": "Motion graphics explain an idea quickly and make a brand feel alive on screens and social feeds.",
+              "media": {
+                "url": "/_kora/media/studio-tablet-sketching.webp",
+                "alt": "A person sketching a figure with a stylus on a tablet while a laptop with design software sits on a side table behind.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.65,
+                  "y": 0.62
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Artem Zhukov / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "title": "Marketing automation",
+              "text": "Marketing automation takes repeated tasks, such as follow-ups and enquiry routing, and runs them consistently so no lead is forgotten.",
+              "media": {
+                "url": "/_kora/media/studio-wireframe-notebook.webp",
+                "alt": "A spiral notebook with hand-drawn website wireframes, two pens and a dark smartphone on a wooden table.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.6,
+                  "y": 0.4
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: picjumbo.com / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "title": "Design",
+              "text": "Interface and product design turn ideas into screens people can use without instructions.",
+              "plate": {
+                "kind": "lines",
+                "seed": 689633
+              }
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "heading": "How to get started",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": ""
+            },
+            {
+              "title": "Send us a message",
+              "text": ""
+            },
+            {
+              "title": "Agree the details with us",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "layout": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How does a project begin?",
+              "answer": "With a short conversation about your business, your customers and what you want the work to do. After that, scope and next steps are agreed together."
+            },
+            {
+              "question": "What should I send in my first message?",
+              "answer": "Describe your business, what you need built and any deadlines, and add links to anything you already have."
+            },
+            {
+              "question": "Can one team handle design and development?",
+              "answer": "That is the idea behind a creative technology studio: design, software, motion and marketing automation planned together rather than handed between suppliers."
+            }
+          ]
+        },
+        {
+          "type": "contact",
+          "layout": "enquiry-form",
+          "heading": "Send us a message",
+          "intro": "",
+          "form": true,
+          "formFields": ["name", "phone", "email", "message"],
+          "submitLabel": "Send message"
+        }
+      ]
+    },
+    {
+      "slug": "services",
+      "title": "What we do",
+      "nav": "What we do",
+      "purpose": "services",
+      "conversionGoal": "enquire",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "What we do",
+          "subheading": "Kochab Studio",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "lines",
+            "seed": 689225
+          }
+        },
+        {
+          "type": "offer",
+          "layout": "editorial-index",
+          "heading": "What we do",
+          "intro": "",
+          "items": [
+            {
+              "title": "Websites and digital experiences",
+              "text": "A website is often the first place a customer meets a business. It needs to be clear, quick on a phone, and built so a visitor can take the next step.",
+              "plate": {
+                "kind": "monogram",
+                "seed": 689650
+              }
+            },
+            {
+              "title": "Brand identity",
+              "text": "A brand gives a business a consistent face: name, voice, colour and type that people recognise across every touchpoint.",
+              "plate": {
+                "kind": "stripes",
+                "seed": 689667
+              }
+            },
+            {
+              "title": "Software development",
+              "text": "Software projects work best when the problem is defined first. Scope, users and the first release are agreed before building starts.",
+              "plate": {
+                "kind": "checker",
+                "seed": 689684
+              }
+            },
+            {
+              "title": "Motion graphics",
+              "text": "Motion graphics explain an idea quickly and make a brand feel alive on screens and social feeds.",
+              "plate": {
+                "kind": "arch",
+                "seed": 689701
+              }
+            },
+            {
+              "title": "Marketing automation",
+              "text": "Marketing automation takes repeated tasks, such as follow-ups and enquiry routing, and runs them consistently so no lead is forgotten.",
+              "plate": {
+                "kind": "sunburst",
+                "seed": 689718
+              }
+            },
+            {
+              "title": "Design",
+              "text": "Interface and product design turn ideas into screens people can use without instructions.",
+              "plate": {
+                "kind": "stack",
+                "seed": 689735
+              }
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "heading": "How to get started",
+          "intro": "",
+          "items": [
+            {
+              "title": "Tell us what you need",
+              "text": ""
+            },
+            {
+              "title": "Send us a message",
+              "text": ""
+            },
+            {
+              "title": "Agree the details with us",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "outline",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "approach",
+      "title": "How we work",
+      "nav": "How we work",
+      "purpose": "approach",
+      "conversionGoal": "trust",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "How we work",
+          "subheading": "Kochab Studio",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "lines",
+            "seed": 689225
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Getting started",
+          "heading": "How to get started",
+          "intro": "",
+          "items": [
+            {
+              "title": "Understand the business",
+              "text": "Every project starts with who the customers are and what they need to do."
+            },
+            {
+              "title": "Design and build together",
+              "text": "Design, development and motion are planned as one piece of work."
+            },
+            {
+              "title": "Launch, then improve",
+              "text": "A first release goes out, then real use guides what comes next."
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "What to bring to the first conversation",
+          "intro": "",
+          "items": [
+            {
+              "title": "What you need built",
+              "text": ""
+            },
+            {
+              "title": "Your business and customers",
+              "text": ""
+            },
+            {
+              "title": "Existing brand or site",
+              "text": ""
+            },
+            {
+              "title": "Timing",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "outline",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "gallery",
+      "title": "Gallery",
+      "nav": "Gallery",
+      "purpose": "gallery",
+      "conversionGoal": "view-work",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Gallery",
+          "subheading": "Kochab Studio",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "lines",
+            "seed": 689225
+          }
+        },
+        {
+          "type": "gallery",
+          "layout": "pair",
+          "eyebrow": "Illustrative photography",
+          "heading": "",
+          "items": [
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/studio-tablet-sketching.webp",
+                "alt": "A person sketching a figure with a stylus on a tablet while a laptop with design software sits on a side table behind.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.65,
+                  "y": 0.62
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Artem Zhukov / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/studio-colour-swatch-fan.webp",
+                "alt": "A close-up of a fan of colour swatch cards in red, pink, purple, green and blue shades on a violet background.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Viktorya Sergeeva / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/studio-designer-3d-furniture.webp",
+                "alt": "A person seen from behind the shoulder working at a desktop monitor that shows 3D furniture models, with a keyboard and material samples on the desk.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.68,
+                  "y": 0.4
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: cottonbro studio / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/studio-wireframe-closeup.webp",
+                "alt": "A close-up of black-ink wireframe sketches on white paper showing image placeholders, text lines and a video play button.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: picjumbo.com / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "outline",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "about",
+      "title": "About Kochab Studio",
+      "nav": "About",
+      "purpose": "about",
+      "conversionGoal": "trust",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "About Kochab Studio",
+          "subheading": "Kochab Studio",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "lines",
+            "seed": 689225
+          }
+        },
+        {
+          "type": "story",
+          "layout": "manifesto",
+          "heading": "About Kochab Studio",
+          "body": [
+            "Kochab Studio is a creative technology agency helping startups and growing businesses build premium websites, powerful brands, and digital experiences. We combine software development, design, motion graphics, and marketing automation to help businesses attract customers and grow."
+          ],
+          "values": [
+            "Websites and digital experiences",
+            "Brand identity",
+            "Software development",
+            "Motion graphics",
+            "Marketing automation",
+            "Design"
+          ],
+          "plate": {
+            "kind": "checker",
+            "seed": 689548
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "Before you get in touch",
+          "intro": "",
+          "items": [
+            {
+              "title": "What you need built",
+              "text": ""
+            },
+            {
+              "title": "Your business and customers",
+              "text": ""
+            },
+            {
+              "title": "Existing brand or site",
+              "text": ""
+            },
+            {
+              "title": "Timing",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "outline",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "contact",
+      "title": "Contact",
+      "nav": "Contact",
+      "purpose": "contact",
+      "conversionGoal": "enquire",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Contact",
+          "subheading": "Kochab Studio",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "lines",
+            "seed": 689225
+          }
+        },
+        {
+          "type": "contact",
+          "layout": "enquiry-form",
+          "heading": "Send us a message",
+          "intro": "",
+          "form": true,
+          "formFields": ["name", "phone", "email", "message"],
+          "submitLabel": "Send message"
+        },
+        {
+          "type": "faq",
+          "layout": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "How does a project begin?",
+              "answer": "With a short conversation about your business, your customers and what you want the work to do. After that, scope and next steps are agreed together."
+            },
+            {
+              "question": "What should I send in my first message?",
+              "answer": "Describe your business, what you need built and any deadlines, and add links to anything you already have."
+            },
+            {
+              "question": "Can one team handle design and development?",
+              "answer": "That is the idea behind a creative technology studio: design, software, motion and marketing automation planned together rather than handed between suppliers."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Kochab Studio",
+    "links": []
+  },
+  "meta": {
+    "engine": "kora-creative/1",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

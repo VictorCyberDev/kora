@@ -1,0 +1,27 @@
+[
+  {
+    "key": "kochab",
+    "direction": "Clear Signal",
+    "pages": ["home"],
+    "blockingCritic": 0,
+    "shots": ["kochab-0-index-desktop.png", "kochab-0-index-phone.png"],
+    "overflow": [],
+    "brokenImages": []
+  },
+  {
+    "key": "bakery",
+    "direction": "Sunday Table",
+    "pages": ["home", "menu", "gallery"],
+    "blockingCritic": 0,
+    "shots": [
+      "bakery-0-index-desktop.png",
+      "bakery-0-menu_index-desktop.png",
+      "bakery-0-gallery_index-desktop.png",
+      "bakery-0-index-phone.png",
+      "bakery-0-menu_index-phone.png",
+      "bakery-0-gallery_index-phone.png"
+    ],
+    "overflow": [],
+    "brokenImages": []
+  }
+]

@@ -1,0 +1,760 @@
+{
+  "version": 3,
+  "business": {
+    "name": "Mr Lee",
+    "description": "I cut hair.",
+    "industry": "",
+    "locationKind": "premises",
+    "hours": [],
+    "social": [],
+    "language": "en"
+  },
+  "brand": {
+    "osVersion": 1,
+    "osHash": "f80c00ef400ec2ef17b794a43dbab6f8cc0c06f2d07255a4b8879bb76142ad34",
+    "directionId": "neighbourhood-energy-tqgyhb-0",
+    "grammarId": "neighbourhood-energy",
+    "directionName": "Neighbourhood Energy",
+    "strategy": {
+      "version": 1,
+      "brandEssence": "Hair, done properly, right here",
+      "audience": "Someone who wants to look and feel good and needs a slot",
+      "positioning": "Mr Lee: hair. Positioned as bold, local, direct.",
+      "valuePromise": "Trust the result enough to book.",
+      "personality": ["bold", "local", "direct"],
+      "voice": "short, punchy, specific",
+      "tone": "confident",
+      "emotionalGoal": "confidence and belonging",
+      "visualTension": "street poster × clean grid",
+      "differentiation": "Only what the owner supplied is claimed; the difference is shown through craft, specificity and clarity rather than superlatives.",
+      "trustStrategy": "Trust comes from real imagery and plain facts. Barrier to answer: Will they get my look right, is the space clean and welcoming?",
+      "conversionMood": "urgent but friendly: book or message now",
+      "contentCharacter": "short, punchy, specific; use confident, warm, precise language; no superlatives.",
+      "antiTraits": [
+        "generic corporate",
+        "overly delicate",
+        "stock-office photography",
+        "delicate serif",
+        "pastel softness",
+        "stock office photos",
+        "long paragraphs"
+      ],
+      "rationale": "Neighbourhood Energy suits barbershop because the customer's main job is \"trust the result enough to book\", which asks for confidence and belonging. Loud, local and confident: the shop everybody on the street already knows.",
+      "basis": {
+        "suppliedByOwner": ["name", "description"],
+        "inferred": ["Customers most likely want to get in touch."],
+        "designDecisions": [
+          "Direction: Neighbourhood Energy",
+          "Visual tension: street poster × clean grid",
+          "Signature device: Ticker band"
+        ],
+        "stillMissing": [
+          "a way for customers to reach you (phone, WhatsApp or email)",
+          "where you are or the area you serve",
+          "opening hours",
+          "a list of what you offer",
+          "a price list",
+          "your own photos",
+          "a logo",
+          "real customer reviews you are happy to show"
+        ]
+      }
+    }
+  },
+  "design": {
+    "genome": {
+      "version": 1,
+      "compositionMode": "poster-bold",
+      "grid": "twelve-column",
+      "alignment": "left",
+      "density": "compact",
+      "spacingRhythm": "tight",
+      "typeVoice": "condensed-utility",
+      "typeContrast": "extreme",
+      "headlineBehavior": "oversized",
+      "imageDominance": "supporting",
+      "imageCrop": "tall",
+      "paletteBehavior": "color-field",
+      "accentScarcity": "frequent",
+      "surfaceStyle": "flat",
+      "borderStyle": "heavy",
+      "radiusStyle": "slight",
+      "shapeLanguage": "rectilinear",
+      "headerStyle": "sticker",
+      "navigationPattern": "inline",
+      "buttonCharacter": "block-arrow",
+      "heroPhilosophy": "call-first",
+      "sectionRhythm": "banded",
+      "proofPresentation": "spotlight",
+      "servicePresentation": "stacked-panels",
+      "productPresentation": "rail",
+      "processPresentation": "numerals",
+      "footerStyle": "local-card",
+      "motionIntensity": "measured",
+      "motionCharacter": "snap",
+      "mobileStrategy": "action-dock",
+      "signatureMotif": "ticket-perforation"
+    },
+    "palette": {
+      "background": "#f4f1ea",
+      "foreground": "#111111",
+      "surface": "#faf8f5",
+      "surfaceRaised": "#fdfdfc",
+      "surfaceMuted": "#e3e2e8",
+      "primary": "#1f3bd1",
+      "primaryForeground": "#ffffff",
+      "secondary": "#111111",
+      "secondaryForeground": "#ffffff",
+      "accent": "#ffd23f",
+      "accentForeground": "#111827",
+      "muted": "#83817e",
+      "mutedForeground": "#63625f",
+      "border": "#d0cdc7",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "colorwayId": "cobalt-chalk",
+    "mode": "light",
+    "seed": 3329100644
+  },
+  "artDirection": [
+    {
+      "subject": "finished work in detail (hair)",
+      "context": "finished work",
+      "cameraDistance": "medium",
+      "cameraAngle": "eye-level",
+      "lighting": "clean bright daylight, soft shadows",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "clean, minimal texture",
+      "humanPresence": "none",
+      "colourRelationship": "harmonises with #1f3bd1 and #ffd23f on #f4f1ea",
+      "negativeSpace": "left",
+      "cropStrategy": "tall",
+      "emotion": "confidence and belonging",
+      "brandRelationship": "Neighbourhood Energy: street poster × clean grid",
+      "placement": "hero",
+      "preferredSource": "licensed-stock",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    },
+    {
+      "subject": "finished work in detail (hair)",
+      "context": "finished work",
+      "cameraDistance": "medium",
+      "cameraAngle": "eye-level",
+      "lighting": "clean bright daylight, soft shadows",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "clean, minimal texture",
+      "humanPresence": "none",
+      "colourRelationship": "harmonises with #1f3bd1 and #ffd23f on #f4f1ea",
+      "negativeSpace": "left",
+      "cropStrategy": "tall",
+      "emotion": "confidence and belonging",
+      "brandRelationship": "Neighbourhood Energy: street poster × clean grid",
+      "placement": "feature",
+      "preferredSource": "licensed-stock",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    },
+    {
+      "subject": "finished work in detail (hair)",
+      "context": "finished work",
+      "cameraDistance": "medium",
+      "cameraAngle": "eye-level",
+      "lighting": "clean bright daylight, soft shadows",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "clean, minimal texture",
+      "humanPresence": "none",
+      "colourRelationship": "harmonises with #1f3bd1 and #ffd23f on #f4f1ea",
+      "negativeSpace": "left",
+      "cropStrategy": "tall",
+      "emotion": "confidence and belonging",
+      "brandRelationship": "Neighbourhood Energy: street poster × clean grid",
+      "placement": "gallery",
+      "preferredSource": "licensed-stock",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    }
+  ],
+  "seo": {
+    "title": "Mr Lee | Hair",
+    "description": "I cut hair.",
+    "keywords": ["haircuts"]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Mr Lee",
+      "purpose": "home",
+      "conversionGoal": "book",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "editorial-split",
+          "heading": "Hair.",
+          "subheading": "Mr Lee. Send us a message.",
+          "primaryCta": {
+            "label": "Send an enquiry",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See cuts & grooming",
+            "href": "#offer"
+          },
+          "highlights": ["Haircuts"],
+          "variant": 0,
+          "media": {
+            "url": "/_kora/media/beauty-salon-cutting-hands.webp",
+            "alt": "Close-up of a hairdresser's hands holding a comb and thinning scissors to cut brown hair, with loose hair clippings in the air.",
+            "width": 1600,
+            "height": 1067,
+            "focalPoint": {
+              "x": 0.4,
+              "y": 0.45
+            },
+            "role": "hero",
+            "treatment": "none",
+            "provenance": {
+              "sourceType": "licensed-stock",
+              "provider": "Pexels",
+              "license": "Pexels License",
+              "attribution": "Photo: Matheus Wladeka / Pexels",
+              "reviewStatus": "kora-curated"
+            }
+          },
+          "plate": {
+            "kind": "monogram",
+            "seed": 982100
+          }
+        },
+        {
+          "type": "offer",
+          "layout": "stacked-panels",
+          "heading": "Cuts & grooming",
+          "intro": "",
+          "items": [
+            {
+              "title": "Haircuts",
+              "text": "A good cut starts with a clear idea of the shape you want.",
+              "media": {
+                "url": "/_kora/media/barber-shop-service.webp",
+                "alt": "Professional barber working with a client inside a modern shop",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.45,
+                  "y": 0.45
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Tosin Olowoleni / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "gallery",
+          "layout": "pair",
+          "heading": "",
+          "items": [
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/barber-detail-grooming.webp",
+                "alt": "Close-up professional barbering and grooming service",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.44
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/barber-black-client-cut.webp",
+                "alt": "A Black client receiving a precision haircut in a contemporary barbershop",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.52,
+                  "y": 0.42
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "heading": "How to book",
+          "intro": "",
+          "items": [
+            {
+              "title": "Choose what you need",
+              "text": ""
+            },
+            {
+              "title": "Send us a message",
+              "text": ""
+            },
+            {
+              "title": "Agree the details with us",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "layout": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "Can I book or walk in?",
+              "answer": "Ask directly through the contact options so you know how to be seen."
+            },
+            {
+              "question": "Should I bring a reference photo?",
+              "answer": "Yes. It is the quickest way to describe the cut."
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "marquee",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "#contact"
+          }
+        },
+        {
+          "type": "contact",
+          "layout": "enquiry-form",
+          "heading": "Send us a message",
+          "intro": "",
+          "form": true,
+          "formFields": ["name", "phone", "email", "message"],
+          "submitLabel": "Send message"
+        }
+      ]
+    },
+    {
+      "slug": "haircuts",
+      "title": "Haircuts",
+      "nav": "Haircuts",
+      "purpose": "services",
+      "conversionGoal": "book",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "minimal-statement",
+          "heading": "Haircuts",
+          "subheading": "Mr Lee · Haircuts",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "monogram",
+            "seed": 982100
+          }
+        },
+        {
+          "type": "story",
+          "layout": "split-image",
+          "eyebrow": "About this",
+          "heading": "Haircuts",
+          "body": [
+            "A good cut starts with a clear idea of the shape you want. A reference photo helps."
+          ],
+          "values": [],
+          "plate": {
+            "kind": "sunburst",
+            "seed": 982304
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "What to include when you get in touch",
+          "intro": "",
+          "items": [
+            {
+              "title": "Style and length",
+              "text": ""
+            },
+            {
+              "title": "Beard or lineup",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "marquee",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "approach",
+      "title": "How we work",
+      "nav": "How we work",
+      "purpose": "approach",
+      "conversionGoal": "trust",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "How we work",
+          "subheading": "Mr Lee",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "monogram",
+            "seed": 982100
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "heading": "How to book",
+          "intro": "",
+          "items": [
+            {
+              "title": "Choose what you need",
+              "text": ""
+            },
+            {
+              "title": "Send us a message",
+              "text": ""
+            },
+            {
+              "title": "Agree the details with us",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "What to bring to the first conversation",
+          "intro": "",
+          "items": [
+            {
+              "title": "Cut or beard service",
+              "text": ""
+            },
+            {
+              "title": "Preferred day",
+              "text": ""
+            },
+            {
+              "title": "Reference photo",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "marquee",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "gallery",
+      "title": "Gallery",
+      "nav": "Gallery",
+      "purpose": "gallery",
+      "conversionGoal": "view-work",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Gallery",
+          "subheading": "Mr Lee",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "monogram",
+            "seed": 982100
+          }
+        },
+        {
+          "type": "gallery",
+          "layout": "pair",
+          "eyebrow": "Illustrative photography",
+          "heading": "",
+          "items": [
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/barber-black-client-cut.webp",
+                "alt": "A Black client receiving a precision haircut in a contemporary barbershop",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.52,
+                  "y": 0.42
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/barber-shop-service.webp",
+                "alt": "Professional barber working with a client inside a modern shop",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.45,
+                  "y": 0.45
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Tosin Olowoleni / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/barber-detail-grooming.webp",
+                "alt": "Close-up professional barbering and grooming service",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.44
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/beauty-salon-cutting-hands.webp",
+                "alt": "Close-up of a hairdresser's hands holding a comb and thinning scissors to cut brown hair, with loose hair clippings in the air.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.4,
+                  "y": 0.45
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Matheus Wladeka / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "marquee",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "about",
+      "title": "About Mr Lee",
+      "nav": "About",
+      "purpose": "about",
+      "conversionGoal": "trust",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "About Mr Lee",
+          "subheading": "Mr Lee",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "monogram",
+            "seed": 982100
+          }
+        },
+        {
+          "type": "story",
+          "layout": "split-image",
+          "heading": "About Mr Lee",
+          "body": ["I cut hair."],
+          "values": ["Haircuts"],
+          "plate": {
+            "kind": "stack",
+            "seed": 982321
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "Before you get in touch",
+          "intro": "",
+          "items": [
+            {
+              "title": "Cut or beard service",
+              "text": ""
+            },
+            {
+              "title": "Preferred day",
+              "text": ""
+            },
+            {
+              "title": "Reference photo",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "marquee",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "contact",
+      "title": "Contact",
+      "nav": "Contact",
+      "purpose": "contact",
+      "conversionGoal": "book",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Contact",
+          "subheading": "Mr Lee",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "monogram",
+            "seed": 982100
+          }
+        },
+        {
+          "type": "contact",
+          "layout": "enquiry-form",
+          "heading": "Send us a message",
+          "intro": "",
+          "form": true,
+          "formFields": ["name", "phone", "email", "message"],
+          "submitLabel": "Send message"
+        },
+        {
+          "type": "faq",
+          "layout": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "Can I book or walk in?",
+              "answer": "Ask directly through the contact options so you know how to be seen."
+            },
+            {
+              "question": "Should I bring a reference photo?",
+              "answer": "Yes. It is the quickest way to describe the cut."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Mr Lee",
+    "links": []
+  },
+  "meta": {
+    "engine": "kora-creative/1",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

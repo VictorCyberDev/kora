@@ -1,0 +1,982 @@
+{
+  "version": 3,
+  "business": {
+    "name": "Sweet Crumbs Bakery",
+    "description": "I bake cakes and small chops.",
+    "industry": "",
+    "locationKind": "premises",
+    "hours": [],
+    "social": [],
+    "language": "en"
+  },
+  "brand": {
+    "osVersion": 1,
+    "osHash": "cc9c4e1d316321cf2c712a214c763c0373325136921f5c96bb18cc5d129ef237",
+    "directionId": "sunday-table-7zzpgl-0",
+    "grammarId": "sunday-table",
+    "directionName": "Sunday Table",
+    "strategy": {
+      "version": 1,
+      "brandEssence": "Cakes and small chops, made with care and shared",
+      "audience": "Hungry locals deciding where or what to order today",
+      "positioning": "Sweet Crumbs Bakery: cakes and small chops. Positioned as warm, craft-led, generous.",
+      "valuePromise": "Find something good to eat and get it with no friction.",
+      "personality": ["warm", "craft-led", "generous"],
+      "voice": "warm, sensory, plain-spoken",
+      "tone": "welcoming",
+      "emotionalGoal": "appetite and welcome",
+      "visualTension": "rustic craft × editorial restraint",
+      "differentiation": "Only what the owner supplied is claimed; the difference is shown through craft, specificity and clarity rather than superlatives.",
+      "trustStrategy": "Trust comes from real imagery and plain facts. Barrier to answer: Will it taste as good as it looks, and is it open now?",
+      "conversionMood": "inviting: the next step feels like pulling up a chair",
+      "contentCharacter": "warm, sensory, plain-spoken; use warm, sensory, plain language; no superlatives.",
+      "antiTraits": [
+        "cheap",
+        "cartoonish",
+        "generic pink bakery",
+        "corporate",
+        "fast-food clutter",
+        "glossy gradients",
+        "cartoon food icons",
+        "dense card grids"
+      ],
+      "rationale": "Sunday Table suits bakery & cakes because the customer's main job is \"find something good to eat and get it with no friction\", which asks for appetite and welcome. Generous, warm and appetising: the feeling of food made for people you know.",
+      "basis": {
+        "suppliedByOwner": ["name", "description"],
+        "inferred": ["Customers most likely want to get in touch."],
+        "designDecisions": [
+          "Direction: Sunday Table",
+          "Visual tension: rustic craft × editorial restraint",
+          "Signature device: Arch frame"
+        ],
+        "stillMissing": [
+          "a way for customers to reach you (phone, WhatsApp or email)",
+          "where you are or the area you serve",
+          "opening hours",
+          "a list of what you offer",
+          "a price list",
+          "your own photos",
+          "a logo",
+          "real customer reviews you are happy to show"
+        ]
+      }
+    }
+  },
+  "design": {
+    "genome": {
+      "version": 1,
+      "compositionMode": "editorial-asymmetric",
+      "grid": "asymmetric-7-5",
+      "alignment": "left",
+      "density": "airy",
+      "spacingRhythm": "steady",
+      "typeVoice": "modern-serif",
+      "typeContrast": "high",
+      "headlineBehavior": "sentence",
+      "imageDominance": "dominant",
+      "imageCrop": "arch",
+      "paletteBehavior": "ink-on-paper",
+      "accentScarcity": "measured",
+      "surfaceStyle": "paper",
+      "borderStyle": "hairline",
+      "radiusStyle": "soft",
+      "shapeLanguage": "arched",
+      "headerStyle": "centered-stack",
+      "navigationPattern": "inline",
+      "buttonCharacter": "solid-pill",
+      "heroPhilosophy": "arch-portrait",
+      "sectionRhythm": "alternating",
+      "proofPresentation": "spotlight",
+      "servicePresentation": "editorial-index",
+      "productPresentation": "rail",
+      "processPresentation": "numerals",
+      "footerStyle": "brand-heavy",
+      "motionIntensity": "restrained",
+      "motionCharacter": "rise",
+      "mobileStrategy": "narrative-stack",
+      "signatureMotif": "grain-dots"
+    },
+    "palette": {
+      "background": "#f6efe4",
+      "foreground": "#2b1d16",
+      "surface": "#fbf7f2",
+      "surfaceRaised": "#fefdfb",
+      "surfaceMuted": "#eae0d4",
+      "primary": "#5b2e1f",
+      "primaryForeground": "#ffffff",
+      "secondary": "#c9a27a",
+      "secondaryForeground": "#111827",
+      "accent": "#b8481f",
+      "accentForeground": "#ffffff",
+      "muted": "#91867d",
+      "mutedForeground": "#685f56",
+      "border": "#d6cdc3",
+      "success": "#2f8f5b",
+      "warning": "#c98a1b",
+      "danger": "#c2410c"
+    },
+    "colorwayId": "cocoa-cream",
+    "mode": "light",
+    "seed": 2137980201
+  },
+  "artDirection": [
+    {
+      "subject": "the finished food, close and appetising (cakes and small chops)",
+      "context": "food close-up",
+      "cameraDistance": "close",
+      "cameraAngle": "overhead",
+      "lighting": "soft diffused window light",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "visible handmade texture",
+      "humanPresence": "hands-only",
+      "colourRelationship": "harmonises with #5b2e1f and #b8481f on #f6efe4",
+      "negativeSpace": "left",
+      "cropStrategy": "arch",
+      "emotion": "appetite and welcome",
+      "brandRelationship": "Sunday Table: rustic craft × editorial restraint",
+      "placement": "hero",
+      "preferredSource": "licensed-stock",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    },
+    {
+      "subject": "the finished food, close and appetising (cakes and small chops)",
+      "context": "food close-up",
+      "cameraDistance": "close",
+      "cameraAngle": "overhead",
+      "lighting": "soft diffused window light",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "visible handmade texture",
+      "humanPresence": "hands-only",
+      "colourRelationship": "harmonises with #5b2e1f and #b8481f on #f6efe4",
+      "negativeSpace": "left",
+      "cropStrategy": "arch",
+      "emotion": "appetite and welcome",
+      "brandRelationship": "Sunday Table: rustic craft × editorial restraint",
+      "placement": "feature",
+      "preferredSource": "licensed-stock",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    },
+    {
+      "subject": "the finished food, close and appetising (cakes and small chops)",
+      "context": "food close-up",
+      "cameraDistance": "close",
+      "cameraAngle": "overhead",
+      "lighting": "soft diffused window light",
+      "background": "restrained surface in the brand's neutral",
+      "texture": "visible handmade texture",
+      "humanPresence": "hands-only",
+      "colourRelationship": "harmonises with #5b2e1f and #b8481f on #f6efe4",
+      "negativeSpace": "left",
+      "cropStrategy": "arch",
+      "emotion": "appetite and welcome",
+      "brandRelationship": "Sunday Table: rustic craft × editorial restraint",
+      "placement": "gallery",
+      "preferredSource": "licensed-stock",
+      "mustNot": [
+        "fake customers, staff or testimonials presented as real",
+        "a storefront, office, room or finished project that is not the owner's, presented as theirs",
+        "awards, certifications or ratings",
+        "readable text, logos or prices"
+      ]
+    }
+  ],
+  "seo": {
+    "title": "Sweet Crumbs Bakery | Cakes and small chops",
+    "description": "I bake cakes and small chops.",
+    "keywords": ["cakes", "small chops"]
+  },
+  "pages": [
+    {
+      "slug": "home",
+      "title": "Sweet Crumbs Bakery",
+      "purpose": "home",
+      "conversionGoal": "order",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "arch-portrait",
+          "heading": "Cakes and small chops.",
+          "subheading": "Sweet Crumbs Bakery. Send us a message.",
+          "primaryCta": {
+            "label": "Send an enquiry",
+            "href": "#contact"
+          },
+          "secondaryCta": {
+            "label": "See what we bake",
+            "href": "#offer"
+          },
+          "highlights": ["Cakes", "Small chops"],
+          "variant": 0,
+          "media": {
+            "url": "/_kora/media/bakery-cake-making.webp",
+            "alt": "A baker carefully preparing a celebration cake",
+            "width": 1600,
+            "height": 1067,
+            "role": "hero",
+            "treatment": "none",
+            "provenance": {
+              "sourceType": "licensed-stock",
+              "provider": "Pexels",
+              "license": "Pexels License",
+              "attribution": "Photo: Pexels contributor / Pexels",
+              "reviewStatus": "kora-curated"
+            }
+          },
+          "plate": {
+            "kind": "checker",
+            "seed": 716232
+          }
+        },
+        {
+          "type": "offer",
+          "layout": "editorial-index",
+          "heading": "What we bake",
+          "intro": "",
+          "items": [
+            {
+              "title": "Cakes",
+              "text": "A good celebration cake starts with the occasion.",
+              "plate": {
+                "kind": "checker",
+                "seed": 716640
+              }
+            },
+            {
+              "title": "Small chops",
+              "text": "Small chops are bite-sized party snacks, often served as a mixed platter at weddings, birthdays, naming ceremonies and office events.",
+              "media": {
+                "url": "/_kora/media/bakery-cinnamon-rolls-baked.webp",
+                "alt": "Close-up of a baked cinnamon roll with a sugar-dusted spiral of cinnamon filling, with other rolls partly visible at the edges.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.45
+                },
+                "role": "feature",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Danique Veldhuis / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "gallery",
+          "layout": "pair",
+          "heading": "",
+          "items": [
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/bakery-cinnamon-rolls-baked.webp",
+                "alt": "Close-up of a baked cinnamon roll with a sugar-dusted spiral of cinnamon filling, with other rolls partly visible at the edges.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.45
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Danique Veldhuis / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/bakery-brushing-croissant-dough.webp",
+                "alt": "A person in a yellow apron brushes unbaked croissant shapes on a parchment-lined baking tray while holding a white bowl.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.7,
+                  "y": 0.6
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Felicity Tai / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/bakery-cake-frosting.webp",
+                "alt": "A baker frosting and finishing a cake by hand",
+                "width": 1600,
+                "height": 1067,
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/smallchops-samosa-colander.webp",
+                "alt": "Freshly fried golden samosas resting in a perforated steel colander.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.45,
+                  "y": 0.6
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Hashtag Melvin / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Getting started",
+          "heading": "How to get started",
+          "intro": "",
+          "items": [
+            {
+              "title": "Start with the occasion",
+              "text": "Every order begins with what you are celebrating and who is coming."
+            },
+            {
+              "title": "Plan the details together",
+              "text": "Flavours, size, decoration and timing are agreed before baking starts."
+            },
+            {
+              "title": "Ask early",
+              "text": "Busy weekends and holidays call for an early conversation."
+            }
+          ]
+        },
+        {
+          "type": "faq",
+          "layout": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "What should I include when I ask about a cake?",
+              "answer": "Share the occasion, the date, roughly how many people it should serve, the flavours you like, any allergies, and a photo or colour idea for the decoration. The more detail you give, the easier it is to come back with the right options."
+            },
+            {
+              "question": "Can I ask about small chops for an event?",
+              "answer": "Yes. Send the date, the number of guests and the snacks you have in mind through the enquiry form, and ask about collection or delivery arrangements at the same time."
+            },
+            {
+              "question": "How early should I enquire about a celebration?",
+              "answer": "As early as you can. Dates fill up around weddings, holidays and the weekends, so an early message gives everyone room to plan."
+            },
+            {
+              "question": "Where can I see examples of the work?",
+              "answer": "The gallery shows illustrative baking and party-food photography to give you a feel for the style. Ask in your enquiry for examples that match your occasion."
+            }
+          ]
+        },
+        {
+          "type": "contact",
+          "layout": "enquiry-form",
+          "heading": "Send us a message",
+          "intro": "",
+          "form": true,
+          "formFields": ["name", "phone", "email", "message"],
+          "submitLabel": "Send message"
+        }
+      ]
+    },
+    {
+      "slug": "cakes",
+      "title": "Cakes",
+      "nav": "Cakes",
+      "purpose": "menu",
+      "conversionGoal": "order",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "minimal-statement",
+          "heading": "Cakes",
+          "subheading": "Sweet Crumbs Bakery · Cakes",
+          "highlights": [],
+          "variant": 0,
+          "media": {
+            "url": "/_kora/media/bakery-chocolate-cake-happy-birthday-candles.webp",
+            "alt": "A chocolate frosted cake topped with lit candles shaped as the letters of 'Happy Birthday' and chocolate leaf decorations.",
+            "width": 1600,
+            "height": 1067,
+            "focalPoint": {
+              "x": 0.45,
+              "y": 0.55
+            },
+            "role": "hero",
+            "treatment": "none",
+            "provenance": {
+              "sourceType": "licensed-stock",
+              "provider": "Pexels",
+              "license": "Pexels License",
+              "attribution": "Photo: Bellava G / Pexels",
+              "reviewStatus": "kora-curated"
+            }
+          },
+          "plate": {
+            "kind": "checker",
+            "seed": 716232
+          }
+        },
+        {
+          "type": "story",
+          "layout": "split-image",
+          "eyebrow": "About this",
+          "heading": "Cakes",
+          "body": [
+            "A good celebration cake starts with the occasion. The size, the flavours, the decoration and the date all shape what can be made, so the more you share up front, the closer the result will be to what you picture."
+          ],
+          "values": [],
+          "media": {
+            "url": "/_kora/media/bakery-cake-frosting.webp",
+            "alt": "A baker frosting and finishing a cake by hand",
+            "width": 1600,
+            "height": 1067,
+            "role": "feature",
+            "treatment": "none",
+            "provenance": {
+              "sourceType": "licensed-stock",
+              "provider": "Pexels",
+              "license": "Pexels License",
+              "attribution": "Photo: Pexels contributor / Pexels",
+              "reviewStatus": "kora-curated"
+            }
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "What to include when you get in touch",
+          "intro": "",
+          "items": [
+            {
+              "title": "The occasion and the date",
+              "text": ""
+            },
+            {
+              "title": "How many people it needs to serve",
+              "text": ""
+            },
+            {
+              "title": "Flavours and any allergies or dietary needs",
+              "text": ""
+            },
+            {
+              "title": "A photo or colour idea for the decoration",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "statement",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "small-chops",
+      "title": "Small chops",
+      "nav": "Small chops",
+      "purpose": "menu",
+      "conversionGoal": "order",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "minimal-statement",
+          "heading": "Small chops",
+          "subheading": "Sweet Crumbs Bakery · Small chops",
+          "highlights": [],
+          "variant": 0,
+          "media": {
+            "url": "/_kora/media/smallchops-finger-food-gathering.webp",
+            "alt": "A buffet board of finger foods: triangle sandwiches, small quiches, meatballs, sausage rolls, cherry-tomato and cucumber skewers and a sliced baked flatbread.",
+            "width": 1600,
+            "height": 1067,
+            "focalPoint": {
+              "x": 0.5,
+              "y": 0.6
+            },
+            "role": "hero",
+            "treatment": "none",
+            "provenance": {
+              "sourceType": "licensed-stock",
+              "provider": "Pexels",
+              "license": "Pexels License",
+              "attribution": "Photo: Thato Moiketsi / Pexels",
+              "reviewStatus": "kora-curated"
+            }
+          },
+          "plate": {
+            "kind": "checker",
+            "seed": 716232
+          }
+        },
+        {
+          "type": "story",
+          "layout": "split-image",
+          "eyebrow": "About this",
+          "heading": "Small chops",
+          "body": [
+            "Small chops are bite-sized party snacks, often served as a mixed platter at weddings, birthdays, naming ceremonies and office events. Common favourites include puff-puff, samosas, spring rolls and skewers."
+          ],
+          "values": [],
+          "media": {
+            "url": "/_kora/media/smallchops-fried-snacks-red-bowls.webp",
+            "alt": "Red mugs on a tray filled with fried party snacks: samosa-style pastries, round fried dough balls, small rolls and glazed chicken pieces, with lime slices and wooden skewers.",
+            "width": 1600,
+            "height": 1067,
+            "focalPoint": {
+              "x": 0.5,
+              "y": 0.55
+            },
+            "role": "feature",
+            "treatment": "none",
+            "provenance": {
+              "sourceType": "licensed-stock",
+              "provider": "Pexels",
+              "license": "Pexels License",
+              "attribution": "Photo: Tochukwu Ekeh / Pexels",
+              "reviewStatus": "kora-curated"
+            }
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "What to include when you get in touch",
+          "intro": "",
+          "items": [
+            {
+              "title": "How many guests you expect",
+              "text": ""
+            },
+            {
+              "title": "The date and time of the event",
+              "text": ""
+            },
+            {
+              "title": "Which snacks you would like on the platter",
+              "text": ""
+            },
+            {
+              "title": "Collection or delivery arrangements to ask about",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "gallery",
+          "layout": "pair",
+          "eyebrow": "Illustrative photography",
+          "heading": "A look at the style",
+          "items": [
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/smallchops-party-tray-sandwiches-rolls.webp",
+                "alt": "Top-down view of party trays holding fried dough-wrapped rolls, triangle finger sandwiches on picks with pickle pieces and sweets, and a small egg-topped savoury cup in a paper case.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Javier Rivera / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/smallchops-samosa-colander.webp",
+                "alt": "Freshly fried golden samosas resting in a perforated steel colander.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.45,
+                  "y": 0.6
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Hashtag Melvin / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "statement",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "gallery",
+      "title": "Gallery",
+      "nav": "Gallery",
+      "purpose": "gallery",
+      "conversionGoal": "view-work",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Gallery",
+          "subheading": "Sweet Crumbs Bakery",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "checker",
+            "seed": 716232
+          }
+        },
+        {
+          "type": "gallery",
+          "layout": "grid",
+          "eyebrow": "Illustrative photography",
+          "heading": "",
+          "items": [
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/bakery-nigeria-maker.webp",
+                "alt": "A baker working in a contemporary Nigerian kitchen",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.42
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/bakery-cake-making.webp",
+                "alt": "A baker carefully preparing a celebration cake",
+                "width": 1600,
+                "height": 1067,
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Pexels contributor / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/smallchops-finger-food-gathering.webp",
+                "alt": "A buffet board of finger foods: triangle sandwiches, small quiches, meatballs, sausage rolls, cherry-tomato and cucumber skewers and a sliced baked flatbread.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.6
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Thato Moiketsi / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/smallchops-fried-snacks-red-bowls.webp",
+                "alt": "Red mugs on a tray filled with fried party snacks: samosa-style pastries, round fried dough balls, small rolls and glazed chicken pieces, with lime slices and wooden skewers.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.55
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Tochukwu Ekeh / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/smallchops-party-tray-sandwiches-rolls.webp",
+                "alt": "Top-down view of party trays holding fried dough-wrapped rolls, triangle finger sandwiches on picks with pickle pieces and sweets, and a small egg-topped savoury cup in a paper case.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Javier Rivera / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            },
+            {
+              "caption": "",
+              "media": {
+                "url": "/_kora/media/bakery-cupcakes-blue-frosting-tray.webp",
+                "alt": "Chocolate cupcakes topped with swirls of bright blue frosting in brown paper cases on a round gold-framed tray, with more cupcakes with yellow sprinkles around it.",
+                "width": 1600,
+                "height": 1067,
+                "focalPoint": {
+                  "x": 0.5,
+                  "y": 0.5
+                },
+                "role": "gallery",
+                "treatment": "none",
+                "provenance": {
+                  "sourceType": "licensed-stock",
+                  "provider": "Pexels",
+                  "license": "Pexels License",
+                  "attribution": "Photo: Brendo Boyose / Pexels",
+                  "reviewStatus": "kora-curated"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "statement",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "about",
+      "title": "About Sweet Crumbs Bakery",
+      "nav": "About",
+      "purpose": "about",
+      "conversionGoal": "trust",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "About Sweet Crumbs Bakery",
+          "subheading": "Sweet Crumbs Bakery",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "checker",
+            "seed": 716232
+          }
+        },
+        {
+          "type": "story",
+          "layout": "split-image",
+          "heading": "About Sweet Crumbs Bakery",
+          "body": ["I bake cakes and small chops."],
+          "values": ["Cakes", "Small chops"],
+          "plate": {
+            "kind": "lines",
+            "seed": 716453
+          }
+        },
+        {
+          "type": "process",
+          "layout": "numerals",
+          "eyebrow": "Your enquiry",
+          "heading": "Before you get in touch",
+          "intro": "",
+          "items": [
+            {
+              "title": "The occasion and date",
+              "text": ""
+            },
+            {
+              "title": "Number of guests",
+              "text": ""
+            },
+            {
+              "title": "Flavours or snacks you like",
+              "text": ""
+            },
+            {
+              "title": "Allergies or dietary needs",
+              "text": ""
+            },
+            {
+              "title": "Collection or delivery preference",
+              "text": ""
+            }
+          ]
+        },
+        {
+          "type": "cta",
+          "layout": "statement",
+          "heading": "Send an enquiry",
+          "body": "",
+          "button": {
+            "label": "Send an enquiry",
+            "href": "/contact"
+          }
+        }
+      ]
+    },
+    {
+      "slug": "contact",
+      "title": "Contact",
+      "nav": "Contact",
+      "purpose": "contact",
+      "conversionGoal": "order",
+      "sections": [
+        {
+          "type": "hero",
+          "layout": "type-dominant",
+          "heading": "Contact",
+          "subheading": "Sweet Crumbs Bakery",
+          "highlights": [],
+          "variant": 0,
+          "plate": {
+            "kind": "checker",
+            "seed": 716232
+          }
+        },
+        {
+          "type": "contact",
+          "layout": "enquiry-form",
+          "heading": "Send us a message",
+          "intro": "",
+          "form": true,
+          "formFields": ["name", "phone", "email", "message"],
+          "submitLabel": "Send message"
+        },
+        {
+          "type": "faq",
+          "layout": "accordion",
+          "heading": "Good to know",
+          "items": [
+            {
+              "question": "What should I include when I ask about a cake?",
+              "answer": "Share the occasion, the date, roughly how many people it should serve, the flavours you like, any allergies, and a photo or colour idea for the decoration. The more detail you give, the easier it is to come back with the right options."
+            },
+            {
+              "question": "Can I ask about small chops for an event?",
+              "answer": "Yes. Send the date, the number of guests and the snacks you have in mind through the enquiry form, and ask about collection or delivery arrangements at the same time."
+            },
+            {
+              "question": "How early should I enquire about a celebration?",
+              "answer": "As early as you can. Dates fill up around weddings, holidays and the weekends, so an early message gives everyone room to plan."
+            },
+            {
+              "question": "Where can I see examples of the work?",
+              "answer": "The gallery shows illustrative baking and party-food photography to give you a feel for the style. Ask in your enquiry for examples that match your occasion."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "text": "© Sweet Crumbs Bakery",
+    "links": []
+  },
+  "meta": {
+    "engine": "kora-creative/1",
+    "direction": 0,
+    "generator": "deterministic"
+  }
+}

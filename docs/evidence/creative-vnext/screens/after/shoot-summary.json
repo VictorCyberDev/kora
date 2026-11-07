@@ -1,0 +1,68 @@
+[
+  {
+    "key": "kochab",
+    "direction": "Clear Signal",
+    "pages": ["home", "services", "approach", "gallery", "about", "contact"],
+    "blockingCritic": 0,
+    "shots": [
+      "kochab-0-index-desktop.png",
+      "kochab-0-services_index-desktop.png",
+      "kochab-0-approach_index-desktop.png",
+      "kochab-0-gallery_index-desktop.png",
+      "kochab-0-about_index-desktop.png",
+      "kochab-0-contact_index-desktop.png",
+      "kochab-0-index-phone.png",
+      "kochab-0-services_index-phone.png",
+      "kochab-0-approach_index-phone.png",
+      "kochab-0-gallery_index-phone.png",
+      "kochab-0-about_index-phone.png",
+      "kochab-0-contact_index-phone.png"
+    ],
+    "overflow": [],
+    "brokenImages": []
+  },
+  {
+    "key": "bakery",
+    "direction": "Sunday Table",
+    "pages": ["home", "cakes", "small-chops", "gallery", "about", "contact"],
+    "blockingCritic": 0,
+    "shots": [
+      "bakery-0-index-desktop.png",
+      "bakery-0-cakes_index-desktop.png",
+      "bakery-0-small-chops_index-desktop.png",
+      "bakery-0-gallery_index-desktop.png",
+      "bakery-0-about_index-desktop.png",
+      "bakery-0-contact_index-desktop.png",
+      "bakery-0-index-phone.png",
+      "bakery-0-cakes_index-phone.png",
+      "bakery-0-small-chops_index-phone.png",
+      "bakery-0-gallery_index-phone.png",
+      "bakery-0-about_index-phone.png",
+      "bakery-0-contact_index-phone.png"
+    ],
+    "overflow": [],
+    "brokenImages": []
+  },
+  {
+    "key": "barber-minimal",
+    "direction": "Neighbourhood Energy",
+    "pages": ["home", "haircuts", "approach", "gallery", "about", "contact"],
+    "blockingCritic": 0,
+    "shots": [
+      "barber-minimal-0-index-desktop.png",
+      "barber-minimal-0-haircuts_index-desktop.png",
+      "barber-minimal-0-approach_index-desktop.png",
+      "barber-minimal-0-gallery_index-desktop.png",
+      "barber-minimal-0-about_index-desktop.png",
+      "barber-minimal-0-contact_index-desktop.png",
+      "barber-minimal-0-index-phone.png",
+      "barber-minimal-0-haircuts_index-phone.png",
+      "barber-minimal-0-approach_index-phone.png",
+      "barber-minimal-0-gallery_index-phone.png",
+      "barber-minimal-0-about_index-phone.png",
+      "barber-minimal-0-contact_index-phone.png"
+    ],
+    "overflow": [],
+    "brokenImages": []
+  }
+]

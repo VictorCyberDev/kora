@@ -1,75 +1,91 @@
-# Acceptance matrix
+# Acceptance matrix (completion pass)
 
-Status words: **MET** (executed evidence), **PARTIAL**, **NOT MET**, **NOT DONE**. Each row names the evidence. Commands and
-exit codes are in `logs/` (`install`, `format`, `lint`, `typecheck`, `build`, `test`: all `EXIT=0` on the final code except
-where noted); the baseline run is summarised in `BASELINE.md`.
+Status words: **MET** (executed evidence), **PARTIAL**, **NOT MET**, **NOT DONE**, **PENDING EXTERNAL** (needs credentials or
+authorisation this work did not have). Commands and exit codes are in `logs/`:
+`install`, `format`, `lint`, `typecheck`, `build`, `test` all `EXIT=0` (`logs/exit-codes.txt`); `web-build` and Playwright
+`e2e` `EXIT=0` (`logs/e2e-exit-codes.txt`, 27 passed); QA of every direction `EXIT=0` (`logs/qa-exit-codes.txt`).
 
-## Directive §23 journey (20 steps)
+Test totals from `logs/test.txt` (isolated Postgres 16 `_test` database): creative 103, site-schema 355, growth 149,
+passport 91, `apps/api` 549 passed + 1 skipped (pre-existing skip), and the other packages unchanged and passing.
 
-| #   | Step                                        | Status    | Evidence / limit                                                                                                                                        |
-| --- | ------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | New user creates an account                 | MET       | `lifecycle.integration.test.ts` (real API, isolated DB)                                                                                                 |
-| 2   | Enters only name + one sentence             | MET       | same; one-word briefs also generate (`platform.integration.test.ts`)                                                                                    |
-| 3   | Kora understands the business               | MET       | 22-case classification matrix test; Kochab → `digital-studio`, bakery → `bakery`; ambiguous → "General business"                                        |
-| 4   | Three clearly different directions          | MET       | `vnext.test.ts` (≥ 2 of 5 design dimensions differ between every pair, 3 businesses); screenshots reviewed by eye. Not a human preference study         |
-| 5   | User selects a direction                    | PARTIAL   | `generate` takes `direction` (existing); selection UI not touched                                                                                       |
-| 6   | Complete coherent 4-7 page site             | MET       | 22 businesses × 3 directions: 5-6 pages, 0 blocking issues (`matrix-after.json`; before: 1-3 pages)                                                     |
-| 7   | Appropriate licensed/owner imagery          | PARTIAL   | catalogue photos only where honestly relevant; never repeated more than twice; **bakery 6 placements / 3 distinct photos, target 10 NOT MET**           |
-| 8   | Useful non-fabricated content               | MET       | `assertKnowledgeSafe`, claim/number checks over all generated text for the matrix; no prices, hours, reviews, places, years                             |
-| 9   | Navigation and CTAs work                    | MET       | link validation in the gate; 130 pages × 2 viewports loaded in Chromium, 0 console errors; published pages fetched in integration test                  |
-| 10  | Owner edits text or replaces an image       | MET (API) | `section-text`, `replace-media`, `remove-page`, `move-page` through `POST /edit`; **no editing UI built**                                               |
-| 11  | Design identity preserved                   | MET       | edits never touch the genome; direction preview and final use the same `planSiteV3`; spec carries brand hash                                            |
-| 12  | Mobile and desktop preview                  | PARTIAL   | existing preview route serves the stored artifact; both viewports were checked by QA script; no new preview UI                                          |
-| 13  | Passes generation quality gates             | MET       | `completenessV3` + bounded repair run inside `generateV3`; tested incl. failing cases                                                                   |
-| 14  | Owner publishes                             | MET       | integration test publishes; `verification.status === "MATCH"`                                                                                           |
-| 15  | Published site matches the approved version | MET       | MATCH verification (existing mechanism) asserted                                                                                                        |
-| 16  | Visitor submits a real enquiry              | MET       | public form endpoint → 201                                                                                                                              |
-| 17  | Owner sees the enquiry                      | MET       | `GET /api/sites/:id/forms`. **Email notification is NOT configured or claimed**                                                                         |
-| 18  | Kora monitors site health                   | UNCHANGED | existing monitors/incident engine untouched; full existing suite passes. Not re-exercised end to end by new tests                                       |
-| 19  | Rollback and recovery guarantees intact     | MET       | existing recovery tests pass (`apps/api` 532 passed, 1 skipped); no change to that code                                                                 |
-| 20  | Safe delete and reuse of allocation         | MET       | integration tests: confirm-name, audit row, public 404, form 404, allowance restored, idempotent, cross-tenant 404, concurrency lock (mutation-checked) |
+## Directive journey (20 steps)
 
-## Directive §17 test matrix
+| #   | Step                                        | Status    | Evidence / limit                                                                                                                                                                                                                                 |
+| --- | ------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | New user creates an account                 | MET       | `lifecycle.integration.test.ts` (real API, isolated DB)                                                                                                                                                                                          |
+| 2   | Enters only name + one sentence             | MET       | same; "I cut hair." and one-word briefs generate                                                                                                                                                                                                 |
+| 3   | Kora understands the business               | MET       | 23-case classification matrix test (word-boundary matching); Kochab → `digital-studio`; bakery → `bakery` with or without "Bakery" in the name; "I cut hair" → barber; unsupported trade → "General business" + one question                     |
+| 4   | Three clearly different directions          | MET       | `vnext.test.ts` (≥ 2 of 5 design dimensions differ between pairs); screenshots reviewed by eye. Not a human preference study                                                                                                                     |
+| 5   | User selects a direction                    | PARTIAL   | `generate` takes `direction` (existing); the selection UI was not changed                                                                                                                                                                        |
+| 6   | Complete coherent 4-7 page site             | MET       | 23 businesses × 3 directions = 69 sites: 6-7 pages each, 0 blocking issues (`matrix-after.json`)                                                                                                                                                 |
+| 7   | Appropriate licensed/owner imagery          | MET       | 64-photo audited catalogue; bakery 15-18 placements from 10-11 distinct photos; never more than 2 uses per photo; relevance by topic tag. Trades without relevant photos stay type-led. See MEDIA-COMPLIANCE.md for what was and was not audited |
+| 8   | Useful non-fabricated content               | MET       | `assertKnowledgeSafe`, claim/number validators over all generated text; no prices, hours, reviews, places, years, awards, clients; contradictory hours are dropped and queried                                                                   |
+| 9   | Navigation and CTAs work                    | MET       | link validation in the gate; 420 pages × 2 viewports loaded in Chromium, 0 console errors, 0 overflow, 0 broken images                                                                                                                           |
+| 10  | Owner edits text or replaces an image       | MET       | visual editor (`apps/web`), Playwright `editor.spec.ts`: edit text, reorder, replace pictures, undo, phone preview, publish; ops tested in `editor-ops.test.ts` and `editor.integration.test.ts`                                                 |
+| 11  | Design identity preserved                   | MET       | edits never touch the genome; regenerate-section/page recompose from the same design; tested                                                                                                                                                     |
+| 12  | Mobile and desktop preview                  | MET       | editor preview at desktop and phone widths (screenshots in `screens/editor-*.png`)                                                                                                                                                               |
+| 13  | Passes generation quality gates             | MET       | `completenessV3` + bounded repair inside `generateV3`, including after optional model composition                                                                                                                                                |
+| 14  | Owner publishes                             | MET       | integration test and e2e publish; `verification.status === "MATCH"`                                                                                                                                                                              |
+| 15  | Published site matches the approved version | MET       | MATCH verification (existing mechanism) asserted                                                                                                                                                                                                 |
+| 16  | Visitor submits a real enquiry              | MET       | public form endpoint → 201. Call-first contact pages (plumber, cleaning, when a phone number is supplied) show the number instead of a form; that layout pre-dates this work                                                                     |
+| 17  | Owner sees the enquiry                      | MET       | `GET /api/sites/:id/forms`. **Email notification is not configured or claimed**                                                                                                                                                                  |
+| 18  | Kora monitors site health                   | UNCHANGED | existing monitors/incident engine untouched except that deletion now stops monitoring; existing suites pass. Not re-exercised end to end by new tests                                                                                            |
+| 19  | Rollback and recovery guarantees intact     | MET       | existing recovery tests pass; immutable-version trigger, approvals and verification untouched                                                                                                                                                    |
+| 20  | Safe delete and reuse of allocation         | MET       | integration tests: confirm-name, audit row, public 404, domains released, proposals rejected, allowance restored, idempotent, cross-tenant 404, restore, concurrency (mutation-checked)                                                          |
 
-| Item                                                                 | Status              | Note                                                                                                      |
-| -------------------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------- |
-| 20 business types (bakery … ambiguous)                               | MET                 | `business-matrix.json` has 22 cases (adds Kochab and a one-word case)                                     |
-| One-word / one-sentence / detailed descriptions                      | PARTIAL             | one-word and one-sentence covered; a long "detailed" brief was only exercised via Kochab                  |
-| Owner-supplied imagery                                               | NOT RE-TESTED       | existing owner-media tests still pass; not re-run against the new page architecture                       |
-| No imagery                                                           | MET                 | most matrix businesses have none                                                                          |
-| Missing contact information                                          | MET                 | form-only contact, asserted no `tel:` and no map                                                          |
-| No AI provider                                                       | MET                 | the engine never calls one                                                                                |
-| Unsplash rate-limit exhaustion / provider outage / hostile responses | MET                 | mocks only; **no real Unsplash call was made** (no key; none requested)                                   |
-| Invalid model responses                                              | N/A                 | no model in the new paths                                                                                 |
-| Conflicting facts                                                    | NOT DONE            | no test with contradictory owner facts                                                                    |
-| Mobile-only usage                                                    | PARTIAL             | phone viewport QA; no real devices                                                                        |
-| Existing historical site versions                                    | MET                 | single-page and eight-page specs parse/render; nine pages rejected                                        |
-| Special test A (Kochab), B (bakery), C (ambiguous)                   | A, C MET; B PARTIAL | B: 6 pages, cake and small-chops pages, gallery, form, no invented facts; **10 image placements NOT MET** |
+## Priority items of the completion directive
 
-## Directive milestones
+| Item                                                                   | Status                                        | Evidence / limit                                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| P1 server-verifiable provenance / confirmations                        | MET (bounded)                                 | append-only `owner_confirmations`; claim-like text needs a confirmation hash the server holds. A confirmation records a human action; it does not prove truth                                                                              |
+| P1 secure media selection, origin validation, no forgery               | MET                                           | signed candidate/selection tokens, `verifyStockMedia`, derived provenance, org-scoped owner media; forgery/expiry/cross-tenant tests                                                                                                       |
+| P1 deletion retires domains, monitors, actions; safe under concurrency | MET                                           | transactional retire; publish-vs-delete and in-flight publish guards mutation-checked                                                                                                                                                      |
+| P1 retention for deleted-site enquiries                                | MET (no policy)                               | explicit restore / export / erase; nothing silently purged; **no retention period invented, a human decision is needed**                                                                                                                   |
+| P1 multi-instance Unsplash consistency                                 | MET (mock)                                    | DB-shared cache, counters and quota; two-instance harness tests                                                                                                                                                                            |
+| P1 entitlement + tenant isolation on media routes                      | MET                                           | `entitled()` and org-scoped checks; tests                                                                                                                                                                                                  |
+| P2 visual editor                                                       | MET                                           | all listed owner capabilities exist as validated SiteSpec operations behind the UI; no HTML editor. Screenshots in `screens/`. See KNOWN-LIMITATIONS.md                                                                                    |
+| P3 hybrid imagery, catalogue, attribution, Unsplash optional           | MET (catalogue) / PENDING EXTERNAL (Unsplash) | real Unsplash never called; mocks only                                                                                                                                                                                                     |
+| P4 optional model-assisted composition                                 | MET (stub models)                             | validated edits only, gate, fallback; **no real model was evaluated**                                                                                                                                                                      |
+| P5 competitor + 14-category research applied                           | MET (bounded)                                 | three research documents plus `docs/research/RESEARCH-APPLICATION-2026.md` listing what changed (mobile contact dock policy, review-before-publish note, classification and conflict fixes), what was already so, and what was not adopted |
+| P6 full acceptance                                                     | MET except as listed                          | no visual-regression pixel baseline, no Lighthouse/CWV, no real devices or screen readers                                                                                                                                                  |
 
-| Milestone | Status                                                                                                                                                                                          |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M0        | MET (reproduced; **competitor and design-category research NOT DONE**)                                                                                                                          |
-| M1        | MET                                                                                                                                                                                             |
-| M2        | MET                                                                                                                                                                                             |
-| M3        | PARTIAL: provider abstraction, Unsplash adapter (mock-tested), quota, cache, manifest, credits done; curated catalogue **not expanded**; no AI image provider; HMAC candidate binding not built |
-| M4        | PARTIAL: direction diversity verified, bakery/agency grammar fit fixed; no new grammars, typography or responsive work beyond defects found in review                                           |
-| M5        | PARTIAL: deletion/quota/enquiry journey and four new edits done; **no section/page regeneration, no add-section, no editor UI**                                                                 |
-| M6        | PARTIAL: whole-site gate, repair loop, security/accessibility/browser checks done; **no visual-regression baseline, no Lighthouse/CWV**                                                         |
-| M7        | PARTIAL: 22 businesses × 3 directions, before/after, QA results; screenshots were viewed during development but only a small sample is committed                                                |
+## Test matrix (directive §17 and the special tests)
 
-Before/after, measured from `matrix-before.json` and `matrix-after.json` (3 directions per business):
+| Item                                                              | Status       | Note                                                                                                                                                                               |
+| ----------------------------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 22+ business types (bakery … ambiguous, Kochab, one-word, barber) | MET          | `business-matrix.json` has 23 cases × 3 directions                                                                                                                                 |
+| One-word / one-sentence / detailed descriptions                   | MET          | all three kinds                                                                                                                                                                    |
+| Owner-supplied imagery                                            | MET (API)    | owner media belongs-to-organisation checks and replace flow in `media.integration.test.ts`; the e2e picks Kora photos                                                              |
+| No imagery                                                        | MET          | type-led layouts, asserted                                                                                                                                                         |
+| Missing contact information                                       | MET          | form-only contact; no `tel:`, no map                                                                                                                                               |
+| Missing AI provider                                               | MET          | deterministic engine never needs one; model-compose tests cover provider down, slow, malformed, hostile                                                                            |
+| Unavailable media providers / rate-limit exhaustion               | MET          | mocks: outage, hostile headers, 429 exhaustion, reserve; fall back to catalogue. **No real Unsplash call**                                                                         |
+| Unsupported industries                                            | MET          | "quantum blockchain drones" → general, one follow-up question, ≥ 4 pages                                                                                                           |
+| Conflicting facts                                                 | MET (narrow) | contradictory hours for the same days are dropped and a question is raised; description vs services list decided by the description. Other kinds of contradiction are not detected |
+| Mobile-only usage                                                 | PARTIAL      | 390 px viewport QA and e2e at 8 widths; no real devices                                                                                                                            |
+| Existing historical site versions                                 | MET          | one-page and eight-page specs parse/render; nine rejected; legacy specs never converted                                                                                            |
+| Special test A Kochab Studio                                      | MET          | 6 pages (home, services, approach, gallery, about, contact) × 3 directions, `digital-studio`, no invented clients/awards                                                           |
+| Special test B Sweet Crumbs Bakery                                | MET          | cakes + small-chops pages, gallery, form, 15-18 placements / 10-11 distinct photos, no invented facts                                                                              |
+| Special test C ambiguous brief                                    | MET          | "General business", one follow-up, still ≥ 4 pages                                                                                                                                 |
+| Barber from "I cut hair."                                         | MET (thin)   | 6 pages, single "Haircuts" offering, no duplicate page, 0 blocking. The Haircuts page is short and type-led: see KNOWN-LIMITATIONS.md                                              |
 
-| Measure                           | Before (`e2b62df`)            | After      |
-| --------------------------------- | ----------------------------- | ---------- |
-| Sites generated                   | 63 (the one-word brief threw) | 66         |
-| Pages per site                    | 1 to 3                        | 5 to 6     |
-| Sites under four pages            | 63 of 63                      | 0 of 66    |
-| Average visible words per site    | 30                            | 404        |
-| Copy fields cut with an ellipsis  | 3                             | 0          |
-| Blocking issues from the new gate | not applicable                | 0          |
-| Contact page with a form          | not measured                  | every site |
+## Before / after (`matrix-before.json` at `e2b62df`, `matrix-after.json` now; 3 directions per business)
 
-Word count is a crude proxy: the extra words are mostly industry-general guidance, FAQ answers and enquiry prompts, not
-business-specific copy. It shows the sites are no longer empty, not that the writing is excellent.
+| Measure                           | Before                        | After                        |
+| --------------------------------- | ----------------------------- | ---------------------------- |
+| Sites generated                   | 63 (the one-word brief threw) | 69                           |
+| Pages per site                    | 1 to 3                        | 6 to 7                       |
+| Sites under four pages            | 63 of 63                      | 0 of 69                      |
+| Average visible words per site    | 30                            | 372                          |
+| Copy fields cut with an ellipsis  | 3                             | 0                            |
+| Blocking issues from the new gate | not applicable                | 0                            |
+| axe serious/critical violations   | not measured                  | 0 in 420 pages × 2 viewports |
+
+Screenshots (`screens/before`, `screens/after`) show the old Kochab and bakery output beside the new. Word count is a crude
+proxy: many of the extra words are industry-general guidance, FAQ answers and enquiry prompts, not business-specific copy.
+
+## Not done or not validated
+
+Real Unsplash; a real language model; Lighthouse/Core Web Vitals and field data; real devices and screen readers; a stored
+visual-regression baseline; a production-sized migration rehearsal; any deployment, merge or shared-database migration
+(forbidden by the release boundary). See KNOWN-LIMITATIONS.md.

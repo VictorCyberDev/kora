@@ -1,1 +1,3 @@
 web-build EXIT=0
+e2e EXIT=0
+finished

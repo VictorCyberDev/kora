@@ -26,3 +26,31 @@
 ## Behaviour that did not change
 
 - Renderer, CSP, immutable versions, publish/verify, Site Host, monitoring, incident/recovery, billing logic, auth.
+
+# Completion pass (same branch, after `4d937be`)
+
+## Added
+
+- Visual editor (`apps/web` Edit website): page list with reorder/add/remove up to seven, section reorder/add/remove, text and
+  item editing, picture picker (Kora photos / my photos / stock), regenerate section/page, undo and restore, desktop and phone
+  preview, publish, review-before-publish note. No HTML editing: every change is a validated SiteSpec operation.
+- New edit operations: `add-section`, `regenerate-section`, `regenerate-page`, `add-page`, `item`, `seo`, `page-meta`, `cta-label`.
+- Server-held owner confirmations (`owner_confirmations`, append-only); signed media candidate/selection tokens; shared
+  (multi-instance) candidate cache, rate counters and selections; erase/export/restore for deleted-site enquiries.
+- Optional model-assisted composition (`KORA_MODEL_COMPOSE`): editable-field ids only, fact validator, whole-site gate, fallback.
+- Vetted catalogue 14 → 64 photographs (50 audited) with topic and recipe tags; `image-licence-audit.json`.
+- Research: competitor analysis, two category design studies, `RESEARCH-APPLICATION-2026.md`.
+- Migration 030.
+
+## Changed
+
+- Trade matching uses word boundaries ("Hair by Ngozi" is no longer an NGO); "I cut hair" reads as a barber; a bakery without
+  "Bakery" in its name is a bakery; a single stated offering merges into its topic.
+- Contact-led trades get the mobile quick-contact dock on every direction (`dock-policy.ts`); critic warnings follow the same rule.
+- Contradictory opening hours are not published; the owner is asked.
+- Deletion retires custom domains, monitoring registrations and open proposals in one transaction.
+- Client-declared `author` removed from edits; claim-like wording needs a server-held confirmation.
+
+## Fixed
+
+- Lint errors in session-2 files; QA scripts waited for lazy images; stale documentation.

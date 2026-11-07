@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src &#39;none&#39;; img-src &#39;self&#39; https: data:; font-src &#39;self&#39;; style-src &#39;self&#39;; script-src &#39;self&#39;; connect-src https://kora.example; form-action https://kora.example; base-uri &#39;none&#39;"
+    />
+    <meta
+      name="kora-events"
+      content="https://kora.example/api/public/sites/example/events"
+    />
+    <title>Contact | Mr Lee</title>
+    <meta name="description" content="I cut hair." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Contact | Mr Lee" />
+    <meta property="og:description" content="I cut hair." />
+    <meta property="og:site_name" content="Mr Lee" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="theme-color" content="#f4f1ea" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/_kora/fonts/barlow-condensed-latin-700-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/_kora/fonts/work-sans-latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="../styles.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Mr Lee",
+        "description": "I cut hair."
+      }
+    </script>
+  </head>
+  <body class="">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="hd hs-sticker t-light">
+      <div class="w bar">
+        <a class="brand" href="../index.html">Mr Lee</a>
+        <ul class="nav-d" aria-label="Main">
+          <li><a href="../haircuts/index.html">Haircuts</a></li>
+          <li><a href="../approach/index.html">How we work</a></li>
+          <li><a href="../gallery/index.html">Gallery</a></li>
+          <li><a href="../about/index.html">About</a></li>
+          <li>
+            <a href="../contact/index.html" aria-current="page">Contact</a>
+          </li>
+        </ul>
+        <details class="menu">
+          <summary>Menu</summary>
+          <ul>
+            <li><a href="../haircuts/index.html">Haircuts</a></li>
+            <li><a href="../approach/index.html">How we work</a></li>
+            <li><a href="../gallery/index.html">Gallery</a></li>
+            <li><a href="../about/index.html">About</a></li>
+            <li>
+              <a href="../contact/index.html" aria-current="page">Contact</a>
+            </li>
+          </ul>
+        </details>
+      </div>
+    </header>
+    <main id="main">
+      <section class="sec hero h-type-dominant t-brand" id="hero">
+        <div class="w">
+          <h1>Contact</h1>
+          <div class="under">
+            <p class="sub">Mr Lee</p>
+            <div></div>
+          </div>
+        </div>
+      </section>
+      <section class="sec t-light" id="contact">
+        <div class="w ct two">
+          <div class="box rv">
+            <p class="kick">Get in touch</p>
+            <h2>Send us a message</h2>
+            <ul></ul>
+          </div>
+          <div class="rv">
+            <form
+              data-kora-form
+              data-endpoint="https://kora.example/api/public/sites/example/forms"
+              data-success="Thank you. We have received your message."
+              data-failure="Sorry, that did not send. Please use the contact details instead."
+              method="post"
+              action="https://kora.example/api/public/sites/example/forms"
+            >
+              <label for="contact1-name"
+                >Your name<input
+                  id="contact1-name"
+                  name="name"
+                  type="text"
+                  maxlength="200"
+                  required /></label
+              ><label for="contact1-phone"
+                >Phone<input
+                  id="contact1-phone"
+                  name="phone"
+                  type="tel"
+                  maxlength="200" /></label
+              ><label for="contact1-email"
+                >Email<input
+                  id="contact1-email"
+                  name="email"
+                  type="email"
+                  maxlength="200" /></label
+              ><label for="contact1-message"
+                >How can we help?<textarea
+                  id="contact1-message"
+                  name="message"
+                  rows="4"
+                  maxlength="2000"
+                  required
+                ></textarea>
+              </label>
+              <div class="hp" aria-hidden="true">
+                <label
+                  >Leave empty<input
+                    name="website"
+                    tabindex="-1"
+                    autocomplete="off"
+                /></label>
+              </div>
+              <button class="btn" type="submit">Send message</button>
+              <p class="form-status" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+      <section class="sec t-accent" id="faq">
+        <div class="w">
+          <div class="sh rv">
+            <p class="kick">Questions</p>
+            <h2>Good to know</h2>
+          </div>
+          <div class="fq rv">
+            <details>
+              <summary>Can I book or walk in?</summary>
+              <p>
+                Ask directly through the contact options so you know how to be
+                seen.
+              </p>
+            </details>
+            <details>
+              <summary>Should I bring a reference photo?</summary>
+              <p>Yes. It is the quickest way to describe the cut.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="ft t-light fs-local-card">
+      <div class="w">
+        <div class="lc">
+          <div class="fg">
+            <div><a class="brand" href="../index.html">Mr Lee</a></div>
+            <nav aria-label="Footer">
+              <h4>Explore</h4>
+              <ul>
+                <li><a href="../index.html">Home</a></li>
+                <li><a href="../haircuts/index.html">Haircuts</a></li>
+                <li><a href="../approach/index.html">How we work</a></li>
+                <li><a href="../gallery/index.html">Gallery</a></li>
+                <li><a href="../about/index.html">About</a></li>
+                <li><a href="../contact/index.html">Contact</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+        <p class="legal">© Mr Lee</p>
+        <p class="legal credits">Photography on this site is illustrative.</p>
+      </div>
+    </footer>
+
+    <script src="../site.js" defer></script>
+  </body>
+</html>

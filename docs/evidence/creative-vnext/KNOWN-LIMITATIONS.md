@@ -30,3 +30,14 @@ Stated plainly so a reviewer does not have to discover them.
 - **Preview iframe** is sandboxed with `allow-same-origin allow-scripts` (needed for the scaled preview); it only ever loads
   the platform's own rendered output, never owner-supplied HTML. There is no HTML editor.
 - **Seven pages maximum** for new sites; sites already above it keep their pages.
+
+## Observed in the final review
+
+- **Minimal-brief sites are thin where the owner said little.** From "I cut hair." the engine produces six pages with no
+  invented facts, but the Haircuts page is short (one offering sentence, two enquiry prompts) and, in one direction, type-led
+  with decorative plates because the few relevant barbershop photographs are claimed by the home and gallery pages first.
+- **Call-first contact layout** (call-led trades when a phone number is supplied) shows the number instead of an enquiry form;
+  this pre-dates this work.
+- **The photographer and agency directions do not all open with a photograph;** one of three does (see
+  `docs/research/RESEARCH-APPLICATION-2026.md`).
+- **Image licence audit covers 50 of the 64 catalogue photographs;** the other 14 are the earlier curated set.

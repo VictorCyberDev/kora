@@ -1,0 +1,39 @@
+[WebServer] (node:10344) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10416) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+  ✓   1 e2e/brand-center.spec.ts:79:5 › the owner reads the brand system Kora made (449ms)
+  ✓   2 e2e/brand-center.spec.ts:97:5 › changing the look saves a new draft and brand version; history stays untouched (645ms)
+  ✓   3 e2e/brand-center.spec.ts:121:5 › a design request Kora does not offer is refused, not guessed at (359ms)
+  ✓   4 e2e/brand-center.spec.ts:133:5 › voice is saved as a new Brand Kit version and survives a reload (1.5s)
+  ✓   5 e2e/brand-center.spec.ts:150:5 › the owner uploads a logo and sees it in the library (1.0s)
+[WebServer] {"level":50,"time":1794073385219,"pid":10416,"hostname":"vm","reqId":"97964bd2-f3c8-46c6-ade0-bbd5d65ccfac","err":{"type":"FastifyError","message":"Unsupported Media Type","stack":"FastifyError: Unsupported Media Type\n    at ContentTypeParser.run (/home/user/kora/node_modules/.pnpm/fastify@5.12.5/node_modules/fastify/lib/content-type-parser.js:202:16)\n    at Object.handleRequest (/home/user/kora/node_modules/.pnpm/fastify@5.12.5/node_modules/fastify/lib/handle-request.js:87:46)\n    at runPreParsing (/home/user/kora/node_modules/.pnpm/fastify@5.12.5/node_modules/fastify/lib/route.js:661:19)\n    at next (/home/user/kora/node_modules/.pnpm/fastify@5.12.5/node_modules/fastify/lib/hooks.js:236:9)\n    at handleResolve (/home/user/kora/node_modules/.pnpm/fastify@5.12.5/node_modules/fastify/lib/hooks.js:253:7)\n    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)","code":"FST_ERR_CTP_INVALID_MEDIA_TYPE","name":"FastifyError","statusCode":415},"msg":"request failed"}
+  ✓   6 e2e/brand-center.spec.ts:183:5 › a file that is not a picture is refused in plain words (21ms)
+  ✓   7 e2e/brand-center.spec.ts:203:5 › the owner asks in plain words and gets a proposal; nothing is made until they agree (1.3s)
+  ✓   8 e2e/brand-center.spec.ts:224:5 › the Brand Center fits a phone (378ms)
+  ✓   9 e2e/brand-center.spec.ts:240:5 › only the owner's organisation can read or change a brand (133ms)
+[WebServer] {"level":40,"time":1794073391398,"pid":10344,"hostname":"vm","incidentId":"e77b5be2-8f4b-44d7-a974-e4e8c6f4ff94","serviceId":"2d40c27e-af95-4afc-981c-ef6e952eb732","resourceId":"569d7267-56e2-48d8-8c61-fd34adb1de66","msg":"incident created"}
+  ✓  10 e2e/critical-flow.spec.ts:20:5 › a business owner builds, publishes, survives a bad release, and sees verified recovery (12.1s)
+  ✓  11 e2e/critical-flow.spec.ts:191:5 › public pages render and protected pages require sign-in (601ms)
+  ✓  12 e2e/critical-flow.spec.ts:208:5 › mobile layout has no horizontal overflow (397ms)
+  ✓  13 e2e/design-qa.spec.ts:95:7 › generated sites in a real browser › no horizontal overflow, one h1, readable landmarks, bundled fonts load at every width (3.8m)
+  ✓  14 e2e/design-qa.spec.ts:151:7 › generated sites in a real browser › passes automated accessibility checks (WCAG 2.1 A/AA) on every generated site (57.8s)
+  ✓  15 e2e/design-qa.spec.ts:176:7 › generated sites in a real browser › keyboard: skip link first, menu reachable on a phone, no keyboard traps (623ms)
+  ✓  16 e2e/design-qa.spec.ts:199:7 › generated sites in a real browser › performance budget: small, self-contained, no third-party requests (66ms)
+  ✓  17 e2e/editor.spec.ts:39:5 › an owner edits, reorders, replaces pictures, rewrites, undoes, previews on a phone and publishes (7.2s)
+  ✓  18 e2e/local-ai.spec.ts:52:5 › on-device AI (stubbed Prompt API) shapes the site; Kora validates it (1.2s)
+  ✓  19 e2e/local-ai.spec.ts:80:5 › with no on-device AI the same flow works and offers no AI option (1.0s)
+[WebServer] {"level":40,"time":1794073697720,"pid":10344,"hostname":"vm","incidentId":"ca988e9f-212b-43fd-a9ff-c246f637de1e","serviceId":"87ebca00-f5c3-4ad0-acb2-8160b5d64fde","resourceId":"569d7267-56e2-48d8-8c61-fd34adb1de66","msg":"incident created"}
+  ✓  20 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 320px (20.9s)
+  ✓  21 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 360px (21.0s)
+  ✓  22 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 390px (28.9s)
+  ✓  23 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 412px (20.6s)
+  ✓  24 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 600px (21.1s)
+  ✓  25 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 768px (21.1s)
+  ✓  26 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 1024px (22.7s)
+  ✓  27 e2e/responsive.spec.ts:270:7 › Kora's own UI works at 1280px (29.6s)
+
+  27 passed (8.5m)
