@@ -14,15 +14,15 @@ Machine-readable twin: `docs/research/data/category-design-principles-B.json` (r
 
 ## Evidence strength
 
-| Category | Sites read OK | Unreadable | Strength |
-|---|---|---|---|
-| Creative agency | Pentagram, Instrument | none tried beyond these | Medium (2 sites, no typography) |
-| Consultancy / creative tech | ustwo, thoughtbot | none | Medium-strong (2 sites, consistent) |
-| Photographer | Steve McCurry, Brandon Woelfel, Peter McKinnon (all text-only, images not described) | Chris Burkard (JS-only), Jose Villa (503), Annie Leibovitz (domain parked) | Weak-medium |
-| Home repair | Benjamin Franklin Plumbing, Mr. Electric, Mr. Handyman (nav only) | none | Medium (all franchises) |
-| Medical | Nuffield Health, Parsley Health (partial) | One Medical (403), Mayo Clinic (403), drmcminn.com (parked) | Weak |
-| Education | Varsity Tutors, Sylvan Learning, Tutorful | MyTutor (empty), Kumon (403), Mathnasium (403) | Medium-strong |
-| Real estate | Winkworth, Compass, Knight Frank | The Agency (JS-only), Hamptons (403) | Medium |
+| Category                    | Sites read OK                                                                        | Unreadable                                                                 | Strength                            |
+| --------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------------------------------- |
+| Creative agency             | Pentagram, Instrument                                                                | none tried beyond these                                                    | Medium (2 sites, no typography)     |
+| Consultancy / creative tech | ustwo, thoughtbot                                                                    | none                                                                       | Medium-strong (2 sites, consistent) |
+| Photographer                | Steve McCurry, Brandon Woelfel, Peter McKinnon (all text-only, images not described) | Chris Burkard (JS-only), Jose Villa (503), Annie Leibovitz (domain parked) | Weak-medium                         |
+| Home repair                 | Benjamin Franklin Plumbing, Mr. Electric, Mr. Handyman (nav only)                    | none                                                                       | Medium (all franchises)             |
+| Medical                     | Nuffield Health, Parsley Health (partial)                                            | One Medical (403), Mayo Clinic (403), drmcminn.com (parked)                | Weak                                |
+| Education                   | Varsity Tutors, Sylvan Learning, Tutorful                                            | MyTutor (empty), Kumon (403), Mathnasium (403)                             | Medium-strong                       |
+| Real estate                 | Winkworth, Compass, Knight Frank                                                     | The Agency (JS-only), Hamptons (403)                                       | Medium                              |
 
 tend.com was fetched by mistake (it is farm software) and is not used.
 
@@ -165,6 +165,7 @@ Sites read: nuffieldhealth.com (large provider, readable), parsleyhealth.com (te
 **Rules (10).** See JSON; intent-based tiles (2/2); conditions index (2/2); one primary action per screen (1/2); verifiable credentials (2/2, different forms); cost/insurance FAQ (1/2); emergency notice (0/2 on homepage, safety rule); calm need-led hero (1/2); limited testimonial use (1/2); factual fallback (derived); default nav (derived).
 
 **Must NOT be claimed without owner-supplied evidence**
+
 - Treatment outcomes, cure or success rates, or "clinically proven" statements.
 - Clinician qualifications, specialist status, registration numbers, regulator ratings or registrations.
 - "Best", "leading", "award-winning", rankings.
@@ -202,6 +203,7 @@ Sites read: varsitytutors.com, sylvanlearning.com, tutorful.co.uk (2026-11-07). 
 **Rules (10).** Intent-matched hero action (3/3); low-commitment first step (3/3); 3-4 step process (2/3); subject/level nav (3/3); show vetting only if real (3/3); stat band only with basis and date (3/3 use one, 1/3 qualifies, 2/3 leave claims unsourced); phone/short form (2/3); disclosures near claims (3/3); real photos over stock (2/3 use stock); honest fallback (derived).
 
 **Must NOT be claimed without owner-supplied evidence**
+
 - Grade improvement figures, pass rates, "guaranteed results".
 - "#1", "top" or "best" without a stated basis and date (CAP expects the basis of "No. 1" claims to be stated).
 - Tutor qualifications, vetting percentages, background-check statements.
@@ -239,6 +241,7 @@ Sites read: winkworth.co.uk, compass.com, knightfrank.com (2026-11-07). Not read
 **Rules (10).** Search or consultation hero (2/3 search-led, 1/3 advisory); 3-4 nav items (3/3); role signposts (3/3); valuation CTA (2/3); office finder plus short form (3/3); verified numbers and ratings only (2/3, 1/3 dated reviews); real listing photos only (2/3); regulatory notices in footer (2/3); optional insights section (2/3); honest new-agency fallback (derived).
 
 **Must NOT be claimed without owner-supplied evidence**
+
 - Sales figures, homes sold, days on market, achieved-price percentages.
 - Awards, market-leader or "No. 1 agent" claims.
 - Listings, prices or sold prices the owner has not supplied (UK Trading Standards view cited in search: "price on application" is likely misleading; price, council tax band and tenure are required material information on listings).

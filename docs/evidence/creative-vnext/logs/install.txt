@@ -1,4 +1,3 @@
-### install: pnpm install --frozen-lockfile
 Scope: all 19 workspace projects
 Lockfile is up to date, resolution step is skipped
 Already up to date
@@ -11,5 +10,4 @@ Already up to date
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
-Done in 872ms using pnpm v10.18.3
-EXIT=0
+Done in 744ms using pnpm v10.18.3

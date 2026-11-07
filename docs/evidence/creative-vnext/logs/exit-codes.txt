@@ -1,0 +1,3 @@
+install EXIT=0
+format EXIT=1
+lint EXIT=1
