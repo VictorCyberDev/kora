@@ -248,6 +248,11 @@ export function EditorPage() {
               </div>
               {err && <Notice kind="bad">{err}</Notice>}
               {notice && <Notice kind="ok">{notice}</Notice>}
+              <p className="muted small" data-testid="review-note">
+                Read every page before you publish. The wording is drafted from
+                what you told us, so check that it is true of your business and
+                replace any picture that is not yours.
+              </p>
 
               <div className="ed-grid">
                 <aside className="ed-pages" aria-label="Pages">
