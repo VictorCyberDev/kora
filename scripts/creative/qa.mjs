@@ -28,7 +28,11 @@ const matrix = JSON.parse(
 const [out, dirIx = "0"] = process.argv.slice(2);
 const browser = await chromium.launch();
 const rows = [];
-for (const c of matrix) {
+for (const c of matrix.filter(
+  (m) =>
+    !process.env.KORA_QA_KEYS ||
+    process.env.KORA_QA_KEYS.split(",").includes(m.key),
+)) {
   const d = planDirectionsV3({
     name: c.name,
     description: c.description,
@@ -112,6 +116,13 @@ for (const c of matrix) {
           await new Promise((r) => setTimeout(r, 40));
         }
         window.scrollTo(0, 0);
+        // wait for every image to finish loading (a missing or corrupt file still ends with naturalWidth 0)
+        [...document.images].forEach((i) => (i.loading = "eager"));
+        await Promise.all(
+          [...document.images].map((i) =>
+            i.complete ? 0 : i.decode().catch(() => {}),
+          ),
+        );
       });
       const m = await page.evaluate(() => ({
         sw: document.documentElement.scrollWidth,
