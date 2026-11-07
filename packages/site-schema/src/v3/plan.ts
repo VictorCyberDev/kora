@@ -27,7 +27,12 @@ import {
   type HeroLayout,
   type VerticalIntel,
 } from "@kora/creative";
-import { catalogMediaPool, catalogTopicsForUrl } from "../v2/catalog.js";
+import {
+  catalogExclude,
+  catalogMediaPool,
+  catalogTopicsForUrl,
+  recipeForVertical,
+} from "../v2/catalog.js";
 import { extractServicesV2 } from "../v2/plan.js";
 import { paletteFromColorway } from "./palette.js";
 import { GRAMMARS } from "@kora/creative";
@@ -40,38 +45,11 @@ import {
 
 type Page = SiteSpecV3["pages"][number];
 
-/** Stock that would misrepresent the business is excluded even when the catalogue tags it for the trade. */
-const CATALOG_EXCLUDE: Record<string, RegExp> = {
-  bakery: /interior|dining|tables?\b|window|room|restaurant|cafe|café/i,
-  cafe: /portrait/i,
-};
 /** Sentences that talk about the owner's situation or wishes, not the business; never public copy. */
 const META =
   /\b(i|we)\s+(only\s+|just\s+)?(have|want|need|would like|am looking|are looking|hope)\b|\bmore\s+(bookings|customers|orders|sales|clients|leads)\b|\bmy\s+(photos?|logo|whatsapp|website)\b|\bphone photos?\b/i;
 const HOME_BASED =
   /\bfrom\s+(my\s+)?home\b|home.?based|online only|delivery only|mobile (service|barber|mechanic)|we come to you|house calls?/i;
-const CATALOG: Record<string, string> = {
-  bakery: "cake-business",
-  cafe: "cafe-bakery",
-  restaurant: "restaurant",
-  bukka: "bukka",
-  catering: "catering",
-  barber: "barber",
-  law: "law",
-  "electronics-repair": "electronics-repair",
-  gadgets: "electronics-repair",
-  salon: "salon",
-  nails: "nails",
-  makeup: "makeup",
-  fashion: "fashion",
-  tailor: "tailor",
-  plumbing: "plumbing",
-  cleaning: "cleaning",
-  photographer: "photographer",
-  events: "events",
-  "digital-studio": "digital-studio",
-  agency: "agency",
-};
 
 export interface OwnerPhotoInput {
   id: string;
@@ -260,8 +238,8 @@ function mediaFor(
       source: "owner",
       ownerCount: own.all.length,
     };
-  const recipe = CATALOG[vertical.id];
-  const ex = CATALOG_EXCLUDE[vertical.id];
+  const recipe = recipeForVertical(vertical.id);
+  const ex = catalogExclude(vertical.id);
   // The trade's own pictures plus any picture tagged for an offering the owner confirmed (a bakery that sells small chops
   // draws those too). Never a picture for something the owner did not say.
   const stock = catalogMediaPool(recipe, topicIds, mode, 18)

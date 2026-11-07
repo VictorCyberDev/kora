@@ -3,9 +3,13 @@ import { z } from "zod";
 import { buildBlueprint } from "@kora/creative";
 import {
   buildImageManifest,
+  catalogExclude,
+  catalogMediaPool,
   manifestReplacements,
+  recipeForVertical,
   type SiteSpecV3,
 } from "@kora/site-schema";
+import { resolveVertical } from "@kora/creative";
 import {
   ProviderError,
   UnsplashProvider,
@@ -155,6 +159,68 @@ export function registerMediaRoutes(
               ],
             }
           : {}),
+      },
+    };
+  });
+
+  // Pictures from Kora's own vetted catalogue that suit this business, for the editor's picker. Nothing external is called.
+  app.get("/api/sites/:id/media/catalogue", async (req) => {
+    const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+    const { site } = await d.siteFor(req, id, "VIEWER");
+    const bp = buildBlueprint({
+      name: site.name,
+      description: site.description || site.name,
+    });
+    const topics = bp.confirmedOfferCategories
+      .map((c) => c.topicId)
+      .filter((t): t is string => !!t);
+    const vid = resolveVertical(`${site.name} ${site.description}`).id;
+    const recipe = recipeForVertical(vid);
+    const ex = catalogExclude(vid);
+    return {
+      data: catalogMediaPool(recipe, topics, "light", 40)
+        .filter((m) => !ex?.test(m.alt))
+        .map((m) => ({
+          url: m.url,
+          alt: m.alt,
+          width: m.width,
+          height: m.height,
+          credit: m.attribution ?? "",
+          license: m.license ?? "",
+        })),
+    };
+  });
+
+  // The owner's own uploaded photos, with the public address a published site would use. Without an https media origin the
+  // pictures cannot be embedded in a site, and the list says so instead of offering something that would fail.
+  app.get("/api/sites/:id/media/owner", async (req) => {
+    const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
+    const { site } = await d.siteFor(req, id, "VIEWER");
+    const raw = (
+      d.config.KORA_MEDIA_PUBLIC_URL ??
+      d.config.KORA_PUBLIC_URL ??
+      ""
+    ).replace(/\/+$/, "");
+    const base = /^https:\/\//.test(raw) ? raw : null;
+    const rows =
+      await sql`SELECT id,alt,width,height,role,sha256,quality FROM owner_media WHERE site_id=${site.id} AND kind='photo' AND removed_at IS NULL ORDER BY created_at DESC LIMIT 100`;
+    return {
+      data: {
+        usable: base !== null,
+        note: base
+          ? null
+          : "Your photos can be used on a published site once this deployment has a public https address for pictures.",
+        items: rows.map((r) => ({
+          id: String(r.id),
+          alt: String(r.alt),
+          width: Number(r.width),
+          height: Number(r.height),
+          role: String(r.role),
+          url: base
+            ? `${base}/api/public/sites/${site.id}/m/${String(r.sha256)}/w1280.webp`
+            : null,
+          thumbUrl: `/api/sites/${site.id}/media-library/${String(r.id)}/file?v=thumb`,
+        })),
       },
     };
   });

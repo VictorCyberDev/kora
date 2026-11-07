@@ -3,13 +3,8 @@
     "id": "bakery-chocolate-cake-happy-birthday-candles",
     "file": "bakery-chocolate-cake-happy-birthday-candles.webp",
     "alt": "A chocolate frosted cake topped with lit candles shaped as the letters of 'Happy Birthday' and chocolate leaf decorations.",
-    "topics": [
-      "cakes"
-    ],
-    "recipes": [
-      "cake-business",
-      "cafe-bakery"
-    ],
+    "topics": ["cakes"],
+    "recipes": ["cake-business", "cafe-bakery"],
     "tone": "any",
     "focal": {
       "x": 0.45,
@@ -27,14 +22,8 @@
     "id": "bakery-birthday-cake-balloons-stand",
     "file": "bakery-birthday-cake-balloons-stand.webp",
     "alt": "A white frosted cake with yellow, blue and orange painted icing and lit candles on a pale teal cake stand, with yellow balloons behind it.",
-    "topics": [
-      "cakes"
-    ],
-    "recipes": [
-      "cake-business",
-      "cafe-bakery",
-      "catering"
-    ],
+    "topics": ["cakes"],
+    "recipes": ["cake-business", "cafe-bakery", "catering"],
     "tone": "any",
     "focal": {
       "x": 0.7,
@@ -52,13 +41,8 @@
     "id": "bakery-wedding-cake-flowers-pearl-stand",
     "file": "bakery-wedding-cake-flowers-pearl-stand.webp",
     "alt": "A two-tier white textured-icing cake decorated with cream roses and greenery on a pearl-trimmed cake stand, with string lights behind.",
-    "topics": [
-      "cakes"
-    ],
-    "recipes": [
-      "cake-business",
-      "catering"
-    ],
+    "topics": ["cakes"],
+    "recipes": ["cake-business", "catering"],
     "tone": "dark",
     "focal": {
       "x": 0.55,
@@ -76,13 +60,8 @@
     "id": "bakery-wedding-cake-red-roses",
     "file": "bakery-wedding-cake-red-roses.webp",
     "alt": "A three-tier white fondant cake with rows of red sugar roses and a rose cluster on top, standing on a lace-covered table in a banquet hall.",
-    "topics": [
-      "cakes"
-    ],
-    "recipes": [
-      "cake-business",
-      "catering"
-    ],
+    "topics": ["cakes"],
+    "recipes": ["cake-business", "catering"],
     "tone": "light",
     "focal": {
       "x": 0.55,
@@ -100,13 +79,8 @@
     "id": "bakery-tall-wedding-cake-lights",
     "file": "bakery-tall-wedding-cake-lights.webp",
     "alt": "A tall five-tier white cake with sugar flowers down one side and hand-painted scenery on the lower tiers, on a round table among flower arrangements and hanging bulbs.",
-    "topics": [
-      "cakes"
-    ],
-    "recipes": [
-      "cake-business",
-      "catering"
-    ],
+    "topics": ["cakes"],
+    "recipes": ["cake-business", "catering"],
     "tone": "dark",
     "focal": {
       "x": 0.42,
@@ -124,14 +98,8 @@
     "id": "bakery-cupcakes-pink-icing-sprinkles",
     "file": "bakery-cupcakes-pink-icing-sprinkles.webp",
     "alt": "Four cupcakes with swirled pink icing and heart-shaped sprinkles in paper cases on a dark wooden surface scattered with more sprinkles.",
-    "topics": [
-      "cakes",
-      "pastries"
-    ],
-    "recipes": [
-      "cake-business",
-      "cafe-bakery"
-    ],
+    "topics": ["cakes", "pastries"],
+    "recipes": ["cake-business", "cafe-bakery"],
     "tone": "dark",
     "focal": {
       "x": 0.5,
@@ -149,15 +117,8 @@
     "id": "bakery-cupcakes-blue-frosting-tray",
     "file": "bakery-cupcakes-blue-frosting-tray.webp",
     "alt": "Chocolate cupcakes topped with swirls of bright blue frosting in brown paper cases on a round gold-framed tray, with more cupcakes with yellow sprinkles around it.",
-    "topics": [
-      "cakes",
-      "pastries"
-    ],
-    "recipes": [
-      "cake-business",
-      "cafe-bakery",
-      "catering"
-    ],
+    "topics": ["cakes", "pastries"],
+    "recipes": ["cake-business", "cafe-bakery", "catering"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -175,12 +136,8 @@
     "id": "bakery-bread-loaves-stacked",
     "file": "bakery-bread-loaves-stacked.webp",
     "alt": "Rows of rectangular baked bread loaves with dark crusts stacked in layers on a wooden shelf.",
-    "topics": [
-      "bread"
-    ],
-    "recipes": [
-      "cafe-bakery"
-    ],
+    "topics": ["bread"],
+    "recipes": ["cafe-bakery"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -198,13 +155,8 @@
     "id": "bakery-sesame-rolls-tray",
     "file": "bakery-sesame-rolls-tray.webp",
     "alt": "Golden brown bread rolls topped with sesame seeds sitting on a baking tray lined with foil or paper.",
-    "topics": [
-      "bread",
-      "baking"
-    ],
-    "recipes": [
-      "cafe-bakery"
-    ],
+    "topics": ["bread", "baking"],
+    "recipes": ["cafe-bakery"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -222,13 +174,8 @@
     "id": "bakery-cinnamon-rolls-baked",
     "file": "bakery-cinnamon-rolls-baked.webp",
     "alt": "Close-up of a baked cinnamon roll with a sugar-dusted spiral of cinnamon filling, with other rolls partly visible at the edges.",
-    "topics": [
-      "pastries"
-    ],
-    "recipes": [
-      "cafe-bakery",
-      "cake-business"
-    ],
+    "topics": ["pastries"],
+    "recipes": ["cafe-bakery", "cake-business"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -246,14 +193,8 @@
     "id": "bakery-brushing-croissant-dough",
     "file": "bakery-brushing-croissant-dough.webp",
     "alt": "A person in a yellow apron brushes unbaked croissant shapes on a parchment-lined baking tray while holding a white bowl.",
-    "topics": [
-      "baking",
-      "pastries"
-    ],
-    "recipes": [
-      "cafe-bakery",
-      "cake-business"
-    ],
+    "topics": ["baking", "pastries"],
+    "recipes": ["cafe-bakery", "cake-business"],
     "tone": "light",
     "focal": {
       "x": 0.7,
@@ -271,13 +212,8 @@
     "id": "bakery-croissant-dough-tray",
     "file": "bakery-croissant-dough-tray.webp",
     "alt": "Shaped, unbaked croissants on a dark baking mat, the nearest ones in sharp focus.",
-    "topics": [
-      "baking",
-      "pastries"
-    ],
-    "recipes": [
-      "cafe-bakery"
-    ],
+    "topics": ["baking", "pastries"],
+    "recipes": ["cafe-bakery"],
     "tone": "dark",
     "focal": {
       "x": 0.65,
@@ -295,13 +231,8 @@
     "id": "bakery-bread-loaves-in-oven",
     "file": "bakery-bread-loaves-in-oven.webp",
     "alt": "Loaves of bread baking on two shelves inside a commercial oven, lit by the oven lamp.",
-    "topics": [
-      "bread",
-      "baking"
-    ],
-    "recipes": [
-      "cafe-bakery"
-    ],
+    "topics": ["bread", "baking"],
+    "recipes": ["cafe-bakery"],
     "tone": "dark",
     "focal": {
       "x": 0.5,
@@ -319,14 +250,8 @@
     "id": "bakery-dusting-danish-pastries",
     "file": "bakery-dusting-danish-pastries.webp",
     "alt": "Powdered sugar falls through a metal sieve held over a tray of baked danish pastries with custard centres.",
-    "topics": [
-      "pastries",
-      "baking"
-    ],
-    "recipes": [
-      "cafe-bakery",
-      "cake-business"
-    ],
+    "topics": ["pastries", "baking"],
+    "recipes": ["cafe-bakery", "cake-business"],
     "tone": "dark",
     "focal": {
       "x": 0.4,
@@ -344,14 +269,8 @@
     "id": "smallchops-plantain-skewers-buffet",
     "file": "smallchops-plantain-skewers-buffet.webp",
     "alt": "Fried plantain slices in one steel chafing dish and skewers of fried plantain pieces with onion and green pepper in the dish behind it.",
-    "topics": [
-      "small-chops"
-    ],
-    "recipes": [
-      "catering",
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["small-chops"],
+    "recipes": ["catering", "restaurant", "bukka"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -369,14 +288,8 @@
     "id": "smallchops-fried-snacks-red-bowls",
     "file": "smallchops-fried-snacks-red-bowls.webp",
     "alt": "Red mugs on a tray filled with fried party snacks: samosa-style pastries, round fried dough balls, small rolls and glazed chicken pieces, with lime slices and wooden skewers.",
-    "topics": [
-      "small-chops"
-    ],
-    "recipes": [
-      "catering",
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["small-chops"],
+    "recipes": ["catering", "restaurant", "bukka"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -394,13 +307,8 @@
     "id": "smallchops-finger-food-gathering",
     "file": "smallchops-finger-food-gathering.webp",
     "alt": "A buffet board of finger foods: triangle sandwiches, small quiches, meatballs, sausage rolls, cherry-tomato and cucumber skewers and a sliced baked flatbread.",
-    "topics": [
-      "small-chops"
-    ],
-    "recipes": [
-      "catering",
-      "restaurant"
-    ],
+    "topics": ["small-chops"],
+    "recipes": ["catering", "restaurant"],
     "tone": "light",
     "focal": {
       "x": 0.5,
@@ -418,14 +326,8 @@
     "id": "smallchops-samosa-colander",
     "file": "smallchops-samosa-colander.webp",
     "alt": "Freshly fried golden samosas resting in a perforated steel colander.",
-    "topics": [
-      "small-chops"
-    ],
-    "recipes": [
-      "catering",
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["small-chops"],
+    "recipes": ["catering", "restaurant", "bukka"],
     "tone": "light",
     "focal": {
       "x": 0.45,
@@ -443,13 +345,8 @@
     "id": "smallchops-party-tray-sandwiches-rolls",
     "file": "smallchops-party-tray-sandwiches-rolls.webp",
     "alt": "Top-down view of party trays holding fried dough-wrapped rolls, triangle finger sandwiches on picks with pickle pieces and sweets, and a small egg-topped savoury cup in a paper case.",
-    "topics": [
-      "small-chops"
-    ],
-    "recipes": [
-      "catering",
-      "restaurant"
-    ],
+    "topics": ["small-chops"],
+    "recipes": ["catering", "restaurant"],
     "tone": "any",
     "focal": {
       "x": 0.5,

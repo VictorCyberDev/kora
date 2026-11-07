@@ -315,3 +315,37 @@ export function catalogMediaFor(
 ): Media | undefined {
   return catalogMediaSetFor(recipeId, mode, 1)[0];
 }
+
+/** Which catalogue recipe suits each vertical (verticals without one have no catalogue photographs). */
+const RECIPE_FOR_VERTICAL: Record<string, string> = {
+  bakery: "cake-business",
+  cafe: "cafe-bakery",
+  restaurant: "restaurant",
+  bukka: "bukka",
+  catering: "catering",
+  barber: "barber",
+  law: "law",
+  "electronics-repair": "electronics-repair",
+  gadgets: "electronics-repair",
+  salon: "salon",
+  nails: "nails",
+  makeup: "makeup",
+  fashion: "fashion",
+  tailor: "tailor",
+  plumbing: "plumbing",
+  cleaning: "cleaning",
+  photographer: "photographer",
+  events: "events",
+  "digital-studio": "digital-studio",
+  agency: "agency",
+};
+export const recipeForVertical = (verticalId: string): string | undefined =>
+  RECIPE_FOR_VERTICAL[verticalId];
+
+/** Pictures that would misrepresent a trade are left out even when the catalogue tags them for it (an interior shot is not a bakery's cake). */
+const EXCLUDE: Record<string, RegExp> = {
+  bakery: /interior|dining|tables?\b|window|room|restaurant|cafe|café/i,
+  cafe: /portrait/i,
+};
+export const catalogExclude = (verticalId: string): RegExp | undefined =>
+  EXCLUDE[verticalId];

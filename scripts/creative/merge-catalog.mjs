@@ -3,15 +3,24 @@
 import fs from "node:fs";
 const root = new URL("../../", import.meta.url).pathname;
 const dir = `${root}packages/site-media/catalog-source/`;
-const files = fs.readdirSync(dir).filter((f) => /^catalog-additions-.*\.json$/.test(f)).sort();
+const files = fs
+  .readdirSync(dir)
+  .filter((f) => /^catalog-additions-.*\.json$/.test(f))
+  .sort();
 const all = files.flatMap((f) => JSON.parse(fs.readFileSync(dir + f, "utf8")));
 // One Pexels photo is one catalogue entry, however many agents found it: merge recipes and topics, keep the first file.
 const byPexels = new Map();
 for (const e of all) {
   const prev = byPexels.get(e.pexelsId);
-  if (!prev) byPexels.set(e.pexelsId, { ...e, recipes: [...e.recipes], topics: [...e.topics] });
+  if (!prev)
+    byPexels.set(e.pexelsId, {
+      ...e,
+      recipes: [...e.recipes],
+      topics: [...e.topics],
+    });
   else {
-    for (const r of e.recipes) if (!prev.recipes.includes(r)) prev.recipes.push(r);
+    for (const r of e.recipes)
+      if (!prev.recipes.includes(r)) prev.recipes.push(r);
     for (const t of e.topics) if (!prev.topics.includes(t)) prev.topics.push(t);
     if (!prev.drop) prev.drop = [];
     prev.drop.push(e.file);
@@ -19,10 +28,14 @@ for (const e of all) {
 }
 const entries = [...byPexels.values()];
 for (const e of entries) {
-  if (!fs.existsSync(`${root}packages/site-media/files/${e.file}`)) throw new Error(`missing file ${e.file}`);
-  if (!/^[a-z0-9-]+\.webp$/.test(e.file)) throw new Error(`bad file name ${e.file}`);
-  if (!e.viewedAndVerified) throw new Error(`${e.id} was not viewed and verified`);
-  for (const d of e.drop ?? []) fs.rmSync(`${root}packages/site-media/files/${d}`, { force: true });
+  if (!fs.existsSync(`${root}packages/site-media/files/${e.file}`))
+    throw new Error(`missing file ${e.file}`);
+  if (!/^[a-z0-9-]+\.webp$/.test(e.file))
+    throw new Error(`bad file name ${e.file}`);
+  if (!e.viewedAndVerified)
+    throw new Error(`${e.id} was not viewed and verified`);
+  for (const d of e.drop ?? [])
+    fs.rmSync(`${root}packages/site-media/files/${d}`, { force: true });
 }
 const q = (s) => JSON.stringify(s);
 const body = entries
@@ -52,4 +65,6 @@ ${body},
 ];
 `,
 );
-console.log(`wrote ${entries.length} entries (${all.length - entries.length} duplicate source photo(s) merged)`);
+console.log(
+  `wrote ${entries.length} entries (${all.length - entries.length} duplicate source photo(s) merged)`,
+);

@@ -1314,6 +1314,46 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       throw e;
     }
   });
+  // Undo and restore: copies an earlier version's design into a NEW draft. History is never rewritten and nothing goes live
+  // until the owner publishes it.
+  app.post(
+    "/api/sites/:id/versions/:versionId/restore-draft",
+    async (req, reply) => {
+      const { id, versionId } = z
+        .object({ id: uuid, versionId: uuid })
+        .parse(req.params);
+      const { site } = await siteFor(req, id, "MEMBER");
+      await entitled(site.orgId, "canGenerate");
+      const a = requireUser(req);
+      const row = await platform.getVersionRow(site.id, versionId);
+      if (!row) throw notFound();
+      const version = await buildVersion(
+        site,
+        row.spec as AnySiteSpec,
+        "EDIT_STRUCTURED",
+        a.userId,
+        String(row.id),
+      );
+      await platform.recordGeneration({
+        siteId: site.id,
+        orgId: site.orgId,
+        kind: "EDIT",
+        prompt: `restore version ${String(row.number)}`,
+        status: "SUCCEEDED",
+        source: "EDIT_STRUCTURED",
+        versionId: version.id,
+        inputTokens: null,
+        outputTokens: null,
+        createdBy: a.userId,
+      });
+      return reply.code(201).send({
+        data: {
+          version,
+          restoredFrom: { id: String(row.id), number: Number(row.number) },
+        },
+      });
+    },
+  );
   app.get("/api/sites/:id/versions", async (req) => ({
     data: await platform.listVersions(
       (await siteFor(req, idParam.parse(req.params).id)).site.id,

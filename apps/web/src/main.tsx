@@ -11,6 +11,7 @@ import "./studio-v5.css";
 import "./mobile-v5.css";
 import "./landing-v6.css";
 import "./landing-v7.css";
+import "./editor.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -24,6 +24,14 @@ import {
   type SiteSpecV3,
 } from "./spec.js";
 import { claimIssues } from "@kora/creative";
+import { EditV3Error } from "./errors.js";
+import {
+  ADDABLE_PAGES,
+  ADDABLE_SECTIONS,
+  composePage,
+  composeSection,
+  type AddableSection,
+} from "./compose.js";
 import { createHash } from "node:crypto";
 import { MEDIA_CATALOG, MEDIA_URL_PREFIX } from "../v2/catalog.js";
 
@@ -118,6 +126,7 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     page: z.string().max(40),
     index: z.number().int().min(0).max(30),
     heading: z.string().trim().min(1).max(120).optional(),
+    subheading: z.string().trim().max(280).optional(),
     intro: z.string().trim().max(300).optional(),
     body: z.array(z.string().trim().min(1).max(900)).min(1).max(4).optional(),
   }),
@@ -132,18 +141,50 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     selectionToken: z.string().max(6000).optional(),
   }),
   z.object({
+    kind: z.literal("add-section"),
+    page: z.string().max(40),
+    section: z.enum(ADDABLE_SECTIONS),
+    at: z.number().int().min(0).max(16).optional(),
+  }),
+  z.object({
+    kind: z.literal("regenerate-section"),
+    page: z.string().max(40),
+    index: z.number().int().min(0).max(30),
+  }),
+  z.object({ kind: z.literal("regenerate-page"), page: z.string().max(40) }),
+  z.object({ kind: z.literal("add-page"), page: z.enum(ADDABLE_PAGES) }),
+  z.object({
+    kind: z.literal("item"),
+    page: z.string().max(40),
+    index: z.number().int().min(0).max(30),
+    action: z.enum(["add", "remove", "update"]),
+    item: z.number().int().min(0).max(12).optional(),
+    /** Offer, product and step items: the name. FAQ items: the question. */
+    title: z.string().trim().min(1).max(200).optional(),
+    /** Offer, product and step items: the description. FAQ items: the answer. */
+    text: z.string().trim().max(700).optional(),
+    /** Only ever a price the owner supplies; numbers need an owner confirmation like any other claim. */
+    price: z.string().trim().max(40).optional(),
+  }),
+  z.object({
+    kind: z.literal("seo"),
+    title: z.string().trim().min(1).max(70).optional(),
+    description: z.string().trim().max(180).optional(),
+  }),
+  z.object({
+    kind: z.literal("page-meta"),
+    page: z.string().max(40),
+    title: z.string().trim().min(1).max(80).optional(),
+    nav: z.string().trim().min(1).max(30).optional(),
+  }),
+  z.object({
     kind: z.literal("cta-label"),
     label: z.string().trim().min(2).max(40),
   }),
 ]);
 export type StructuredEditV3 = z.infer<typeof structuredEditV3Schema>;
 
-export class EditV3Error extends Error {
-  constructor(m: string) {
-    super(m);
-    this.name = "EditV3Error";
-  }
-}
+export { EditV3Error } from "./errors.js";
 
 /** What each nudge does to the genome. All values are vocabulary members, so the result always validates. */
 function nudge(g: DesignGenome, n: Nudge): DesignGenome {
@@ -428,9 +469,12 @@ export function applyStructuredEditV3(
       const sec = page?.sections[e.index] as
         Record<string, unknown> | undefined;
       if (!page || !sec) throw new EditV3Error("That section does not exist.");
-      const texts = [e.heading, e.intro, ...(e.body ?? [])].filter(
-        (t): t is string => !!t,
-      );
+      const texts = [
+        e.heading,
+        e.subheading,
+        e.intro,
+        ...(e.body ?? []),
+      ].filter((t): t is string => !!t);
       for (const t of texts) {
         if (findCliches(t).length)
           throw new EditV3Error(
@@ -442,6 +486,11 @@ export function applyStructuredEditV3(
         if (!("heading" in sec))
           throw new EditV3Error("This section has no heading.");
         sec.heading = e.heading;
+      }
+      if (e.subheading !== undefined) {
+        if (sec.type !== "hero")
+          throw new EditV3Error("Only an opening section has a subheading.");
+        sec.subheading = e.subheading;
       }
       if (e.intro !== undefined) {
         if (!("intro" in sec))
@@ -512,6 +561,173 @@ export function applyStructuredEditV3(
           );
       target.media = e.media;
       delete target.plate;
+      break;
+    }
+    case "add-section": {
+      const page = next.pages.find((p) => p.slug === e.page);
+      if (!page) throw new EditV3Error("That page does not exist.");
+      if (page.sections.length >= 16)
+        throw new EditV3Error("That page is full.");
+      const sec = composeSection(next, e.section, page);
+      const close = page.sections.findIndex(
+        (x) => x.type === "cta" || x.type === "contact",
+      );
+      const at = Math.min(
+        Math.max(e.at ?? (close < 0 ? page.sections.length : close), 1),
+        page.sections.length,
+      );
+      page.sections.splice(at, 0, sec);
+      break;
+    }
+    case "regenerate-section":
+    case "regenerate-page": {
+      const page = next.pages.find((p) => p.slug === e.page);
+      if (!page) throw new EditV3Error("That page does not exist.");
+      const targets =
+        e.kind === "regenerate-section"
+          ? [e.index]
+          : page.sections
+              .map((_, i) => i)
+              .filter((i) =>
+                (ADDABLE_SECTIONS as readonly string[]).includes(
+                  page.sections[i]!.type,
+                ),
+              );
+      if (!targets.length)
+        throw new EditV3Error(
+          "There is nothing on this page that can be rewritten.",
+        );
+      for (const i of targets) {
+        const old = page.sections[i] as unknown as
+          Record<string, unknown> | undefined;
+        if (!old) throw new EditV3Error("That section does not exist.");
+        if (
+          !(ADDABLE_SECTIONS as readonly string[]).includes(old.type as string)
+        )
+          throw new EditV3Error(
+            "Kora can rewrite stories, questions, steps, offers, galleries and calls to action. Edit this one by hand.",
+          );
+        const without = {
+          ...page,
+          sections: page.sections.filter((_, j) => j !== i),
+        };
+        const fresh = composeSection(
+          next,
+          old.type as AddableSection,
+          without,
+        ) as unknown as Record<string, unknown>;
+        // Rewriting changes the words, never the design: the layout and the owner's own pictures stay.
+        if ("layout" in old && "layout" in fresh && old.type !== "gallery")
+          fresh.layout = old.layout;
+        if (old.type === "story") {
+          if (old.media) fresh.media = old.media;
+          if (old.plate) fresh.plate = old.plate;
+        }
+        if (old.type === "offer" || old.type === "products") {
+          const oi = old.items as Array<Record<string, unknown>>;
+          (fresh.items as Array<Record<string, unknown>>).forEach((it, k) => {
+            if (oi[k]?.media) it.media = oi[k]!.media;
+            if (oi[k]?.plate) it.plate = oi[k]!.plate;
+            if (oi[k]?.price) it.price = oi[k]!.price;
+          });
+        }
+        page.sections[i] = fresh as unknown as SectionV3;
+      }
+      break;
+    }
+    case "add-page": {
+      if (next.pages.length >= Math.max(MAX_SITE_PAGES, spec.pages.length))
+        throw new EditV3Error(
+          `A site can have at most ${MAX_SITE_PAGES} pages. Remove one first.`,
+        );
+      if (next.pages.some((p) => p.slug === e.page))
+        throw new EditV3Error("There is already a page like that.");
+      const pg = composePage(next, e.page);
+      const contact = next.pages.findIndex((p) => p.slug === "contact");
+      next.pages.splice(
+        contact >= 0 && contact === next.pages.length - 1
+          ? contact
+          : next.pages.length,
+        0,
+        pg,
+      );
+      break;
+    }
+    case "item": {
+      const page = next.pages.find((p) => p.slug === e.page);
+      const sec = page?.sections[e.index] as unknown as
+        { type: string; items?: Array<Record<string, unknown>> } | undefined;
+      if (!page || !sec) throw new EditV3Error("That section does not exist.");
+      if (
+        !["offer", "products", "process", "faq"].includes(sec.type) ||
+        !sec.items
+      )
+        throw new EditV3Error("This section has no list to change.");
+      const faq = sec.type === "faq";
+      const [a, b] = faq
+        ? (["question", "answer"] as const)
+        : (["title", "text"] as const);
+      for (const t of [e.title, e.text]) {
+        if (!t) continue;
+        if (findCliches(t).length)
+          throw new EditV3Error(
+            `"${findCliches(t)[0]}" is a generic phrase; say what you actually do.`,
+          );
+        needsConfirmation(t);
+      }
+      if (e.price) {
+        if (faq || sec.type === "process")
+          throw new EditV3Error("Only offers and products can have a price.");
+        needsConfirmation(e.price);
+      }
+      if (e.action === "add") {
+        if (!e.title) throw new EditV3Error("Give the new item a name first.");
+        if (faq && !e.text)
+          throw new EditV3Error("Give the new question an answer.");
+        sec.items.push({
+          [a]: e.title,
+          [b]: e.text ?? "",
+          ...(e.price ? { price: e.price } : {}),
+        });
+      } else {
+        const it = e.item === undefined ? undefined : sec.items[e.item];
+        if (!it) throw new EditV3Error("That item does not exist.");
+        if (e.action === "remove") {
+          const min = sec.type === "process" ? 2 : 1;
+          if (sec.items.length <= min)
+            throw new EditV3Error(
+              "This list needs to keep at least " +
+                min +
+                (min === 1 ? " item." : " items."),
+            );
+          sec.items.splice(e.item!, 1);
+        } else {
+          if (e.title !== undefined) it[a] = e.title;
+          if (e.text !== undefined) it[b] = e.text;
+          if (e.price !== undefined) it.price = e.price;
+        }
+      }
+      break;
+    }
+    case "seo": {
+      for (const t of [e.title, e.description]) {
+        if (!t) continue;
+        if (findCliches(t).length)
+          throw new EditV3Error(
+            `"${findCliches(t)[0]}" is a generic phrase; say what you actually do.`,
+          );
+        needsConfirmation(t);
+      }
+      if (e.title) next.seo.title = e.title;
+      if (e.description !== undefined) next.seo.description = e.description;
+      break;
+    }
+    case "page-meta": {
+      const page = next.pages.find((p) => p.slug === e.page);
+      if (!page) throw new EditV3Error("That page does not exist.");
+      for (const t of [e.title, e.nav]) if (t) needsConfirmation(t);
+      if (e.title) page.title = e.title;
+      if (e.nav) page.nav = e.nav;
       break;
     }
     case "cta-label": {

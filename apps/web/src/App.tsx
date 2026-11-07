@@ -27,6 +27,7 @@ import { SitesList } from "./pages/sites";
 import { NewSiteV6 } from "./pages/new-site-v6";
 import { Dashboard } from "./pages/dashboard-v3";
 import { Build } from "./pages/build";
+import { EditorPage } from "./pages/editor";
 import { MemoryPage, ResultsPage, ReviewsPage } from "./pages/intel";
 import { CampaignsPage, TodayPage } from "./pages/today";
 import { CalendarPage } from "./pages/calendar";
@@ -358,6 +359,7 @@ export function App() {
           <Route path="channels" element={<ChannelsPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="build" element={<Build />} />
+          <Route path="edit" element={<EditorPage />} />
           <Route path="deployments" element={<DeploymentsPage />} />
           <Route path="incidents" element={<IncidentsList />} />
           <Route path="incidents/:incidentId" element={<IncidentPage />} />

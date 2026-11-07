@@ -1,0 +1,349 @@
+/* Visual editor. Uses the app's tokens; no new colours. */
+.ed {
+  display: grid;
+  gap: 12px;
+}
+.ed-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.ed-bar .grow {
+  flex: 1;
+}
+.ed-bar .pill.ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.ed-versions {
+  position: relative;
+}
+.ed-versions summary {
+  list-style: none;
+  cursor: pointer;
+}
+.ed-versions ul {
+  position: absolute;
+  z-index: 20;
+  top: 110%;
+  left: 0;
+  min-width: 280px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 4px;
+}
+.ed-versions li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.seg {
+  display: inline-flex;
+  gap: 4px;
+}
+.seg .btn[aria-pressed="true"],
+.seg .btn[aria-selected="true"] {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand);
+}
+.ed-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+@media (min-width: 1100px) {
+  .ed-grid {
+    grid-template-columns: 230px minmax(0, 1fr) 340px;
+  }
+}
+.ed-pages,
+.ed-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.ed-pages h3,
+.ed-panel h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.ed-pages ol,
+.ed-sections,
+.ed-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.ed-pages li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  border-radius: 10px;
+}
+.ed-pages li.on {
+  background: var(--brand-soft);
+}
+.ed-pagebtn {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 8px 10px;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 10px;
+  min-height: 40px;
+}
+.ed-mini {
+  display: inline-flex;
+  gap: 2px;
+}
+.ed-mini button {
+  min-width: 32px;
+  min-height: 32px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+}
+.ed-mini button[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.ed-preview {
+  min-width: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+}
+.ed-frame {
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  flex: none;
+}
+.ed-frame iframe {
+  display: block;
+  border: 0;
+  transform-origin: 0 0;
+  background: #fff;
+}
+.ed-row {
+  display: grid;
+  gap: 6px;
+}
+.ed-row label,
+.ed-fields label,
+.ed-pages .field-hint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ed-save {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+.ed-save input,
+.ed-save textarea {
+  flex: 1;
+  min-width: 0;
+}
+.ed-sections li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+}
+.ed-sections li.open {
+  border-color: var(--brand);
+  background: var(--surface);
+}
+.ed-sechead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 4px;
+}
+.ed-secbtn {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: var(--ink);
+  padding: 8px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-height: 40px;
+}
+.ed-secbtn .tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--brand);
+  margin-right: 6px;
+}
+.ed-fields {
+  display: grid;
+  gap: 6px;
+  padding: 8px 12px 14px;
+}
+.ed-items li {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+}
+.ed-additem {
+  border-style: solid !important;
+  background: var(--surface-2);
+}
+.ed-add {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ed-thumbs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.ed-thumbs img,
+.ed-thumbs .ph {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--line);
+  display: block;
+}
+.ed-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(18, 32, 51, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.ed-modal-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  width: min(920px, 100%);
+  max-height: 88vh;
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+}
+.ed-choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.ed-choices li {
+  display: grid;
+  gap: 4px;
+}
+.ed-choices button {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: none;
+}
+.ed-choices button:hover,
+.ed-choices button:focus-visible {
+  border-color: var(--brand);
+}
+.ed-choices img {
+  width: 100%;
+  aspect-ratio: 3/2;
+  object-fit: cover;
+  display: block;
+}
+
+/* Grid children must be allowed to shrink or long inputs push the panel off screen. */
+.ed-pages,
+.ed-panel,
+.ed-preview,
+.ed-fields,
+.ed-field,
+.ed-items li,
+.ed-sections li,
+.ed-row {
+  min-width: 0;
+}
+.ed-pages > *,
+.ed-panel > *,
+.ed-fields > * {
+  min-width: 0;
+}
+.ed-field {
+  display: grid;
+  gap: 4px;
+}
+.ed-field label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.ed-save textarea {
+  resize: vertical;
+}
+
+.ed-pagebtn {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+.ed-pages li {
+  gap: 4px;
+}

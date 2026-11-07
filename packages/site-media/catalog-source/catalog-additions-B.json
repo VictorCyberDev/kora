@@ -3,13 +3,8 @@
     "id": "restaurant-grilled-chicken-rice-plate",
     "file": "restaurant-grilled-chicken-rice-plate.webp",
     "alt": "A white plate holding a grilled chicken leg, a mound of yellow seasoned rice and sauteed peppers and mushrooms on a wooden table.",
-    "topics": [
-      "menu"
-    ],
-    "recipes": [
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["menu"],
+    "recipes": ["restaurant", "bukka"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -27,13 +22,8 @@
     "id": "restaurant-spiced-rice-plantain-plate",
     "file": "restaurant-spiced-rice-plantain-plate.webp",
     "alt": "A rectangular white plate with a dome of brown spiced rice topped with a sauce, fried plantain pieces beside it and a small cup of red sauce with a spoon.",
-    "topics": [
-      "menu"
-    ],
-    "recipes": [
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["menu"],
+    "recipes": ["restaurant", "bukka"],
     "tone": "dark",
     "focal": {
       "x": 0.6,
@@ -51,13 +41,8 @@
     "id": "restaurant-stew-leaf-bowl",
     "file": "restaurant-stew-leaf-bowl.webp",
     "alt": "A leaf-shaped white bowl of orange-red stew with pieces of meat and a pool of finely chopped dark green leafy vegetable, on an orange woven mat.",
-    "topics": [
-      "menu"
-    ],
-    "recipes": [
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["menu"],
+    "recipes": ["restaurant", "bukka"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -75,14 +60,8 @@
     "id": "restaurant-plantain-skewers-buffet",
     "file": "restaurant-plantain-skewers-buffet.webp",
     "alt": "Stainless steel buffet trays holding fried plantain slices and plantain skewers threaded with onion, tomato and green pepper.",
-    "topics": [
-      "menu",
-      "occasions"
-    ],
-    "recipes": [
-      "restaurant",
-      "bukka"
-    ],
+    "topics": ["menu", "occasions"],
+    "recipes": ["restaurant", "bukka"],
     "tone": "any",
     "focal": {
       "x": 0.35,
@@ -100,14 +79,8 @@
     "id": "fashion-ankara-ruffle-sleeves",
     "file": "fashion-ankara-ruffle-sleeves.webp",
     "alt": "A woman in a pink and silver wax-print dress with tiered ruffled sleeves and a matching head wrap, photographed against a brown studio backdrop.",
-    "topics": [
-      "womenswear",
-      "shoots"
-    ],
-    "recipes": [
-      "fashion",
-      "tailor"
-    ],
+    "topics": ["womenswear", "shoots"],
+    "recipes": ["fashion", "tailor"],
     "tone": "dark",
     "focal": {
       "x": 0.5,
@@ -125,14 +98,8 @@
     "id": "fashion-ankara-blue-print-dress",
     "file": "fashion-ankara-blue-print-dress.webp",
     "alt": "A smiling woman in a blue and grey leaf-print beaded top with a matching head wrap and black statement earrings and necklace, in front of blurred green hedges.",
-    "topics": [
-      "womenswear",
-      "shoots"
-    ],
-    "recipes": [
-      "fashion",
-      "tailor"
-    ],
+    "topics": ["womenswear", "shoots"],
+    "recipes": ["fashion", "tailor"],
     "tone": "light",
     "focal": {
       "x": 0.45,
@@ -151,10 +118,7 @@
     "file": "fashion-tailor-cutting-pattern.webp",
     "alt": "Hands in white sleeves cutting orange fabric around a paper pattern piece on a wooden table, with large scissors, a notebook and printed photographs nearby.",
     "topics": [],
-    "recipes": [
-      "tailor",
-      "fashion"
-    ],
+    "recipes": ["tailor", "fashion"],
     "tone": "any",
     "focal": {
       "x": 0.55,
@@ -173,10 +137,7 @@
     "file": "fashion-sewing-atelier-mannequin.webp",
     "alt": "A woman in a white shirt with a yellow tape measure marking black fabric on a large table in a small atelier with a dress form, a rail of clothes, a sewing machine and folded fabrics.",
     "topics": [],
-    "recipes": [
-      "tailor",
-      "fashion"
-    ],
+    "recipes": ["tailor", "fashion"],
     "tone": "any",
     "focal": {
       "x": 0.55,
@@ -194,12 +155,8 @@
     "id": "fashion-boutique-dress-mannequin",
     "file": "fashion-boutique-dress-mannequin.webp",
     "alt": "A pink sundress on a mannequin in a shop doorway beside a rail of white, blue and floral dresses on hangers.",
-    "topics": [
-      "womenswear"
-    ],
-    "recipes": [
-      "fashion"
-    ],
+    "topics": ["womenswear"],
+    "recipes": ["fashion"],
     "tone": "light",
     "focal": {
       "x": 0.2,
@@ -217,12 +174,8 @@
     "id": "beauty-braids-orange-cornrows",
     "file": "beauty-braids-orange-cornrows.webp",
     "alt": "Top view of a head with cornrow braids that include thick peach-orange braiding extensions, with soft out-of-focus lights behind.",
-    "topics": [
-      "braids"
-    ],
-    "recipes": [
-      "salon"
-    ],
+    "topics": ["braids"],
+    "recipes": ["salon"],
     "tone": "light",
     "focal": {
       "x": 0.5,
@@ -240,12 +193,8 @@
     "id": "beauty-braiding-boho-hands",
     "file": "beauty-braiding-boho-hands.webp",
     "alt": "Back view of a person with long boho-style braids and loose curly ends while a second person's hand tidies the tips; a blurred street is behind them.",
-    "topics": [
-      "braids"
-    ],
-    "recipes": [
-      "salon"
-    ],
+    "topics": ["braids"],
+    "recipes": ["salon"],
     "tone": "light",
     "focal": {
       "x": 0.45,
@@ -263,12 +212,8 @@
     "id": "beauty-beaded-braids-side",
     "file": "beauty-beaded-braids-side.webp",
     "alt": "Close-up of thin braids finished with patterned wooden beads hanging beside an ear with a small hoop earring.",
-    "topics": [
-      "braids"
-    ],
-    "recipes": [
-      "salon"
-    ],
+    "topics": ["braids"],
+    "recipes": ["salon"],
     "tone": "dark",
     "focal": {
       "x": 0.65,
@@ -286,12 +231,8 @@
     "id": "beauty-salon-cutting-hands",
     "file": "beauty-salon-cutting-hands.webp",
     "alt": "Close-up of a hairdresser's hands holding a comb and thinning scissors to cut brown hair, with loose hair clippings in the air.",
-    "topics": [
-      "cuts"
-    ],
-    "recipes": [
-      "salon"
-    ],
+    "topics": ["cuts"],
+    "recipes": ["salon"],
     "tone": "dark",
     "focal": {
       "x": 0.4,
@@ -310,9 +251,7 @@
     "file": "beauty-makeup-swatches-arm.webp",
     "alt": "A forearm with six swatches of pink, red, orange and yellow makeup, with an eyeshadow palette and a hand blurred behind it.",
     "topics": [],
-    "recipes": [
-      "makeup"
-    ],
+    "recipes": ["makeup"],
     "tone": "light",
     "focal": {
       "x": 0.45,
@@ -331,9 +270,7 @@
     "file": "beauty-nails-teal.webp",
     "alt": "Close-up of a hand with long teal nails, one nail with white cloud detail and one pink nail with a teal palm-leaf design, wearing a thin gold and pearl ring.",
     "topics": [],
-    "recipes": [
-      "nails"
-    ],
+    "recipes": ["nails"],
     "tone": "dark",
     "focal": {
       "x": 0.5,

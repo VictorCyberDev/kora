@@ -3,14 +3,8 @@
     "id": "studio-wireframe-notebook",
     "file": "studio-wireframe-notebook.webp",
     "alt": "A spiral notebook with hand-drawn website wireframes, two pens and a dark smartphone on a wooden table.",
-    "topics": [
-      "websites",
-      "design"
-    ],
-    "recipes": [
-      "digital-studio",
-      "agency"
-    ],
+    "topics": ["websites", "design"],
+    "recipes": ["digital-studio", "agency"],
     "tone": "light",
     "focal": {
       "x": 0.6,
@@ -28,14 +22,8 @@
     "id": "studio-wireframe-closeup",
     "file": "studio-wireframe-closeup.webp",
     "alt": "A close-up of black-ink wireframe sketches on white paper showing image placeholders, text lines and a video play button.",
-    "topics": [
-      "websites",
-      "design"
-    ],
-    "recipes": [
-      "digital-studio",
-      "agency"
-    ],
+    "topics": ["websites", "design"],
+    "recipes": ["digital-studio", "agency"],
     "tone": "light",
     "focal": {
       "x": 0.5,
@@ -53,13 +41,8 @@
     "id": "studio-designer-3d-furniture",
     "file": "studio-designer-3d-furniture.webp",
     "alt": "A person seen from behind the shoulder working at a desktop monitor that shows 3D furniture models, with a keyboard and material samples on the desk.",
-    "topics": [
-      "design",
-      "offices"
-    ],
-    "recipes": [
-      "digital-studio"
-    ],
+    "topics": ["design", "offices"],
+    "recipes": ["digital-studio"],
     "tone": "light",
     "focal": {
       "x": 0.68,
@@ -77,13 +60,8 @@
     "id": "studio-tablet-sketching",
     "file": "studio-tablet-sketching.webp",
     "alt": "A person sketching a figure with a stylus on a tablet while a laptop with design software sits on a side table behind.",
-    "topics": [
-      "design"
-    ],
-    "recipes": [
-      "digital-studio",
-      "agency"
-    ],
+    "topics": ["design"],
+    "recipes": ["digital-studio", "agency"],
     "tone": "light",
     "focal": {
       "x": 0.65,
@@ -101,14 +79,8 @@
     "id": "studio-colour-swatch-fan",
     "file": "studio-colour-swatch-fan.webp",
     "alt": "A close-up of a fan of colour swatch cards in red, pink, purple, green and blue shades on a violet background.",
-    "topics": [
-      "branding",
-      "design"
-    ],
-    "recipes": [
-      "digital-studio",
-      "agency"
-    ],
+    "topics": ["branding", "design"],
+    "recipes": ["digital-studio", "agency"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -126,12 +98,8 @@
     "id": "repair-phone-circuit-board",
     "file": "repair-phone-circuit-board.webp",
     "alt": "A close-up of a smartphone logic board with a metal shield frame being probed with tweezers on a dark surface.",
-    "topics": [
-      "screens"
-    ],
-    "recipes": [
-      "electronics-repair"
-    ],
+    "topics": ["screens"],
+    "recipes": ["electronics-repair"],
     "tone": "dark",
     "focal": {
       "x": 0.45,
@@ -149,12 +117,8 @@
     "id": "repair-phone-screwdriver",
     "file": "repair-phone-screwdriver.webp",
     "alt": "Two hands working on an opened smartphone with a small screwdriver on a teal repair mat.",
-    "topics": [
-      "screens"
-    ],
-    "recipes": [
-      "electronics-repair"
-    ],
+    "topics": ["screens"],
+    "recipes": ["electronics-repair"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -172,13 +136,8 @@
     "id": "trades-plumber-radiator-pipe",
     "file": "trades-plumber-radiator-pipe.webp",
     "alt": "A plumber in work overalls and white gloves fitting a threaded steel pipe connector to a white radiator, with blue pipe wrenches on the bench.",
-    "topics": [
-      "installs",
-      "homes"
-    ],
-    "recipes": [
-      "plumbing"
-    ],
+    "topics": ["installs", "homes"],
+    "recipes": ["plumbing"],
     "tone": "any",
     "focal": {
       "x": 0.35,
@@ -196,12 +155,8 @@
     "id": "trades-plumber-pipe-fittings",
     "file": "trades-plumber-pipe-fittings.webp",
     "alt": "Two hands tightening brass and steel pipe fittings under a sink area lined with foil insulation.",
-    "topics": [
-      "installs"
-    ],
-    "recipes": [
-      "plumbing"
-    ],
+    "topics": ["installs"],
+    "recipes": ["plumbing"],
     "tone": "any",
     "focal": {
       "x": 0.35,
@@ -219,13 +174,8 @@
     "id": "trades-electrician-wall-sockets",
     "file": "trades-electrician-wall-sockets.webp",
     "alt": "An electrician's hands holding orange pliers and a wire above open wall socket boxes on a grey wall.",
-    "topics": [
-      "installs",
-      "homes"
-    ],
-    "recipes": [
-      "plumbing"
-    ],
+    "topics": ["installs", "homes"],
+    "recipes": ["plumbing"],
     "tone": "any",
     "focal": {
       "x": 0.5,
@@ -243,12 +193,8 @@
     "id": "cleaning-living-room-team",
     "file": "cleaning-living-room-team.webp",
     "alt": "Two cleaners in orange overalls vacuuming and mopping the tiled floor of a modern living room.",
-    "topics": [
-      "homes"
-    ],
-    "recipes": [
-      "cleaning"
-    ],
+    "topics": ["homes"],
+    "recipes": ["cleaning"],
     "tone": "light",
     "focal": {
       "x": 0.4,
@@ -266,12 +212,8 @@
     "id": "cleaning-kitchen-team",
     "file": "cleaning-kitchen-team.webp",
     "alt": "Three cleaners in orange overalls mopping the floor and wiping the kitchen wall and a sliding window in a modern open-plan kitchen.",
-    "topics": [
-      "homes"
-    ],
-    "recipes": [
-      "cleaning"
-    ],
+    "topics": ["homes"],
+    "recipes": ["cleaning"],
     "tone": "light",
     "focal": {
       "x": 0.5,
@@ -289,12 +231,8 @@
     "id": "cleaning-mirror-duster",
     "file": "cleaning-mirror-duster.webp",
     "alt": "A yellow-gloved hand holding a white feather duster in front of a round mirror and pendant lamps in a bathroom.",
-    "topics": [
-      "homes"
-    ],
-    "recipes": [
-      "cleaning"
-    ],
+    "topics": ["homes"],
+    "recipes": ["cleaning"],
     "tone": "light",
     "focal": {
       "x": 0.6,
@@ -313,9 +251,7 @@
     "file": "photographer-dslr-viewfinder.webp",
     "alt": "A bearded photographer in a dark jacket and beanie looking through the viewfinder of a camera with a large lens in a cafe.",
     "topics": [],
-    "recipes": [
-      "photographer"
-    ],
+    "recipes": ["photographer"],
     "tone": "any",
     "focal": {
       "x": 0.4,
@@ -334,9 +270,7 @@
     "file": "photographer-medium-format.webp",
     "alt": "A curly-haired photographer looking down into the viewfinder of a medium-format camera in front of a large window.",
     "topics": [],
-    "recipes": [
-      "photographer"
-    ],
+    "recipes": ["photographer"],
     "tone": "light",
     "focal": {
       "x": 0.5,
@@ -354,13 +288,8 @@
     "id": "events-floral-long-table",
     "file": "events-floral-long-table.webp",
     "alt": "A long wooden banquet table with tall glass vases of roses and wildflowers, taper candles, teal goblets and cross-back chairs under hanging beaded lights.",
-    "topics": [
-      "events",
-      "weddings"
-    ],
-    "recipes": [
-      "events"
-    ],
+    "topics": ["events", "weddings"],
+    "recipes": ["events"],
     "tone": "light",
     "focal": {
       "x": 0.45,
@@ -378,12 +307,8 @@
     "id": "events-wicker-lamps-buffet",
     "file": "events-wicker-lamps-buffet.webp",
     "alt": "An event hall with hanging woven wicker lamps, vases of flowers on buffet tables and a set dining table with gold charger plates and wine glasses.",
-    "topics": [
-      "events"
-    ],
-    "recipes": [
-      "events"
-    ],
+    "topics": ["events"],
+    "recipes": ["events"],
     "tone": "light",
     "focal": {
       "x": 0.5,

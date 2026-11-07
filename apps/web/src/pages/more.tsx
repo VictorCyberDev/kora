@@ -84,6 +84,7 @@ export function SiteShell() {
             items: [
               [`${base}/create`, "Create"],
               [`${base}/images`, "Images"],
+              [`${base}/edit`, "Edit website"],
               [`${base}/build`, "Build"],
             ],
           },

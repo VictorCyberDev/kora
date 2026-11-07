@@ -11,3 +11,5 @@ export * from "./backfill.js";
 export * from "./copy-assist.js";
 export * from "./completeness.js";
 export * from "./manifest.js";
+export * from "./compose.js";
+export * from "./errors.js";
