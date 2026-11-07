@@ -23,6 +23,7 @@ beforeAll(async () => {
             text: "I am a helpful assistant and here is a poem",
             inputTokens: 100,
             outputTokens: 20,
+            model: "stub-model",
           };
         const fields = JSON.parse(req.user.split("FIELDS:\n")[1]!) as Array<{
           id: string;
