@@ -48,7 +48,9 @@ import type { OpsStore } from "./ops-store.js";
 import type { PublishService } from "./services.js";
 import type { BillingService } from "./billing.js";
 import { SiteAllowanceError, type PlatformStore } from "./store.js";
-import { registerMediaRoutes } from "./media-routes.js";
+import { registerMediaRoutes, stockVerifier } from "./media-routes.js";
+import { deriveMediaKey } from "@kora/site-media";
+import { textHash } from "@kora/site-schema";
 import {
   RateLimiter,
   SESSION_TTL_SECONDS,
@@ -70,6 +72,7 @@ export interface RouteDeps {
   author: SiteAuthor;
   billing: BillingService;
   config: PlatformConfig;
+  monitors?: { stopSite(siteId: string): Promise<void> };
 }
 /** Publishers whose sites are served by a Kora-run host that honours controlled-test faults. */
 const CHAOS_PUBLISHERS = new Set(["kora-hosted", "kora-site-host"]);
@@ -400,7 +403,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   app.get("/api/sites/:id", async (req) => ({
     data: (await siteFor(req, idParam.parse(req.params).id)).site,
   }));
-  registerMediaRoutes(app, { platform, config, siteFor });
+  registerMediaRoutes(app, { platform, config, siteFor, entitled });
   // What deleting would do, shown before the owner confirms.
   app.get("/api/sites/:id/deletion-impact", async (req) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "ADMIN");
@@ -453,6 +456,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       requestId: req.id,
     });
     if (!r.deleted) throw notFound();
+    await d.monitors?.stopSite(existing.id);
     // The database flag stops Kora-hosted serving at once. A publisher that serves from its own storage must also be
     // asked to take the files down; where it cannot, the owner is told the provider needs a manual step.
     let providerAction:
@@ -473,6 +477,103 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         canCreateSite: after.entitlements.canCreateSite,
       },
     };
+  });
+  // ---- owner confirmations ----
+  // A person states, on purpose, that a piece of wording is true of their business. Only then may that exact wording be used
+  // where it would otherwise read as an unsupplied claim. Recorded with who and when; never edited or removed.
+  app.post("/api/sites/:id/confirmations", async (req) => {
+    const a = requireUser(req);
+    const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
+    await entitled(site.orgId, "canGenerate");
+    const body = z
+      .object({ text: z.string().trim().min(1).max(900) })
+      .parse(req.body);
+    const r = await platform.confirmStatement({
+      siteId: site.id,
+      orgId: site.orgId,
+      userId: a.userId,
+      text: body.text,
+      textSha256: textHash(body.text),
+      requestId: req.id,
+    });
+    return { data: r };
+  });
+  app.get("/api/sites/:id/confirmations", async (req) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id);
+    return { data: await platform.listConfirmations(site.id) };
+  });
+  // ---- retention and restore of deleted sites (explicit owner actions only; nothing is purged on a timer) ----
+  app.get("/api/orgs/:id/deleted-sites", async (req) => {
+    const { id } = idParam.parse(req.params);
+    requireOrgRole(req, id, "ADMIN");
+    return { data: await platform.listDeletedSites(id) };
+  });
+  const deletedSiteFor = async (req: FastifyRequest) => {
+    const id = idParam.parse(req.params).id;
+    const existing = await platform.getSiteIncludingDeleted(id);
+    if (!existing || !requireUser(req).memberships.has(existing.orgId))
+      throw notFound();
+    requireOrgRole(req, existing.orgId, "ADMIN");
+    if (!existing.deletedAt) throw notFound();
+    return existing;
+  };
+  app.get("/api/sites/:id/deleted-enquiries", async (req) => {
+    const site = await deletedSiteFor(req);
+    return { data: await platform.exportDeletedEnquiries(site.id, site.orgId) };
+  });
+  app.post("/api/sites/:id/restore", async (req) => {
+    const a = requireUser(req);
+    const site = await deletedSiteFor(req);
+    await entitled(site.orgId, "canCreateSite");
+    const cap = (await billing.entitlements(site.orgId)).subscription
+      ?.capabilities?.sites;
+    try {
+      const r = await platform.restoreSite({
+        siteId: site.id,
+        orgId: site.orgId,
+        actorUserId: a.userId,
+        requestId: req.id,
+        ...(cap !== undefined ? { siteCap: cap } : {}),
+      });
+      if (!r.restored) throw notFound();
+    } catch (e) {
+      if (e instanceof SiteAllowanceError)
+        throw new HttpError(
+          402,
+          "plan_restriction",
+          "Your plan has no free place for this website. Delete another one first, or choose a larger plan.",
+        );
+      throw e;
+    }
+    return {
+      data: {
+        restored: true,
+        status: "UNPUBLISHED",
+        note: "Publish it again when you are ready. Custom domains were released and need to be added again.",
+      },
+    };
+  });
+  // Erases the personal content of the enquiries a deleted site received. Explicit, typed-confirmation, audited.
+  app.post("/api/sites/:id/erase-enquiries", async (req) => {
+    const a = requireUser(req);
+    const site = await deletedSiteFor(req);
+    const body = z
+      .object({ confirm: z.string().max(200) })
+      .parse(req.body ?? {});
+    if (body.confirm.trim() !== `erase ${site.name}`)
+      throw new HttpError(
+        422,
+        "confirmation_required",
+        `To erase these enquiries for good, type: erase ${site.name}`,
+      );
+    const r = await platform.eraseDeletedEnquiries({
+      siteId: site.id,
+      orgId: site.orgId,
+      actorUserId: a.userId,
+      requestId: req.id,
+    });
+    if (!r) throw notFound();
+    return { data: r };
   });
   app.patch("/api/sites/:id", async (req) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "ADMIN");
@@ -1131,7 +1232,22 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         "Create a first version before editing.",
       );
     try {
-      const authored = await author.edit(base.spec as AnySiteSpec, body);
+      // What only the server can know about this edit: which statements the owner has confirmed, whether a stock picture
+      // was really offered and selected, and whether an owner picture belongs to this site. A client cannot assert these.
+      const de = body.designEdit as
+        { kind?: string; media?: { url?: unknown } } | undefined;
+      const ownerOk =
+        de?.kind === "replace-media" && typeof de.media?.url === "string"
+          ? await platform.ownerMediaBelongsTo(site.id, de.media.url)
+          : false;
+      const mediaKey = config.KORA_SECRETS_KEY
+        ? deriveMediaKey(config.KORA_SECRETS_KEY)
+        : null;
+      const authored = await author.edit(base.spec as AnySiteSpec, body, {
+        confirmedTextHashes: await platform.confirmedHashes(site.id),
+        verifyStockMedia: stockVerifier(mediaKey, site.orgId, site.id),
+        ownerMediaOk: () => ownerOk,
+      });
       const version = await buildVersion(
         site,
         authored.spec,

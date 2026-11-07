@@ -24,6 +24,8 @@ import {
   type SiteSpecV3,
 } from "./spec.js";
 import { claimIssues } from "@kora/creative";
+import { createHash } from "node:crypto";
+import { MEDIA_CATALOG, MEDIA_URL_PREFIX } from "../v2/catalog.js";
 
 export const NUDGES = [
   "premium",
@@ -44,13 +46,36 @@ export const NUDGES = [
 ] as const;
 export type Nudge = (typeof NUDGES)[number];
 
+/**
+ * What the SERVER knows about an edit that the client cannot assert for itself. Every field fails closed: when a check is
+ * not supplied, the edit it would permit is refused.
+ */
+export interface EditContextV3 {
+  /** sha256 of normalised text the owner has confirmed (append-only server records). Text that reads as a claim about the business is allowed only if its hash is here. */
+  confirmedTextHashes?: ReadonlySet<string>;
+  /** True only for a stock picture the server offered and an authorised person selected; `token` is what the client presented. */
+  verifyStockMedia?: (
+    media: z.infer<typeof mediaV3Schema>,
+    token: string | undefined,
+  ) => boolean;
+  /** True only for an owner-supplied picture that belongs to this site's own media. */
+  ownerMediaOk?: (url: string) => boolean;
+}
+
+export const normaliseText = (t: string) =>
+  t
+    .normalize("NFKC")
+    .replace(/\p{Cf}/gu, "")
+    .replace(/\s+/g, " ")
+    .trim();
+export const textHash = (t: string) =>
+  createHash("sha256").update(normaliseText(t)).digest("hex");
+
 export const structuredEditV3Schema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("hero-text"),
     heading: z.string().trim().min(1).max(110).optional(),
     subheading: z.string().trim().max(280).optional(),
-    /** Defaults to "model": a caller must explicitly attest that the owner wrote the text to assert claims. */
-    author: z.enum(["owner", "model"]).default("model"),
   }),
   z.object({
     kind: z.literal("contact"),
@@ -95,8 +120,6 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     heading: z.string().trim().min(1).max(120).optional(),
     intro: z.string().trim().max(300).optional(),
     body: z.array(z.string().trim().min(1).max(900)).min(1).max(4).optional(),
-    /** Text written by the owner is theirs to assert. Text proposed by a model must not read as an unsupplied claim. */
-    author: z.enum(["owner", "model"]).default("model"),
   }),
   z.object({
     kind: z.literal("replace-media"),
@@ -105,6 +128,8 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     /** Which picture inside the section: gallery or offer item index. Omit for a hero or story picture. */
     item: z.number().int().min(0).max(12).optional(),
     media: mediaV3Schema,
+    /** Issued by the server when a person selected a stock picture; required for anything that is not owner-supplied or bundled. */
+    selectionToken: z.string().max(6000).optional(),
   }),
   z.object({
     kind: z.literal("cta-label"),
@@ -280,6 +305,7 @@ function colorwayNudge(
 export function applyStructuredEditV3(
   spec: SiteSpecV3,
   raw: unknown,
+  ctx: EditContextV3 = {},
 ): SiteSpecV3 {
   const edit = structuredEditV3Schema.safeParse(raw);
   if (!edit.success)
@@ -287,6 +313,18 @@ export function applyStructuredEditV3(
   const e = edit.data;
   const next = structuredClone(spec);
   const home = next.pages.find((p) => p.slug === "home")!;
+  /**
+   * Text that reads as a claim about the business (awards, guarantees, numbers, "best", years...) is accepted only when the
+   * owner has confirmed exactly that text through the server's confirmation records. The caller cannot declare it.
+   */
+  const needsConfirmation = (t: string | undefined) => {
+    if (!t) return;
+    const issues = claimIssues(t);
+    if (issues.length && !ctx.confirmedTextHashes?.has(textHash(t)))
+      throw new EditV3Error(
+        `This wording states ${issues[0]}. Confirm it is true of your business first, then it can be used.`,
+      );
+  };
   switch (e.kind) {
     case "hero-text": {
       const hero = home.sections[0];
@@ -297,10 +335,7 @@ export function applyStructuredEditV3(
           throw new EditV3Error(
             `"${findCliches(t)[0]}" is a generic phrase; say what you actually do.`,
           );
-        if (t && e.author === "model" && claimIssues(t).length)
-          throw new EditV3Error(
-            `Suggested wording must not state ${claimIssues(t)[0]} the owner has not supplied.`,
-          );
+        needsConfirmation(t);
       }
       if (e.heading) hero.heading = e.heading;
       if (e.subheading !== undefined) hero.subheading = e.subheading;
@@ -401,10 +436,7 @@ export function applyStructuredEditV3(
           throw new EditV3Error(
             `"${findCliches(t)[0]}" is a generic phrase; say what you actually do.`,
           );
-        if (e.author === "model" && claimIssues(t).length)
-          throw new EditV3Error(
-            `Suggested wording must not state ${claimIssues(t)[0]} the owner has not supplied.`,
-          );
+        needsConfirmation(t);
       }
       if (e.heading !== undefined) {
         if (!("heading" in sec))
@@ -443,29 +475,37 @@ export function applyStructuredEditV3(
       )
         throw new EditV3Error("There is no picture to replace there.");
       const pv = e.media.provenance;
-      if (
-        pv.sourceType === "licensed-stock" &&
-        !e.media.url.startsWith("/_kora/media/")
-      ) {
-        const host = (u?: string) => {
-          try {
-            return u ? new URL(u).hostname : "";
-          } catch {
-            return "";
-          }
+      const bundled = e.media.url.startsWith(MEDIA_URL_PREFIX);
+      if (bundled) {
+        // Kora's own catalogue: only a real catalogue file, and its provenance is taken from the catalogue, never from the caller.
+        const entry = MEDIA_CATALOG.find(
+          (c) => `${MEDIA_URL_PREFIX}${c.file}` === e.media.url,
+        );
+        if (!entry)
+          throw new EditV3Error("That picture is not in Kora's catalogue.");
+        e.media.provenance = {
+          sourceType: "licensed-stock",
+          provider: "Pexels",
+          license: entry.license,
+          attribution: `Photo: ${entry.creator} / Pexels`,
+          reviewStatus: "kora-curated",
         };
-        const unsplash = (h: string) =>
-          h === "unsplash.com" || h.endsWith(".unsplash.com");
-        if (
-          host(e.media.url) !== "images.unsplash.com" ||
-          (pv.creatorUrl && !unsplash(host(pv.creatorUrl))) ||
-          (pv.providerUrl && !unsplash(host(pv.providerUrl)))
-        )
+      } else if (pv.sourceType === "licensed-stock") {
+        // A provider picture must be one the server offered and a person selected; nothing the caller writes can stand in for that.
+        if (!ctx.verifyStockMedia?.(e.media, e.selectionToken))
           throw new EditV3Error(
-            "A stock photo can only come from the provider it is credited to.",
+            "Choose the picture from the suggestions so Kora can confirm where it came from.",
           );
+      } else if (
+        pv.sourceType === "owner-supplied" ||
+        pv.sourceType === "owner-approved-stored"
+      ) {
+        if (!ctx.ownerMediaOk?.(e.media.url))
+          throw new EditV3Error("That is not one of your uploaded pictures.");
+      } else {
+        throw new EditV3Error("That kind of picture cannot be placed.");
       }
-      for (const t of [e.media.alt, pv.attribution])
+      for (const t of [e.media.alt, e.media.provenance.attribution])
         if (t && claimIssues(t).some((c) => c !== "a number"))
           throw new EditV3Error(
             "Picture text must not state unsupplied claims.",

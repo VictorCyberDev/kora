@@ -97,6 +97,12 @@ export class SiteMonitors {
     if (this.d.autostart) monitor.start();
     return monitor;
   }
+  /** Stops and forgets the monitor of a site that no longer exists. Safe to call when none is running. */
+  async stopSite(siteId: string) {
+    const entry = this.monitors.get(siteId);
+    this.monitors.delete(siteId);
+    await entry?.monitor.stop();
+  }
   async checkNow(siteId: string) {
     const entry = this.monitors.get(siteId);
     if (!entry)
@@ -170,6 +176,8 @@ export class PublishService {
     const { platform, ops, kora, publisher, monitors } = this.d;
     const row = await platform.getVersionRow(site.id, versionId);
     if (!row) throw notFound();
+    // A site that has been deleted cannot be published, whatever was loaded before the delete committed.
+    if (!(await platform.getSite(site.id))) throw notFound();
     if (row.build_status !== "BUILT")
       throw new HttpError(409, "version_not_built");
     const published = await platform.getPublishedVersionRow(site.id);
@@ -238,11 +246,23 @@ export class PublishService {
         version: { id: versionId, number },
         files: finalized,
       });
-      await platform.markVersionPublished(site.id, versionId);
-      await platform.setSiteStatus(site.id, "PUBLISHED", {
+      // The guarded status update comes first: if the site was deleted while this was in flight it changes nothing, and
+      // the files just deployed are taken down again instead of being left serving.
+      const stillThere = await platform.setSiteStatus(site.id, "PUBLISHED", {
         publicUrl: out.publicUrl,
         publishedVersionId: versionId,
       });
+      if (!stillThere) {
+        await publisher
+          .unpublish({ id: site.id, slug: site.slug })
+          .catch(() => undefined);
+        throw new HttpError(
+          409,
+          "site_deleted",
+          "This website was deleted while it was being published, so nothing went live.",
+        );
+      }
+      await platform.markVersionPublished(site.id, versionId);
       let verification = out.verification;
       if (publisher.verifyLive && verification.status === "NOT_CHECKED") {
         verification = await publisher.verifyLive(monitorUrl, finalized);

@@ -25,6 +25,7 @@ import {
   type StructuredEdit,
   assistCopy,
   repairCompleteness,
+  type EditContextV3,
 } from "@kora/site-schema";
 import type { BrandOS, CreativeDirection } from "@kora/creative";
 
@@ -367,8 +368,9 @@ export class SiteAuthor {
       designEdit?: unknown;
       patch?: unknown;
     },
+    ctx: EditContextV3 = {},
   ): Promise<Authored> {
-    if (spec.version === 3) return this.editV3(spec, input);
+    if (spec.version === 3) return this.editV3(spec, input, ctx);
     if (spec.version === 2) return this.editV2(spec, input);
     if (input.edit)
       return {
@@ -439,9 +441,10 @@ export class SiteAuthor {
   private editV3(
     spec: SiteSpecV3,
     input: { instruction?: string | undefined; designEdit?: unknown },
+    ctx: EditContextV3,
   ): Promise<Authored> {
     try {
-      return Promise.resolve(this.editV3Sync(spec, input));
+      return Promise.resolve(this.editV3Sync(spec, input, ctx));
     } catch (e) {
       return Promise.reject(e instanceof Error ? e : new Error(String(e)));
     }
@@ -450,6 +453,7 @@ export class SiteAuthor {
   private editV3Sync(
     spec: SiteSpecV3,
     input: { instruction?: string | undefined; designEdit?: unknown },
+    ctx: EditContextV3,
   ): Authored {
     const done = (next: SiteSpecV3, note: string | null): Authored => ({
       spec: next,
@@ -460,7 +464,7 @@ export class SiteAuthor {
     });
     try {
       if (input.designEdit)
-        return done(applyStructuredEditV3(spec, input.designEdit), null);
+        return done(applyStructuredEditV3(spec, input.designEdit, ctx), null);
     } catch (e) {
       throw new EditNotUnderstood(
         e instanceof Error && e.name === "EditV3Error"

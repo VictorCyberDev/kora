@@ -280,6 +280,14 @@ export class PlatformStore {
       if (row.deleted_at) return { deleted: true, alreadyDeleted: true };
       const wasLive = row.status === "PUBLISHED";
       await tx.sql`UPDATE sites SET status='UNPUBLISHED',deleted_at=now(),deleted_by=${i.actorUserId},updated_at=now() WHERE id=${i.siteId}`;
+      // Everything that could still act on the site is retired in the same transaction: custom domains are released (the
+      // Site Host serves only ACTIVE/VERIFYING), and recovery actions that were waiting to run are rejected.
+      const released =
+        await tx.sql`UPDATE domains SET state='RELEASED' WHERE site_id=${i.siteId} AND state <> 'RELEASED' RETURNING id`;
+      for (const d of released)
+        await tx.sql`INSERT INTO domain_status_events(id,domain_id,kind,detail) VALUES(${crypto.randomUUID()},${d.id as string},'RELEASED_BY_SITE_DELETION','{}'::jsonb)`;
+      const cancelled =
+        await tx.sql`UPDATE action_proposals SET state='REJECTED' WHERE site_id=${i.siteId} AND state IN ('PROPOSED','POLICY_EVALUATED','AWAITING_APPROVAL','READY') RETURNING id`;
       await tx.audit({
         orgId: i.orgId,
         actorUserId: i.actorUserId,
@@ -293,9 +301,166 @@ export class PlatformStore {
           wasLive,
           publicUrl: str(row.public_url),
           publishedVersionId: str(row.published_version_id),
+          domainsReleased: released.length,
+          actionsRejected: cancelled.length,
         },
       });
       return { deleted: true, alreadyDeleted: false };
+    });
+  }
+  /**
+   * Brings a deleted site back into the account (still unpublished) when the plan has room. Taken under the same
+   * per-organisation lock as creation, so a restore racing a create can never exceed the allowance. Released domains are
+   * not re-attached; the owner re-adds them deliberately.
+   */
+  async restoreSite(i: {
+    siteId: string;
+    orgId: string;
+    actorUserId: string;
+    siteCap?: number;
+    requestId?: string;
+  }): Promise<{ restored: boolean; reason?: "not_found" | "not_deleted" }> {
+    return this.inTransaction(async (tx) => {
+      await tx.sql`SELECT pg_advisory_xact_lock(hashtext(${`sites:${i.orgId}`}))`;
+      const row = (
+        await tx.sql`SELECT * FROM sites WHERE id=${i.siteId} AND org_id=${i.orgId} FOR UPDATE`
+      )[0];
+      if (!row) return { restored: false, reason: "not_found" as const };
+      if (!row.deleted_at)
+        return { restored: false, reason: "not_deleted" as const };
+      if (i.siteCap !== undefined) {
+        const n = Number(
+          (
+            await tx.sql`SELECT COUNT(*)::int AS n FROM sites WHERE org_id=${i.orgId} AND deleted_at IS NULL`
+          )[0]!.n,
+        );
+        if (n >= i.siteCap) throw new SiteAllowanceError(n, i.siteCap);
+      }
+      await tx.sql`UPDATE sites SET deleted_at=NULL,deleted_by=NULL,status='UNPUBLISHED',updated_at=now() WHERE id=${i.siteId}`;
+      await tx.audit({
+        orgId: i.orgId,
+        actorUserId: i.actorUserId,
+        action: "site.restored",
+        objectType: "site",
+        objectId: i.siteId,
+        ...(i.requestId ? { requestId: i.requestId } : {}),
+        metadata: { name: String(row.name), slug: String(row.slug) },
+      });
+      return { restored: true };
+    });
+  }
+  // ---- owner confirmations: statements a person has confirmed are true of their business (append-only) ----
+  async confirmStatement(i: {
+    siteId: string;
+    orgId: string;
+    userId: string;
+    text: string;
+    textSha256: string;
+    requestId?: string;
+  }) {
+    return this.inTransaction(async (tx) => {
+      const ins =
+        await tx.sql`INSERT INTO owner_confirmations(id,site_id,org_id,user_id,text_sha256,text) VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},${i.userId},${i.textSha256},${i.text}) ON CONFLICT (site_id,text_sha256) DO NOTHING RETURNING id`;
+      if (ins.length)
+        await tx.audit({
+          orgId: i.orgId,
+          actorUserId: i.userId,
+          action: "site.fact_confirmed",
+          objectType: "site",
+          objectId: i.siteId,
+          ...(i.requestId ? { requestId: i.requestId } : {}),
+          metadata: { textSha256: i.textSha256 },
+        });
+      return { created: ins.length > 0, textSha256: i.textSha256 };
+    });
+  }
+  async confirmedHashes(siteId: string): Promise<Set<string>> {
+    const r = await this
+      .sql`SELECT text_sha256 FROM owner_confirmations WHERE site_id=${siteId}`;
+    return new Set(r.map((x) => String(x.text_sha256)));
+  }
+  async listConfirmations(siteId: string) {
+    const r = await this
+      .sql`SELECT id,text,text_sha256,user_id,created_at FROM owner_confirmations WHERE site_id=${siteId} ORDER BY created_at`;
+    return r.map((x) => ({
+      id: String(x.id),
+      text: String(x.text),
+      textSha256: String(x.text_sha256),
+      userId: String(x.user_id),
+      createdAt: iso(x.created_at),
+    }));
+  }
+  /** True only when `url` is one of this site's own uploaded pictures (the shape the owner-media pipeline issues). */
+  async ownerMediaBelongsTo(siteId: string, url: string): Promise<boolean> {
+    let path: string;
+    try {
+      path = new URL(url).pathname;
+    } catch {
+      return false;
+    }
+    const m =
+      /^\/api\/public\/sites\/([0-9a-f-]{36})\/m\/([a-f0-9]{64})\/(?:w640|w1280|w1920|thumb)\.webp$|^\/api\/public\/sites\/([0-9a-f-]{36})\/m\/([a-f0-9]{64})\/logo\.png$/.exec(
+        path,
+      );
+    const sid = m?.[1] ?? m?.[3];
+    const sha = m?.[2] ?? m?.[4];
+    if (!sid || !sha || sid !== siteId) return false;
+    const r = await this
+      .sql`SELECT 1 FROM owner_media WHERE site_id=${siteId} AND sha256=${sha} AND removed_at IS NULL`;
+    return r.length > 0;
+  }
+  async listDeletedSites(orgId: string) {
+    const rows = await this.sql`
+      SELECT s.*, (SELECT COUNT(*)::int FROM form_submissions f WHERE f.site_id=s.id AND f.erased_at IS NULL) AS kept_enquiries,
+             (SELECT COUNT(*)::int FROM form_submissions f WHERE f.site_id=s.id AND f.erased_at IS NOT NULL) AS erased_enquiries
+      FROM sites s WHERE s.org_id=${orgId} AND s.deleted_at IS NOT NULL ORDER BY s.deleted_at DESC`;
+    return rows.map((r) => ({
+      ...mapSite(r),
+      keptEnquiries: Number(r.kept_enquiries),
+      erasedEnquiries: Number(r.erased_enquiries),
+    }));
+  }
+  /** Enquiries of a site that is no longer in the account, for the owner to download before any erasure. */
+  async exportDeletedEnquiries(siteId: string, orgId: string) {
+    const rows = await this.sql`
+      SELECT f.id,f.fields,f.status,f.submitted_at,f.erased_at FROM form_submissions f JOIN sites s ON s.id=f.site_id
+      WHERE f.site_id=${siteId} AND s.org_id=${orgId} AND s.deleted_at IS NOT NULL ORDER BY f.submitted_at`;
+    return rows.map((r) => ({
+      id: String(r.id),
+      fields: r.fields as Record<string, unknown>,
+      status: String(r.status),
+      submittedAt: iso(r.submitted_at),
+      erasedAt: str(r.erased_at),
+    }));
+  }
+  /**
+   * Erases the personal content of a deleted site's enquiries. Only ever called for an explicit, confirmed request by an
+   * administrator; nothing erases customer data on a timer. The rows stay (counts, dates and audit remain true) with their
+   * content emptied and `erased_at` set. Idempotent.
+   */
+  async eraseDeletedEnquiries(i: {
+    siteId: string;
+    orgId: string;
+    actorUserId: string;
+    requestId?: string;
+  }) {
+    return this.inTransaction(async (tx) => {
+      const site = (
+        await tx.sql`SELECT id FROM sites WHERE id=${i.siteId} AND org_id=${i.orgId} AND deleted_at IS NOT NULL FOR UPDATE`
+      )[0];
+      if (!site) return null;
+      const r =
+        await tx.sql`UPDATE form_submissions SET fields='{}'::jsonb,erased_at=now() WHERE site_id=${i.siteId} AND erased_at IS NULL RETURNING id`;
+      await tx.audit({
+        orgId: i.orgId,
+        actorUserId: i.actorUserId,
+        action: "site.enquiries_erased",
+        objectType: "site",
+        objectId: i.siteId,
+        ...(i.requestId ? { requestId: i.requestId } : {}),
+        metadata: { erased: r.length },
+      });
+      return { erased: r.length };
     });
   }
   async updateSite(
@@ -315,9 +480,10 @@ export class PlatformStore {
       publicUrl?: string | null;
       publishedVersionId?: string | null;
     } = {},
-  ) {
-    await this
+  ): Promise<boolean> {
+    const r = await this
       .sql`UPDATE sites SET status=${status},public_url=COALESCE(${extra.publicUrl ?? null},public_url),published_version_id=COALESCE(${extra.publishedVersionId ?? null},published_version_id),updated_at=now() WHERE id=${id} AND deleted_at IS NULL`;
+    return r.count > 0;
   }
   async listPublishedSites() {
     return (

@@ -7,16 +7,25 @@ import {
   type SiteSpecV3,
 } from "@kora/site-schema";
 import {
-  InMemoryPoolCache,
   ProviderError,
   UnsplashProvider,
   buildCandidatePool,
+  deriveMediaKey,
   loadUnsplashConfig,
+  mediaFingerprint,
+  signToken,
+  verifyToken,
   type MediaCandidate,
   type MediaProvider,
 } from "@kora/site-media";
 import { HttpError, requireUser } from "./http.js";
 import { PostgresQuota } from "./media-quota.js";
+import {
+  PostgresPoolCache,
+  claimSelection,
+  rateLimited,
+  releaseSelection,
+} from "./media-state.js";
 import type { PlatformConfig } from "./config.js";
 import type { PlatformStore } from "./store.js";
 
@@ -28,10 +37,68 @@ type SiteForFn = (
   site: { id: string; orgId: string; name: string; description: string };
 }>;
 
+const CANDIDATE_TTL = 30 * 60_000;
+const SELECTION_TTL = 24 * 3_600_000;
+
+interface CandidatePayload {
+  k: "cand";
+  org: string;
+  site: string;
+  exp: number;
+  c: Pick<
+    MediaCandidate,
+    | "id"
+    | "provider"
+    | "description"
+    | "displayUrl"
+    | "width"
+    | "height"
+    | "creator"
+    | "sourceUrl"
+    | "attribution"
+    | "licence"
+    | "downloadLocation"
+    | "placement"
+  >;
+}
+interface SelectionPayload {
+  k: "sel";
+  org: string;
+  site: string;
+  exp: number;
+  fp: string;
+}
+
+/**
+ * The verifier handed to edits: true only for a stock picture this deployment offered and a person selected, for this exact
+ * organisation and site, and unchanged since. It needs no server memory, so any instance can answer for any other.
+ */
+export function stockVerifier(
+  key: Buffer | null,
+  orgId: string,
+  siteId: string,
+  now = () => Date.now(),
+) {
+  return (
+    media: Parameters<typeof mediaFingerprint>[0],
+    token: string | undefined,
+  ): boolean => {
+    if (!key || !token) return false;
+    const r = verifyToken<SelectionPayload>(token, key, now());
+    return (
+      r.ok &&
+      r.payload.k === "sel" &&
+      r.payload.org === orgId &&
+      r.payload.site === siteId &&
+      r.payload.fp === mediaFingerprint(media)
+    );
+  };
+}
+
 /**
  * Stock-photo candidates for the owner to choose from. Nothing here places a picture: a candidate becomes part of a site
- * only when a person selects it (which is when the provider's download event is recorded) and then applies it with an
- * ordinary structured edit, which passes the same validation as everything else.
+ * only when a person selects it (the moment the provider's download event is recorded) and then applies it with an
+ * ordinary structured edit carrying the server-signed selection token.
  */
 export function registerMediaRoutes(
   app: FastifyInstance,
@@ -39,9 +106,12 @@ export function registerMediaRoutes(
     platform: PlatformStore;
     config: PlatformConfig;
     siteFor: SiteForFn;
+    entitled: (orgId: string, key: "canGenerate") => Promise<void>;
     providers?: MediaProvider[];
+    now?: () => number;
   },
 ) {
+  const now = d.now ?? (() => Date.now());
   const { problems, config: ucfg } = loadUnsplashConfig(
     d.config as unknown as Record<string, string | undefined>,
   );
@@ -50,28 +120,18 @@ export function registerMediaRoutes(
     quota: new PostgresQuota(d.platform.sql),
   });
   const providers: MediaProvider[] = d.providers ?? [unsplash];
-  const cache = new InMemoryPoolCache();
-  // What was last offered, so a selection refers to a server-held candidate and never to client-supplied URLs.
-  const offered = new Map<string, { at: number; c: MediaCandidate }>();
-  const key = (orgId: string, p: string, id: string) => `${orgId}:${p}:${id}`;
-  // Sliding-window limiter: `max` hits per `windowMs` for one key. Empty keys are dropped so the map stays small.
-  const windows = new Map<string, number[]>();
-  const limited = (key: string, max: number, windowMs: number) => {
-    const now = Date.now();
-    const arr = (windows.get(key) ?? []).filter((t) => now - t < windowMs);
-    if (arr.length >= max) {
-      windows.set(key, arr);
-      return true;
-    }
-    arr.push(now);
-    windows.set(key, arr);
-    if (windows.size > 5000)
-      for (const [k, v] of windows)
-        if (!v.some((t) => now - t < windowMs)) windows.delete(k);
-    return false;
-  };
-  const OFFER_TTL = 30 * 60_000;
-  const recorded = new Set<string>();
+  const cache = new PostgresPoolCache(d.platform.sql);
+  const key = d.config.KORA_SECRETS_KEY
+    ? deriveMediaKey(d.config.KORA_SECRETS_KEY)
+    : null;
+  const sql = d.platform.sql;
+  const status = () =>
+    providers.map((p) => ({
+      id: p.id,
+      status: p.available()
+        ? ("AVAILABLE" as const)
+        : ("NOT_CONFIGURED" as const),
+    }));
 
   app.get("/api/media/providers", (req) => {
     const a = requireUser(req);
@@ -80,12 +140,21 @@ export function registerMediaRoutes(
     );
     return {
       data: {
-        providers: providers.map((p) => ({
-          id: p.id,
-          status: p.available() ? "AVAILABLE" : "NOT_CONFIGURED",
-        })),
+        providers: status(),
+        signing: key ? "CONFIGURED" : "NOT_CONFIGURED",
         // Configuration detail is for administrators only.
-        ...(isAdmin ? { configurationProblems: problems } : {}),
+        ...(isAdmin
+          ? {
+              configurationProblems: [
+                ...problems,
+                ...(key
+                  ? []
+                  : [
+                      "KORA_SECRETS_KEY is required to sign picture selections",
+                    ]),
+              ],
+            }
+          : {}),
       },
     };
   });
@@ -93,11 +162,25 @@ export function registerMediaRoutes(
   app.post("/api/sites/:id/media/candidates", async (req) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     const { site } = await d.siteFor(req, id, "MEMBER");
-    // One account must not be able to spend the application-wide hourly allowance for everyone: searches are limited
-    // per user per minute and per organisation per hour, and only the server-derived intents are used when none given.
+    // Plan limits apply here exactly as they do to generation: a lapsed plan cannot spend the shared provider allowance.
+    await d.entitled(site.orgId, "canGenerate");
+    if (!key)
+      throw new HttpError(
+        503,
+        "media_signing_not_configured",
+        "Picture suggestions are not available on this deployment yet.",
+      );
+    // One account must not be able to spend the application-wide hourly allowance for everyone. Counters are shared by
+    // every instance (database), not held in process memory.
     if (
-      limited(`u:${requireUser(req).userId}`, 10, 60_000) ||
-      limited(`o:${site.orgId}`, 6, 3_600_000)
+      (await rateLimited(
+        sql,
+        `cand:u:${requireUser(req).userId}`,
+        10,
+        60_000,
+        now(),
+      )) ||
+      (await rateLimited(sql, `cand:o:${site.orgId}`, 6, 3_600_000, now()))
     )
       throw new HttpError(
         429,
@@ -124,11 +207,7 @@ export function registerMediaRoutes(
       cache,
       budget: 4,
     });
-    for (const c of pool.candidates)
-      offered.set(key(site.orgId, c.provider, c.id), { at: Date.now(), c });
-    for (const [k, v] of offered)
-      if (Date.now() - v.at > OFFER_TTL) offered.delete(k);
-    while (offered.size > 2000) offered.delete(offered.keys().next().value!);
+    const exp = now() + CANDIDATE_TTL;
     return {
       data: {
         intents,
@@ -140,12 +219,35 @@ export function registerMediaRoutes(
           orientation: c.orientation,
           attribution: c.attribution,
           requiresOwnerApproval: c.placement === "owner-approval",
+          // Signed and bound to this organisation and site; the selection endpoint trusts nothing else the client sends.
+          candidateToken: signToken(
+            {
+              k: "cand",
+              org: site.orgId,
+              site: site.id,
+              exp,
+              c: {
+                id: c.id,
+                provider: c.provider,
+                description: c.description,
+                displayUrl: c.displayUrl,
+                width: c.width,
+                height: c.height,
+                creator: c.creator,
+                sourceUrl: c.sourceUrl,
+                attribution: c.attribution,
+                licence: c.licence,
+                ...(c.downloadLocation
+                  ? { downloadLocation: c.downloadLocation }
+                  : {}),
+                placement: c.placement,
+              },
+            } satisfies CandidatePayload,
+            key,
+          ),
         })),
         report: pool.report,
-        providers: providers.map((p) => ({
-          id: p.id,
-          status: p.available() ? "AVAILABLE" : "NOT_CONFIGURED",
-        })),
+        providers: status(),
       },
     };
   });
@@ -153,37 +255,59 @@ export function registerMediaRoutes(
   app.post("/api/sites/:id/media/select", async (req) => {
     const { id } = z.object({ id: z.string().uuid() }).parse(req.params);
     const { site } = await d.siteFor(req, id, "MEMBER");
-    const body = z
-      .object({
-        provider: z.string().max(40),
-        id: z.string().max(80),
-        alt: z.string().trim().max(200).optional(),
-      })
-      .parse(req.body);
-    if (limited(`s:${requireUser(req).userId}`, 20, 60_000))
+    await d.entitled(site.orgId, "canGenerate");
+    if (!key)
+      throw new HttpError(
+        503,
+        "media_signing_not_configured",
+        "Picture suggestions are not available on this deployment yet.",
+      );
+    const user = requireUser(req).userId;
+    if (await rateLimited(sql, `sel:u:${user}`, 20, 60_000, now()))
       throw new HttpError(
         429,
         "rate_limited",
         "Too many selections. Slow down.",
       );
-    const hit = offered.get(key(site.orgId, body.provider, body.id));
-    if (!hit || Date.now() - hit.at > OFFER_TTL)
+    const body = z
+      .object({
+        candidateToken: z.string().max(6000),
+        alt: z.string().trim().max(200).optional(),
+      })
+      .parse(req.body);
+    const t = verifyToken<CandidatePayload>(body.candidateToken, key, now());
+    if (!t.ok || t.payload.k !== "cand")
       throw new HttpError(
-        410,
-        "candidate_expired",
+        t.ok || t.reason === "expired" ? 410 : 400,
+        t.ok
+          ? "bad_token"
+          : t.reason === "expired"
+            ? "candidate_expired"
+            : "bad_token",
         "That picture is no longer on offer. Search again.",
       );
-    const provider = providers.find((p) => p.id === hit.c.provider);
+    if (t.payload.org !== site.orgId || t.payload.site !== site.id)
+      throw new HttpError(
+        403,
+        "wrong_site",
+        "That suggestion was made for a different website.",
+      );
+    const c = t.payload.c;
+    const provider = providers.find((p) => p.id === c.provider);
     if (!provider) throw new HttpError(404, "provider_not_found");
     try {
-      // The person has chosen this picture: this is the moment the provider requires a download event.
-      // One download event per organisation and picture, however often the selection is repeated.
-      const once = key(site.orgId, hit.c.provider, hit.c.id);
-      if (hit.c.placement === "owner-approval" && !recorded.has(once)) {
-        await provider.recordSelection?.(hit.c);
-        recorded.add(once);
-        if (recorded.size > 5000)
-          recorded.delete(recorded.keys().next().value!);
+      // The person has chosen this picture: this is the moment the provider requires a download event, recorded once per
+      // organisation and picture on whichever instance handles the request.
+      if (
+        c.placement === "owner-approval" &&
+        (await claimSelection(sql, site.orgId, c.provider, c.id, user))
+      ) {
+        try {
+          await provider.recordSelection?.(c as MediaCandidate);
+        } catch (e) {
+          await releaseSelection(sql, site.orgId, c.provider, c.id); // not recorded: the next try may record it
+          throw e;
+        }
       }
     } catch (e) {
       if (e instanceof ProviderError)
@@ -194,34 +318,41 @@ export function registerMediaRoutes(
         );
       throw e;
     }
-    const c = hit.c;
+    const media = {
+      url: c.displayUrl,
+      alt: (body.alt || c.description || `${site.name} photo`).slice(0, 200),
+      width: c.width,
+      height: c.height,
+      role: "feature" as const,
+      treatment: "none" as const,
+      provenance: {
+        sourceType: "licensed-stock" as const,
+        provider: "Unsplash",
+        license: c.licence,
+        attribution: c.attribution,
+        creatorName: c.creator.name,
+        creatorUrl: c.creator.profileUrl,
+        providerUrl: `https://unsplash.com/?utm_source=${encodeURIComponent(ucfg.appName || "kora")}&utm_medium=referral`,
+        providerImageId: c.id,
+        reviewStatus: "owner-approved" as const,
+      },
+    };
     return {
       data: {
-        media: {
-          url: c.displayUrl,
-          alt: (body.alt || c.description || `${site.name} photo`).slice(
-            0,
-            200,
-          ),
-          width: c.width,
-          height: c.height,
-          role: "feature",
-          treatment: "none",
-          provenance: {
-            sourceType: "licensed-stock",
-            provider: "Unsplash",
-            license: c.licence,
-            attribution: c.attribution,
-            creatorName: c.creator.name,
-            creatorUrl: c.creator.profileUrl,
-            providerUrl: `https://unsplash.com/?utm_source=${encodeURIComponent(ucfg.appName || "kora")}&utm_medium=referral`,
-            providerImageId: c.id,
-            reviewStatus: "owner-approved",
-          },
-        },
+        media,
+        selectionToken: signToken(
+          {
+            k: "sel",
+            org: site.orgId,
+            site: site.id,
+            exp: now() + SELECTION_TTL,
+            fp: mediaFingerprint(media),
+          } satisfies SelectionPayload,
+          key,
+        ),
         applyWith: {
           kind: "replace-media",
-          note: "Send this media object in a replace-media edit to place it.",
+          note: "Send this media object and selectionToken in a replace-media edit to place it.",
         },
       },
     };
@@ -246,7 +377,7 @@ export function registerMediaRoutes(
     for (let i = 0; i < 25 && (cur.parent_version_id as string | null); i++) {
       const parent = await d.platform.getVersionRow(
         site.id,
-        String(cur.parent_version_id as string | null),
+        String(cur.parent_version_id),
       );
       if (!parent || (parent.spec as { version?: number }).version !== 3) break;
       const r = manifestReplacements(

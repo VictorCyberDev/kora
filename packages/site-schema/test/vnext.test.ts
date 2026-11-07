@@ -5,6 +5,7 @@ import {
   completenessV3,
   criticV3,
   EditV3Error,
+  textHash,
   fitText,
   MAX_SITE_PAGES,
   MIN_SITE_PAGES,
@@ -16,6 +17,7 @@ import {
   type SiteSpecV3,
 } from "../src/index.js";
 import { lintArtifact } from "../src/index.js";
+import { MEDIA_CATALOG } from "../src/v2/catalog.js";
 
 interface Case {
   key: string;
@@ -273,49 +275,55 @@ describe("page limit and owner editing", () => {
       applyStructuredEditV3(base, { kind: "move-page", slug: "home", to: 2 }),
     ).toThrow(EditV3Error);
   });
-  it("edits section text; model-written text may not assert unsupplied claims, owner text may", () => {
-    const idx = base.pages
+  const aboutStory = () =>
+    base.pages
       .find((p) => p.slug === "about")!
       .sections.findIndex((s) => s.type === "story");
+  it("edits plain section text freely", () => {
     const ok = applyStructuredEditV3(base, {
       kind: "section-text",
       page: "about",
-      index: idx,
+      index: aboutStory(),
       body: ["We bake for birthdays and weddings."],
-      author: "owner",
     });
     expect(JSON.stringify(ok)).toContain("We bake for birthdays and weddings.");
-    expect(() =>
-      applyStructuredEditV3(base, {
-        kind: "section-text",
-        page: "about",
-        index: idx,
-        body: ["Award-winning bakers with 15 years of experience."],
-        author: "model",
-      }),
-    ).toThrow(EditV3Error);
   });
-  it("attestation is explicit: text with no declared author is treated as model-written and may not assert claims", () => {
-    const idx = base.pages
-      .find((p) => p.slug === "about")!
-      .sections.findIndex((s) => s.type === "story");
+  it("wording that reads as a claim is accepted only with a server-held owner confirmation of exactly that text", () => {
     const claim = "Award-winning bakers, guaranteed.";
+    const edit = {
+      kind: "section-text" as const,
+      page: "about",
+      index: aboutStory(),
+      body: [claim],
+    };
+    // a client cannot attest for itself: unknown keys such as `author` are ignored, the claim is still refused
     expect(() =>
-      applyStructuredEditV3(base, {
-        kind: "section-text",
-        page: "about",
-        index: idx,
-        body: [claim],
-      }),
+      applyStructuredEditV3(base, { ...edit, author: "owner" }),
     ).toThrow(EditV3Error);
     expect(() =>
-      applyStructuredEditV3(base, {
-        kind: "section-text",
-        page: "about",
-        index: idx,
-        body: ["Award\u200b-winning bakers, guaranteed."],
+      applyStructuredEditV3(base, edit, { confirmedTextHashes: new Set() }),
+    ).toThrow(EditV3Error);
+    // a confirmation of different text does not cover this text
+    expect(() =>
+      applyStructuredEditV3(base, edit, {
+        confirmedTextHashes: new Set([textHash("Award-winning bakers.")]),
       }),
     ).toThrow(EditV3Error);
+    // an invisible character cannot smuggle the claim past the check, nor past the confirmation match
+    expect(() =>
+      applyStructuredEditV3(
+        base,
+        {
+          ...edit,
+          body: ["Award\u200b-winning bakers, guaranteed, since 2001."],
+        },
+        { confirmedTextHashes: new Set([textHash(claim)]) },
+      ),
+    ).toThrow(EditV3Error);
+    const ok = applyStructuredEditV3(base, edit, {
+      confirmedTextHashes: new Set([textHash(claim)]),
+    });
+    expect(JSON.stringify(ok)).toContain("Award-winning bakers");
     expect(() =>
       applyStructuredEditV3(base, {
         kind: "hero-text",
@@ -323,93 +331,136 @@ describe("page limit and owner editing", () => {
       }),
     ).toThrow(EditV3Error);
     expect(
-      JSON.stringify(
-        applyStructuredEditV3(base, {
-          kind: "section-text",
-          page: "about",
-          index: idx,
-          body: [claim],
-          author: "owner",
-        }),
-      ),
-    ).toContain("Award-winning bakers");
+      applyStructuredEditV3(
+        base,
+        { kind: "hero-text", heading: "Award-winning cakes" },
+        { confirmedTextHashes: new Set([textHash("Award-winning cakes")]) },
+      ).pages[0]!.sections[0],
+    ).toMatchObject({ heading: "Award-winning cakes" });
   });
-  it("a stock photo can only come from the provider it credits", () => {
-    const idx = base.pages
+  const galleryIdx = () =>
+    base.pages
       .find((p) => p.slug === "gallery")!
       .sections.findIndex((s) => s.type === "gallery");
-    const mk = (url: string, creatorUrl: string) => ({
-      kind: "replace-media" as const,
-      page: "gallery",
-      index: idx,
-      item: 0,
-      media: {
-        url,
-        alt: "Cake",
-        role: "gallery" as const,
-        treatment: "none" as const,
-        provenance: {
-          sourceType: "licensed-stock" as const,
-          provider: "Unsplash",
-          creatorName: "A",
-          creatorUrl,
-          providerUrl: "https://unsplash.com/?utm_source=k",
-          reviewStatus: "owner-approved" as const,
-        },
-      },
-    });
-    expect(() =>
-      applyStructuredEditV3(
-        base,
-        mk(
-          "https://images.unsplash.com/photo-1?ixid=a",
-          "https://unsplash.com/@a?utm_source=k",
-        ),
-      ),
-    ).not.toThrow();
-    expect(() =>
-      applyStructuredEditV3(
-        base,
-        mk("https://tracker.example/pixel.gif", "https://unsplash.com/@a"),
-      ),
-    ).toThrow(EditV3Error);
-    expect(() =>
-      applyStructuredEditV3(
-        base,
-        mk("https://images.unsplash.com/photo-1", "https://evil.example/phish"),
-      ),
-    ).toThrow(EditV3Error);
+  const stock = (
+    url: string,
+    creatorUrl = "https://unsplash.com/@a?utm_source=k",
+  ) => ({
+    url,
+    alt: "Cake",
+    role: "gallery" as const,
+    treatment: "none" as const,
+    provenance: {
+      sourceType: "licensed-stock" as const,
+      provider: "Unsplash",
+      creatorName: "A",
+      creatorUrl,
+      providerUrl: "https://unsplash.com/?utm_source=k",
+      providerImageId: "p1",
+      attribution: "Photo by A on Unsplash",
+      reviewStatus: "owner-approved" as const,
+    },
   });
-  it("replaces a picture through the same validation as generation", () => {
-    const idx = base.pages
-      .find((p) => p.slug === "gallery")!
-      .sections.findIndex((s) => s.type === "gallery");
-    const next = applyStructuredEditV3(base, {
-      kind: "replace-media",
-      page: "gallery",
-      index: idx,
-      item: 0,
-      media: {
-        url: "https://images.example.com/owner.jpg",
-        alt: "Our own cake",
-        role: "gallery",
-        treatment: "none",
-        provenance: {
-          sourceType: "owner-approved-stored",
-          reviewStatus: "owner-approved",
-        },
-      },
-    });
-    expect(JSON.stringify(next)).toContain("images.example.com/owner.jpg");
-    expect(() =>
-      applyStructuredEditV3(base, {
+  const place = (media: object, ctx = {}, token?: string) =>
+    applyStructuredEditV3(
+      base,
+      {
         kind: "replace-media",
         page: "gallery",
-        index: idx,
+        index: galleryIdx(),
         item: 0,
-        media: { url: "javascript:alert(1)", alt: "x" },
+        media,
+        ...(token ? { selectionToken: token } : {}),
+      },
+      ctx,
+    );
+  it("a stock photo is placed only when the server vouches for exactly that picture; forged credit or origin is refused", () => {
+    const good = stock("https://images.unsplash.com/photo-1?ixid=a");
+    const vouches = (m: { url: string }, token?: string) =>
+      token === "signed-for-this" && m.url === good.url;
+    expect(() => place(good)).toThrow(EditV3Error); // no verifier: fails closed
+    expect(() => place(good, { verifyStockMedia: vouches })).toThrow(
+      EditV3Error,
+    ); // no token
+    expect(() => place(good, { verifyStockMedia: vouches }, "forged")).toThrow(
+      EditV3Error,
+    );
+    expect(
+      JSON.stringify(
+        place(good, { verifyStockMedia: vouches }, "signed-for-this"),
+      ),
+    ).toContain("photo-1");
+    // a different picture or a rewritten credit cannot ride on a valid token
+    expect(() =>
+      place(
+        stock("https://images.unsplash.com/photo-2"),
+        { verifyStockMedia: vouches },
+        "signed-for-this",
+      ),
+    ).toThrow(EditV3Error);
+    expect(() =>
+      place(
+        stock("https://tracker.example/pixel.gif"),
+        { verifyStockMedia: vouches },
+        "signed-for-this",
+      ),
+    ).toThrow(EditV3Error);
+  });
+  it("bundled catalogue pictures must exist in the catalogue and take their credit from it, whatever the caller writes", () => {
+    const real = MEDIA_CATALOG[0]!;
+    const forged = {
+      url: `/_kora/media/${real.file}`,
+      alt: "x",
+      role: "gallery" as const,
+      treatment: "none" as const,
+      provenance: {
+        sourceType: "licensed-stock" as const,
+        provider: "Totally Legit Photos",
+        attribution: "Photo by Someone Else",
+        creatorName: "Someone Else",
+        reviewStatus: "owner-approved" as const,
+      },
+    };
+    const out = place(forged);
+    const placed = JSON.stringify(out);
+    expect(placed).toContain(real.creator);
+    expect(placed).not.toContain("Totally Legit Photos");
+    expect(placed).not.toContain("Someone Else");
+    expect(() =>
+      place({ ...forged, url: "/_kora/media/not-in-catalogue.webp" }),
+    ).toThrow(EditV3Error);
+  });
+  it("owner pictures must be this site's own uploads; generated pictures cannot be placed", () => {
+    const owner = {
+      url: "https://media.example.com/api/public/sites/s1/m/abc/w1280.webp",
+      alt: "Our cake",
+      role: "gallery" as const,
+      treatment: "none" as const,
+      provenance: {
+        sourceType: "owner-supplied" as const,
+        reviewStatus: "owner-approved" as const,
+      },
+    };
+    expect(() => place(owner)).toThrow(EditV3Error);
+    expect(() => place(owner, { ownerMediaOk: () => false })).toThrow(
+      EditV3Error,
+    );
+    expect(
+      JSON.stringify(
+        place(owner, {
+          ownerMediaOk: (u: string) => u.includes("/sites/s1/m/"),
+        }),
+      ),
+    ).toContain("Our cake");
+    expect(() =>
+      place({
+        ...owner,
+        provenance: { sourceType: "ai-generated", reviewStatus: "unreviewed" },
       }),
     ).toThrow(EditV3Error);
+    expect(() => place({ url: "javascript:alert(1)", alt: "x" })).toThrow(
+      EditV3Error,
+    );
   });
   it("does not grow a site past seven pages, but keeps a historical eight-page site readable", () => {
     const eight = structuredClone(base);

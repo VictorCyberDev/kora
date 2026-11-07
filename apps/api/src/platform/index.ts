@@ -161,7 +161,12 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
     log: o.log,
     ...(o.now ? { now: o.now } : {}),
   });
-  monitors.onEffect = async (siteId, _serviceId, effect) => {
+  monitors.onEffect = async (siteId, serviceId, effect) => {
+    // A monitor that outlives its site (deleted on this or another instance) must never raise incidents or actions.
+    if (!(await ops.siteForService(serviceId))) {
+      await monitors.stopSite(siteId);
+      return;
+    }
     if (effect.type === "incident_created")
       await operations.onIncidentCreated(siteId, effect.incident.id);
     if (effect.type === "recovery_verified")
@@ -350,6 +355,7 @@ export function registerPlatform(
     author: rt.author,
     billing: rt.billing,
     config,
+    monitors: rt.monitors,
   });
   registerDomainRoutes(app, {
     domains: rt.domains,

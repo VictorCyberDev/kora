@@ -370,7 +370,8 @@ export class Operations {
         "not_a_site_incident",
         "Only incidents on Kora sites can have actions.",
       );
-    const site = (await platform.getSite(ref.siteId))!;
+    const site = await platform.getSite(ref.siteId);
+    if (!site) throw notFound();
     const parameters = i.parameters ?? {};
     const existing = await ops.findLiveProposal(
       i.incidentId,
@@ -532,7 +533,16 @@ export class Operations {
     if (!a) throw notFound();
     if (!(await ops.transition(a.id, "READY", "EXECUTING")))
       throw new HttpError(409, "not_ready", `Action is ${a.state}.`);
-    const site = (await platform.getSite(a.siteId!))!;
+    const site = a.siteId ? await platform.getSite(a.siteId) : null;
+    if (!site) {
+      // The site was deleted after this action was proposed: it is closed, never left half-executed.
+      await ops.transition(a.id, "EXECUTING", "EXECUTION_FAILED");
+      throw new HttpError(
+        409,
+        "site_deleted",
+        "That website no longer exists, so the action was not run.",
+      );
+    }
     const startedAt = this.now();
     let outcome:
       | "SUCCEEDED"
