@@ -1,0 +1,585 @@
+{
+  "studiedOn": "2026-11-07",
+  "method": "Each homepage was read with WebFetch, which returns a text/markup summary. Visual attributes (typeface, scale, colour, sticky headers, true mobile layout) are mostly NOT observable through it and are recorded as not determinable rather than guessed. Rules marked 'derived' are not observed on any site read and are principles of honest design for Kora's generator.",
+  "categories": [
+    {
+      "id": "agency",
+      "sitesRead": [
+        {
+          "url": "https://www.pentagram.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07. Nav: Work, About, News, Contact (+Search, Archive). Hero is a featured-project showcase (~11 items, large image + title + one line). Then tagline with discipline (15) and sector (18) filters, alternating project grids and editorial retrospectives, footer with newsletter/careers. Imagery is project photography/renders (architecture, installations, packaging, signage). Very dense with cards, very little explanatory copy. Trust = named clients/projects, founded 1972, 'largest independent design consultancy'; no awards listed. Contact only via nav link plus newsletter. Typeface/scale and sticky behaviour not determinable."
+        },
+        {
+          "url": "https://www.instrument.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07. Server-rendered. Order: award banner, nav (Work, Services[Brand, Marketing, Product], About, Careers, Latest, Contact), one-line positioning hero + 'View All Work', work filter tabs (All/Brand/Marketing/Product), text client roster (Nike, Google, Netflix, Microsoft...), services intro, work carousel (6 items, alt text empty so subjects inferred from filenames only), 'Recent Recognition' award-badge row, purpose statement, News & Noteworthy (3 cards), newsletter, contact block (Start a Project, Press, Join, Drop us a note). Sparse copy, generous spacing. Typography and sticky not determinable."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Open with the work itself (a featured-project showcase or a one-line positioning statement followed immediately by a link to all work), not with an about-us paragraph.",
+          "support": "2 of 2",
+          "area": "hero"
+        },
+        {
+          "rule": "Keep primary navigation to 4-6 top-level items built around Work, About, Contact (plus Services/News only if real content exists); put depth in dropdowns or filters.",
+          "support": "2 of 2",
+          "area": "navigation"
+        },
+        {
+          "rule": "Let imagery be the studio's own project work (photography, renders, screens), shown large with a title and one line; avoid generic stock photography.",
+          "support": "2 of 2 (Instrument subjects inferred from filenames)",
+          "area": "imagery"
+        },
+        {
+          "rule": "Make the work index filterable by discipline or service (tabs or filter lists) so one page serves several visitor intents.",
+          "support": "2 of 2",
+          "area": "architecture"
+        },
+        {
+          "rule": "Keep copy sparse and image-led; sections are short headings plus a link, not paragraphs.",
+          "support": "2 of 2",
+          "area": "density"
+        },
+        {
+          "rule": "Use named clients/projects as the trust cue, placed high on the page (client roster or featured project), and add awards only if the owner has actually won them.",
+          "support": "2 of 2",
+          "area": "trust"
+        },
+        {
+          "rule": "Provide a persistent contact route in the nav and again near the footer, phrased as starting a project or getting in touch; a newsletter is an optional secondary path.",
+          "support": "2 of 2",
+          "area": "conversion"
+        },
+        {
+          "rule": "Include a News/Latest or editorial layer in the architecture (a few cards linking to articles or press) to show the studio is active.",
+          "support": "2 of 2",
+          "area": "architecture"
+        },
+        {
+          "rule": "If the owner has no clients, awards or case studies yet: show a small number of clearly labelled self-initiated or concept projects, the founders' names and photos, and the studio's process; never invent client logos or awards. (derived, not observed)",
+          "support": "0 of 2 (derived)",
+          "area": "trust"
+        },
+        {
+          "rule": "Typography and mobile behaviour were not observable by text fetch; for the generator, default to one confident sans display face with large headings and restrained body text, and a collapsed menu on mobile. (derived, unverified)",
+          "support": "0 of 2 (not observable)",
+          "area": "typography"
+        }
+      ]
+    },
+    {
+      "id": "consultancy",
+      "sitesRead": [
+        {
+          "url": "https://ustwo.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07. Server-rendered. Nav (6): Services, Work, AI, Insights, Our story, Contact us; also a bottom-corner contact button. Hero: large display headline in short lines beside an abstract geometric SVG (no photography). Then 'what we do' with a 20-years claim, linked case-study/news/insight cards (3 case studies), 9 client names, a '9.6/10' client satisfaction score (dated survey), one named testimonial, four capability blocks, B Corp / employee-owned banner, footer with ISO 27001, Cyber Essentials, Crown Commercial Service and B Corp badges. Sparse, airy. Typeface not determinable; headline appears bold sans."
+        },
+        {
+          "url": "https://thoughtbot.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07. Server-rendered. Nav (6): Services, Industries, Case Studies, Resources, Blog, Let's Talk. Hero headline about experience when stakes are high, single 'Let's talk' CTA, team-headshot grid. Then featured case study (client logo, tags, summary, testimonial), stage-based services links, wall of 24 monochrome client logos under a '1,000+ outcomes' heading, product promos, AI service highlight with line illustration, three case-study cards, 'purpose-driven teams' blurb, six resource cards, closing CTA, footer with US and UK phone numbers. All CTAs lead to one hire-us page; no inline form. Moderate-to-high density in lower half."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Headline states the outcome the client gets (e.g. products people keep using, reliability under pressure) rather than the company name or a list of technologies.",
+          "support": "2 of 2",
+          "area": "hero"
+        },
+        {
+          "rule": "Use 5-6 top-level nav items covering Services, Work/Case studies, Insights/Blog, About and a visible Contact/Let's talk item.",
+          "support": "2 of 2",
+          "area": "navigation"
+        },
+        {
+          "rule": "Funnel every call-to-action to a single contact/hire path with consistent wording ('Let's talk', 'Contact us'), repeated in header, mid-page and closing section.",
+          "support": "2 of 2",
+          "area": "conversion"
+        },
+        {
+          "rule": "Sequence trust cues as: client names/logos, one or two measurable facts, a named testimonial, then case studies; every figure must be owner-supplied and dated.",
+          "support": "2 of 2",
+          "area": "trust"
+        },
+        {
+          "rule": "Present case studies as cards with client, short outcome summary and a read-more link, with one featured above the fold of the second screen.",
+          "support": "2 of 2",
+          "area": "architecture"
+        },
+        {
+          "rule": "Summarise capabilities in 3-4 short named blocks or stage-based links, not long service lists.",
+          "support": "2 of 2",
+          "area": "density"
+        },
+        {
+          "rule": "Favour abstract graphics, diagrams and line illustration (plus team headshots) over stock photos of people at laptops.",
+          "support": "2 of 2 (thoughtbot also uses headshots)",
+          "area": "imagery"
+        },
+        {
+          "rule": "Include a resources/insights section (articles, guides, podcast, newsletter) as secondary content under the main funnel.",
+          "support": "2 of 2",
+          "area": "architecture"
+        },
+        {
+          "rule": "Show security/quality credentials (ISO, B Corp etc.) in the footer only when the owner holds them.",
+          "support": "1 of 2",
+          "area": "trust"
+        },
+        {
+          "rule": "With no clients or case studies yet, show the team, the working method (discovery, build, handover), open-source or own-product work and written insights as honest proof; do not fabricate logos, scores or testimonials. (derived)",
+          "support": "0 of 2 (derived)",
+          "area": "trust"
+        }
+      ]
+    },
+    {
+      "id": "photographer",
+      "sitesRead": [
+        {
+          "url": "https://stevemccurry.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (Squarespace). Nav: Workshops (external), Selected Works dropdown (8 themes: Afghanistan, Animals, Children, Portraits...), Shop dropdown (books, prints, exhibitions, news, about), cart; mobile 'Open Menu' toggle. No hero headline identifiable; main content is a fine-art-prints teaser and 3 news cards (event, workshop, course). Image alt text empty so subject matter not readable. Contact Us only in footer. Light density. Typography not determinable."
+        },
+        {
+          "url": "https://www.brandonwoelfel.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07. Nav (6): Work, About, Photobooks, Presets, Gear, Prints (four external), cart, six social icons, Contact as mailto, 'Open Menu' toggle. No headline or hero copy; first content is a single gallery of ~48 thumbnails with view-fullsize links. No testimonials, clients, booking form or scheduling tool. Image-heavy, text-light. Subject matter not verifiable from text."
+        },
+        {
+          "url": "https://petermckinnon.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07. Nav: People, Places, Things, Clients, About, Connect, Shop (external) plus secondary Back/Portraits/Lifestyle row and YouTube/Instagram/Threads icons; tagline 'PHOTOGRAPHER | DP'. Text capture shows no hero image description. Bottom: newsletter block, sales email, 'Hours' heading with no hours. The newsletter block exposed a builder error message ('needs a storage option') and the Hours section was empty - examples of unfinished sections reaching visitors. No booking flow visible."
+        },
+        {
+          "url": "https://www.chrisburkard.com",
+          "readOk": false,
+          "notes": "Fetched 2026-11-07 but only title and utility links returned (SmugMug-powered, JS-rendered gallery); structure not readable. Not guessed."
+        },
+        {
+          "url": "https://www.josevillaphoto.com",
+          "readOk": false,
+          "notes": "HTTP 503 on both www and bare domain on 2026-11-07. Not read."
+        },
+        {
+          "url": "https://www.annieleibovitz.com",
+          "readOk": false,
+          "notes": "Domain redirected to a for-sale parking page on 2026-11-07. Not usable."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Let the photographs be the hero: open on a full-bleed image or image grid with little or no headline copy.",
+          "support": "2 of 3",
+          "area": "hero"
+        },
+        {
+          "rule": "Keep the nav small (3-7 items) and organise the work by genre or theme (People/Places/Things, Portraits/Lifestyle) rather than by date.",
+          "support": "2 of 3",
+          "area": "navigation"
+        },
+        {
+          "rule": "Minimise text: labels and short captions only, so type never competes with the images.",
+          "support": "3 of 3",
+          "area": "typography"
+        },
+        {
+          "rule": "Keep density very low: few sections, one gallery or a short curated set, generous spacing.",
+          "support": "3 of 3",
+          "area": "density"
+        },
+        {
+          "rule": "Give enquiries a simple, obvious path (email link or short form) in the nav and footer; no multi-step funnels on the homepage.",
+          "support": "3 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Treat prints, books, presets, workshops as a secondary 'Shop/Workshops' nav item and include it only if the owner actually sells those things.",
+          "support": "3 of 3",
+          "area": "architecture"
+        },
+        {
+          "rule": "Do not rely on testimonials or logo walls; none of the sites read use them on the homepage. Honest trust substitutes: dated news/exhibitions or publications the owner supplies, a short artist statement, and the work itself.",
+          "support": "3 of 3 (absence of testimonials)",
+          "area": "trust"
+        },
+        {
+          "rule": "Provide a collapsed 'Open Menu' toggle on mobile and ensure the gallery is a single column or two-up grid that opens a full-size view.",
+          "support": "2 of 3 (menu toggles seen)",
+          "area": "mobile"
+        },
+        {
+          "rule": "Never render a section that has no content (empty 'Hours', placeholder form messages); omit it.",
+          "support": "1 of 3 (negative example)",
+          "area": "density"
+        },
+        {
+          "rule": "For client/commission photographers (weddings, portraits), add Portfolio by category, About, Packages/Investment and an enquiry form asking date, location and type of shoot. This comes from vendor guidance in search results, not from a site read; treat as secondary. (derived)",
+          "support": "0 of 3 (secondary sources only)",
+          "area": "conversion"
+        }
+      ]
+    },
+    {
+      "id": "home-repair",
+      "sitesRead": [
+        {
+          "url": "https://www.benjaminfranklinplumbing.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (national franchise). Top: Find a Location, 24/7 emergency phone line below nav. Nav (6): Services (about 40 sub-pages), Resources, Reviews, About Us, Own a Franchise, Book Now. Hero: 'Punctual Plumbers!' headline, ZIP field + Go, technicians group photo, Google rating badge (4.82 over 121,536 reviews). Then trust intro with guarantees, 10 service tiles, emergency block with Book Now + phone, ~10 review excerpts naming technicians, local-support block, 5 tips articles, footer with late-arrival pledge and 'independently owned and licensed' note. Probable mobile sticky bar (Call Us, Book Now, Update Zip) inferred from repeated labels, not confirmed. Fonts/sticky not determinable."
+        },
+        {
+          "url": "https://www.mrelectric.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (national franchise). Top bar: 'Easy Online Booking' + click-to-call. Nav (6): Residential, Commercial, About Us, Blog, Why Us, Expert Tips. Hero: full-width electrician photo, service headline, booking-first CTA; rating widget displayed '0/5' (failed to load). Then Book Online form (name, email, phone, address, ZIP, SMS/email consent), four service cards, four coupon offers (expiring 2026-12-31), ZIP location finder with van image, three 'Why choose us' bullets, six-question FAQ accordion, blog and tips cards, services accordion, recruiting block, footer with phone. Trust: 'promise', '100,000 customers a year' claim, no licence number shown. Long single-column scroll, moderately dense."
+        },
+        {
+          "url": "https://www.mrhandyman.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 but only partially: capture truncated to header/menu markup. Header has 'Get Started' (request service) and 'Call Us' (tel link). Nav (4): Residential (12 service categories), Commercial (8), How We Work (incl. Our Promise, Reviews, Contact, Locations), Resources (6). 'Locally Owned and Operated' text. Hero, imagery, typography, reviews NOT readable; not guessed."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Keep the phone number (click-to-call) and one booking/quote button visible in the header at all times.",
+          "support": "3 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Use a sticky call/book bar on mobile so the call is one tap away at any scroll depth.",
+          "support": "1 of 3 (inferred, unconfirmed)",
+          "area": "mobile"
+        },
+        {
+          "rule": "State the trade, area and what happens next in the first screen, with a primary action built into the hero (ZIP/postcode check or short booking form), not just a brand slogan.",
+          "support": "2 of 3",
+          "area": "hero"
+        },
+        {
+          "rule": "Keep nav to 4-6 items with services grouped under one dropdown; do not list every service in the top bar.",
+          "support": "3 of 3",
+          "area": "navigation"
+        },
+        {
+          "rule": "Show services as a tile or card grid with short plain-language labels (drains, repairs, installations, safety checks), 4-10 tiles, each linking to a detail page.",
+          "support": "2 of 3",
+          "area": "architecture"
+        },
+        {
+          "rule": "Give 24/7 or emergency availability its own block with phone number and book button, only if the owner really offers it.",
+          "support": "2 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Trust order: rating with review count, named review excerpts, written guarantee or pledge, then licensing/insurance; show only ratings and reviews that exist, and never render an empty or broken rating widget (Mr. Electric showed 0/5).",
+          "support": "2 of 3",
+          "area": "trust"
+        },
+        {
+          "rule": "Honest trust substitute when there are no reviews yet: licence/registration number, insurance and guarantee wording the owner supplies, a real photo and name of the tradesperson, a clear pricing policy and the specific area served.",
+          "support": "0 of 3 (derived)",
+          "area": "trust"
+        },
+        {
+          "rule": "Make the service area explicit (ZIP/postcode lookup or named towns).",
+          "support": "2 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Use real photography of technicians, vans and work rather than icons only; keep imagery sparse (one hero photo plus service icons or cards).",
+          "support": "2 of 3",
+          "area": "imagery"
+        }
+      ]
+    },
+    {
+      "id": "medical",
+      "sitesRead": [
+        {
+          "url": "https://www.nuffieldhealth.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (large UK provider, not a small practice). Nav (4 mega-menus): Hospitals, Gyms, Services, Advice, plus Login and search. Hero is a membership promotion (join now). Sections: three audience tiles, club features with SVG illustrations, four hospital tiles (book a consultant, find treatment, see a GP, diagnostic imaging in 48 hours), four photo tiles, location finder with per-location phone/'Contact us'/'Book a tour', footer. Trust: links to CQC ratings, quality and safety, complaints procedure; no named clinicians or reviews on the homepage; no emergency notice in captured content. Typography/imagery not determinable."
+        },
+        {
+          "url": "https://www.parsleyhealth.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07, partially (text only, nav and footer not captured). Order: hero headline about asking why, text CTA, two path cards (membership vs lab review), single five-star patient testimonial, conditions grid by symptom/system, clinician trust block (board-certified claim, prescribing, proprietary symptom index), comparison table with other care models (cell contents not captured), FAQ (insurance, scope). FAQ states it does not provide emergency care or annual check-ups; no emergency notice in the homepage text. Imagery, typography, mobile not determinable."
+        },
+        {
+          "url": "https://www.onemedical.com",
+          "readOk": false,
+          "notes": "HTTP 403 on 2026-11-07. Not read."
+        },
+        {
+          "url": "https://www.mayoclinic.org",
+          "readOk": false,
+          "notes": "HTTP 403 on 2026-11-07. Not read."
+        },
+        {
+          "url": "https://drmcminn.com",
+          "readOk": false,
+          "notes": "Domain redirected to a for-sale page on 2026-11-07. Not read."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Organise the homepage by patient intent: tiles or cards for 'book an appointment', 'find a service/treatment', 'find a location' rather than by internal departments.",
+          "support": "2 of 2",
+          "area": "architecture"
+        },
+        {
+          "rule": "Offer a conditions/treatments index grouped by symptom or body system, each linking to a plain-language page.",
+          "support": "2 of 2 (stronger on Parsley)",
+          "area": "architecture"
+        },
+        {
+          "rule": "Use one primary action per screen (book, find a location, call) with the practice phone number and address easy to reach; per-location phone numbers and a location finder where there is more than one site.",
+          "support": "1 of 2",
+          "area": "conversion"
+        },
+        {
+          "rule": "Put credentials and regulator links where visitors can verify them (clinician names with registration numbers, regulator rating page); show them only when the owner supplies them.",
+          "support": "2 of 2 (different forms: CQC links vs board-certified claim)",
+          "area": "trust"
+        },
+        {
+          "rule": "Answer cost, insurance and who-it-is-for in a short FAQ near the bottom.",
+          "support": "1 of 2",
+          "area": "density"
+        },
+        {
+          "rule": "Include a visible 'for emergencies call your local emergency number' notice and a statement of what the practice does not treat; neither homepage carried it prominently (Parsley only in FAQ), so treat this as a safety rule rather than an observed pattern.",
+          "support": "0 of 2 on homepage (1 in FAQ)",
+          "area": "trust"
+        },
+        {
+          "rule": "Keep hero copy about the patient's need or the care approach, with a calm, light, spacious layout and short sections; avoid urgent, salesy or promo-driven heroes for clinical services.",
+          "support": "1 of 2 (Nuffield's promo hero is the counter-example)",
+          "area": "hero"
+        },
+        {
+          "rule": "Show at most one patient quote, and never use testimonials as evidence of treatment effectiveness.",
+          "support": "1 of 2 (Parsley uses one; ASA guidance cited in search says testimonials alone do not substantiate efficacy)",
+          "area": "trust"
+        },
+        {
+          "rule": "With no reviews or credentials to display yet, use factual practice information the owner supplies: address, opening hours, services, how appointments work, what to bring, fees if known.",
+          "support": "0 of 2 (derived)",
+          "area": "trust"
+        },
+        {
+          "rule": "Evidence for navigation, imagery, typography and mobile is weak (only two of five sites were readable, one of them partially). The generator should default to a short nav (Services, About/Team, Fees or Insurance, Contact/Book), accessible high-contrast type, and owner-supplied real photography. (derived)",
+          "support": "0 of 2 (not observable)",
+          "area": "navigation"
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "sitesRead": [
+        {
+          "url": "https://www.varsitytutors.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (large marketplace). Top: Tutoring Jobs, call-now phone, Log in; subjects menu with 13 categories. Hero: 'What can we help you learn?' with chat input and subject pills; phone secondary. Then stat strip (4.9/5 from 3.4M ratings, 98% satisfaction, 10M+ hours, 1,000+ schools, '2x growth in proficiency' with no source shown), subject/level tags, rotating stock-style image carousel, a 60-second grade-level intake form ('No obligation'), tutor matching banner, dense footer with disclaimers (independent contractors, trademarks, award claim with source note). Typography not determinable."
+        },
+        {
+          "url": "https://www.sylvanlearning.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (franchise). Promo bar for free assessment; Find a Location + phone; nav groups (Why Sylvan, Programs: Tutoring/Test Prep/Courses & Camps, Free resources) about 30 links; 'Book Your Free Assessment' button. Hero 'Together, We've Got This' with parent-child homework photo and Find Your Local Center. Then four-step explainer (Assess, Plan, Teach, Apply), three differentiators, self-authored comparison table vs 'other tutoring', 'No pressure, just a plan' lead form (parent name, email, ZIP, phone, SMS consent), app promos, footer centre finder. No reviews or testimonials on page; unsourced superlatives ('#1', 'nationally recognized'). Disclosure that the free assessment covers one subject."
+        },
+        {
+          "url": "https://www.tutorful.co.uk",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (UK marketplace). Nav (8): Our tutors, How it works, School age learners (mega-menu by age, subject, exam board), Adult learners, Resources, Login, Support, Find a tutor button. Hero 'Find a tutor who you really click with' with app screenshot (no subject photo), one CTA. Then stats band (11K+ tutors, 3.1M+ lessons, 81K+ reviews, 'Trustpilot Excellent'), first-lesson guarantee, vetting (accepts 1 in 8, DBS checks), outcome claims ('90% improve by one grade', '8h to move up a GCSE grade (On average)'), dated testimonials (Apr-Jun 2024), 4-step how it works, safety features, partner logos, subject pills. High density."
+        },
+        {
+          "url": "https://www.mytutor.co.uk",
+          "readOk": false,
+          "notes": "Fetch returned empty content on 2026-11-07. Not read."
+        },
+        {
+          "url": "https://www.kumon.com",
+          "readOk": false,
+          "notes": "HTTP 403 on 2026-11-07."
+        },
+        {
+          "url": "https://www.mathnasium.com",
+          "readOk": false,
+          "notes": "HTTP 403 on 2026-11-07."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "Hero carries one clear action matched to the parent's/learner's intent ('Find a tutor', 'Book a free assessment', 'Find your local centre'), with subjects or levels as quick-pick pills.",
+          "support": "3 of 3",
+          "area": "hero"
+        },
+        {
+          "rule": "Lower the first commitment: free assessment, trial lesson or a ~1-minute form with 'no obligation' wording; show what the first step involves.",
+          "support": "3 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Explain the process in 3-4 numbered steps (assess, plan, teach, review).",
+          "support": "2 of 3",
+          "area": "architecture"
+        },
+        {
+          "rule": "Make navigation subject/level/age-based (and exam board where relevant) so parents find their child's need in one click.",
+          "support": "3 of 3",
+          "area": "navigation"
+        },
+        {
+          "rule": "Show tutor/teacher vetting and child-safeguarding information prominently, using only checks the owner actually performs and can document.",
+          "support": "3 of 3",
+          "area": "trust"
+        },
+        {
+          "rule": "Use a stat band or review count only with a stated basis and date; qualify claims ('on average') and never present unsourced outcome numbers or comparison tables as fact.",
+          "support": "3 of 3 use a stat/claim band; 1 of 3 qualifies it, 2 of 3 leave key claims unsourced (the pattern to avoid)",
+          "area": "trust"
+        },
+        {
+          "rule": "Offer a phone number or enquiry form, with a minimal lead form (parent name, email, phone, postcode, consent).",
+          "support": "2 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Disclose limits near the claims (what the free assessment covers, independent tutors, trademarks).",
+          "support": "3 of 3",
+          "area": "trust"
+        },
+        {
+          "rule": "Prefer real photos of the owner's own space and staff; avoid stock child imagery implying real students. Observed sites mostly used stock-style people (2 of 3) or app screenshots.",
+          "support": "2 of 3 use stock-style imagery (the pattern to avoid)",
+          "area": "imagery"
+        },
+        {
+          "rule": "With no reviews or results yet: show tutor profiles/qualifications the owner supplies, the lesson format, pricing or 'enquire for pricing', a sample lesson plan and the safeguarding policy.",
+          "support": "0 of 3 (derived)",
+          "area": "trust"
+        }
+      ]
+    },
+    {
+      "id": "real-estate",
+      "sitesRead": [
+        {
+          "url": "https://www.winkworth.co.uk",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (UK franchise network). Nav (3 + filters): Buy, Rent, Find an office; Login lower down. Hero: 'city to country to coast' headline over a full property search panel (price, bedrooms, type, radius, under-offer/sold toggles). Then 'in numbers' (190 years, 100+ offices, 175,000 registered), account promo, four signposts (Buy, Sell, Rent, Landlords), '4.8 Google' with about 20 dated reviews + Book a Valuation, 'experts in your neighbourhood', ~25 article cards (articles, podcasts, prime central London), office finder. Imagery: stock-style doors, houses, cityscapes. High density. Fonts not determinable."
+        },
+        {
+          "url": "https://www.compass.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (US brokerage). Nav: Buy/Rent/Sell tabs with dropdowns (Exclusives, New Development, Agents). Hero 'See It First' with a search bar (city, neighbourhood, address, school, ZIP, agent, MLS#). Then exclusives banner, mortgage pre-approval promo, concierge block, expandable popular-cities and markets lists, big footer. Extensive legal text: brokerage licence statements, Equal Housing Opportunity, MLS/IDX data disclaimer and 'no guarantee of accuracy', NMLS disclosure, state-specific notices. No explicit valuation/enquiry CTA seen; agent contact limited to 'Find an Agent'."
+        },
+        {
+          "url": "https://www.knightfrank.com",
+          "readOk": true,
+          "notes": "Read 2026-11-07 (global/commercial and prime residential). Utility links and a 'Book a consultation' button; menu: Global solutions, Properties, Research, Contact us. No search in hero; report banner. Country locator, stats (130 years, 650+ offices, 21,000+ experts), six solution cards, three full-bleed feature blocks (living room by pool, coastal tower, office views), careers strip, enquiry form (title, name, email, phone, free text), footer with regional sites. Trust: heritage numbers, client-money and fraud protection. Light density. Typography not determinable."
+        },
+        {
+          "url": "https://www.theagencyre.com",
+          "readOk": false,
+          "notes": "Fetch on 2026-11-07 returned only page title and a login link (JS-rendered). Not read."
+        },
+        {
+          "url": "https://www.hamptons.co.uk",
+          "readOk": false,
+          "notes": "HTTP 403 on 2026-11-07."
+        }
+      ],
+      "rules": [
+        {
+          "rule": "For listing-led agencies, make the hero a property search (location + price/beds + type); for advisory/boutique agencies, lead instead with a short positioning line and a consultation/valuation action.",
+          "support": "2 of 3 search-led; 1 of 3 advisory-led",
+          "area": "hero"
+        },
+        {
+          "rule": "Keep the main nav to 3-4 items (Buy, Rent/Sell, About/Offices, Contact) with deeper pages in dropdowns.",
+          "support": "3 of 3",
+          "area": "navigation"
+        },
+        {
+          "rule": "Signpost visitor roles with 3-4 cards: buyer, seller, landlord, tenant/renter.",
+          "support": "3 of 3",
+          "area": "architecture"
+        },
+        {
+          "rule": "Make 'Book a valuation' or 'Book a consultation' the main seller-side CTA and repeat it after the reviews/proof section.",
+          "support": "2 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Provide an office/agent finder and a short enquiry form (name, email, phone, free-text) with consent notice.",
+          "support": "3 of 3",
+          "area": "conversion"
+        },
+        {
+          "rule": "Use heritage/scale numbers (years, offices, buyers) and a dated Google rating only from owner-supplied, verifiable data.",
+          "support": "2 of 3 (numbers); 1 of 3 (dated reviews)",
+          "area": "trust"
+        },
+        {
+          "rule": "Image direction: large, calm photography of homes and interiors with generous white space, only real owner-supplied listing photos for listings; do not use stock photos as if they were listings.",
+          "support": "2 of 3 use lifestyle/property imagery; Winkworth's is stock-style",
+          "area": "imagery"
+        },
+        {
+          "rule": "Place regulatory and data notices in the footer (licence/registration statements, equal-opportunity or non-discrimination wording where the market requires it, data-source disclaimers, privacy), shown only as the owner provides them.",
+          "support": "2 of 3",
+          "area": "trust"
+        },
+        {
+          "rule": "Add a lightweight market-insight/articles section if the owner can maintain it; otherwise omit.",
+          "support": "2 of 3",
+          "area": "architecture"
+        },
+        {
+          "rule": "With no sales history, awards or reviews: lead with the agent's name, photo, local area knowledge the owner can state specifically, the fee structure and how a valuation works; do not invent figures. (derived)",
+          "support": "0 of 3 (derived)",
+          "area": "trust"
+        }
+      ]
+    }
+  ],
+  "mustNotClaimWithoutOwnerEvidence": {
+    "medical": [
+      "treatment outcomes, cure rates, success rates, or 'proven/clinically validated' statements",
+      "clinician qualifications, specialist status or professional-register numbers (e.g. GMC, NMC, board certification) unless supplied and verifiable",
+      "regulator ratings or registrations (e.g. CQC) unless supplied",
+      "'best', 'leading', 'award-winning', or ranking claims",
+      "patient testimonials or star ratings that imply a treatment works (ASA guidance cited in search: testimonials alone are unlikely to substantiate efficacy; the advertiser must hold evidence for objective claims)",
+      "claims that could discourage essential medical treatment (CAP Code rule 12.2 as cited)",
+      "emergency or 24/7 care, waiting times, same-day appointments",
+      "insurance acceptance, fees or prices",
+      "before/after images or named patients",
+      "equipment, accreditation or affiliations with hospitals or universities"
+    ],
+    "education": [
+      "grade improvement figures, pass rates or 'guaranteed results'",
+      "'#1', 'top', 'best' or ranking claims without a named basis and date (CAP expects the basis of 'No. 1' claims to be stated)",
+      "tutor/teacher qualifications, vetting percentages ('top 5%', '1 in 8'), background-check statements or DBS-type checks unless the owner actually does them and can document",
+      "accreditation, inspection ratings or exam-board/school affiliations",
+      "student names, photos, scores or testimonials without documented consent",
+      "years of operation, number of students/lessons, satisfaction scores",
+      "pricing, free-trial terms or guarantee terms",
+      "that the owner's tutors are employees, if they are independent contractors"
+    ],
+    "real-estate": [
+      "sales figures, homes-sold counts, days-on-market, price-achieved percentages",
+      "awards, 'No. 1 agent' or market-leader claims",
+      "listings, prices or sold prices not supplied by the owner (UK Trading Standards view cited in search: 'price on application' is likely misleading; price, council tax band and tenure are required material information on listings)",
+      "licence, registration or redress-scheme membership (e.g. Property Ombudsman, Propertymark) unless supplied",
+      "Google or other review ratings and review counts",
+      "valuation estimates, market statistics or area price trends",
+      "neighbourhood descriptions about schools, crime or demographics (fair-housing and non-discrimination risk in some markets; the search did not verify US rules, so check locally)",
+      "mortgage, legal or financial advice",
+      "stock photography presented as an actual property or team"
+    ]
+  }
+}
