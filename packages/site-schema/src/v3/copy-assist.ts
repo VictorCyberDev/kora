@@ -52,15 +52,9 @@ function inventedNames(text: string, facts: string): string[] {
   return out;
 }
 
-export function validateProposal(
-  p: CopyProposal,
-  facts: string,
-): { ok: boolean; reasons: string[] } {
+/** The checks every piece of model-written text must pass. Returns the reasons it was refused; empty means acceptable. */
+export function validateText(text: string, facts: string): string[] {
   const reasons: string[] = [];
-  const text = `${p.heading} ${p.subheading}`;
-  if (!p.heading.trim() || p.heading.length > 90)
-    reasons.push("the heading is empty or too long");
-  if (p.subheading.length > 240) reasons.push("the subheading is too long");
   if (MARKUP.test(text)) reasons.push("it contains markup or a link");
   // numbers: every digit run must already be in the owner's facts
   for (const n of text.match(/\d[\d,.]*/g) ?? [])
@@ -76,6 +70,19 @@ export function validateProposal(
   if (names.length) reasons.push(`"${names[0]}" looks like an invented name`);
   const cliche = findCliches(text);
   if (cliche.length) reasons.push(`"${cliche[0]}" is a generic phrase`);
+  return reasons;
+}
+
+export function validateProposal(
+  p: CopyProposal,
+  facts: string,
+): { ok: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  const text = `${p.heading} ${p.subheading}`;
+  if (!p.heading.trim() || p.heading.length > 90)
+    reasons.push("the heading is empty or too long");
+  if (p.subheading.length > 240) reasons.push("the subheading is too long");
+  reasons.push(...validateText(text, facts));
   return { ok: reasons.length === 0, reasons };
 }
 

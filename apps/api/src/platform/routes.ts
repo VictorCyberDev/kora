@@ -735,6 +735,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
             extra.direction ?? 0,
             await ownerPlan(site.id, site.orgId),
             config.KORA_COPY_ASSIST,
+            config.KORA_MODEL_COMPOSE,
           )
           .then((r) => {
             decided.v3 = {

@@ -25,6 +25,7 @@ import {
   type StructuredEdit,
   assistCopy,
   repairCompleteness,
+  composeWithModel,
   type EditContextV3,
 } from "@kora/site-schema";
 import type { BrandOS, CreativeDirection } from "@kora/creative";
@@ -258,6 +259,7 @@ export class SiteAuthor {
     direction: 0 | 1 | 2 = 0,
     o: PlanV3Options = {},
     assist = false,
+    compose = false,
   ): Promise<
     Authored & {
       brandOs: BrandOS;
@@ -294,6 +296,30 @@ export class SiteAuthor {
         note +=
           ". The opening headline was suggested by the AI and checked against what you told us.";
       }
+    }
+    // Optional model composition: the model may only rewrite listed text fields; every edit is validated, anything that
+    // fails keeps the deterministic copy, and the whole result must still pass the gate.
+    if (compose && llm) {
+      const c = await composeWithModel(spec, async (req) => {
+        const res = await llm.complete({
+          system: req.system,
+          user: req.user,
+          maxOutputTokens: req.maxOutputTokens,
+        });
+        return {
+          text: res.text,
+          inputTokens: res.inputTokens,
+          outputTokens: res.outputTokens,
+        };
+      });
+      inputTokens = (inputTokens ?? 0) + (c.inputTokens ?? 0) || null;
+      outputTokens = (outputTokens ?? 0) + (c.outputTokens ?? 0) || null;
+      if (c.used) {
+        spec = c.spec;
+        source = "MODEL";
+        note += `. The AI rewrote ${c.applied.length} piece${c.applied.length === 1 ? "" : "s"} of copy (${c.rejected.length} suggestion${c.rejected.length === 1 ? "" : "s"} refused by the fact checks).`;
+      } else if (c.unusedReason)
+        note += `. The AI's copy was not used: ${c.unusedReason}.`;
     }
     // Quality gate for a new site: every page is read, safe repairs are applied (bounded), and anything still blocking is
     // reported in the note instead of being hidden.

@@ -24,6 +24,8 @@ export const platformConfigSchema = z.object({
   KORA_CREATIVE_ENGINE: z.enum(["v2", "v3"]).optional(),
   /** Let a configured model propose the opening headline for v3 sites. Proposals are validated against the owner's facts; failures fall back to deterministic copy. Off by default. */
   KORA_COPY_ASSIST: bool,
+  /** Let a configured model rewrite page copy field by field for NEW v3 sites. Every edit is validated against the owner's facts; the deterministic site is the fallback. Off by default. */
+  KORA_MODEL_COMPOSE: bool,
   /** Public https origin that serves owner pictures to published sites. Defaults to KORA_PUBLIC_URL; owner pictures are only embedded in designs when this is https. */
   KORA_MEDIA_PUBLIC_URL: z.string().url().optional(),
   KORA_SIGNUP_ENABLED: bool,
@@ -109,6 +111,7 @@ export type PlatformConfig = Omit<
 > & {
   KORA_CREATIVE_ENGINE: "v2" | "v3";
   KORA_COPY_ASSIST: boolean;
+  KORA_MODEL_COMPOSE: boolean;
   KORA_COOKIE_SECURE: boolean;
   KORA_LEGACY_PUBLIC_API: boolean;
   KORA_CHAOS_ENABLED: boolean;
@@ -133,6 +136,7 @@ export function loadPlatformConfig(
     KORA_CHAOS_ENABLED: c.KORA_CHAOS_ENABLED ?? false,
     KORA_CREATIVE_ENGINE: c.KORA_CREATIVE_ENGINE ?? "v2",
     KORA_COPY_ASSIST: c.KORA_COPY_ASSIST ?? false,
+    KORA_MODEL_COMPOSE: c.KORA_MODEL_COMPOSE ?? false,
     KORA_TRUST_PROXY: c.KORA_TRUST_PROXY ?? prod,
     KORA_SIGNUP_ENABLED: c.KORA_SIGNUP_ENABLED ?? true,
     KORA_EXPERIMENTAL_RUMPTY_BUCKET: c.KORA_EXPERIMENTAL_RUMPTY_BUCKET ?? false,
