@@ -1,0 +1,56 @@
+### build: pnpm build
+
+> kora@0.1.0 build /home/user/kora
+> pnpm -r build
+
+Scope: 18 of 19 workspace projects
+apps/web build$ tsc -p tsconfig.json --noEmit && vite build
+packages/creative build$ tsc -p tsconfig.json
+packages/event-schema build$ tsc -p tsconfig.json
+packages/passport build$ tsc -p tsconfig.json
+packages/passport build: Done
+packages/runtime-claim build$ tsc -p tsconfig.json
+packages/event-schema build: Done
+packages/site-fonts build$ tsc -p tsconfig.json
+packages/creative build: Done
+packages/site-media build$ tsc -p tsconfig.json
+packages/site-fonts build: Done
+packages/site-serving build$ tsc -p tsconfig.json
+packages/runtime-claim build: Done
+packages/topology build$ tsc -p tsconfig.json
+packages/site-media build: Done
+services/action-executor build$ tsc -p tsconfig.json
+packages/site-serving build: Done
+services/incident-engine build$ tsc -p tsconfig.json
+packages/topology build: Done
+services/policy-engine build$ tsc -p tsconfig.json
+services/action-executor build: Done
+services/reasoner build$ tsc -p tsconfig.json
+services/incident-engine build: Done
+apps/web build: vite v7.3.7 building client environment for production...
+apps/web build: transforming...
+services/policy-engine build: Done
+apps/web build: /_kora/fonts/dm-serif-display-latin-400-normal.woff2 referenced in /_kora/fonts/dm-serif-display-latin-400-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+apps/web build: /_kora/fonts/manrope-latin-400-normal.woff2 referenced in /_kora/fonts/manrope-latin-400-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+apps/web build: /_kora/fonts/manrope-latin-600-normal.woff2 referenced in /_kora/fonts/manrope-latin-600-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+apps/web build: /_kora/fonts/manrope-latin-800-normal.woff2 referenced in /_kora/fonts/manrope-latin-800-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+apps/web build: ✓ 66 modules transformed.
+services/reasoner build: Done
+apps/web build: rendering chunks...
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                   0.73 kB │ gzip:   0.42 kB
+apps/web build: dist/assets/index-DmiKbL3w.css   71.92 kB │ gzip:  15.27 kB
+apps/web build: dist/assets/index-roWnnZkR.js   344.82 kB │ gzip: 104.27 kB
+apps/web build: ✓ built in 1.59s
+apps/web build: Done
+packages/site-schema build$ tsc -p tsconfig.json
+apps/demo-service build$ tsc -p tsconfig.json
+apps/demo-service build: Done
+packages/site-schema build: Done
+apps/site-host build$ tsc -p tsconfig.json
+packages/growth build$ tsc -p tsconfig.json
+apps/site-host build: Done
+packages/growth build: Done
+apps/api build$ tsc -p tsconfig.json && node -e "require('node:fs').cpSync('src/db/migrations','dist/db/migrations',{recursive:true})"
+apps/api build: Done
+EXIT=0

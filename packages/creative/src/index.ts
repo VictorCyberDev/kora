@@ -12,3 +12,5 @@ export * from "./copy.js";
 export * from "./brandos.js";
 export * from "./artifact.js";
 export * from "./references.js";
+export * from "./knowledge.js";
+export * from "./blueprint.js";

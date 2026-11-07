@@ -24,6 +24,7 @@ export const mapSite = (r: Row) => ({
   publishedVersionId: str(r.published_version_id),
   createdAt: iso(r.created_at),
   updatedAt: iso(r.updated_at),
+  deletedAt: str(r.deleted_at),
 });
 export const mapVersion = (r: Row, withBodies = false) => ({
   id: String(r.id),
@@ -54,6 +55,16 @@ export type AuditEntry = {
   requestId?: string | null;
   metadata?: Record<string, unknown>;
 };
+
+export class SiteAllowanceError extends Error {
+  constructor(
+    readonly used: number,
+    readonly allowed: number,
+  ) {
+    super("site_allowance_reached");
+    this.name = "SiteAllowanceError";
+  }
+}
 
 export class PlatformStore {
   constructor(
@@ -186,27 +197,106 @@ export class PlatformStore {
     slug: string;
     description: string;
     createdBy: string;
+    /** When set, the allowance is checked and the row inserted under one per-organisation lock, so two concurrent
+     * creations (or a creation racing a deletion) can never both pass a check that only one fits. */
+    siteCap?: number;
   }) {
-    const id = crypto.randomUUID();
-    const r = (
-      await this
-        .sql`INSERT INTO sites(id,org_id,name,slug,description,created_by) VALUES(${id},${i.orgId},${i.name},${i.slug},${i.description},${i.createdBy}) RETURNING *`
-    )[0]!;
-    return mapSite(r);
+    return this.inTransaction(async (tx) => {
+      if (i.siteCap !== undefined) {
+        await tx.sql`SELECT pg_advisory_xact_lock(hashtext(${`sites:${i.orgId}`}))`;
+        const n = Number(
+          (
+            await tx.sql`SELECT COUNT(*)::int AS n FROM sites WHERE org_id=${i.orgId} AND deleted_at IS NULL`
+          )[0]!.n,
+        );
+        if (n >= i.siteCap) throw new SiteAllowanceError(n, i.siteCap);
+      }
+      const id = crypto.randomUUID();
+      const r = (
+        await tx.sql`INSERT INTO sites(id,org_id,name,slug,description,created_by) VALUES(${id},${i.orgId},${i.name},${i.slug},${i.description},${i.createdBy}) RETURNING *`
+      )[0]!;
+      return mapSite(r);
+    });
   }
   async listSites(orgIds: string[]) {
     if (!orgIds.length) return [];
     const rows = await this
-      .sql`SELECT * FROM sites WHERE org_id IN ${this.sql(orgIds)} ORDER BY created_at DESC`;
+      .sql`SELECT * FROM sites WHERE org_id IN ${this.sql(orgIds)} AND deleted_at IS NULL ORDER BY created_at DESC`;
     return rows.map(mapSite);
   }
+  /** A site that is live in the account. A deleted site is not found here, so every ordinary route treats it as gone. */
   async getSite(id: string) {
+    const r = (
+      await this.sql`SELECT * FROM sites WHERE id=${id} AND deleted_at IS NULL`
+    )[0];
+    return r ? mapSite(r) : null;
+  }
+  /** Only the deletion path and audit tooling may see a deleted site. */
+  async getSiteIncludingDeleted(id: string) {
     const r = (await this.sql`SELECT * FROM sites WHERE id=${id}`)[0];
     return r ? mapSite(r) : null;
   }
   async getSiteBySlug(slug: string) {
-    const r = (await this.sql`SELECT * FROM sites WHERE slug=${slug}`)[0];
+    const r = (
+      await this
+        .sql`SELECT * FROM sites WHERE slug=${slug} AND deleted_at IS NULL`
+    )[0];
     return r ? mapSite(r) : null;
+  }
+  /** What deleting a site would affect, shown to the owner before they confirm. */
+  async deletionImpact(siteId: string) {
+    const n = async (q: Promise<postgres.Row[]>) => Number((await q)[0]!.n);
+    return {
+      versions: await n(
+        this
+          .sql`SELECT COUNT(*)::int AS n FROM site_versions WHERE site_id=${siteId}`,
+      ),
+      enquiries: await n(
+        this
+          .sql`SELECT COUNT(*)::int AS n FROM form_submissions WHERE site_id=${siteId}`,
+      ),
+      customDomains: await n(
+        this
+          .sql`SELECT COUNT(*)::int AS n FROM domains WHERE site_id=${siteId}`,
+      ),
+    };
+  }
+  /**
+   * Deletes a site in one transaction: unpublishes it (the Site Host serves only PUBLISHED), hides it from the account
+   * and from the allowance, and writes the audit record. Idempotent: a second call changes nothing and says so.
+   * The row, its immutable versions and its enquiries are kept; see docs/security for the retention decision.
+   */
+  async deleteSite(i: {
+    siteId: string;
+    orgId: string;
+    actorUserId: string;
+    requestId?: string;
+  }): Promise<{ deleted: boolean; alreadyDeleted: boolean }> {
+    return this.inTransaction(async (tx) => {
+      const row = (
+        await tx.sql`SELECT * FROM sites WHERE id=${i.siteId} AND org_id=${i.orgId} FOR UPDATE`
+      )[0];
+      if (!row) return { deleted: false, alreadyDeleted: false };
+      if (row.deleted_at) return { deleted: true, alreadyDeleted: true };
+      const wasLive = row.status === "PUBLISHED";
+      await tx.sql`UPDATE sites SET status='UNPUBLISHED',deleted_at=now(),deleted_by=${i.actorUserId},updated_at=now() WHERE id=${i.siteId}`;
+      await tx.audit({
+        orgId: i.orgId,
+        actorUserId: i.actorUserId,
+        action: "site.deleted",
+        objectType: "site",
+        objectId: i.siteId,
+        ...(i.requestId ? { requestId: i.requestId } : {}),
+        metadata: {
+          name: String(row.name),
+          slug: String(row.slug),
+          wasLive,
+          publicUrl: str(row.public_url),
+          publishedVersionId: str(row.published_version_id),
+        },
+      });
+      return { deleted: true, alreadyDeleted: false };
+    });
   }
   async updateSite(
     id: string,

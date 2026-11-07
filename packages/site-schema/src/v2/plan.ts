@@ -28,7 +28,7 @@ export const GOALS = [
 /** What an owner types. Only the first two are required; everything else only ever adds sections. */
 export const designBriefSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  description: z.string().trim().min(12).max(2000),
+  description: z.string().trim().min(3).max(2000),
   goal: z.enum(GOALS).optional(),
   /** Free words about the look they want ("calm", "bold", "dark"). Optional. */
   feel: z.string().max(120).optional(),

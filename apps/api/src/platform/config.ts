@@ -27,6 +27,13 @@ export const platformConfigSchema = z.object({
   /** Public https origin that serves owner pictures to published sites. Defaults to KORA_PUBLIC_URL; owner pictures are only embedded in designs when this is https. */
   KORA_MEDIA_PUBLIC_URL: z.string().url().optional(),
   KORA_SIGNUP_ENABLED: bool,
+  // Unsplash (optional stock-photo provider). Backend-only; see packages/site-media/src/providers/unsplash.ts for the contract.
+  KORA_MEDIA_UNSPLASH: z.enum(["on", "off"]).optional(),
+  UNSPLASH_ACCESS_KEY: optionalString,
+  UNSPLASH_APP_NAME: optionalString,
+  UNSPLASH_RATE_LIMIT: optionalString,
+  UNSPLASH_RESERVE: optionalString,
+  UNSPLASH_API_BASE: optionalString,
   ACTION_VERIFICATION_TIMEOUT_MS: z.coerce
     .number()
     .int()

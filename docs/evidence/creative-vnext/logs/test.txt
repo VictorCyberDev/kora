@@ -1,0 +1,363 @@
+### test: pnpm -r test
+Scope: 18 of 19 workspace projects
+apps/web test$ vitest run --passWithNoTests
+packages/creative test$ vitest run
+packages/event-schema test$ vitest run
+packages/passport test$ vitest run
+packages/passport test:  RUN  v3.2.7 /home/user/kora/packages/passport
+packages/creative test:  RUN  v3.2.7 /home/user/kora/packages/creative
+apps/web test:  RUN  v3.2.7 /home/user/kora/apps/web
+apps/web test: No test files found, exiting with code 0
+apps/web test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+apps/web test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+packages/event-schema test:  RUN  v3.2.7 /home/user/kora/packages/event-schema
+apps/web test: Done
+packages/runtime-claim test$ vitest run
+packages/event-schema test:  ✓ test/events.test.ts (2 tests) 16ms
+packages/passport test:  ✓ src/golden.test.ts (54 tests) 50ms
+packages/event-schema test:  Test Files  1 passed (1)
+packages/event-schema test:       Tests  2 passed (2)
+packages/event-schema test:    Start at  14:56:34
+packages/event-schema test:    Duration  893ms (transform 120ms, setup 0ms, collect 158ms, tests 16ms, environment 0ms, prepare 177ms)
+packages/runtime-claim test:  RUN  v3.2.7 /home/user/kora/packages/runtime-claim
+packages/passport test:  ✓ src/verify.test.ts (13 tests) 245ms
+packages/event-schema test: Done
+packages/site-fonts test$ vitest run --passWithNoTests
+packages/passport test:  ✓ src/terminology.test.ts (10 tests) 17ms
+packages/passport test:  ✓ src/verify-cli.test.ts (4 tests) 62ms
+packages/runtime-claim test:  ✓ src/build-info.test.ts (6 tests) 36ms
+packages/runtime-claim test:  ✓ src/commit.test.ts (10 tests) 21ms
+packages/runtime-claim test:  ✓ src/claim.test.ts (11 tests) 31ms
+packages/runtime-claim test:  Test Files  3 passed (3)
+packages/runtime-claim test:       Tests  27 passed (27)
+packages/runtime-claim test:    Start at  14:56:35
+packages/runtime-claim test:    Duration  1.22s (transform 458ms, setup 0ms, collect 749ms, tests 89ms, environment 1ms, prepare 927ms)
+packages/creative test:  ✓ test/blueprint.test.ts (53 tests) 180ms
+packages/creative test:  ✓ test/artifact.test.ts (9 tests) 157ms
+packages/creative test:  ✓ test/creative.test.ts (24 tests) 306ms
+packages/site-fonts test:  RUN  v3.2.7 /home/user/kora/packages/site-fonts
+packages/site-fonts test: No test files found, exiting with code 0
+packages/site-fonts test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+packages/site-fonts test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+packages/site-fonts test: Done
+packages/site-media test$ vitest run --passWithNoTests
+packages/passport test:  ✓ src/imports.test.ts (6 tests) 11ms
+packages/runtime-claim test: Done
+packages/site-serving test$ vitest run
+packages/creative test:  ✓ test/history.test.ts (8 tests) 36ms
+packages/creative test:  Test Files  4 passed (4)
+packages/creative test:       Tests  94 passed (94)
+packages/creative test:    Start at  14:56:34
+packages/creative test:    Duration  2.91s (transform 1.25s, setup 0ms, collect 4.33s, tests 678ms, environment 1ms, prepare 958ms)
+packages/site-media test:  RUN  v3.2.7 /home/user/kora/packages/site-media
+packages/site-media test: No test files found, exiting with code 0
+packages/site-media test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+packages/site-media test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+packages/site-media test: Done
+packages/topology test$ vitest run --passWithNoTests
+packages/site-serving test:  RUN  v3.2.7 /home/user/kora/packages/site-serving
+packages/creative test: Done
+services/action-executor test$ vitest run
+packages/site-serving test:  ✓ test/serving.test.ts (3 tests) 6ms
+packages/topology test:  RUN  v3.2.7 /home/user/kora/packages/topology
+packages/site-serving test:  Test Files  1 passed (1)
+packages/site-serving test:       Tests  3 passed (3)
+packages/site-serving test:    Start at  14:56:37
+packages/site-serving test:    Duration  467ms (transform 95ms, setup 0ms, collect 79ms, tests 6ms, environment 0ms, prepare 111ms)
+packages/site-serving test: Done
+services/action-executor test:  RUN  v3.2.7 /home/user/kora/services/action-executor
+services/incident-engine test$ vitest run
+packages/topology test:  ✓ src/index.test.ts (7 tests) 25ms
+packages/topology test:  Test Files  1 passed (1)
+packages/topology test:       Tests  7 passed (7)
+packages/topology test:    Start at  14:56:37
+packages/topology test:    Duration  587ms (transform 122ms, setup 0ms, collect 89ms, tests 25ms, environment 0ms, prepare 216ms)
+packages/topology test: Done
+services/policy-engine test$ vitest run
+services/action-executor test:  ✓ test/executor.test.ts (8 tests) 151ms
+services/action-executor test:  Test Files  1 passed (1)
+services/action-executor test:       Tests  8 passed (8)
+services/action-executor test:    Start at  14:56:38
+services/action-executor test:    Duration  629ms (transform 95ms, setup 0ms, collect 89ms, tests 151ms, environment 0ms, prepare 144ms)
+services/incident-engine test:  RUN  v3.2.7 /home/user/kora/services/incident-engine
+services/action-executor test: Done
+services/reasoner test$ vitest run
+services/policy-engine test:  RUN  v3.2.7 /home/user/kora/services/policy-engine
+services/incident-engine test:  ✓ test/engine.test.ts (6 tests) 23ms
+services/incident-engine test:  Test Files  1 passed (1)
+services/incident-engine test:       Tests  6 passed (6)
+services/incident-engine test:    Start at  14:56:38
+services/incident-engine test:    Duration  681ms (transform 104ms, setup 0ms, collect 168ms, tests 23ms, environment 0ms, prepare 125ms)
+services/reasoner test:  RUN  v3.2.7 /home/user/kora/services/reasoner
+services/incident-engine test: Done
+services/policy-engine test:  ✓ test/policy.test.ts (10 tests) 11ms
+services/policy-engine test:  Test Files  1 passed (1)
+services/policy-engine test:       Tests  10 passed (10)
+services/policy-engine test:    Start at  14:56:39
+services/policy-engine test:    Duration  640ms (transform 136ms, setup 0ms, collect 159ms, tests 11ms, environment 0ms, prepare 120ms)
+services/policy-engine test: Done
+services/reasoner test:  ✓ test/reasoner.test.ts (17 tests) 26ms
+services/reasoner test:  Test Files  1 passed (1)
+services/reasoner test:       Tests  17 passed (17)
+services/reasoner test:    Start at  14:56:39
+services/reasoner test:    Duration  601ms (transform 149ms, setup 0ms, collect 251ms, tests 26ms, environment 0ms, prepare 75ms)
+services/reasoner test: Done
+packages/passport test:  ✓ src/fixture.test.ts (4 tests) 5682ms
+packages/passport test:    ✓ committed real export > fails when any single character is changed, except inside generatedAt  5664ms
+packages/passport test:  Test Files  6 passed (6)
+packages/passport test:       Tests  91 passed (91)
+packages/passport test:    Start at  14:56:34
+packages/passport test:    Duration  6.50s (transform 505ms, setup 0ms, collect 1.07s, tests 6.07s, environment 1ms, prepare 1.38s)
+packages/passport test: Done
+apps/demo-service test$ vitest run
+packages/site-schema test$ vitest run
+apps/demo-service test:  RUN  v3.2.7 /home/user/kora/apps/demo-service
+packages/site-schema test:  RUN  v3.2.7 /home/user/kora/packages/site-schema
+apps/demo-service test:  ✓ src/listen.test.ts (6 tests) 7ms
+apps/demo-service test:  ✓ src/app.test.ts (8 tests) 125ms
+apps/demo-service test:  Test Files  2 passed (2)
+apps/demo-service test:       Tests  14 passed (14)
+apps/demo-service test:    Start at  14:56:41
+apps/demo-service test:    Duration  939ms (transform 148ms, setup 0ms, collect 446ms, tests 132ms, environment 0ms, prepare 361ms)
+apps/demo-service test: Done
+packages/site-schema test:  ✓ test/v2.test.ts (149 tests) 355ms
+packages/site-schema test:  ✓ test/vnext.test.ts (49 tests) 423ms
+packages/site-schema test:  ✓ test/v3.test.ts (35 tests) 706ms
+packages/site-schema test:  ✓ test/creative.test.ts (5 tests) 84ms
+packages/site-schema test:  ✓ test/copy-assist.test.ts (16 tests) 254ms
+packages/site-schema test:  ✓ test/v3-golden.test.ts (5 tests) 285ms
+packages/site-schema test:  ✓ test/intelligence.test.ts (8 tests) 78ms
+packages/site-schema test:  ✓ test/edit-upgrade.test.ts (5 tests) 92ms
+packages/site-schema test:  ✓ src/v2/reference-atlas.test.ts (4 tests) 31ms
+packages/site-schema test:  ✓ test/site-schema.test.ts (14 tests) 62ms
+packages/site-schema test:  Test Files  10 passed (10)
+packages/site-schema test:       Tests  290 passed (290)
+packages/site-schema test:    Start at  14:56:41
+packages/site-schema test:    Duration  3.78s (transform 1.03s, setup 0ms, collect 5.70s, tests 2.37s, environment 2ms, prepare 1.15s)
+packages/site-schema test: Done
+apps/site-host test$ vitest run --passWithNoTests
+packages/growth test$ vitest run
+apps/site-host test:  RUN  v3.2.7 /home/user/kora/apps/site-host
+packages/growth test:  RUN  v3.2.7 /home/user/kora/packages/growth
+apps/site-host test: No test files found, exiting with code 0
+apps/site-host test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+apps/site-host test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+apps/site-host test: Done
+packages/growth test:  ✓ src/mediagen.test.ts (7 tests) 39ms
+packages/growth test:  ✓ test/growth.test.ts (18 tests) 20ms
+packages/growth test:  ✓ src/m13-26.test.ts (20 tests) 30ms
+packages/growth test:  ✓ test/studios.test.ts (11 tests) 26ms
+packages/growth test:  ✓ src/proposal.test.ts (7 tests) 27ms
+packages/growth test:  ✓ src/truth.test.ts (8 tests) 10ms
+packages/growth test:  ✓ test/agent-brief-bundle.test.ts (13 tests) 20ms
+packages/growth test:  ✓ test/calendar.test.ts (13 tests) 15ms
+packages/growth test:  ✓ test/intelligence.test.ts (11 tests) 17ms
+packages/growth test:  ✓ test/channels-leads.test.ts (13 tests) 10ms
+packages/growth test:  ✓ src/artdirection.test.ts (4 tests) 15ms
+packages/growth test:  ✓ src/motion-style.test.ts (6 tests) 17ms
+packages/growth test:  ✓ src/genome-campaign.test.ts (7 tests) 12ms
+packages/growth test:  ✓ test/intent.test.ts (11 tests) 10ms
+packages/growth test:  Test Files  14 passed (14)
+packages/growth test:       Tests  149 passed (149)
+packages/growth test:    Start at  14:56:45
+packages/growth test:    Duration  3.39s (transform 1.01s, setup 0ms, collect 5.79s, tests 269ms, environment 3ms, prepare 1.14s)
+packages/growth test: Done
+apps/api test$ vitest run
+apps/api test:  RUN  v3.2.7 /home/user/kora/apps/api
+apps/api test: (node:17308) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/lifecycle.integration.test.ts (7 tests) 1800ms
+apps/api test:    ✓ website lifecycle through the real API: from one sentence to a deleted, replaceable site > generates a complete multipage site, edits it, publishes it, takes an enquiry, then deletes it safely  469ms
+apps/api test: (node:17344) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/owner-media.integration.test.ts (7 tests) 7405ms
+apps/api test:    ✓ owner media: logo and photos > accepts real pictures, re-encodes them, strips metadata, suggests a role and gives plain advice  761ms
+apps/api test:    ✓ owner media: logo and photos > refuses duplicates, enforces tenancy and authorisation, and uploads need a signed-in member  907ms
+apps/api test:    ✓ owner media: logo and photos > logo: keeps transparency, replacing it supersedes the old one, historical artifacts keep the logo they used  494ms
+apps/api test:    ✓ owner media: logo and photos > photos change the design: role, focal point, responsive srcset and a photography-led composition  2497ms
+apps/api test:    ✓ owner media: logo and photos > blurry or tiny pictures are never used as the hero  471ms
+apps/api test:    ✓ owner media: logo and photos > artifacts use the brand's logo, the owner's picture and its focal point; edits keep the brand; history is stable  1872ms
+apps/api test: (node:17461) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:17461) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/growth/studio.integration.test.ts (4 tests) 7074ms
+apps/api test:    ✓ content studio > needs a profile and brand kit, writes from facts, blocks ended offers, validates edits  507ms
+apps/api test:    ✓ brand studio > renders a real PNG with the brand kit version, freezes it, and isolates tenants  481ms
+apps/api test:    ✓ motion studio > previews instantly, renders a real MP4 through the queue, and retries failures safely  5397ms
+apps/api test:    ✓ motion follows the Brand OS > a v3 site's motion uses its Brand OS (palette, type, pace) and records which brand version; older sites are unchanged  478ms
+apps/api test: (node:17537) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:17537) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17537) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ❯ src/platform.integration.test.ts (13 tests | 1 failed) 5535ms
+apps/api test:    ✓ auth and sessions > signs up, sets a hardened cookie, serves /me, logs out and revokes the session 181ms
+apps/api test:    ✓ auth and sessions > rejects weak passwords, duplicate emails and wrong credentials without leaking which  349ms
+apps/api test:    ✓ auth and sessions > stores a password hash, never the password, and only a hash of the session token 114ms
+apps/api test:    ✓ auth and sessions > requires the request marker on state-changing API calls 3ms
+apps/api test:    ✓ tenant isolation > never lets one organization read or change another's data  349ms
+apps/api test:    ✓ tenant isolation > enforces roles inside one organization 256ms
+apps/api test:    ✓ tenant isolation > hides legacy evidence routes from anonymous callers when demo mode is off 196ms
+apps/api test:    × builder: generate, edit, preview, versions, publish > asks only for genuinely missing details 158ms
+apps/api test:      → expected 201 to be 422 // Object.is equality
+apps/api test:    ✓ builder: generate, edit, preview, versions, publish > builds, edits (rule-based, honest about limits), previews the stored artifact, and keeps versions immutable 176ms
+apps/api test:    ✓ builder: generate, edit, preview, versions, publish > publishes to a real URL, serves it, records change intelligence and verifies the live bytes 215ms
+apps/api test:    ✓ closed loop: failure, reasoning, policy, approval, action, verification, proof > recovers a bad release through an approved rollback and proves it from new observations  618ms
+apps/api test:    ✓ closed loop: failure, reasoning, policy, approval, action, verification, proof > denies actions the provider cannot perform and never runs forbidden operations 286ms
+apps/api test:    ✓ proxy trust > in production the client IP comes from exactly one trusted hop, so spoofed chains cannot dodge the limiter  2434ms
+apps/api test:  ✓ src/db/migrations.integration.test.ts (11 tests) 4533ms
+apps/api test:    ✓ migrations > upgrades a populated 001-006 database to the latest schema without losing data  472ms
+apps/api test:    ✓ migrations > is re-runnable: a second full pass changes nothing and errors nowhere  492ms
+apps/api test:    ✓ startup migration > several processes starting together migrate exactly once, without errors  518ms
+apps/api test:    ✓ tenant integrity > rejects rows that pair a site with another organization, at the database level  443ms
+apps/api test:    ✓ tenant integrity > a fault can only target a version of its own site  370ms
+apps/api test:    ✓ migration set integrity > migrations are applied in numeric order, each exactly once per pass  377ms
+apps/api test:    ✓ migration set integrity > a database at the pre-v7 schema (024) upgrades to the v7 schema without losing its rows  479ms
+apps/api test:    ✓ migration set integrity > the v7 tables have the schema the code relies on: columns, checks, tenant keys, indexes, immutability  401ms
+apps/api test: (node:17632) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:17632) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17632) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/design-v3.integration.test.ts (11 tests) 3664ms
+apps/api test:    ✓ Creative engine v3 through the real API > generates v3, records Brand OS v1, publishes through the real path and serves the new fonts  311ms
+apps/api test:    ✓ Creative engine v3 through the real API > upgrading an existing v2 site creates a NEW v3 draft, never touches the live version, and rollback still works  473ms
+apps/api test:    ✓ Creative engine v3 through the real API > remembers design choices, rotates away from a language the account keeps receiving, and keeps other accounts unaffected  396ms
+apps/api test:    ✓ Creative engine v3 through the real API > backfills a Brand OS for older v1/v2 sites as inferred, without touching the old version or the live site  395ms
+apps/api test:    ✓ Creative engine v3 through the real API > model-assisted opening copy is used only when it passes the facts check; otherwise the deterministic copy stays  521ms
+apps/api test: (node:17675) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:17675) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/growth/intelligence.integration.test.ts (7 tests) 3823ms
+apps/api test:    ✓ attribution > puts a tracked link in campaign posts and counts only what arrives through it  853ms
+apps/api test:    ✓ attribution > the same attribution, lead capture and isolation hold on a v3 (Brand OS) site  1119ms
+apps/api test:    ✓ social analytics > syncs and normalizes metrics, labels test data, and keeps it out of live totals  358ms
+apps/api test:    ✓ reviews and reputation > never drafts for sensitive reviews, never posts anywhere, and keeps test reviews out of the summary  387ms
+apps/api test:    ✓ business memory > remembers owner preferences and applies them to what Kora writes  396ms
+apps/api test: (node:17711) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:17711) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17711) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/site-host.integration.test.ts (10 tests) 3114ms
+apps/api test:    ✓ independent Site Host > recovers a bad release across the service boundary, from new observations only  462ms
+apps/api test:    ✓ independent Site Host > the same recovery holds for a v3 (Brand OS) site: release, bad release, approval, rollback, verified recovery, passport  560ms
+apps/api test:    ✓ independent Site Host > timeout faults really stall the response  447ms
+apps/api test: (node:17792) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/growth/calendar.integration.test.ts (4 tests) 2907ms
+apps/api test:    ✓ calendar approval and publishing > cannot skip approval, voids approval on edit, and publishes exactly once  708ms
+apps/api test:    ✓ calendar approval and publishing > classifies failures: permanent fails the post, uncertain is never retried silently  1387ms
+apps/api test:    ✓ calendar approval and publishing > supports hand-off for channels Kora cannot post to, and keeps tenants apart  318ms
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:17824) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/passport.integration.test.ts (12 tests) 2453ms
+apps/api test:    ✓ GET /incidents/:id/passport > changing any single character of the file fails, except inside generatedAt  1604ms
+apps/api test: (node:17914) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/artifacts.integration.test.ts (6 tests) 2494ms
+apps/api test:    ✓ ArtifactSpec through the real API > needs a Brand OS first, then renders from it and records the brand version  497ms
+apps/api test:    ✓ ArtifactSpec through the real API > an approved artifact keeps its brand version after the brand changes  352ms
+apps/api test:    ✓ ArtifactSpec through the real API > renders a coordinated bundle with one campaign id and format-specific composition  450ms
+apps/api test:    ✓ ArtifactSpec through the real API > refuses unreviewed generated pictures, oversized text and other tenants  321ms
+apps/api test:    ✓ ArtifactSpec through the real API > turns a plain request into a campaign PROPOSAL and creates, posts and spends nothing  425ms
+apps/api test: (node:18017) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:18017) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/design-v2.integration.test.ts (9 tests) 2390ms
+apps/api test:    ✓ SiteSpec v2 through the real API > grades a generated version for creative quality, and only for its owner  347ms
+apps/api test:    ✓ SiteSpec v2 through the real API > offers three genuinely different directions without saving anything  505ms
+apps/api test: (node:18094) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/commerce.integration.test.ts (10 tests) 2183ms
+apps/api test: (node:18190) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/growth/marketing.integration.test.ts (4 tests) 2098ms
+apps/api test:    ✓ marketing agent > makes evidenced suggestions, executes only safe ones, and records the policy  604ms
+apps/api test:    ✓ campaign bundles > builds a branded multi-channel bundle that needs approval, then schedules only what can be posted  593ms
+apps/api test:    ✓ voice-first intent and one-truth checks > interprets text into a confirmable route and flags queued posts about an ended offer  410ms
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (node:18296) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/ui/ui-page.test.ts (50 tests) 2077ms
+apps/api test: (node:18382) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test: (node:18382) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test:  ✓ src/growth/channels.integration.test.ts (5 tests) 1805ms
+apps/api test:    ✓ sandbox connection lifecycle > connects through a user-bound single-use state, never exposes tokens, disconnects  381ms
+apps/api test:    ✓ sandbox connection lifecycle > marks an expired token AUTH_EXPIRED on check and keeps other tenants out  306ms
+apps/api test:    ✓ whatsapp webhook and customer hub > verifies the handshake, rejects spoofed signatures, is replay-safe and tenant-mapped  364ms
+apps/api test: (node:18446) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/growth/creative.integration.test.ts (5 tests) 1532ms
+apps/api test:    ✓ creative loop over the API > campaign briefs offer feasible directions, block the rest, and refuse a blocked choice  424ms
+apps/api test:    ✓ creative loop over the API > runs the customer loop: suggestions need consent, performance is honest, hand-off is hash-bound, storyboards need a chosen direction  463ms
+apps/api test: (node:18501) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/growth/presence.integration.test.ts (6 tests) 1452ms
+apps/api test:    ✓ presence graph and health > imports facts, tracks revisions, detects drift and applies as a draft only  395ms
+apps/api test: (node:18536) [FSTDEP023] FastifyDeprecation: disableRequestLogging option is deprecated. Use the logController option with disableRequestLogging or isLogDisabled override instead. The disableRequestLogging top-level option will be removed in `fastify@6`.
+apps/api test: (Use `node --trace-warnings ...` to show where the warning was created)
+apps/api test:  ✓ src/media.integration.test.ts (4 tests) 1121ms
+apps/api test:    ✓ stock photos: owner-approved, attributed, quota-safe > offers candidates in few searches, records the download only on selection, places through a normal edit, and credits the photographer on the published site  438ms

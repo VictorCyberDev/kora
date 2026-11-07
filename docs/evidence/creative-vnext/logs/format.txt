@@ -1,0 +1,8 @@
+### format: pnpm format:check
+
+> kora@0.1.0 format:check /home/user/kora
+> prettier --check .
+
+Checking formatting...
+All matched files use Prettier code style!
+EXIT=0

@@ -7,8 +7,12 @@
 import {
   brandOsFromDirection,
   brandOsHash,
+  buildBlueprint,
   buildTruth,
   chooseForMe,
+  MAX_PAGES,
+  profileFor,
+  type PagePlan,
   composeDirections,
   rerankByTaste,
   ctaLabel,
@@ -21,10 +25,9 @@ import {
   type CreativeDirection,
   type TasteSignals,
   type HeroLayout,
-  type PageKind,
   type VerticalIntel,
 } from "@kora/creative";
-import { catalogMediaSetFor } from "../v2/catalog.js";
+import { catalogMediaSetFor, catalogTopicsForUrl } from "../v2/catalog.js";
 import { extractServicesV2 } from "../v2/plan.js";
 import { paletteFromColorway } from "./palette.js";
 import { GRAMMARS } from "@kora/creative";
@@ -104,6 +107,35 @@ export interface PlanV3Options {
 const enc = (s: string) => encodeURIComponent(s).replace(/'/g, "%27");
 const cap = (s: string, n: number) =>
   s.length <= n ? s : `${s.slice(0, n - 1).trimEnd()}…`;
+/**
+ * Fits finished copy into a field without ever cutting it mid-thought. Whole sentences are kept while they fit; a single
+ * over-long sentence is shortened at its last clause boundary and closed with a full stop. There is no ellipsis.
+ */
+export function fitText(s: string, n: number): string {
+  const t = s.replace(/\s+/g, " ").trim();
+  if (t.length <= n) return t;
+  const sents = (t.match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g) ?? [t]).map((x) =>
+    x.trim(),
+  );
+  let out = "";
+  for (const x of sents) {
+    const next = out ? `${out} ${x}` : x;
+    if (next.length > n) break;
+    out = next;
+  }
+  if (out) return out;
+  const first = sents[0] ?? t;
+  const boundary =
+    /(?:,\s+(?:and|but|so|while|which|then)\s+|;\s+|\s[\u2013\u2014-]\s+|,\s+)/g;
+  let cut = -1;
+  for (let m = boundary.exec(first); m; m = boundary.exec(first))
+    if (m.index > 12 && m.index <= n - 1) cut = m.index;
+  const base =
+    cut > 0
+      ? first.slice(0, cut)
+      : first.slice(0, n - 1).replace(/\s+\S*$/, "");
+  return `${base.replace(/[\s,;:\u2013\u2014-]+$/, "")}.`;
+}
 const up = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 const sentences = (s: string) =>
   (
@@ -337,10 +369,19 @@ export function planSiteV3(
   )!.colorways.find((c) => c.id === direction.colorwayId)!;
   const palette = paletteFromColorway(colorway);
   const thing = offerPhrase(truth, v);
-  const services = servicesOf(truth, thing);
   const mp = mediaFor(v, colorway.mode, opts, b.name);
   const media = mp.media;
   const hasMedia = media.length > 0;
+  const bp = buildBlueprint(input, { mediaAvailable: media.length });
+  const profile = profileFor(v.id, v.offerNoun, v.usefulContent);
+  const topicById = (id?: string) => profile.topics.find((t) => t.id === id);
+  const firstSentence = (x: string) => sentences(x)[0] ?? x;
+  const confirmedCats = bp.confirmedOfferCategories;
+  const services = confirmedCats.length
+    ? confirmedCats.map((c) => c.label).slice(0, 12)
+    : servicesOf(truth, thing);
+  const topicForService = (label: string) =>
+    topicById(confirmedCats.find((c) => c.label === label)?.topicId);
   const seed = direction.seed;
   const homeBased = HOME_BASED.test(b.description);
   const cty = city(b.location);
@@ -411,7 +452,7 @@ export function planSiteV3(
     : primaryHref.startsWith("tel:")
       ? "Call us to get started."
       : "Send us a message.";
-  const subheading = cap(
+  const subheading = fitText(
     sents.length > 1
       ? sents.slice(0, 2).join(" ")
       : `${b.name}${cty ? `, ${cty}` : ""}. ${action}`,
@@ -467,6 +508,9 @@ export function planSiteV3(
       sub: string;
       eyebrow?: string | undefined;
       ctas?: boolean;
+      /** Subpages do not inherit the home hero photo; they show their own picture or none. */
+      pic?: MediaV3 | undefined;
+      own?: boolean;
     },
   ): SectionV3 => ({
     type: "hero",
@@ -482,16 +526,22 @@ export function planSiteV3(
         }),
     highlights: o.ctas === false ? [] : highlights,
     variant: layout === "call-first" ? fnvH(`${seed}|cv`) % 3 : 0,
-    ...(heroMedia && layout !== "type-dominant"
-      ? { media: { ...heroMedia, role: "hero" as const } }
-      : {}),
+    ...(o.own
+      ? o.pic
+        ? { media: { ...o.pic, role: "hero" as const } }
+        : {}
+      : heroMedia && layout !== "type-dominant"
+        ? { media: { ...heroMedia, role: "hero" as const } }
+        : {}),
     plate: plateFor(0),
   });
-  const lite = (title: string, sub: string): SectionV3 =>
-    hero(g.density === "airy" ? "minimal-statement" : "type-dominant", {
+  const lite = (title: string, sub: string, pic?: MediaV3): SectionV3 =>
+    hero(g.density === "airy" || pic ? "minimal-statement" : "type-dominant", {
       heading: cap(title, 100),
       sub,
       ctas: false,
+      own: true,
+      pic,
     });
 
   // ---- section builders (each returns null when no fact supports it)
@@ -505,7 +555,7 @@ export function planSiteV3(
   })();
   const offerItems = services.map((s, i) => ({
     title: s,
-    text: "",
+    text: topicForService(s) ? firstSentence(topicForService(s)!.intro) : "",
     ...(truth.can.prices ? {} : {}),
     ...(!hasMedia
       ? { plate: plateFor(i + 1) }
@@ -569,7 +619,7 @@ export function planSiteV3(
       type: "story",
       layout,
       heading: `About ${b.name}`,
-      body: [cap(body, 880)],
+      body: [fitText(body, 880)],
       values: [],
       ...(hasMedia
         ? {
@@ -731,36 +781,145 @@ export function planSiteV3(
     body: "",
     button: { label: primaryLabel, href: primaryHref },
   });
-  const process = (): SectionV3 | null =>
-    v.primaryIntent === "book" ||
-    v.primaryIntent === "quote" ||
-    v.primaryIntent === "enquire"
-      ? {
-          type: "process",
-          layout: g.processPresentation,
-          heading:
-            v.primaryIntent === "book"
-              ? "How to book"
-              : v.primaryIntent === "quote"
-                ? "How to get a quote"
-                : "How to start",
-          intro: "",
-          items: [
-            {
-              title:
-                v.primaryIntent === "book"
-                  ? "Choose what you need"
-                  : "Tell us what you need",
-              text: "",
-            },
-            { title: "Send us a message", text: "" },
-            { title: "Agree the details with us", text: "" },
-          ],
-        }
-      : null;
+  const process = (): SectionV3 | null => ({
+    type: "process",
+    layout: g.processPresentation,
+    heading:
+      v.primaryIntent === "book"
+        ? "How to book"
+        : v.primaryIntent === "quote"
+          ? "How to get a quote"
+          : v.primaryIntent === "order"
+            ? "How to order"
+            : "How to get started",
+    intro: "",
+    items: [
+      {
+        title:
+          v.primaryIntent === "book"
+            ? "Choose what you need"
+            : "Tell us what you need",
+        text: "",
+      },
+      { title: "Send us a message", text: "" },
+      { title: "Agree the details with us", text: "" },
+    ],
+  });
 
   const compact = <T>(a: Array<T | null>): T[] =>
     a.filter((x): x is T => x !== null);
+
+  const used = new Set<string>(heroMedia ? [heroMedia.url] : []);
+  /** Pictures for one page, preferring ones no earlier page has used and ones that match the subject. */
+  const pickMedia = (
+    subjects: string[],
+    n: number,
+    topicId?: string,
+  ): MediaV3[] => {
+    // A picture is relevant to a topic when the owner supplied it (they chose it) or the catalogue tags it for that topic.
+    // A catalogue picture tagged for another topic, or untagged, never stands in for an offering it does not show.
+    const relevant = (m: MediaV3) => {
+      if (!topicId || m.provenance.sourceType === "owner-supplied") return true;
+      return catalogTopicsForUrl(m.url)?.includes(topicId) ?? false;
+    };
+    const words = subjects
+      .join(" ")
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length > 3);
+    const scored = media
+      .filter(relevant)
+      .map((m, ix) => ({
+        m,
+        ix,
+        score:
+          words.filter((w) => m.alt.toLowerCase().includes(w)).length * 2 -
+          (used.has(m.url) ? 1 : 0),
+      }))
+      .sort((x, y) => y.score - x.score || x.ix - y.ix)
+      .slice(0, n)
+      .map((x) => x.m);
+    for (const m of scored) used.add(m.url);
+    return scored;
+  };
+  const subLabel = `${b.name}${cty ? ` · ${cty}` : ""}`;
+  const storyOf = (
+    heading: string,
+    body: string[],
+    pic: MediaV3 | undefined,
+    values: string[] = [],
+  ): SectionV3 => ({
+    type: "story",
+    layout:
+      pic && g.imageDominance !== "none"
+        ? "split-image"
+        : g.compositionMode === "centered-classical"
+          ? "founder-note"
+          : g.compositionMode === "split-narrative" ||
+              g.compositionMode === "editorial-asymmetric"
+            ? "manifesto"
+            : "craft",
+    heading: cap(heading, 100),
+    body: body.map((x) => fitText(x, 880)).slice(0, 4),
+    values: values.slice(0, 6).map((x) => cap(x, 70)),
+    ...(pic
+      ? { media: { ...pic, role: "feature" as const } }
+      : { plate: plateFor(heading.length) }),
+  });
+  const includeList = (items: string[], heading: string): SectionV3 | null =>
+    items.length >= 2
+      ? {
+          type: "process",
+          layout: g.processPresentation,
+          eyebrow: "Your enquiry",
+          heading: cap(heading, 90),
+          intro: "",
+          items: items
+            .slice(0, 6)
+            .map((t) => ({ title: cap(t, 100), text: "" })),
+        }
+      : null;
+  const approachSection = (): SectionV3 | null =>
+    profile.approachNotes.length >= 2
+      ? {
+          type: "process",
+          layout: g.processPresentation,
+          eyebrow: "Getting started",
+          heading: "How to get started",
+          intro: "",
+          items: profile.approachNotes.slice(0, 5).map((n) => ({
+            title: cap(n.title, 100),
+            text: fitText(n.text, 400),
+          })),
+        }
+      : process();
+  const faqSection = (): SectionV3 | null => {
+    const items = profile.faq.map((f) => ({
+      question: cap(f.question, 200),
+      answer: fitText(f.answer, 700),
+    }));
+    const contactQ = faq();
+    if (contactQ && contactQ.type === "faq") items.push(...contactQ.items);
+    return items.length >= 2
+      ? {
+          type: "faq",
+          layout: "accordion",
+          heading: "Good to know",
+          items: items.slice(0, 8),
+        }
+      : null;
+  };
+  const offerFull = (): SectionV3 | null => {
+    const sec = main();
+    if (!sec || (sec.type !== "offer" && sec.type !== "products")) return sec;
+    return {
+      ...sec,
+      items: sec.items.map((it) => {
+        const t = topicForService(it.title);
+        return t ? { ...it, text: fitText(t.intro, 400) } : it;
+      }),
+    };
+  };
 
   // ---- home: the order of sections follows the composition mode, not a fixed template
   const heroSec = hero(heroLayout, { heading, sub: subheading, eyebrow });
@@ -843,6 +1002,18 @@ export function planSiteV3(
   // A page needs a way to act on it.
   if (!homeSections.some((s) => s.type === "contact"))
     homeSections.push(contact());
+  // A home page is a complete introduction: how to start and the questions people have are always answered, whatever
+  // the composition mode left out. Each is added before the closing action and only while there is room.
+  const beforeClose = (sec: SectionV3 | null) => {
+    if (!sec || homeSections.length >= 10) return;
+    if (homeSections.some((x) => x.type === sec.type)) return;
+    const at = homeSections.findIndex(
+      (x) => x.type === "cta" || x.type === "contact",
+    );
+    homeSections.splice(at < 0 ? homeSections.length : at, 0, sec);
+  };
+  beforeClose(approachSection());
+  beforeClose(faqSection());
   homeSections = homeSections.slice(0, 12);
 
   const home: Page = {
@@ -853,173 +1024,165 @@ export function planSiteV3(
     sections: homeSections,
   };
 
-  // ---- subpages from intent
-  const slugOf: Record<PageKind, string> = {
-    home: "home",
-    menu: "menu",
-    services: "services",
-    work: "work",
-    gallery: "gallery",
-    booking: "booking",
-    visit: "visit",
-    orders: "orders",
-    about: "about",
-    approach: "approach",
-    contact: "contact",
-    products: "products",
-    properties: "properties",
-    stay: "stay",
-    programmes: "programmes",
-    faq: "faq",
-  };
-  const titleOf: Record<PageKind, string> = {
-    home: b.name,
-    menu: "Menu",
-    services: v.offerHeading,
-    work: "Our work",
-    gallery: "Gallery",
-    booking: "Book",
-    visit: "Visit",
-    orders: "Order",
-    about: "About",
-    approach: "Our approach",
-    contact: "Contact",
-    products: "Products",
-    properties: "Properties",
-    stay: "Stay",
-    programmes: "Programmes",
-    faq: "Questions",
+  // ---- subpages from the Business Blueprint: chosen from the trade and the customer, never from how much was typed
+  const build = (plan: PagePlan): Page | null => {
+    const topic = topicById(plan.topicId);
+    const pics = topic ? pickMedia(topic.imageSubjects, 4, topic.id) : [];
+    const secs: Array<SectionV3 | null> = plan.sections.map((sp) => {
+      switch (sp.kind) {
+        case "hero-lite":
+          return lite(
+            plan.title,
+            plan.slug === "contact"
+              ? b.name
+              : topic
+                ? `${b.name} · ${topic.label}`
+                : subLabel,
+            pics[0],
+          );
+        case "topic-intro":
+          return topic
+            ? {
+                ...storyOf(topic.label, [topic.intro], pics[1] ?? pics[0]),
+                eyebrow: "About this",
+              }
+            : null;
+        case "what-to-include":
+          return includeList(
+            topic?.considerations ?? profile.enquiryPrompts,
+            "What to include when you get in touch",
+          );
+        case "offer":
+          return offerFull();
+        case "process":
+          return plan.slug === "approach"
+            ? includeList(
+                profile.enquiryPrompts,
+                "What to bring to the first conversation",
+              )
+            : process();
+        case "approach":
+          return plan.slug === "about"
+            ? includeList(profile.enquiryPrompts, "Before you get in touch")
+            : approachSection();
+        case "story": {
+          const own = fitText(sents.join(" ") || b.description, 880);
+          return storyOf(
+            `About ${b.name}`,
+            [own],
+            pickMedia(["about team workspace"], 1)[0],
+            services,
+          );
+        }
+        case "gallery": {
+          const set = topic
+            ? pics.slice(2)
+            : pickMedia(
+                [profile.searchIntents.join(" ")],
+                plan.slug === "gallery" ? 6 : 3,
+              );
+          return set.length >= 2
+            ? {
+                type: "gallery",
+                layout:
+                  plan.slug === "gallery"
+                    ? g.compositionMode === "monograph"
+                      ? "pair"
+                      : "grid"
+                    : "grid",
+                heading: plan.slug === "gallery" ? "" : "A look at the style",
+                ...(mp.source === "stock"
+                  ? { eyebrow: "Illustrative photography" }
+                  : {}),
+                items: set.map((m) => ({
+                  caption: "",
+                  media: { ...m, role: "gallery" as const },
+                })),
+              }
+            : null;
+        }
+        case "faq":
+          return faqSection();
+        case "visit":
+          return visit();
+        case "contact":
+          return contact(
+            plan.slug === "contact" && contactLayout === "visit"
+              ? "enquiry-form"
+              : contactLayout,
+          );
+        case "cta":
+          return cta();
+        default:
+          return null;
+      }
+    });
+    const sections = compact(secs);
+    if (sections.length < 3 && plan.slug !== "contact") return null;
+    return {
+      slug: plan.slug,
+      title: cap(plan.title, 80),
+      nav: cap(plan.nav, 28),
+      purpose: plan.purpose,
+      conversionGoal: plan.goal,
+      sections,
+    };
   };
   const pages: Page[] = [home];
-  const addPage = (
-    kind: PageKind,
-    sections: Array<SectionV3 | null>,
-    goal = v.primaryIntent,
-  ) => {
-    const secs = compact(sections);
-    if (secs.length < 2) return;
-    pages.push({
-      slug: slugOf[kind],
-      title: titleOf[kind],
-      nav: titleOf[kind].slice(0, 28),
-      purpose: kind,
-      conversionGoal: goal,
-      sections: secs,
-    });
-  };
-  const wantSub = !(
-    v.singlePageSuffices &&
-    !truth.can.photos &&
-    services.length < 4
-  );
-  if (wantSub)
-    for (const kind of v.pages) {
-      if (kind === "home") continue;
-      switch (kind) {
-        case "menu":
-        case "services":
-        case "programmes":
-        case "stay":
-          if (services.length >= 2)
-            addPage(kind, [
-              lite(titleOf[kind], `${b.name}${cty ? ` · ${cty}` : ""}`),
-              offer(),
-              cta(),
-            ]);
-          break;
-        case "products":
-        case "properties":
-          if (services.length >= 2)
-            addPage(kind, [
-              lite(titleOf[kind], `${b.name}${cty ? ` · ${cty}` : ""}`),
-              isProductCluster ? products() : offer(),
-              cta(),
-            ]);
-          break;
-        case "work":
-        case "gallery":
-          if (media.length >= 2)
-            addPage(
-              kind,
-              [
-                lite(titleOf[kind], `${b.name}${cty ? ` · ${cty}` : ""}`),
-                gallery(),
-                cta(),
-              ],
-              "view-work",
-            );
-          break;
-        case "booking":
-        case "orders":
-          if (wa || tel || b.email)
-            addPage(
-              kind,
-              [
-                lite(
-                  kind === "booking" ? "Book your visit" : "Place an order",
-                  `${b.name}`,
-                ),
-                contact(
-                  kind === "orders" && wa
-                    ? "whatsapp-first"
-                    : kind === "booking"
-                      ? "booking-form"
-                      : contactLayout,
-                ),
-                process(),
-                faq(),
-              ],
-              kind === "booking" ? "book" : "order",
-            );
-          break;
-        case "visit":
-          if (hasVisit)
-            addPage(
-              kind,
-              [
-                lite("Visit us", b.location ?? b.name),
-                visit(),
-                contact("visit"),
-              ],
-              "visit",
-            );
-          break;
-        case "about":
-          if (storyBody || sents.length > 1)
-            addPage(
-              kind,
-              [
-                lite(`About ${b.name}`, cty ? `${cty}` : ""),
-                story(true),
-                cta(),
-              ],
-              "trust",
-            );
-          break;
-        case "approach":
-          addPage(
-            kind,
-            [lite(titleOf[kind], b.name), process(), story(true)],
-            "trust",
-          );
-          break;
-        case "contact":
-          addPage(
-            kind,
-            [
-              lite("Get in touch", b.name),
-              contact(
-                contactLayout === "visit" ? "enquiry-form" : contactLayout,
-              ),
-              visit(),
-            ],
-            "enquire",
-          );
-          break;
-        default:
-          break;
-      }
+  for (const plan of bp.pageArchitecture) {
+    if (plan.slug === "home") continue;
+    const pg = build(plan);
+    if (pg) pages.push(pg);
+  }
+  pages.splice(MAX_PAGES);
+
+  // No picture appears more than twice on a site. A small pool is stretched with honest graphics and type, never with
+  // the same photograph again and again; a gallery that would be left with fewer than two pictures is dropped.
+  {
+    const uses = new Map<string, number>();
+    const over = (m?: { url: string }) => {
+      if (!m) return false;
+      const n = (uses.get(m.url) ?? 0) + 1;
+      uses.set(m.url, n);
+      return n > 2;
+    };
+    let ix = 0;
+    // The gallery page exists to show pictures, so it claims its distinct photographs before any other page does.
+    const order = [...pages].sort(
+      (x, y) => Number(y.slug === "gallery") - Number(x.slug === "gallery"),
+    );
+    for (const pg of order)
+      pg.sections = pg.sections.flatMap((sec) => {
+        const a = sec as unknown as {
+          media?: { url: string };
+          plate?: unknown;
+          items?: Array<{ media?: { url: string }; plate?: unknown }>;
+        };
+        if (sec.type === "gallery") {
+          const kept = (a.items ?? []).filter((it) => !over(it.media));
+          return kept.length >= 2 ? [{ ...sec, items: kept } as SectionV3] : [];
+        }
+        if (over(a.media)) {
+          delete a.media;
+          a.plate = plateFor(++ix + 11);
+        }
+        for (const it of a.items ?? [])
+          if (over(it.media)) {
+            delete it.media;
+            it.plate = plateFor(++ix + 23);
+          }
+        return [sec];
+      });
+    // A page that has lost everything but its heading and a button is not a page.
+    for (let i = pages.length - 1; i > 0; i--) {
+      const pg = pages[i]!;
+      if (
+        pg.slug !== "contact" &&
+        !pg.sections.some((x) => !["hero", "cta", "contact"].includes(x.type))
+      )
+        pages.splice(i, 1);
     }
+  }
 
   // Anchors must land somewhere: an unresolved secondary CTA is dropped, never left dangling.
   for (const pg of pages) {
@@ -1094,7 +1257,7 @@ export function planSiteV3(
     version: 3,
     business: {
       name: b.name,
-      description: cap(sents.join(" ") || b.description, 600),
+      description: fitText(sents.join(" ") || b.description, 600),
       industry: b.industry ?? "",
       ...(b.location ? { location: b.location } : {}),
       locationKind: homeBased ? "service-area" : "premises",
@@ -1128,7 +1291,7 @@ export function planSiteV3(
     ),
     seo: {
       title,
-      description: cap(sents.slice(0, 2).join(" ") || b.description, 175),
+      description: fitText(sents.slice(0, 2).join(" ") || b.description, 175),
       keywords: [...services.slice(0, 5), ...(cty ? [cty] : [])].map((x) =>
         cap(x.toLowerCase(), 38),
       ),

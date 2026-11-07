@@ -28,7 +28,7 @@ export type SiteBrief = z.infer<typeof briefSchema>;
 export function missingBlockingDetails(input: Partial<SiteBrief>): string[] {
   const missing: string[] = [];
   if (!input.name?.trim()) missing.push("name");
-  if (!input.description || input.description.trim().length < 12)
+  if (!input.description || input.description.trim().length < 3)
     missing.push("description");
   return missing;
 }

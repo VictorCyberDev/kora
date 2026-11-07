@@ -74,6 +74,7 @@ const AVOID_MAP: Array<[RegExp, string]> = [
   [/delicate/i, "delicate"],
   [/loud|flashy|neon/i, "bold"],
   [/clinical|sterile|cold/i, "technical"],
+  [/neighbourhood-market styling/i, "local"],
 ];
 export function avoidTags(antiTraits: string[]): Set<string> {
   const out = new Set<string>();

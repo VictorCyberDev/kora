@@ -17,7 +17,7 @@ export type FactClass = (typeof FACT_CLASSES)[number];
 
 export const briefSchema = z.object({
   name: z.string().trim().min(1).max(100),
-  description: z.string().trim().min(12).max(2000),
+  description: z.string().trim().min(3).max(2000),
   goal: z
     .enum(["calls", "bookings", "leads", "sales", "visits", "show-work"])
     .optional(),

@@ -14,6 +14,11 @@ export interface CatalogEntry {
   externalUrl?: string;
   alt: string;
   recipes: string[];
+  /**
+   * Offering topics this picture honestly depicts (blueprint topic ids, e.g. "cakes"). A topic page only shows pictures
+   * tagged for it; an untagged picture is general and may appear on general pages, never as proof of a specific offering.
+   */
+  topics?: string[];
   tone: "light" | "dark" | "any";
   focal?: { x: number; y: number };
   creator: string;
@@ -135,6 +140,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   // Cake / bakery — product, process and maker imagery form a coherent story.
   {
     id: "bakery-nigeria-maker",
+    topics: ["cakes"],
     file: "bakery-nigeria-maker.webp",
     alt: "A baker working in a contemporary Nigerian kitchen",
     recipes: ["cafe-bakery", "cake-business", "catering"],
@@ -147,6 +153,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "bakery-cake-making",
+    topics: ["cakes"],
     file: "bakery-cake-making.webp",
     alt: "A baker carefully preparing a celebration cake",
     recipes: ["cafe-bakery", "cake-business"],
@@ -158,6 +165,7 @@ export const MEDIA_CATALOG: readonly CatalogEntry[] = [
   },
   {
     id: "bakery-cake-frosting",
+    topics: ["cakes"],
     file: "bakery-cake-frosting.webp",
     alt: "A baker frosting and finishing a cake by hand",
     recipes: ["cafe-bakery", "cake-business"],
@@ -238,6 +246,14 @@ export function catalogMediaSetFor(
     return score(b) - score(a);
   });
   return ranked.slice(0, Math.max(1, limit)).map(toMedia);
+}
+
+/** The topics a bundled picture depicts, or undefined when it is general or not from the catalogue. */
+export function catalogTopicsForUrl(
+  url: string,
+): readonly string[] | undefined {
+  return MEDIA_CATALOG.find((e) => `${MEDIA_URL_PREFIX}${e.file}` === url)
+    ?.topics;
 }
 
 /** Backwards-compatible single-photo selector used by the deterministic planner. */

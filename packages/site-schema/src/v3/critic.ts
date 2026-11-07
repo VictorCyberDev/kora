@@ -28,6 +28,9 @@ export const DIMENSIONS = [
   "performance",
   "truthfulness",
   "crossChannelConsistency",
+  "contentCompleteness",
+  "navigation",
+  "mediaIntegrity",
 ] as const;
 export type Dimension = (typeof DIMENSIONS)[number];
 

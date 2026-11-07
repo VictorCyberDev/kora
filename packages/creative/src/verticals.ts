@@ -689,7 +689,7 @@ export const VERTICALS: readonly VerticalIntel[] = [
     "bakery",
     "Bakery & cakes",
     "food",
-    "bak(e|ery)|cake|pastr|cupcake|bread|confection|dessert|donut|doughnut",
+    "bak(?:ery|ers?|ing|ed|e)|cake|pastr|cupcake|bread|confection|dessert|donut|doughnut",
     ["sunday-table", "handmade-modern", "fresh-market"],
     ["cheap", "cartoonish", "generic pink bakery", "corporate"],
     {
@@ -985,6 +985,41 @@ export const VERTICALS: readonly VerticalIntel[] = [
       offerHeading: "What we do",
       offerNoun: "project",
       primaryIntent: "enquire",
+    },
+  ),
+  v(
+    "digital-studio",
+    "Creative technology studio",
+    "creative",
+    "creative technolog|digital agency|digital studio|creative studio|web (design|development) (agency|studio|company)|website (design|development)|web design|motion graphics|software (development )?(agency|studio|house|consultancy)|app development|digital product|branding and web|full.?service agency|marketing automation",
+    [
+      "signal-product",
+      "gallery-monograph",
+      "precision-practice",
+      "after-dark",
+      "fashion-edit",
+    ],
+    [
+      "template portfolio",
+      "agency clichés",
+      "invented client lists",
+      "invented case studies",
+      "neighbourhood-market styling",
+    ],
+    {
+      offerHeading: "What we do",
+      offerNoun: "capability",
+      primaryIntent: "enquire",
+      secondaryIntent: "view-work",
+      pages: ["home", "services", "approach", "about", "faq", "contact"],
+      singlePageSuffices: false,
+      verbs: ["build", "design", "develop", "create", "automate", "launch"],
+      proof: ["supplied client work", "supplied testimonials"],
+      imagery: [
+        "workspace and screens",
+        "design process",
+        "abstract technology",
+      ],
     },
   ),
   v(
@@ -1382,21 +1417,68 @@ export const GENERAL_VERTICAL: VerticalIntel = v(
   },
 );
 
-const compiled = VERTICALS.map((x) => ({ x, re: new RegExp(x.match, "i") }));
+const compiled = VERTICALS.map((x) => ({
+  x,
+  re: new RegExp(x.match, "i"),
+  reAll: new RegExp(x.match, "gi"),
+}));
 
-/** Best vertical for free text, scoring specific matches over incidental ones. Never throws; falls back to "general". */
+/**
+ * Best vertical for free text, scoring specific matches over incidental ones. Several different words that all point
+ * at one trade ("bakery", "bake", "cakes") corroborate each other and outweigh one longer incidental phrase
+ * ("small chops"). Never throws; falls back to "general".
+ */
 export function resolveVertical(text: string): VerticalIntel {
+  return classifyVertical(text).vertical;
+}
+
+export interface VerticalClassification {
+  vertical: VerticalIntel;
+  /** 0..1. Low when nothing matched or when two trades scored closely. */
+  confidence: number;
+  /** The next best trades, strongest first. */
+  alternatives: Array<{ id: string; score: number }>;
+  /** The words in the owner's text that decided it. */
+  evidence: string[];
+  /** True when the text did not identify a trade at all (the general vertical was used). */
+  generic: boolean;
+}
+
+export function classifyVertical(text: string): VerticalClassification {
   const t = text.toLowerCase();
-  let best: { x: VerticalIntel; score: number } | undefined;
-  for (const { x, re } of compiled) {
+  const scored: Array<{ x: VerticalIntel; score: number; hits: string[] }> = [];
+  for (const { x, re, reAll } of compiled) {
     const m = re.exec(t);
     if (!m) continue;
     // Earlier matches in the owner's own words and longer matches are stronger evidence.
     // What the business calls itself in its name and opening words outweighs anything it mentions later.
-    const score = m[0].length * 1.5 + (Math.max(0, 110 - m.index) / 110) * 24;
-    if (!best || score > best.score) best = { x, score };
+    const base = m[0].length * 1.5 + (Math.max(0, 110 - m.index) / 110) * 24;
+    const hits = [...new Set([...t.matchAll(reAll)].map((h) => h[0].trim()))];
+    const corroboration = Math.min(3, Math.max(0, hits.length - 1)) * 6;
+    scored.push({ x, score: base + corroboration, hits });
   }
-  return best?.x ?? GENERAL_VERTICAL;
+  scored.sort((a, b) => b.score - a.score);
+  const best = scored[0];
+  if (!best)
+    return {
+      vertical: GENERAL_VERTICAL,
+      confidence: 0.15,
+      alternatives: [],
+      evidence: [],
+      generic: true,
+    };
+  const second = scored[1];
+  const margin = second ? (best.score - second.score) / best.score : 1;
+  const strength = Math.min(1, best.score / 40);
+  return {
+    vertical: best.x,
+    confidence: Math.round((0.35 + 0.4 * strength + 0.25 * margin) * 100) / 100,
+    alternatives: scored
+      .slice(1, 4)
+      .map((s) => ({ id: s.x.id, score: Math.round(s.score) })),
+    evidence: best.hits.slice(0, 6),
+    generic: false,
+  };
 }
 
 export const verticalById = (id: string): VerticalIntel =>

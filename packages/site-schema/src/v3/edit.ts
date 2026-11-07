@@ -16,7 +16,14 @@ import {
   type DesignGenome,
 } from "@kora/creative";
 import { paletteFromColorway } from "./palette.js";
-import { parseSiteSpecV3, type SectionV3, type SiteSpecV3 } from "./spec.js";
+import {
+  parseSiteSpecV3,
+  mediaV3Schema,
+  MAX_SITE_PAGES,
+  type SectionV3,
+  type SiteSpecV3,
+} from "./spec.js";
+import { claimIssues } from "@kora/creative";
 
 export const NUDGES = [
   "premium",
@@ -69,6 +76,33 @@ export const structuredEditV3Schema = z.discriminatedUnion("kind", [
     page: z.string().max(40),
     from: z.number().int().min(0).max(30),
     to: z.number().int().min(0).max(30),
+  }),
+  z.object({
+    kind: z.literal("remove-page"),
+    slug: z.string().max(40),
+  }),
+  z.object({
+    kind: z.literal("move-page"),
+    slug: z.string().max(40),
+    to: z.number().int().min(1).max(8),
+  }),
+  z.object({
+    kind: z.literal("section-text"),
+    page: z.string().max(40),
+    index: z.number().int().min(0).max(30),
+    heading: z.string().trim().min(1).max(120).optional(),
+    intro: z.string().trim().max(300).optional(),
+    body: z.array(z.string().trim().min(1).max(900)).min(1).max(4).optional(),
+    /** Text written by the owner is theirs to assert. Text proposed by a model must not read as an unsupplied claim. */
+    author: z.enum(["owner", "model"]).default("owner"),
+  }),
+  z.object({
+    kind: z.literal("replace-media"),
+    page: z.string().max(40),
+    index: z.number().int().min(0).max(30),
+    /** Which picture inside the section: gallery or offer item index. Omit for a hero or story picture. */
+    item: z.number().int().min(0).max(12).optional(),
+    media: mediaV3Schema,
   }),
   z.object({
     kind: z.literal("cta-label"),
@@ -319,6 +353,92 @@ export function applyStructuredEditV3(
       }
       break;
     }
+    case "remove-page": {
+      if (e.slug === "home" || e.slug === "contact")
+        throw new EditV3Error("The home page and the contact page stay.");
+      const at = next.pages.findIndex((p) => p.slug === e.slug);
+      if (at < 0) throw new EditV3Error("That page does not exist.");
+      next.pages.splice(at, 1);
+      // Nothing may keep pointing at a page that is gone.
+      const dead = new Set([`/${e.slug}`, `/${e.slug}/`]);
+      for (const p of next.pages)
+        for (const sec of p.sections) {
+          for (const k of ["primaryCta", "secondaryCta", "button"] as const) {
+            const l = (sec as Record<string, unknown>)[k] as
+              { href?: string } | undefined;
+            if (l?.href && dead.has(l.href)) l.href = "/contact";
+          }
+        }
+      next.footer.links = next.footer.links.filter((l) => !dead.has(l.href));
+      break;
+    }
+    case "move-page": {
+      if (e.slug === "home")
+        throw new EditV3Error("The home page stays first.");
+      const at = next.pages.findIndex((p) => p.slug === e.slug);
+      if (at < 0) throw new EditV3Error("That page does not exist.");
+      const [pg] = next.pages.splice(at, 1);
+      next.pages.splice(Math.min(e.to, next.pages.length), 0, pg!);
+      break;
+    }
+    case "section-text": {
+      const page = next.pages.find((p) => p.slug === e.page);
+      const sec = page?.sections[e.index] as
+        Record<string, unknown> | undefined;
+      if (!page || !sec) throw new EditV3Error("That section does not exist.");
+      const texts = [e.heading, e.intro, ...(e.body ?? [])].filter(
+        (t): t is string => !!t,
+      );
+      for (const t of texts) {
+        if (findCliches(t).length)
+          throw new EditV3Error(
+            `"${findCliches(t)[0]}" is a generic phrase; say what you actually do.`,
+          );
+        if (e.author === "model" && claimIssues(t).length)
+          throw new EditV3Error(
+            `Suggested wording must not state ${claimIssues(t)[0]} the owner has not supplied.`,
+          );
+      }
+      if (e.heading !== undefined) {
+        if (!("heading" in sec))
+          throw new EditV3Error("This section has no heading.");
+        sec.heading = e.heading;
+      }
+      if (e.intro !== undefined) {
+        if (!("intro" in sec))
+          throw new EditV3Error("This section has no introduction.");
+        sec.intro = e.intro;
+      }
+      if (e.body) {
+        if (sec.type !== "story")
+          throw new EditV3Error("Only story sections have body text.");
+        sec.body = e.body;
+      }
+      break;
+    }
+    case "replace-media": {
+      const page = next.pages.find((p) => p.slug === e.page);
+      const sec = page?.sections[e.index] as unknown as
+        Record<string, unknown> | undefined;
+      if (!page || !sec) throw new EditV3Error("That section does not exist.");
+      const target =
+        e.item !== undefined
+          ? (sec.items as Array<Record<string, unknown>> | undefined)?.[e.item]
+          : sec;
+      if (
+        !target ||
+        !(
+          "media" in target ||
+          "plate" in target ||
+          sec.type === "hero" ||
+          sec.type === "story"
+        )
+      )
+        throw new EditV3Error("There is no picture to replace there.");
+      target.media = e.media;
+      delete target.plate;
+      break;
+    }
     case "cta-label": {
       const v = resolveVertical(
         `${next.business.name} ${next.business.industry} ${next.business.description}`,
@@ -333,6 +453,9 @@ export function applyStructuredEditV3(
       break;
     }
   }
+  // A site is never grown past the page limit. A historical site that already exceeds it is kept as it is.
+  if (next.pages.length > Math.max(MAX_SITE_PAGES, spec.pages.length))
+    throw new EditV3Error(`A site can have at most ${MAX_SITE_PAGES} pages.`);
   try {
     return parseSiteSpecV3(next);
   } catch {

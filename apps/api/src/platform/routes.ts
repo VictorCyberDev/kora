@@ -47,7 +47,8 @@ import type { Operations, Principal } from "./operations.js";
 import type { OpsStore } from "./ops-store.js";
 import type { PublishService } from "./services.js";
 import type { BillingService } from "./billing.js";
-import type { PlatformStore } from "./store.js";
+import { SiteAllowanceError, type PlatformStore } from "./store.js";
+import { registerMediaRoutes } from "./media-routes.js";
 import {
   RateLimiter,
   SESSION_TTL_SECONDS,
@@ -362,13 +363,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       .parse(req.body);
     requireOrgRole(req, body.orgId, "MEMBER");
     await entitled(body.orgId, "canCreateSite");
-    const site = await platform.createSite({
-      orgId: body.orgId,
-      name: body.name,
-      slug: `${slugify(body.name)}-${crypto.randomUUID().slice(0, 6)}`,
-      description: body.description,
-      createdBy: a.userId,
-    });
+    const cap = (await billing.entitlements(body.orgId)).subscription
+      ?.capabilities?.sites;
+    let site;
+    try {
+      site = await platform.createSite({
+        orgId: body.orgId,
+        name: body.name,
+        slug: `${slugify(body.name)}-${crypto.randomUUID().slice(0, 6)}`,
+        description: body.description,
+        createdBy: a.userId,
+        ...(cap !== undefined ? { siteCap: cap } : {}),
+      });
+    } catch (e) {
+      if (e instanceof SiteAllowanceError)
+        throw new HttpError(
+          402,
+          "plan_restriction",
+          "You have reached the number of websites in your plan. Delete one you no longer need, or choose a larger plan.",
+        );
+      throw e;
+    }
     await platform.audit({
       orgId: site.orgId,
       actorUserId: a.userId,
@@ -382,6 +397,65 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   app.get("/api/sites/:id", async (req) => ({
     data: (await siteFor(req, idParam.parse(req.params).id)).site,
   }));
+  registerMediaRoutes(app, { platform, config, siteFor });
+  // What deleting would do, shown before the owner confirms.
+  app.get("/api/sites/:id/deletion-impact", async (req) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id, "ADMIN");
+    const impact = await platform.deletionImpact(site.id);
+    return {
+      data: {
+        site: { id: site.id, name: site.name, status: site.status },
+        publicUrl: site.publicUrl,
+        willStopServing: site.status === "PUBLISHED",
+        ...impact,
+        explanation: [
+          site.status === "PUBLISHED" && site.publicUrl
+            ? `${site.publicUrl} will stop showing your website straight away.`
+            : "This website is not published, so nothing public changes.",
+          "Your site will disappear from your account and its place in your plan is freed, so you can create a replacement.",
+          "Past versions and any enquiries it received are kept for your records and are not shown on the public web.",
+          "This cannot be undone from your account.",
+        ],
+        confirmWith: site.name,
+      },
+    };
+  });
+  // Idempotent: repeating it after success returns the same result. The owner must type the site's name.
+  app.delete("/api/sites/:id", async (req) => {
+    const id = idParam.parse(req.params).id;
+    const a = requireUser(req);
+    const existing = await platform.getSiteIncludingDeleted(id);
+    if (!existing) throw notFound();
+    // Ownership is checked before anything about the site is revealed or changed; a site in another organisation is
+    // indistinguishable from one that does not exist.
+    if (!a.memberships.has(existing.orgId)) throw notFound();
+    requireOrgRole(req, existing.orgId, "ADMIN");
+    if (existing.deletedAt)
+      return { data: { deleted: true, alreadyDeleted: true } };
+    const body = z
+      .object({ confirm: z.string().max(200) })
+      .parse(req.body ?? {});
+    if (body.confirm.trim() !== existing.name)
+      throw new HttpError(
+        422,
+        "confirmation_required",
+        "To delete this website, type its name exactly to confirm.",
+      );
+    const r = await platform.deleteSite({
+      siteId: existing.id,
+      orgId: existing.orgId,
+      actorUserId: a.userId,
+      requestId: req.id,
+    });
+    if (!r.deleted) throw notFound();
+    const after = await billing.entitlements(existing.orgId);
+    return {
+      data: {
+        ...r,
+        canCreateSite: after.entitlements.canCreateSite,
+      },
+    };
+  });
   app.patch("/api/sites/:id", async (req) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "ADMIN");
     const body = z

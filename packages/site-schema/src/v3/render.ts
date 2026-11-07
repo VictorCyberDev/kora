@@ -113,8 +113,15 @@ const kickLabel: Record<string, string> = {
   contact: "Get in touch",
   faq: "Questions",
 };
-const head = (c: Ctx, type: string, h: string, lede = "", cls = "") =>
-  `<div class="sh rv ${cls}"><p class="kick">${esc(type === "hero" ? "" : (kickLabel[type] ?? ""))}</p><h2>${headline(h, c)}</h2>${lede ? `<p class="lede">${esc(lede)}</p>` : ""}</div>`;
+const head = (
+  c: Ctx,
+  type: string,
+  h: string,
+  lede = "",
+  cls = "",
+  kick?: string,
+) =>
+  `<div class="sh rv ${cls}"><p class="kick">${esc(type === "hero" ? "" : (kick ?? kickLabel[type] ?? ""))}</p><h2>${headline(h, c)}</h2>${lede ? `<p class="lede">${esc(lede)}</p>` : ""}</div>`;
 const open = (type: string, tone: Tone, extra = "") =>
   `<section class="sec t-${tone} ${extra}" id="${type}">`;
 const mark = (c: Ctx, ...keys: string[]) => keys.forEach((k) => c.used.add(k));
@@ -250,7 +257,7 @@ function hero(s: Sec<"hero">, c: Ctx, tone: Tone): string {
 // ---------------------------------------------------------------- body sections
 function offer(s: Sec<"offer">, c: Ctx, tone: Tone): string {
   mark(c, `offer.${s.layout}`);
-  const h = head(c, "offer", s.heading, s.intro);
+  const h = head(c, "offer", s.heading, s.intro, "", s.eyebrow);
   const P = (it: Sec<"offer">["items"][number]) =>
     it.price
       ? `<span class="price">${esc(it.price)}</span>`
@@ -288,7 +295,7 @@ function offer(s: Sec<"offer">, c: Ctx, tone: Tone): string {
 
 function products(s: Sec<"products">, c: Ctx, tone: Tone): string {
   mark(c, `products.${s.layout}`);
-  const h = head(c, "products", s.heading, s.intro);
+  const h = head(c, "products", s.heading, s.intro, "", s.eyebrow);
   const art = (it: Sec<"products">["items"][number], i: number) =>
     `<article>${visual({ media: it.media, plate: it.plate ?? { kind: (["circles", "arch", "sunburst", "stripes"] as const)[i % 4]!, seed: i + 9 } }, c, { ar: "tall" })}<h3>${esc(it.title)}</h3>${it.text ? `<p>${esc(it.text)}</p>` : ""}${it.price ? `<p class="price">${esc(it.price)}</p>` : ""}</article>`;
   let body: string;
@@ -308,19 +315,19 @@ function story(s: Sec<"story">, c: Ctx, tone: Tone): string {
   const paras = s.body.map((x) => `<p>${esc(x)}</p>`).join("");
   switch (s.layout) {
     case "manifesto":
-      return `${open("story", tone)}<div class="w sm"><div class="rv"><p class="kick">${kickLabel.story}</p><h2>${headline(s.heading, c)}</h2></div><div class="bd2 rv">${paras}</div></div></section>`;
+      return `${open("story", tone)}<div class="w sm"><div class="rv"><p class="kick">${esc(s.eyebrow ?? kickLabel.story ?? "")}</p><h2>${headline(s.heading, c)}</h2></div><div class="bd2 rv">${paras}</div></div></section>`;
     case "founder-note":
-      return `${open("story", tone)}<div class="w sf rv"><p class="kick">${kickLabel.story}</p><h2>${headline(s.heading, c)}</h2>${paras}</div></section>`;
+      return `${open("story", tone)}<div class="w sf rv"><p class="kick">${esc(s.eyebrow ?? kickLabel.story ?? "")}</p><h2>${headline(s.heading, c)}</h2>${paras}</div></section>`;
     case "split-image":
-      return `${open("story", tone)}<div class="w si"><div class="rv">${visual(s, c)}</div><div class="rv"><p class="kick">${kickLabel.story}</p><h2>${headline(s.heading, c)}</h2>${paras}</div></div></section>`;
+      return `${open("story", tone)}<div class="w si"><div class="rv">${visual(s, c)}</div><div class="rv"><p class="kick">${esc(s.eyebrow ?? kickLabel.story ?? "")}</p><h2>${headline(s.heading, c)}</h2>${paras}</div></div></section>`;
     default:
-      return `${open("story", tone)}<div class="w sc"><div class="rv"><p class="kick">${kickLabel.story}</p><h2>${headline(s.heading, c)}</h2>${s.values.length ? `<ul class="vs">${s.values.map((v) => `<li>${esc(v)}</li>`).join("")}</ul>` : ""}</div><div class="rv">${paras}</div></div></section>`;
+      return `${open("story", tone)}<div class="w sc"><div class="rv"><p class="kick">${esc(s.eyebrow ?? kickLabel.story ?? "")}</p><h2>${headline(s.heading, c)}</h2>${s.values.length ? `<ul class="vs">${s.values.map((v) => `<li>${esc(v)}</li>`).join("")}</ul>` : ""}</div><div class="rv">${paras}</div></div></section>`;
   }
 }
 
 function process(s: Sec<"process">, c: Ctx, tone: Tone): string {
   mark(c, `process.${s.layout}`);
-  const h = head(c, "process", s.heading, s.intro);
+  const h = head(c, "process", s.heading, s.intro, "", s.eyebrow);
   const cls = {
     numerals: "pn2",
     "horizontal-steps": "hs",
@@ -344,7 +351,7 @@ function gallery(s: Sec<"gallery">, c: Ctx, tone: Tone): string {
         `<figure>${visual({ media: it.media, plate: it.plate ?? { kind: (["arch", "stripes", "circles", "checker", "sunburst", "lines"] as const)[i % 6]!, seed: i + 21 } }, c, { ar: s.layout === "mosaic" || s.layout === "grid" ? "square" : "tall" })}${it.caption ? `<figcaption>${esc(it.caption)}</figcaption>` : ""}</figure>`,
     )
     .join("");
-  return `${open("gallery", tone)}<div class="w">${s.heading ? head(c, "gallery", s.heading) : ""}<div class="${cls} rv"${s.layout === "rail" ? ' tabindex="0" role="region" aria-label="Gallery, scroll sideways"' : ""}>${figs}</div></div></section>`;
+  return `${open("gallery", tone)}<div class="w">${s.heading ? head(c, "gallery", s.heading, "", "", s.eyebrow) : ""}<div class="${cls} rv"${s.layout === "rail" ? ' tabindex="0" role="region" aria-label="Gallery, scroll sideways"' : ""}>${figs}</div></div></section>`;
 }
 
 function proof(s: Sec<"proof">, c: Ctx, tone: Tone): string {
@@ -437,7 +444,7 @@ function contact(s: Sec<"contact">, c: Ctx, tone: Tone, id: string): string {
 
 function faq(s: Sec<"faq">, c: Ctx, tone: Tone): string {
   mark(c, "faq.accordion");
-  return `${open("faq", tone)}<div class="w">${head(c, "faq", s.heading)}<div class="fq rv">${s.items.map((q) => `<details><summary>${esc(q.question)}</summary><p>${esc(q.answer)}</p></details>`).join("")}</div></div></section>`;
+  return `${open("faq", tone)}<div class="w">${head(c, "faq", s.heading, "", "", s.eyebrow)}<div class="fq rv">${s.items.map((q) => `<details><summary>${esc(q.question)}</summary><p>${esc(q.answer)}</p></details>`).join("")}</div></div></section>`;
 }
 
 function cta(s: Sec<"cta">, c: Ctx, tone: Tone): string {
@@ -549,6 +556,56 @@ function header(
   const nav = `<ul class="nav-d" aria-label="Main">${bits.join("")}${cta}</ul>`;
   return `<header class="hd hs-${style} t-${style === "overlay" ? "dark" : "light"}"><div class="w bar">${brand}${nav}${menu}</div></header>`;
 }
+/** Every picture on the site that carries a structured credit, once each, in the order they appear. */
+function creditedMedia(spec: SiteSpecV3) {
+  const seen = new Set<string>();
+  const out: Array<{
+    name: string;
+    creator: string;
+    provider: string;
+    providerUrl: string;
+  }> = [];
+  const take = (m: unknown) => {
+    const p = m as
+      | {
+          url?: string;
+          provenance?: {
+            creatorName?: string;
+            creatorUrl?: string;
+            providerUrl?: string;
+            provider?: string;
+          };
+        }
+      | undefined;
+    const pr = p?.provenance;
+    if (
+      !p?.url ||
+      !pr?.creatorName ||
+      !pr.creatorUrl ||
+      !pr.providerUrl ||
+      seen.has(p.url)
+    )
+      return;
+    seen.add(p.url);
+    out.push({
+      name: pr.creatorName,
+      creator: pr.creatorUrl,
+      provider: pr.provider ?? "the photo provider",
+      providerUrl: pr.providerUrl,
+    });
+  };
+  for (const pg of spec.pages)
+    for (const s of pg.sections) {
+      const a = s as unknown as {
+        media?: unknown;
+        items?: Array<{ media?: unknown }>;
+      };
+      take(a.media);
+      a.items?.forEach((it) => take(it.media));
+    }
+  return out;
+}
+
 function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   const b = spec.business;
   const g = spec.design.genome;
@@ -572,7 +629,8 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   const reach = contact
     ? `<div><h4>Get in touch</h4><ul>${contact}</ul></div>`
     : "";
-  const legal = `<p class="legal">${esc(spec.footer.text || `© ${b.name}`)}</p>`;
+  const credits = creditedMedia(spec);
+  const legal = `<p class="legal">${esc(spec.footer.text || `© ${b.name}`)}</p>${credits.length ? `<p class="legal credits">Photos: ${credits.map((x) => `<a href="${esc(x.creator)}" rel="noopener noreferrer">${esc(x.name)}</a> on <a href="${esc(x.providerUrl)}" rel="noopener noreferrer">${esc(x.provider)}</a>`).join(", ")}</p>` : ""}`;
   const brand = `<div><a class="brand" href="${esc(relFrom(from, "home"))}">${esc(b.name)}</a></div>`;
   let body: string;
   if (g.footerStyle === "brand-heavy")

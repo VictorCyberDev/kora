@@ -95,6 +95,20 @@ export const mediaV3Schema = z.object({
       provider: text(80).optional(),
       license: text(120).optional(),
       attribution: text(200).optional(),
+      /** Structured credit, shown in the site footer. Required by some providers (Unsplash: photographer and provider links with referral parameters). */
+      creatorName: text(80).optional(),
+      creatorUrl: z
+        .string()
+        .max(400)
+        .regex(/^https:\/\/[^\s"'<>]+$/)
+        .optional(),
+      providerUrl: z
+        .string()
+        .max(400)
+        .regex(/^https:\/\/[^\s"'<>]+$/)
+        .optional(),
+      /** The provider's own id for the picture, so the manifest can be traced back to its source. */
+      providerImageId: text(80).optional(),
       reviewStatus: z
         .enum(["owner-approved", "unreviewed", "kora-curated"])
         .default("unreviewed"),
@@ -168,18 +182,22 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
   }),
   z.object({
     ...sec("offer", SERVICE_LAYOUTS),
+    /** Overrides the small label above the heading (for example "Cakes" instead of "What we do"). */
+    eyebrow: text(40).optional(),
     heading: line(90),
     intro: text(300).default(""),
     items: z.array(item).min(1).max(12),
   }),
   z.object({
     ...sec("products", PRODUCT_LAYOUTS),
+    eyebrow: text(40).optional(),
     heading: line(90),
     intro: text(300).default(""),
     items: z.array(item).min(1).max(12),
   }),
   z.object({
     ...sec("story", STORY_LAYOUTS),
+    eyebrow: text(40).optional(),
     heading: line(100),
     body: z.array(text(900).min(1)).min(1).max(4),
     values: z.array(line(70)).max(6).default([]),
@@ -187,12 +205,14 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
   }),
   z.object({
     ...sec("process", PROCESS_LAYOUTS),
+    eyebrow: text(40).optional(),
     heading: line(90),
     intro: text(300).default(""),
     items: z.array(item).min(2).max(6),
   }),
   z.object({
     ...sec("gallery", GALLERY_LAYOUTS),
+    eyebrow: text(40).optional(),
     heading: text(90).default(""),
     items: z
       .array(
@@ -246,6 +266,7 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("faq"),
     layout: z.literal("accordion"),
+    eyebrow: text(40).optional(),
     heading: line(90),
     items: z
       .array(z.object({ question: line(200), answer: line(700) }))
@@ -260,6 +281,13 @@ export const sectionV3Schema = z.discriminatedUnion("type", [
   }),
 ]);
 export type SectionV3 = z.infer<typeof sectionV3Schema>;
+
+/**
+ * The most pages a newly generated or newly edited site may have. The schema itself still reads up to eight, so a site
+ * published before this limit stays readable and servable; it is simply never grown past what it already has.
+ */
+export const MAX_SITE_PAGES = 7;
+export const MIN_SITE_PAGES = 4;
 
 export const PAGE_PURPOSES = [
   "home",

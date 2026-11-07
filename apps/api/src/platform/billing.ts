@@ -553,7 +553,7 @@ export class BillingService {
     const count = Number(
       (
         await this.d.platform
-          .sql`SELECT COUNT(*)::int AS n FROM sites WHERE org_id=${orgId}`
+          .sql`SELECT COUNT(*)::int AS n FROM sites WHERE org_id=${orgId} AND deleted_at IS NULL`
       )[0]!.n,
     );
     return {

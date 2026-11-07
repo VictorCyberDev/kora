@@ -1,0 +1,134 @@
+[
+  {
+    "key": "bakery",
+    "name": "Sweet Crumbs Bakery",
+    "description": "I bake cakes and small chops.",
+    "expect": ["bakery"]
+  },
+  {
+    "key": "small-chops",
+    "name": "Chop Corner Events",
+    "description": "We cater small chops, puff puff and samosa platters for weddings, birthdays and office parties.",
+    "expect": ["catering"]
+  },
+  {
+    "key": "restaurant",
+    "name": "Ember Table",
+    "description": "A neighbourhood restaurant serving grilled fish, rice dishes and cold drinks for lunch and dinner.",
+    "expect": ["restaurant", "bukka"]
+  },
+  {
+    "key": "fashion",
+    "name": "Adire Lane",
+    "description": "A fashion boutique selling ready-to-wear dresses, ankara tops and accessories for women.",
+    "expect": ["fashion"]
+  },
+  {
+    "key": "salon",
+    "name": "Crown Hair Studio",
+    "description": "A hair salon offering braiding, wig installation, weaves and treatments.",
+    "expect": ["salon"]
+  },
+  {
+    "key": "barber",
+    "name": "Sharp Edge Barbers",
+    "description": "Barbershop for fades, beard trims and haircuts.",
+    "expect": ["barber"]
+  },
+  {
+    "key": "makeup",
+    "name": "Zara Glam",
+    "description": "Makeup artist for brides, photoshoots and special occasions.",
+    "expect": ["makeup"]
+  },
+  {
+    "key": "photographer",
+    "name": "Lens & Light",
+    "description": "Photographer covering weddings, portraits and events.",
+    "expect": ["photographer"]
+  },
+  {
+    "key": "creative-agency",
+    "name": "Pixel Harbour",
+    "description": "A branding and design agency creating logos, brand identities and campaign visuals.",
+    "expect": ["agency", "digital-studio"]
+  },
+  {
+    "key": "software-consultancy",
+    "name": "Northline Software",
+    "description": "A software consultancy building custom web and mobile applications for businesses.",
+    "expect": ["digital-studio", "saas", "software-consultancy"]
+  },
+  {
+    "key": "cybersecurity",
+    "name": "ShieldGrid",
+    "description": "Cybersecurity firm offering penetration testing and security audits for companies.",
+    "expect": ["cyber"]
+  },
+  {
+    "key": "phone-repair",
+    "name": "QuickFix Mobile",
+    "description": "We repair phone screens, batteries and charging ports.",
+    "expect": ["gadgets", "electronics-repair"]
+  },
+  {
+    "key": "plumber",
+    "name": "FlowRight Plumbing",
+    "description": "Plumbing repairs, pipe installation and leak detection for homes and offices.",
+    "expect": ["plumbing"]
+  },
+  {
+    "key": "cleaning",
+    "name": "SparkNest Cleaning",
+    "description": "A cleaning company for homes, offices and post-event cleanup.",
+    "expect": ["cleaning"]
+  },
+  {
+    "key": "real-estate",
+    "name": "Keystone Properties",
+    "description": "Real estate agency helping people buy, sell and rent homes.",
+    "expect": ["realestate", "real-estate"]
+  },
+  {
+    "key": "event-planner",
+    "name": "Moments by Ife",
+    "description": "Event planner for weddings, birthdays and corporate events.",
+    "expect": ["events", "event-planner"]
+  },
+  {
+    "key": "education",
+    "name": "BrightPath Learning Centre",
+    "description": "An educational centre offering after-school tutoring and exam preparation.",
+    "expect": ["tutoring", "school"]
+  },
+  {
+    "key": "medical",
+    "name": "Greenfield Medical Practice",
+    "description": "A medical practice providing general consultations and family health care.",
+    "expect": ["clinic"]
+  },
+  {
+    "key": "consulting",
+    "name": "Ridgeway Advisory",
+    "description": "A professional consulting firm advising small businesses on strategy and operations.",
+    "expect": ["consulting", "general"]
+  },
+  {
+    "key": "ambiguous",
+    "name": "Acme Co",
+    "description": "My company provides services.",
+    "expect": ["general"]
+  },
+  {
+    "key": "kochab",
+    "name": "Kochab Studio",
+    "description": "Kochab Studio is a creative technology agency helping startups and growing businesses build premium websites, powerful brands, and digital experiences. We combine software development, design, motion graphics, and marketing automation to help businesses attract customers and grow.",
+    "expect": ["digital-studio"]
+  },
+  {
+    "key": "one-word",
+    "name": "Daily Loaf",
+    "description": "Bakery",
+    "expect": ["bakery"]
+  }
+]

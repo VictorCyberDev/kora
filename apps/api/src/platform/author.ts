@@ -24,6 +24,7 @@ import {
   type SiteSpecV3,
   type StructuredEdit,
   assistCopy,
+  repairCompleteness,
 } from "@kora/site-schema";
 import type { BrandOS, CreativeDirection } from "@kora/creative";
 
@@ -293,6 +294,13 @@ export class SiteAuthor {
           ". The opening headline was suggested by the AI and checked against what you told us.";
       }
     }
+    // Quality gate for a new site: every page is read, safe repairs are applied (bounded), and anything still blocking is
+    // reported in the note instead of being hidden.
+    const gate = repairCompleteness(spec, { brief, generation: true });
+    if (gate.applied.length) spec = gate.spec;
+    const blocking = gate.remaining.filter((i) => i.severity === "block");
+    if (blocking.length)
+      note += `. Quality gate: ${blocking.length} issue(s) need attention (${[...new Set(blocking.map((i) => i.code))].join(", ")}).`;
     return {
       spec,
       source,
