@@ -34,23 +34,23 @@ the same `planSiteV3`, and the stored artifact is what publishes).
 Baseline suite (commit `e2b62df`, isolated `_test` Postgres 16): all packages pass; `apps/api` 51 files, 496 passed, 1
 skipped; `site-schema` 241 passed.
 
-## 2. Competitor research: **NOT DONE**
+## 2. Competitor research (done in the completion pass)
 
-The directive asked for a study of Wix, Webflow, Framer, Squarespace, Durable, Hostinger, Relume, Lovable and v0. That
-study was **not performed** in this session. I will not report competitor capabilities from memory as if verified, and the
-brief's own warning (verified capability vs marketing claim) applies. What exists instead, and is cited by the design work:
+`COMPETITOR-ANALYSIS-2026.md`: Wix, Webflow, Framer, Squarespace, Durable, Hostinger, Relume, Lovable and v0, from official
+product, help and pricing pages read on 2026-11-07, each fact tagged verified or marketing claim. Webflow is verified only
+from search summaries of its pages (its help centre returned 403), and several vendors' own pages disagree on prices and
+credits; the file records both. No competitor capability is reported from memory. The findings and what was done about each
+are in `RESEARCH-APPLICATION-2026.md`.
 
-- `docs/research/SITE-OBSERVATIONS-2026.md` and `docs/research/data/*.jsonl`: 182 real sites rendered and measured (pre-existing).
-- `docs/design/vertical-intelligence.md`, `docs/design/design-intelligence.md`, `docs/design/reference-atlas-v2.md` (pre-existing).
+## 3. Website design research (done in the completion pass)
 
-Follow-up needed: a dated, source-linked competitor comparison, kept separate from this implementation.
-
-## 3. Website design research: **partially covered by existing material, not redone**
-
-The page architectures in `packages/creative/src/knowledge.ts` are editorial judgements about how each trade is bought
-(customer intent, what to ask, what to include in an enquiry). They were **not** derived from a fresh review of professional
-sites in the fourteen named categories. They are labelled `validation: editorial-reviewed` (first-party editorial, by this
-session) or `cluster-default` and carry no claim of external validation.
+`CATEGORY-DESIGN-STUDY-A-2026.md` (bakery, celebration cakes, small chops/catering, restaurant, hair salon, barbershop,
+fashion retail) and `CATEGORY-DESIGN-STUDY-B-2026.md` (creative agency, consultancy, photographer, home repair, medical,
+education, real estate), with machine-readable rules and per-rule support counts in `data/`. **Limits:** the tool returned
+page text only, so typography, colour, sticky behaviour and real phone layout could not be observed on any site; photographer,
+medical and small-chops rest on very few readable sites; several well-known sites could not be read and are listed as such.
+The page architectures in `packages/creative/src/knowledge.ts` remain editorial judgements labelled `editorial-reviewed`; the
+studies were used to check and adjust them (see `RESEARCH-APPLICATION-2026.md`), not to certify them.
 
 ## 4. Technical research
 

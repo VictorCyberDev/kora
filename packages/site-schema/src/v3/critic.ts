@@ -13,6 +13,7 @@ import {
   resolveVertical,
 } from "@kora/creative";
 import { genomeDistance, avoidTags } from "@kora/creative";
+import { wantsDock } from "./dock-policy.js";
 import type { SectionV3, SiteSpecV3 } from "./spec.js";
 
 export const DIMENSIONS = [
@@ -266,7 +267,7 @@ export function criticV3(
     [hero.primaryCta, hero.secondaryCta].some(
       (c) => c && /^(tel:|https:\/\/wa\.me)/.test(c.href),
     );
-  if (reach && !heroActs && g.mobileStrategy === "narrative-stack")
+  if (reach && !heroActs && !wantsDock(spec))
     add(
       "MOBILE_ACTION_BURIED",
       "warn",
@@ -530,7 +531,7 @@ export function criticV3(
     (vert.primaryIntent === "call" || vert.primaryIntent === "whatsapp") &&
     (b.phone || b.whatsapp) &&
     hero?.type === "hero" &&
-    g.mobileStrategy === "narrative-stack"
+    !wantsDock(spec)
   )
     add(
       "POOR_MOBILE_PRIORITY",

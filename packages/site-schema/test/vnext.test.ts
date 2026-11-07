@@ -568,3 +568,32 @@ describe("accessibility regression found by browser QA", () => {
       expect(css).toContain(".bd article:nth-child(4n+1) p{opacity:1}");
   });
 });
+
+describe("category-study rule: a persistent contact action on phones for contact-led trades", () => {
+  const html = (name: string, description: string, dir: number) => {
+    const brief = { name, description, phone: "+234 801 000 0000" };
+    const d = planDirectionsV3(brief).directions[dir]!;
+    return Buffer.from(
+      renderSiteV3(d.spec, { formEndpoint: "https://k.example/f" })[
+        "index.html"
+      ]!,
+    ).toString();
+  };
+  it("gives every direction of a small-chops caterer and a barber the quick-contact dock", () => {
+    for (const dir of [0, 1, 2]) {
+      expect(
+        html("Sweet Crumbs", "I bake cakes and small chops.", dir),
+      ).toContain('class="dock"');
+      expect(html("Mr Lee", "I cut hair.", dir)).toContain('class="dock"');
+    }
+  });
+  it("keeps the quieter layout for a photographer, where the nav action and footer are the path", () => {
+    const quiet = [0, 1, 2].filter(
+      (dir) =>
+        !html("Ada Frames", "I am a wedding photographer.", dir).includes(
+          'class="dock"',
+        ),
+    );
+    expect(quiet.length).toBeGreaterThan(0);
+  });
+});

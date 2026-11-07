@@ -7,6 +7,7 @@ import {
   type RenderContext,
 } from "../render.js";
 import { SITE_JS_V2 } from "../v2/render.js";
+import { wantsDock } from "./dock-policy.js";
 import { baseCss } from "./css.js";
 import { voiceFiles, VOICES } from "./fonts.js";
 import { PARTS } from "./parts.js";
@@ -649,7 +650,7 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
 }
 function dock(spec: SiteSpecV3): string {
   const g = spec.design.genome;
-  if (g.mobileStrategy === "narrative-stack") return "";
+  if (!wantsDock(spec)) return "";
   const parts = [
     spec.business.phone
       ? `<a class="btn" href="${esc(telLink(spec))}">Call</a>`
