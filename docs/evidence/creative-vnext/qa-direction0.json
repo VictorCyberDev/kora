@@ -16,9 +16,7 @@
   "direction": "Sunday Table",
   "pages": 6,
   "overflow": [],
-  "broken": [
-   "phone:index.html:kora/media/smallchops-plantain-skewers-buffet.webp"
-  ],
+  "broken": [],
   "consoleErrors": [],
   "axe": [],
   "formOnContact": true,

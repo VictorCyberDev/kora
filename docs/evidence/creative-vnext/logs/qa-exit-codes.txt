@@ -1,0 +1,4 @@
+qa-direction0 EXIT=0
+qa-direction1 EXIT=0
+qa-direction2 EXIT=0
+finished
