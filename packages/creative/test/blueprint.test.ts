@@ -58,6 +58,17 @@ describe("classification across the acceptance matrix", () => {
     const k = matrix.find((m) => m.key === "kochab")!;
     expect(buildBlueprint(k).classification.verticalId).toBe("digital-studio");
   });
+  it('builds a multipage barber site from the single sentence "I cut hair" with one offering and no duplicate page', () => {
+    const bp = buildBlueprint({ name: "Mr Lee", description: "I cut hair." });
+    expect(bp.classification.verticalId).toBe("barber");
+    expect(bp.confirmedOfferCategories.map((c) => c.label)).toEqual([
+      "Haircuts",
+    ]);
+    const slugs = bp.pageArchitecture.map((p) => p.slug);
+    expect(slugs).not.toContain("hair");
+    expect(slugs.length).toBeGreaterThanOrEqual(MIN_PAGES);
+    expect(slugs.length).toBeLessThanOrEqual(6);
+  });
   it("treats a sentence without a trade as ambiguous instead of inventing an industry", () => {
     const bp = buildBlueprint({
       name: "Acme Co",

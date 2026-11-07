@@ -130,5 +130,11 @@
     "name": "Daily Loaf",
     "description": "Bakery",
     "expect": ["bakery"]
+  },
+  {
+    "key": "barber-minimal",
+    "name": "Mr Lee",
+    "description": "I cut hair.",
+    "expect": ["barber"]
   }
 ]

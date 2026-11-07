@@ -561,9 +561,9 @@ export const PROFILES: readonly IndustryProfile[] = [
     topics: [
       topic(
         "cuts",
-        "Haircuts and fades",
+        "Haircuts",
         "cut|fade|haircut|taper|lineup",
-        "A clean cut starts with a clear idea of the shape you want. Photos help.",
+        "A good cut starts with a clear idea of the shape you want. A reference photo helps.",
         ["Style and length", "Beard or lineup"],
         ["barber haircut", "fade haircut"],
         true,

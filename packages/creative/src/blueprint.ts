@@ -583,13 +583,21 @@ export function buildBlueprint(
   };
   // Owner-stated items first, tied to a topic when one fits, else kept as the owner wrote them.
   for (const o of owner) {
-    const t = ambiguous
+    const byLabel = ambiguous
       ? undefined
       : profile.topics.find((x) => new RegExp(x.match, "i").test(o.label));
+    // A single stated offering ("I cut hair") is read in the owner's whole phrase, so it joins the topic it names instead of
+    // appearing twice (once as "Hair", once as the topic). With several offerings each is judged by its own words only.
+    const t =
+      byLabel ??
+      (!ambiguous && owner.length === 1
+        ? profile.topics.find((x) => new RegExp(x.match, "i").test(o.evidence))
+        : undefined);
     push({
-      id: slugify(o.label),
+      id: t && owner.length === 1 ? t.id : slugify(o.label),
       label:
-        t && t.label.toLowerCase() === o.label.toLowerCase()
+        t &&
+        (t.label.toLowerCase() === o.label.toLowerCase() || owner.length === 1)
           ? t.label
           : o.label,
       provenance: "OWNER_CONFIRMED",
