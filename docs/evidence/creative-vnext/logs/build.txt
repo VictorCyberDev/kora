@@ -11,37 +11,37 @@ packages/event-schema build: Done
 packages/runtime-claim build$ tsc -p tsconfig.json
 packages/passport build: Done
 packages/site-fonts build$ tsc -p tsconfig.json
-packages/creative build: Done
-packages/site-media build$ tsc -p tsconfig.json
 packages/site-fonts build: Done
+packages/site-media build$ tsc -p tsconfig.json
+packages/creative build: Done
 packages/site-serving build$ tsc -p tsconfig.json
 packages/runtime-claim build: Done
 packages/topology build$ tsc -p tsconfig.json
-packages/site-serving build: Done
-services/action-executor build$ tsc -p tsconfig.json
 packages/site-media build: Done
+services/action-executor build$ tsc -p tsconfig.json
+packages/site-serving build: Done
 services/incident-engine build$ tsc -p tsconfig.json
 packages/topology build: Done
 services/policy-engine build$ tsc -p tsconfig.json
 services/action-executor build: Done
 services/reasoner build$ tsc -p tsconfig.json
-services/incident-engine build: Done
-services/policy-engine build: Done
 apps/web build: vite v7.3.7 building client environment for production...
 apps/web build: transforming...
+services/incident-engine build: Done
 apps/web build: /_kora/fonts/dm-serif-display-latin-400-normal.woff2 referenced in /_kora/fonts/dm-serif-display-latin-400-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
 apps/web build: /_kora/fonts/manrope-latin-400-normal.woff2 referenced in /_kora/fonts/manrope-latin-400-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
 apps/web build: /_kora/fonts/manrope-latin-600-normal.woff2 referenced in /_kora/fonts/manrope-latin-600-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
 apps/web build: /_kora/fonts/manrope-latin-800-normal.woff2 referenced in /_kora/fonts/manrope-latin-800-normal.woff2 didn't resolve at build time, it will remain unchanged to be resolved at runtime
+services/policy-engine build: Done
 apps/web build: ✓ 68 modules transformed.
-services/reasoner build: Done
 apps/web build: rendering chunks...
 apps/web build: computing gzip size...
 apps/web build: dist/index.html                   0.73 kB │ gzip:   0.42 kB
 apps/web build: dist/assets/index-C8T_Xhz1.css   76.65 kB │ gzip:  16.22 kB
 apps/web build: dist/assets/index-09HOU7ou.js   362.27 kB │ gzip: 109.10 kB
-apps/web build: ✓ built in 2.36s
+apps/web build: ✓ built in 1.80s
 apps/web build: Done
+services/reasoner build: Done
 apps/demo-service build$ tsc -p tsconfig.json
 packages/site-schema build$ tsc -p tsconfig.json
 apps/demo-service build: Done

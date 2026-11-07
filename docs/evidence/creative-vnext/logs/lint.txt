@@ -2,38 +2,3 @@
 > kora@0.1.0 lint /home/user/kora
 > eslint .
 
-
-/home/user/kora/apps/api/src/compose.integration.test.ts
-  18:7  error  Async method 'complete' has no 'await' expression  @typescript-eslint/require-await
-
-/home/user/kora/apps/api/src/editor.integration.test.ts
-  42:7  error  Unsafe return of a value of type `any`  @typescript-eslint/no-unsafe-return
-
-/home/user/kora/packages/site-schema/src/v3/compose.ts
-   16:3   error  'recipeForVertical' is defined but never used                                                 @typescript-eslint/no-unused-vars
-  107:14  error  This assertion is unnecessary since the receiver accepts the original type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-  176:14  error  This assertion is unnecessary since the receiver accepts the original type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-  205:14  error  This assertion is unnecessary since the receiver accepts the original type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-  310:7   error  This assertion is unnecessary since the receiver accepts the original type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-
-/home/user/kora/packages/site-schema/src/v3/edit.ts
-  629:42  error  This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-  630:42  error  This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-  631:42  error  This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-
-/home/user/kora/packages/site-schema/src/v3/model-compose.ts
-  105:13  error  Unexpected control character(s) in regular expression: \x00, \x1f                  no-control-regex
-  165:11  error  This assertion is unnecessary since it does not change the type of the expression  @typescript-eslint/no-unnecessary-type-assertion
-
-/home/user/kora/packages/site-schema/src/v3/render.ts
-  652:9  error  'g' is assigned a value but never used  @typescript-eslint/no-unused-vars
-
-/home/user/kora/packages/site-schema/test/model-compose.test.ts
-   33:12  error  Async arrow function has no 'await' expression         @typescript-eslint/require-await
-   40:12  error  Async arrow function has no 'await' expression         @typescript-eslint/require-await
-  151:36  error  Async arrow function 'fail' has no 'await' expression  @typescript-eslint/require-await
-
-✖ 16 problems (16 errors, 0 warnings)
-  8 errors and 0 warnings potentially fixable with the `--fix` option.
-
- ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,9 @@
+bakery: pages=6 overflow=0 broken=0 axe=0 console=0
+small-chops: pages=6 overflow=0 broken=0 axe=0 console=0
+restaurant: pages=6 overflow=0 broken=0 axe=0 console=0
+fashion: pages=6 overflow=0 broken=0 axe=0 console=0
+salon: pages=6 overflow=0 broken=0 axe=0 console=0
+barber: pages=6 overflow=0 broken=0 axe=0 console=0
+makeup: pages=6 overflow=0 broken=0 axe=0 console=0
+photographer: pages=6 overflow=0 broken=0 axe=0 console=0
+creative-agency: pages=6 overflow=0 broken=0 axe=0 console=0
