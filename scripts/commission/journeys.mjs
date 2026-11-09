@@ -352,7 +352,7 @@ export async function runJourneys(ctx) {
   unsplash.mode = "down";
   const sBk = made.kochab.site.id;
   const dn = await A.c.call("POST", `/api/sites/${sBk}/media/candidates`, { intents: ["offline probe"] });
-  step("media fallback: provider outage yields a clean error, not a crash", dn.status >= 400 && dn.status < 600 && dn.status !== 500 || dn.status === 200, String(dn.status), "mock");
+  step("media fallback: a provider outage is absorbed (200, no candidates, the failure is reported in the pool report, no server error)", dn.status === 200 && (dn.json?.data?.candidates ?? []).length === 0 && (dn.json?.data?.report?.failures ?? []).length >= 1, `${dn.status} candidates=${dn.json?.data?.candidates?.length} failures=${JSON.stringify(dn.json?.data?.report?.failures ?? []).slice(0, 80)}`, "mock");
   const catStill = await A.c.call("GET", `/api/sites/${sBk}/media/catalogue`);
   step("media fallback: the bundled catalogue still works during the outage", catStill.status === 200, String(catStill.status));
   const OC = await mkOwner("outage");
@@ -360,9 +360,14 @@ export async function runJourneys(ctx) {
   const sDown = await specOf(OC, gDown.site.id, gDown.versionId);
   step("media fallback: generation during an outage still produces a complete site from bundled photos", gDown.gen.status === 201 && sDown.pages.length >= 6);
   unsplash.mode = "exhausted";
-  await A.c.call("POST", `/api/sites/${sBk}/media/candidates`, { intents: ["quota probe one"] });
-  const ex = await A.c.call("POST", `/api/sites/${sBk}/media/candidates`, { intents: ["quota probe two"] });
-  step("media fallback: with the provider's allowance exhausted the API refuses (429) instead of spending the reserve", ex.status === 429, String(ex.status), "mock");
+  const q1 = await A.c.call("POST", `/api/sites/${sBk}/media/candidates`, { intents: ["quota probe one"] });
+  const callsAfterFirst = fakeUnsplash.requests.filter((r) => r.url.startsWith("/search")).length;
+  const q2 = await A.c.call("POST", `/api/sites/${sBk}/media/candidates`, { intents: ["quota probe two"] });
+  const callsAfterSecond = fakeUnsplash.requests.filter((r) => r.url.startsWith("/search")).length;
+  step("media fallback: once the provider reports no allowance left, the next search is absorbed (200, no candidates) and makes no upstream call", q1.status === 200 && q2.status === 200 && (q2.json?.data?.candidates ?? []).length === 0 && callsAfterSecond === callsAfterFirst, `calls ${callsAfterFirst} -> ${callsAfterSecond}; skipped=${JSON.stringify(q2.json?.data?.report?.skipped ?? []).slice(0, 100)}`, "mock");
+  const lim = [];
+  for (let i = 0; i < 12; i++) lim.push((await A.c.call("POST", `/api/sites/${sBk}/media/candidates`, { intents: [`rate probe ${i}`] })).status);
+  step("media rate limit: more than 10 searches a minute by one user get 429 (the shared hourly allowance cannot be drained by one account)", lim.includes(429), lim.join(","));
   unsplash.mode = "ok";
 
   // ---- 11. model composition (fake model) ---------------------------------------------------------------------------------
@@ -398,8 +403,9 @@ export async function runJourneys(ctx) {
   step("flag v2: the v3 site made earlier keeps serving", still.status === 200);
   const FA = client(apiUrl);
   await FA.call("POST", "/api/auth/login", { email: A.email, password: "correct horse battery" });
+  const callsBeforeOff = fakeUnsplash.requests.length;
   const cand2 = await FA.call("POST", `/api/sites/${made.kochab.site.id}/media/candidates`, {});
-  step("flag off: Unsplash search is unavailable when KORA_MEDIA_UNSPLASH=off, the catalogue still works", cand2.status >= 400 && (await FA.call("GET", `/api/sites/${made.kochab.site.id}/media/catalogue`)).status === 200, String(cand2.status));
+  step("flag off: with KORA_MEDIA_UNSPLASH=off a search returns no candidates and makes no upstream call; the catalogue still works", cand2.status === 200 && (cand2.json?.data?.candidates ?? []).length === 0 && fakeUnsplash.requests.length === callsBeforeOff && (await FA.call("GET", `/api/sites/${made.kochab.site.id}/media/catalogue`)).status === 200, `${cand2.status} candidates=${cand2.json?.data?.candidates?.length}`);
   const legacyPage = await get(state.legacy.publicUrl ?? `${hostUrl}/`);
   step("legacy v2 site (from the previous release) still renders", legacyPage.status === 200 && legacyPage.text.length > 500);
   await stopProc(live.api);

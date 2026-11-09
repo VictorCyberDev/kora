@@ -245,7 +245,7 @@ try {
     if (!live.host || live.host.exited) step("site host starts", await startHost("site-host-p6"));
     const v3ok = await startApi("api-p6-v3", { KORA_CREATIVE_ENGINE: "v3", KORA_MEDIA_UNSPLASH: "off", KORA_MODEL_COMPOSE: "false" });
     const API2 = 3320;
-    live.api2 = startProc(svcLogs, "api-p6-v2", ["apps/api/dist/server.js"], stackEnv({ API_PORT: String(API2), KORA_PUBLIC_URL: `http://127.0.0.1:${API2}`, MONITOR_HEALTH_URL: `http://127.0.0.1:${API2}/health`, KORA_AUTO_MIGRATE: "false", MONITOR_ENABLED: "false" }), repo); // monitors are in-process: only one instance runs them (docs/runbooks/site-host.md, "Single instance")
+    live.api2 = startProc(svcLogs, "api-p6-v2", ["apps/api/dist/server.js"], stackEnv({ API_PORT: String(API2), KORA_PUBLIC_URL: `http://127.0.0.1:${API2}`, MONITOR_HEALTH_URL: `http://127.0.0.1:${API2}/health`, KORA_AUTO_MIGRATE: "false" }), repo); // both instances monitor in this test-only layout; hosted staging runs ONE instance (docs/runbooks/site-host.md, "Single instance")
     const v2ok = !!(await until(() => health(`http://127.0.0.1:${API2}`), 80, 500));
     step("two API instances (v3 on 3310, default engine on 3320) and one Site Host run against one database", v3ok && v2ok);
     const stFile = path.join(outDir, "journeys-state.json");

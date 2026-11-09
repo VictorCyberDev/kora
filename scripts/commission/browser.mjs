@@ -3,7 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
-import { repo, client, recorder } from "./lib.mjs";
+import { repo, client, recorder, png } from "./lib.mjs";
 
 const [outDir, stateFile, apiUrl, hostUrl] = process.argv.slice(2);
 const require = createRequire(path.join(repo, "package.json"));
@@ -25,6 +25,9 @@ for (const [key, url] of Object.entries(st.urls)) {
   for (const [label, vp, mobile] of sizes) {
     const ctx = await browser.newContext({ viewport: vp, isMobile: mobile, deviceScaleFactor: 1 });
     const bad = { overflow: [], broken: [], console: [], axe: [], status: [] };
+    // Stock pictures hotlink images.unsplash.com. The sandbox has no route to it and the picture ids come from a local fake,
+    // so those requests are answered with a placeholder: a simulation, recorded as such in the step name below.
+    await ctx.route("https://images.unsplash.com/**", (r) => r.fulfill({ status: 200, contentType: "image/png", body: Buffer.from(png(40, 30, 3)) }));
     for (const rel of pages) {
       const page = await ctx.newPage();
       page.on("console", (m) => m.type() === "error" && bad.console.push(m.text().slice(0, 120)));
@@ -46,7 +49,7 @@ for (const [key, url] of Object.entries(st.urls)) {
       if (rel === "" || rel === pages[1]) await page.screenshot({ path: path.join(shots, `${key}-${label}-${(rel || "home").replace(/\W+/g, "_")}.jpg`), type: "jpeg", quality: 70, fullPage: true });
       await page.close();
     }
-    step(`${key} on ${label}: ${pages.length} pages load (200), no overflow, no broken images, no console errors, no serious axe violations`,
+    step(`${key} on ${label}: ${pages.length} pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)`,
       bad.status.every((s) => s === 200) && !bad.overflow.length && !bad.broken.length && !bad.console.length && !bad.axe.length,
       JSON.stringify({ status: [...new Set(bad.status)], overflow: bad.overflow, broken: bad.broken.slice(0, 2), console: bad.console.slice(0, 2), axe: bad.axe.slice(0, 3) }));
     await ctx.close();
