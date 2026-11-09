@@ -10,6 +10,8 @@ export default tseslint.config(
       "e2e/**",
       "scripts/design-qa/**",
       "scripts/creative/**",
+      "scripts/commission/**",
+      "docs/evidence/**/examples/**",
       "scripts/research/**",
       "scripts/commission-v7.mjs",
       "scripts/live-presence-check.mjs",
