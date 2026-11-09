@@ -19,5 +19,17 @@
     "sites": 1,
     "site_versions": 1,
     "form_submissions": 1
+  },
+  "timings": {
+    "028_site_deletion.sql": 4,
+    "029_media_provider_quota.sql": 8,
+    "030_retirement_confirmations_media_state.sql": 27
+  },
+  "imageSizes": {
+    "treeMB": 102,
+    "nodeModulesMB": 81,
+    "media_files_MB": 6,
+    "web_dist_KB": 1332,
+    "api_dist_KB": 3836
   }
 }

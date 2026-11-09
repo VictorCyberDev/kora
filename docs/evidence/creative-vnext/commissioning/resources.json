@@ -1,0 +1,57 @@
+{
+  "rssMB": {
+    "api": {
+      "samples": 4,
+      "medianMB": 186,
+      "maxMB": 195
+    },
+    "siteHost": {
+      "samples": 9,
+      "medianMB": 84,
+      "maxMB": 94
+    },
+    "secondApiInstance": null
+  },
+  "databaseBytes": 26221591,
+  "largestTables": [
+    {
+      "table": "domain_events",
+      "bytes": 4571136
+    },
+    {
+      "table": "telemetry_observations",
+      "bytes": 2957312
+    },
+    {
+      "table": "site_versions",
+      "bytes": 2015232
+    },
+    {
+      "table": "owner_media",
+      "bytes": 1671168
+    },
+    {
+      "table": "media_assets",
+      "bytes": 753664
+    },
+    {
+      "table": "diagnostic_snapshots",
+      "bytes": 319488
+    }
+  ],
+  "siteVersions": {
+    "n": 56,
+    "avg_bytes_spec_plus_artifact": 29951
+  },
+  "imageTree": {
+    "treeMB": 102,
+    "nodeModulesMB": 81,
+    "media_files_MB": 6,
+    "web_dist_KB": 1332,
+    "api_dist_KB": 3836
+  },
+  "host": {
+    "cpus": 4,
+    "totalMemMB": 16086
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "A": {
+    "email": "ada+1794226973811@example.com",
+    "orgId": "dc199e9d-3fa7-4c71-a936-688b2cbe0a60"
+  },
+  "urls": {
+    "kochab": "http://127.0.0.1:3311/s/kochab-studio-c2abc7/",
+    "bakery": "http://127.0.0.1:3311/s/sweet-crumbs-bakery-1c4593/",
+    "barber": "http://127.0.0.1:3311/s/mr-lee-8eba49/"
+  },
+  "siteIds": {
+    "kochab": "88c7eb0d-ecfa-4c3e-aa25-283943cb2aaf",
+    "bakery": "aab883e1-2c97-470a-9ec9-c9a16518b36f",
+    "barber": "01ede440-b302-4fc4-bce9-708a03b31bd9"
+  }
+}

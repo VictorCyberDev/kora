@@ -83,27 +83,6 @@ const hostEnv = () => ({
 
 let sql = null;
 const live = {};
-// Resident memory of each running Kora process, sampled every 3 s for the whole rehearsal (resources.json).
-const rss = { api: [], "site-host": [], "api-2nd-instance": [] };
-const sampler = setInterval(() => {
-  for (const [role, p] of [
-    ["api", live.api],
-    ["site-host", live.host],
-    ["api-2nd-instance", live.api2],
-  ]) {
-    if (!p || p.exited || !p.child.pid) continue;
-    try {
-      const kb = Number(
-        fs
-          .readFileSync(`/proc/${p.child.pid}/status`, "utf8")
-          .match(/VmRSS:\s+(\d+)/)?.[1],
-      );
-      if (kb) rss[role].push(kb);
-    } catch {
-      /* process ended */
-    }
-  }
-}, 3000);
 async function startApi(name, extra, cwd = repo) {
   live.api = startProc(
     svcLogs,
@@ -687,15 +666,24 @@ try {
       : null;
     const deleted =
       await sql`SELECT id, name FROM sites WHERE deleted_at IS NOT NULL`;
-    const nowDeleted = Number(
+    const nowDeleted = deleted.length;
+    const confirmations = Number(
+      (await sql`SELECT count(*)::int AS n FROM owner_confirmations`)[0].n,
+    );
+    const v3versions = Number(
       (
-        await sql`SELECT count(*)::int AS n FROM sites WHERE deleted_at IS NOT NULL`
+        await sql`SELECT count(*)::int AS n FROM site_versions WHERE (spec->>'version')::int = 3`
+      )[0].n,
+    );
+    const released = Number(
+      (
+        await sql`SELECT count(*)::int AS n FROM domains WHERE state='RELEASED'`
       )[0].n,
     );
     step(
-      "the database holds soft-deleted sites, v3 designs with the new fields, owner confirmations and released domains from this release",
-      nowDeleted >= 1,
-      `${nowDeleted} soft-deleted sites`,
+      "the database holds what only this release writes: soft-deleted sites, v3 designs, owner confirmations",
+      nowDeleted >= 1 && confirmations >= 1 && v3versions >= 1,
+      `${nowDeleted} soft-deleted sites, ${v3versions} v3 versions, ${confirmations} owner confirmations, ${released} released domains (custom-domain retirement is covered by the integration tests, not exercised here)`,
     );
     step(
       "previous-release Site Host starts on the migrated database",
@@ -884,17 +872,29 @@ try {
 
   // ---------------------------------------------------------------------------------------------------------------- 10
   if (want("10")) {
-    R.setPhase("10 resources observed on this machine");
-    const stat = (a) =>
-      a.length
-        ? {
-            samples: a.length,
-            medianMB: Math.round(
-              a.slice().sort((x, y) => x - y)[a.length >> 1] / 1024,
-            ),
-            maxMB: Math.round(Math.max(...a) / 1024),
-          }
-        : null;
+    R.setPhase(
+      "10 resources observed on this machine (memory and load: one API + one Site Host, separate throwaway database)",
+    );
+    const r = spawnSync("node", ["scripts/commission/load.mjs", outDir], {
+      cwd: repo,
+      encoding: "utf8",
+      timeout: 300_000,
+    });
+    let load = null;
+    try {
+      load = JSON.parse(
+        fs.readFileSync(path.join(outDir, "load-results.json"), "utf8"),
+      );
+    } catch {
+      /* reported below */
+    }
+    step(
+      "load and memory measurement ran with no request errors",
+      !!load && load.siteHostLoad.errors === 0 && load.apiLoad.errors === 0,
+      load
+        ? `peak RSS api ${load.peakRssMB.api} MB, site host ${load.peakRssMB.siteHost} MB; site host ${load.siteHostLoad.reqPerSec} req/s p95 ${load.siteHostLoad.p95ms} ms`
+        : (r.stderr || r.stdout).slice(-200),
+    );
     const dbSize = (
       await sql`SELECT pg_database_size(current_database()) AS b`
     )[0].b;
@@ -903,32 +903,30 @@ try {
     const vers = (
       await sql`SELECT count(*)::int AS n, coalesce(round(avg(pg_column_size(artifact) + pg_column_size(spec)))::int,0) AS avg_bytes_spec_plus_artifact FROM site_versions`
     )[0];
-    const res = {
-      rssMB: {
-        api: stat(rss.api),
-        siteHost: stat(rss["site-host"]),
-        secondApiInstance: stat(rss["api-2nd-instance"]),
-      },
-      databaseBytes: Number(dbSize),
-      largestTables: tables.map((t) => ({
-        table: t.relname,
-        bytes: Number(t.b),
-      })),
-      siteVersions: vers,
-      imageTree: state.imageSizes ?? null,
-      host: {
-        cpus: os.cpus().length,
-        totalMemMB: Math.round(os.totalmem() / 1048576),
-      },
-    };
     fs.writeFileSync(
       path.join(outDir, "resources.json"),
-      JSON.stringify(res, null, 2),
+      JSON.stringify(
+        {
+          databaseBytes: Number(dbSize),
+          largestTables: tables.map((t) => ({
+            table: t.relname,
+            bytes: Number(t.b),
+          })),
+          siteVersions: vers,
+          imageTree: state.imageSizes ?? null,
+          host: {
+            cpus: os.cpus().length,
+            totalMemMB: Math.round(os.totalmem() / 1048576),
+          },
+        },
+        null,
+        2,
+      ),
     );
     step(
-      "resource measurements recorded",
-      !!res.rssMB.api,
-      JSON.stringify(res.rssMB),
+      "storage measurements recorded",
+      true,
+      `database ${Math.round(Number(dbSize) / 1048576)} MB with ${vers.n} site versions`,
     );
   }
 } catch (e) {
@@ -938,7 +936,6 @@ try {
     e.stack?.split("\n").slice(0, 3).join(" "),
   );
 } finally {
-  clearInterval(sampler);
   await ctx5?.fakes?.fakeUnsplash.close().catch(() => {});
   await ctx5?.fakes?.fakeLlm.close().catch(() => {});
   await stopProc(live.api2).catch(() => {});

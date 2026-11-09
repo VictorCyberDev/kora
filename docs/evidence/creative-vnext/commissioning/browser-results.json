@@ -1,0 +1,68 @@
+{
+  "steps": [
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "kochab on desktop: 6 pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)",
+      "ok": true,
+      "detail": "{\"status\":[200],\"overflow\":[],\"broken\":[],\"console\":[],\"axe\":[]}",
+      "kind": "real",
+      "at": "2026-11-09T12:23:15.514Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "kochab on phone: 6 pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)",
+      "ok": true,
+      "detail": "{\"status\":[200],\"overflow\":[],\"broken\":[],\"console\":[],\"axe\":[]}",
+      "kind": "real",
+      "at": "2026-11-09T12:23:24.428Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "bakery on desktop: 6 pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)",
+      "ok": true,
+      "detail": "{\"status\":[200],\"overflow\":[],\"broken\":[],\"console\":[],\"axe\":[]}",
+      "kind": "real",
+      "at": "2026-11-09T12:23:34.304Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "bakery on phone: 6 pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)",
+      "ok": true,
+      "detail": "{\"status\":[200],\"overflow\":[],\"broken\":[],\"console\":[],\"axe\":[]}",
+      "kind": "real",
+      "at": "2026-11-09T12:23:43.383Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "barber on desktop: 6 pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)",
+      "ok": true,
+      "detail": "{\"status\":[200],\"overflow\":[],\"broken\":[],\"console\":[],\"axe\":[]}",
+      "kind": "real",
+      "at": "2026-11-09T12:23:52.628Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "barber on phone: 6 pages load (200), no overflow, no broken images, no console errors, no serious axe violations (hotlinked stock images are answered by a local placeholder)",
+      "ok": true,
+      "detail": "{\"status\":[200],\"overflow\":[],\"broken\":[],\"console\":[],\"axe\":[]}",
+      "kind": "real",
+      "at": "2026-11-09T12:24:01.230Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "contact form typed and submitted in a phone browser: the public endpoint answers 201",
+      "ok": true,
+      "detail": "201",
+      "kind": "real",
+      "at": "2026-11-09T12:24:02.807Z"
+    },
+    {
+      "phase": "6b browser checks of published sites (Site Host, real Chromium)",
+      "name": "that enquiry appears in the owner's inbox",
+      "ok": true,
+      "detail": "2 items",
+      "kind": "real",
+      "at": "2026-11-09T12:24:03.471Z"
+    }
+  ]
+}
