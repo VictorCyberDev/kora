@@ -1,0 +1,38 @@
+{
+  "note": "one machine, loopback, 4 vCPU; sizes a minimum plan, not a capacity promise",
+  "idleRssMB": {
+    "apiMB": 132,
+    "hostMB": 90
+  },
+  "afterLoadRssMB": {
+    "api": 150,
+    "siteHost": 182
+  },
+  "peakRssMB": {
+    "api": 163,
+    "siteHost": 185
+  },
+  "generateAndPublishOneSiteMsAvg": 125,
+  "siteHostLoad": {
+    "seconds": 20,
+    "concurrency": 20,
+    "requests": 79540,
+    "errors": 0,
+    "reqPerSec": 3977,
+    "p50ms": 4.4,
+    "p95ms": 9.8,
+    "p99ms": 13.3,
+    "MBtransferred": 486
+  },
+  "apiLoad": {
+    "seconds": 10,
+    "concurrency": 10,
+    "requests": 52027,
+    "errors": 0,
+    "reqPerSec": 5203,
+    "p50ms": 1.5,
+    "p95ms": 5.3,
+    "p99ms": 7.9,
+    "MBtransferred": 18
+  }
+}

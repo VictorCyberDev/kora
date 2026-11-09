@@ -5,7 +5,7 @@ Everything here ran on one development machine (Linux, 4 vCPU, 16 GB) against a 
 `_test`. **No hosted service, production database, bucket, domain or credential was contacted; nothing was deployed, merged or
 provisioned.** Docker is not available in this environment, so the container image was not built (see "Not shown locally").
 
-Machine-readable results: `commissioning/results.json` (199 checks), `browser-results.json`, `migration-results.json`,
+Machine-readable results: `commissioning/results.json` (200 checks), `browser-results.json`, `migration-results.json`,
 `resources.json`, `load-results.json`; the log is `commissioning/commissioning.log`; service logs are in `commissioning/service-logs/`.
 Re-run: `node scripts/commission/local.mjs <outDir>` (needs the previous release built at `/var/tmp/kora-base`).
 
@@ -13,7 +13,7 @@ Re-run: `node scripts/commission/local.mjs <outDir>` (needs the previous release
 
 | Kind          | Meaning                                                                                                                                                                        | Count in the run              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
-| **real**      | real processes (control plane serving the web app; Site Host), real HTTP, real PostgreSQL, real Chromium                                                                       | 188                           |
+| **real**      | real processes (control plane serving the web app; Site Host), real HTTP, real PostgreSQL, real Chromium                                                                       | 189                           |
 | **simulated** | an external provider replaced by a local fake server: **Unsplash** (search, selection, download tracking, quota headers) and a **language model** (OpenAI-compatible endpoint) | 11 (tagged `mock` in the log) |
 
 No result in this report is evidence about the real Unsplash service or a real model. Where a browser check displayed a stock
@@ -34,7 +34,7 @@ picture, the request to `images.unsplash.com` was answered locally with a placeh
 | 8   | **Deployment order**                                                                                                                 | 5              | 0      | see below                                                                                                                                                                                                                                                                                                                                             |
 | 9   | **Production-image contents** (tree built only from the Dockerfile `COPY` list, `NODE_ENV=production`)                               | 11             | 0      | production dependencies install from the lockfile; both services start; web app served; signup, generation of Kochab (6 pages), publish (MATCH), Site Host serving, bundled photographs and catalogue present; no module-not-found                                                                                                                    |
 | 10  | Resources                                                                                                                            | 1              | 0      | `resources.json`; see HOSTING-ARCHITECTURE.md                                                                                                                                                                                                                                                                                                         |
-|     | **Total**                                                                                                                            | **199**        | **0**  |                                                                                                                                                                                                                                                                                                                                                       |
+|     | **Total**                                                                                                                            | **200**        | **0**  |                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Phase 5 in detail (against the running services)
 
@@ -70,7 +70,7 @@ picture, the request to `images.unsplash.com` was answered locally with a placeh
 
 ### Rollback compatibility (phase 7)
 
-On the database that this release had written to (30 migrations, six soft-deleted sites, vNext designs with the new optional fields, owner confirmations), the **previous release** started and
+On the database that this release had written to (30 migrations, six soft-deleted sites, 47 vNext design versions with the new optional fields, two owner confirmations), the **previous release** started and
 migrated cleanly (its own auto-migrate re-ran migrations up to 027 without harm), accepted a login, listed the owner's sites including those made by this release, listed and opened vNext versions
 without a server error, and served every site published by this release with its immutable bytes. A site deleted under this release was not served. It accepted a visitor enquiry and showed both enquiries.
 It refused a fourth site with 402 (the plan allowance), not a server error. After the rollback, **this release started again on the same database** and still showed the enquiry made during the rollback.
@@ -107,7 +107,7 @@ See "What still requires RumptyCloud" in HOSTING-ARCHITECTURE.md for the hosted 
 
 **Locally commissioned: yes. Hosted-ready: not established.**
 
-All requirements that can be executed on one machine without infrastructure cost were executed and pass: 199 checks, 0 failed, plus the six repository pipeline steps (`logs/exit-codes.txt`: install, format, lint,
+All requirements that can be executed on one machine without infrastructure cost were executed and pass: 200 checks, 0 failed, plus the six repository pipeline steps (`logs/exit-codes.txt`: install, format, lint,
 typecheck, build, test; 580 API tests passing, 1 pre-existing skip). The release candidate is **suitable to be put forward for a human-authorised staging rehearsal on RumptyCloud**, in the order in
 `STAGING-RELEASE-INSTRUCTIONS.md`, with `KORA_CREATIVE_ENGINE=v3`, Unsplash `off` and model composition `false` first. It is **not** established that it is ready for production, and this work does not claim so:
 the hosted-only items above, real Unsplash validation and real model validation are each unproven. Nothing was merged or deployed.

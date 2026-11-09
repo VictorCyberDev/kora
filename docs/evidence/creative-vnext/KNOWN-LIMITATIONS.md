@@ -41,3 +41,14 @@ Stated plainly so a reviewer does not have to discover them.
 - **The photographer and agency directions do not all open with a photograph;** one of three does (see
   `docs/research/RESEARCH-APPLICATION-2026.md`).
 - **Image licence audit covers 50 of the 64 catalogue photographs;** the other 14 are the earlier curated set.
+
+## After local commissioning
+
+- **Hosted behaviour is unverified:** the Docker image was never built (no daemon here); readiness, restarts, TLS, secure cookies, the platform proxy, the public https media origin
+  (owner photos were exercised on a local address only), real memory limits and free-plan sleeping are all untested. See HOSTING-ARCHITECTURE.md.
+- **Single instance:** per-site monitors and rate limiters are in-process. Two API instances were run only to test the repository's browser suite; hosted staging must run one of each.
+- **Custom-domain retirement on delete** is covered by integration tests but was not exercised against the running services (creating a domain needs the paid flow).
+- **The commissioning harness** (`scripts/commission/`) drives local processes and a previous-release build; it is not a hosted acceptance suite as it stands.
+- **Simulated providers:** every Unsplash and model result in the commissioning is from a local fake and says nothing about the real services.
+- **Migration timings** are from an almost empty database; production-sized behaviour is unrehearsed.
+- **Memory and load figures** come from one 4 vCPU machine over loopback; they size a minimum plan and are not a capacity promise.

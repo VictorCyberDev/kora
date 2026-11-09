@@ -1,0 +1,44 @@
+{
+  "databaseBytes": 26442775,
+  "largestTables": [
+    {
+      "table": "domain_events",
+      "bytes": 4775936
+    },
+    {
+      "table": "telemetry_observations",
+      "bytes": 3047424
+    },
+    {
+      "table": "site_versions",
+      "bytes": 1990656
+    },
+    {
+      "table": "owner_media",
+      "bytes": 1671168
+    },
+    {
+      "table": "media_assets",
+      "bytes": 745472
+    },
+    {
+      "table": "diagnostic_snapshots",
+      "bytes": 327680
+    }
+  ],
+  "siteVersions": {
+    "n": 56,
+    "avg_bytes_spec_plus_artifact": 29858
+  },
+  "imageTree": {
+    "treeMB": 102,
+    "nodeModulesMB": 81,
+    "media_files_MB": 6,
+    "web_dist_KB": 1332,
+    "api_dist_KB": 3836
+  },
+  "host": {
+    "cpus": 4,
+    "totalMemMB": 16086
+  }
+}

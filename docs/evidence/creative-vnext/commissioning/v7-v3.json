@@ -1,212 +1,212 @@
 {
- "base": "http://127.0.0.1:3310",
- "phase": "v3",
- "startedAt": "2026-11-09T12:36:20.872Z",
- "steps": [
-  {
-   "name": "runtime claim",
-   "ok": true,
-   "detail": "commit null env development",
-   "at": "2026-11-09T12:36:20.913Z"
+  "base": "http://127.0.0.1:3310",
+  "phase": "v3",
+  "startedAt": "2026-11-09T12:36:20.872Z",
+  "steps": [
+    {
+      "name": "runtime claim",
+      "ok": true,
+      "detail": "commit null env development",
+      "at": "2026-11-09T12:36:20.913Z"
+    },
+    {
+      "name": "health",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:20.917Z"
+    },
+    {
+      "name": "login (same throwaway account)",
+      "ok": true,
+      "detail": "200",
+      "at": "2026-11-09T12:36:21.034Z"
+    },
+    {
+      "name": "existing v2 site: upgrade makes a NEW v3 draft with a before/after comparison",
+      "ok": true,
+      "detail": "201",
+      "at": "2026-11-09T12:36:21.210Z"
+    },
+    {
+      "name": "existing v2 site: the live version did not change",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:21.215Z"
+    },
+    {
+      "name": "existing v2 site: the old version is byte-identical",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:21.221Z"
+    },
+    {
+      "name": "three different v3 directions, with a recommendation and reason",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:21.282Z"
+    },
+    {
+      "name": "owner logo accepted and re-encoded by the server",
+      "ok": true,
+      "detail": "201",
+      "at": "2026-11-09T12:36:21.373Z"
+    },
+    {
+      "name": "three owner photos accepted with quality scores",
+      "ok": true,
+      "detail": "201,201,201",
+      "at": "2026-11-09T12:36:23.365Z"
+    },
+    {
+      "name": "library lists the logo and photos with plain-language advice",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.370Z"
+    },
+    {
+      "name": "a file that is not a picture is refused",
+      "ok": true,
+      "detail": "415",
+      "at": "2026-11-09T12:36:23.375Z"
+    },
+    {
+      "name": "generate on v3 with owner media",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.420Z"
+    },
+    {
+      "name": "site is SiteSpec v3, stamped with Brand OS version 1 and its hash",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.425Z"
+    },
+    {
+      "name": "owner logo is part of the brand",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.425Z"
+    },
+    {
+      "name": "Brand OS version 1 recorded with a hash",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.439Z"
+    },
+    {
+      "name": "creative quality: structured critic result, no blocking issue",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.454Z"
+    },
+    {
+      "name": "publish v3 and verify the live bytes (MATCH)",
+      "ok": true,
+      "detail": "MATCH",
+      "at": "2026-11-09T12:36:23.514Z"
+    },
+    {
+      "name": "the public page serves, and loads no third-party script, stylesheet or font",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.517Z"
+    },
+    {
+      "name": "structured data present and factual",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:23.517Z"
+    },
+    {
+      "name": "monitoring reports the v3 site Healthy",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:25.070Z"
+    },
+    {
+      "name": "cross-channel set (feed, story, flyer, status) rendered from the same Brand OS",
+      "ok": true,
+      "detail": ",,,",
+      "at": "2026-11-09T12:36:25.410Z"
+    },
+    {
+      "name": "brand change creates a new draft",
+      "ok": true,
+      "detail": "201",
+      "at": "2026-11-09T12:36:25.449Z"
+    },
+    {
+      "name": "Brand OS version 2 recorded; version 1 unchanged",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:25.459Z"
+    },
+    {
+      "name": "an artifact made before the change still points at brand version 1",
+      "ok": true,
+      "detail": "1",
+      "at": "2026-11-09T12:36:25.463Z"
+    },
+    {
+      "name": "and its bytes are exactly what they were (history is never rewritten)",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:25.468Z"
+    },
+    {
+      "name": "the new brand version publishes and verifies (MATCH)",
+      "ok": true,
+      "detail": "MATCH",
+      "at": "2026-11-09T12:36:25.515Z"
+    },
+    {
+      "name": "plain-language request becomes a PROPOSAL; nothing posted or spent",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:25.525Z"
+    },
+    {
+      "name": "controlled test: the public v3 site really fails (HTTP 500)",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:25.534Z"
+    },
+    {
+      "name": "monitor opens exactly one incident by itself",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:27.043Z"
+    },
+    {
+      "name": "owner explanation in plain words, remediation needs approval",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:27.074Z"
+    },
+    {
+      "name": "approved rollback executed",
+      "ok": true,
+      "detail": "200",
+      "at": "2026-11-09T12:36:27.140Z"
+    },
+    {
+      "name": "recovery verified from new observations only",
+      "ok": true,
+      "detail": "",
+      "at": "2026-11-09T12:36:28.654Z"
+    }
+  ],
+  "claim": {
+    "schema": "kora.runtime-claim/v1",
+    "service": "kora-api",
+    "environment": "development",
+    "commit": null,
+    "commitSource": "unavailable",
+    "builtAt": null,
+    "startedAt": "2026-11-09T12:36:19.833Z",
+    "uptimeSeconds": 1
   },
-  {
-   "name": "health",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:20.917Z"
-  },
-  {
-   "name": "login (same throwaway account)",
-   "ok": true,
-   "detail": "200",
-   "at": "2026-11-09T12:36:21.034Z"
-  },
-  {
-   "name": "existing v2 site: upgrade makes a NEW v3 draft with a before/after comparison",
-   "ok": true,
-   "detail": "201",
-   "at": "2026-11-09T12:36:21.210Z"
-  },
-  {
-   "name": "existing v2 site: the live version did not change",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:21.215Z"
-  },
-  {
-   "name": "existing v2 site: the old version is byte-identical",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:21.221Z"
-  },
-  {
-   "name": "three different v3 directions, with a recommendation and reason",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:21.282Z"
-  },
-  {
-   "name": "owner logo accepted and re-encoded by the server",
-   "ok": true,
-   "detail": "201",
-   "at": "2026-11-09T12:36:21.373Z"
-  },
-  {
-   "name": "three owner photos accepted with quality scores",
-   "ok": true,
-   "detail": "201,201,201",
-   "at": "2026-11-09T12:36:23.365Z"
-  },
-  {
-   "name": "library lists the logo and photos with plain-language advice",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.370Z"
-  },
-  {
-   "name": "a file that is not a picture is refused",
-   "ok": true,
-   "detail": "415",
-   "at": "2026-11-09T12:36:23.375Z"
-  },
-  {
-   "name": "generate on v3 with owner media",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.420Z"
-  },
-  {
-   "name": "site is SiteSpec v3, stamped with Brand OS version 1 and its hash",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.425Z"
-  },
-  {
-   "name": "owner logo is part of the brand",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.425Z"
-  },
-  {
-   "name": "Brand OS version 1 recorded with a hash",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.439Z"
-  },
-  {
-   "name": "creative quality: structured critic result, no blocking issue",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.454Z"
-  },
-  {
-   "name": "publish v3 and verify the live bytes (MATCH)",
-   "ok": true,
-   "detail": "MATCH",
-   "at": "2026-11-09T12:36:23.514Z"
-  },
-  {
-   "name": "the public page serves, and loads no third-party script, stylesheet or font",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.517Z"
-  },
-  {
-   "name": "structured data present and factual",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:23.517Z"
-  },
-  {
-   "name": "monitoring reports the v3 site Healthy",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:25.070Z"
-  },
-  {
-   "name": "cross-channel set (feed, story, flyer, status) rendered from the same Brand OS",
-   "ok": true,
-   "detail": ",,,",
-   "at": "2026-11-09T12:36:25.410Z"
-  },
-  {
-   "name": "brand change creates a new draft",
-   "ok": true,
-   "detail": "201",
-   "at": "2026-11-09T12:36:25.449Z"
-  },
-  {
-   "name": "Brand OS version 2 recorded; version 1 unchanged",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:25.459Z"
-  },
-  {
-   "name": "an artifact made before the change still points at brand version 1",
-   "ok": true,
-   "detail": "1",
-   "at": "2026-11-09T12:36:25.463Z"
-  },
-  {
-   "name": "and its bytes are exactly what they were (history is never rewritten)",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:25.468Z"
-  },
-  {
-   "name": "the new brand version publishes and verifies (MATCH)",
-   "ok": true,
-   "detail": "MATCH",
-   "at": "2026-11-09T12:36:25.515Z"
-  },
-  {
-   "name": "plain-language request becomes a PROPOSAL; nothing posted or spent",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:25.525Z"
-  },
-  {
-   "name": "controlled test: the public v3 site really fails (HTTP 500)",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:25.534Z"
-  },
-  {
-   "name": "monitor opens exactly one incident by itself",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:27.043Z"
-  },
-  {
-   "name": "owner explanation in plain words, remediation needs approval",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:27.074Z"
-  },
-  {
-   "name": "approved rollback executed",
-   "ok": true,
-   "detail": "200",
-   "at": "2026-11-09T12:36:27.140Z"
-  },
-  {
-   "name": "recovery verified from new observations only",
-   "ok": true,
-   "detail": "",
-   "at": "2026-11-09T12:36:28.654Z"
-  }
- ],
- "claim": {
-  "schema": "kora.runtime-claim/v1",
-  "service": "kora-api",
-  "environment": "development",
-  "commit": null,
-  "commitSource": "unavailable",
-  "builtAt": null,
-  "startedAt": "2026-11-09T12:36:19.833Z",
-  "uptimeSeconds": 1
- },
- "finishedAt": "2026-11-09T12:36:28.655Z",
- "passed": 32,
- "failed": 0
+  "finishedAt": "2026-11-09T12:36:28.655Z",
+  "passed": 32,
+  "failed": 0
 }

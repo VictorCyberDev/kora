@@ -59,5 +59,5 @@ site, if either readiness check stays red after the migrations have run, or if p
 
 The image builds from the root `Dockerfile` and runs as the non-root user; two deployments fit the build-artifact allowance (or the console allows one build to be shared); readiness
 checks and restarts behave; TLS, secure cookies and the proxy hop are right; `KORA_MEDIA_PUBLIC_URL` is a public https origin and an owner photo loads from it; the plan's memory
-limit holds under a generation (about 160 MB peak measured locally); free-plan sleeping does not break per-site monitors; the commissioning script and live checks pass against the hosted URLs.
+limit holds under a generation (about 185 MB peak measured locally); free-plan sleeping does not break per-site monitors; the commissioning script and live checks pass against the hosted URLs.
 Full list: `HOSTING-ARCHITECTURE.md`, "What still requires RumptyCloud".

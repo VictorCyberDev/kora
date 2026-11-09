@@ -1,1 +1,9 @@
-{"email":"commission+1794227776881@example.com","baselineSite":"40e0d7f2-0868-4ec7-bc9a-dcb9fc57d689","baselineVersion":"abee0dfb-d1e5-4d3b-868a-9b5ed4e29252","baselineSpecHash":"1c225b45b4388e5d31ea7e583fae4ade8eeae562e46708b617ca9272b253d97c","designsCanUseOwnerMedia":true,"v3Site":"0c05f684-a6d1-408f-ac0b-01c9aeeef50f","v3Version":"e96104fd-fb5c-4081-b7c8-d6229101b4c2"}
+{
+  "email": "commission+1794227776881@example.com",
+  "baselineSite": "40e0d7f2-0868-4ec7-bc9a-dcb9fc57d689",
+  "baselineVersion": "abee0dfb-d1e5-4d3b-868a-9b5ed4e29252",
+  "baselineSpecHash": "1c225b45b4388e5d31ea7e583fae4ade8eeae562e46708b617ca9272b253d97c",
+  "designsCanUseOwnerMedia": true,
+  "v3Site": "0c05f684-a6d1-408f-ac0b-01c9aeeef50f",
+  "v3Version": "e96104fd-fb5c-4081-b7c8-d6229101b4c2"
+}

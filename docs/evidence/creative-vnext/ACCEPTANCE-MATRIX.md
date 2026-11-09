@@ -1,5 +1,8 @@
 # Acceptance matrix (completion pass)
 
+> **Local commissioning (later pass):** the journey and test-matrix rows below were re-executed against the **running** services (200 checks, 0 failed, with simulated
+> providers tagged) and rollback compatibility, deployment order and image contents were rehearsed. See `LOCAL-COMMISSIONING-REPORT.md`. Hosted-only items remain open.
+
 Status words: **MET** (executed evidence), **PARTIAL**, **NOT MET**, **NOT DONE**, **PENDING EXTERNAL** (needs credentials or
 authorisation this work did not have). Commands and exit codes are in `logs/`:
 `install`, `format`, `lint`, `typecheck`, `build`, `test` all `EXIT=0` (`logs/exit-codes.txt`); `web-build` and Playwright

@@ -54,3 +54,22 @@
 ## Fixed
 
 - Lint errors in session-2 files; QA scripts waited for lazy images; stale documentation.
+
+# Zero-cost local commissioning pass (same branch, after `1c34f56`)
+
+## Added
+
+- `scripts/commission/` (local commissioning: previous-release upgrade, migration rehearsal, HTTP journeys, browser checks, rollback rehearsal, deployment-order and image-contents rehearsals, load/memory),
+  `playwright.live.config.ts` to run the repository's Playwright suite against already-running services.
+- `CONFIGURATION.md`, `HOSTING-ARCHITECTURE.md`, `LOCAL-COMMISSIONING-REPORT.md`; `.env.example` entries for the release switches.
+- Startup `release switches` log line and warnings for switches that would do nothing; `ConfigError` (exit 78) for invalid switches; a test that keeps every documented switch value valid.
+
+## Changed
+
+- Release switches and `KORA_SECRETS_KEY` are validated **before** the database is touched.
+- Site Host readiness is 503 (`schema: "outdated"`) until the schema is current.
+- Staging documentation: `KORA_MODEL_COMPOSE` takes `true`/`false`; two application deployments plus one database; `demo-service` not deployed (`KORA_LEGACY_MONITOR=false`).
+
+## Fixed
+
+- `pnpm lint` failed on the generated example sites added to the evidence directory (now excluded).

@@ -74,13 +74,12 @@ but monitors are not; the rehearsal's two-instance layout was for testing only.)
 
 | Measure                                                                                                                                         | API (control plane + web)            | Site Host                                          |
 | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------------- |
-| Resident memory at idle after start                                                                                                             | 124 MB                               | 90 MB                                              |
-| Peak resident memory (3 sites generated and published; then 82,198 requests at concurrency 20 against the Site Host and 49,323 against the API) | 156 MB                               | 157 MB                                             |
-| Peak seen during the full journey run (uploads, edits, generation, v7 commissioning, browser sessions)                                          | 195 MB                               | 94 MB (journey phase)                              |
-| Site Host throughput / latency under that load                                                                                                  | n/a                                  | about 4,100 req/s, p95 9.3 ms, 0 errors (loopback) |
-| Generate + publish one site (3 averaged)                                                                                                        | about 137 ms in total, no model call | n/a                                                |
+| Resident memory at idle after start                                                                                                             | 132 MB                               | 90 MB                                              |
+| Peak resident memory (3 sites generated and published; then 79,540 requests at concurrency 20 against the Site Host and 52,027 against the API) | 163 MB                               | 185 MB                                             |
+| Site Host throughput / latency under that load                                                                                                  | n/a                                  | about 3,977 req/s, p95 9.8 ms, 0 errors (loopback) |
+| Generate + publish one site (3 averaged)                                                                                                        | about 125 ms in total, no model call | n/a                                                |
 
-Minimum I would configure: **512 MB per application deployment** (about three times the measured peak, for headroom
+Minimum I would configure: **512 MB per application deployment** (about three times the measured peak of 185 MB, for headroom
 and Node's heap growth), **0.25 vCPU or more** (generation is milliseconds of CPU; it is bursty), and Postgres with
 **1 GB of storage** to start. These are sizing recommendations from one machine, not measured on RumptyCloud.
 

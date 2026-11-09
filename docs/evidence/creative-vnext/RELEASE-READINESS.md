@@ -1,4 +1,20 @@
-# Release readiness (completion pass)
+# Release readiness (after local commissioning)
+
+**Verdict: locally commissioned; hosted readiness NOT established.** The release candidate has passed every check that can be run on one machine at no
+infrastructure cost (200 checks against the running services, 0 failed; the six repository pipeline steps exit 0), and is suitable to be put forward for a
+**human-authorised staging rehearsal on RumptyCloud** in the order in `STAGING-RELEASE-INSTRUCTIONS.md`. It is not shown to be ready for production.
+Details, with real versus simulated results separated: `LOCAL-COMMISSIONING-REPORT.md`. Shape and sizing of the hosted stack (two application deployments and one
+database, not three): `HOSTING-ARCHITECTURE.md`. Exact release-switch syntax: `CONFIGURATION.md`.
+
+Found and fixed by the commissioning: the staging notes' invalid `KORA_MODEL_COMPOSE=on`; raw crash after migrations on an invalid switch; a Site Host that reported ready on an unmigrated
+database while failing every request; late validation of `KORA_SECRETS_KEY`; and my earlier commit failing `pnpm lint`.
+
+**Still depends on things this work did not have:** RumptyCloud (image build, readiness and restart behaviour, TLS and cookies, https media origin, real limits, sleeping),
+real Unsplash credentials, and real model access. Nothing was merged, deployed or provisioned.
+
+---
+
+_The earlier readiness assessment follows unchanged where still true._
 
 **Verdict: a reviewable release candidate for staging, not for production.** Nothing was deployed, merged, migrated in any
 shared database, or configured on RumptyCloud. No production secret was read, set or requested. Real Unsplash and a real
@@ -24,8 +40,8 @@ language model were never called.
 
 ## What is NOT done or not validated (read before deciding)
 
-1. **Real Unsplash:** pending operator credentials and a caching decision (MEDIA-COMPLIANCE.md). Keep `KORA_MEDIA_UNSPLASH` off until then.
-2. **Real language model:** composition tested with stubs only. Keep `KORA_MODEL_COMPOSE` off until a real model's output has been read by a person.
+1. **Real Unsplash:** pending operator credentials and a caching decision (MEDIA-COMPLIANCE.md). Keep `KORA_MEDIA_UNSPLASH` at `off` (the exact value; see CONFIGURATION.md) until then.
+2. **Real language model:** composition tested with stubs only. Keep `KORA_MODEL_COMPOSE` at `false` until a real model's output has been read by a person.
 3. **Performance:** no Lighthouse, Core Web Vitals or field data; no visual-regression pixel baseline.
 4. **Accessibility beyond axe:** no screen-reader or keyboard-only walkthrough; no real devices.
 5. **Copy:** industry knowledge and fallback wording are first-party editorial text not reviewed by anyone outside this work.
@@ -40,5 +56,5 @@ language model were never called.
 
 Human review of branch `claude/eloquent-turing-38283b` (diff against `e2b62df`). If accepted for staging, with explicit
 authorisation: follow STAGING-RELEASE-INSTRUCTIONS.md (migrations 028-030 on a **staging** database, deploy with
-`KORA_CREATIVE_ENGINE=v3`, commissioning script, live generation of the three mandatory briefs, editor walkthrough). Production
+`KORA_CREATIVE_ENGINE=v3`, commissioning script, live generation of the three mandatory briefs, editor walkthrough; Unsplash `off`, model composition `false`). Production
 deployment, merge to `main`, enabling Unsplash and enabling model composition each need their own approval.
