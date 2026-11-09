@@ -121,13 +121,59 @@ export type PlatformConfig = Omit<
   KORA_SANDBOX_CHANNELS: boolean;
 };
 
+/**
+ * What each feature flag accepts, written once so the parser, the error messages and the documentation cannot drift.
+ * `KORA_*` boolean flags take exactly `true` or `false`; the Unsplash switch takes exactly `on` or `off`; the creative
+ * engine takes exactly `v2` or `v3`. Nothing else is guessed at: "on", "1", "yes" or "TRUE" for a boolean flag is rejected
+ * at startup with a message naming the variable, never silently read as off.
+ */
+export const FLAG_SYNTAX = {
+  KORA_CREATIVE_ENGINE: ["v2", "v3"],
+  KORA_MEDIA_UNSPLASH: ["on", "off"],
+  KORA_MODEL_COMPOSE: ["true", "false"],
+  KORA_COPY_ASSIST: ["true", "false"],
+} as const;
+
+/** One or more invalid variables. The message names them and the accepted values; it never repeats the offending value. */
+export class ConfigError extends Error {
+  readonly issues: Array<{ variable: string; problem: string }>;
+  constructor(issues: Array<{ variable: string; problem: string }>) {
+    super(
+      "Invalid Kora configuration:\n" +
+        issues.map((i) => `  - ${i.variable}: ${i.problem}`).join("\n"),
+    );
+    this.name = "ConfigError";
+    this.issues = issues;
+  }
+}
+
 export function loadPlatformConfig(
   env: Record<string, string | undefined> = process.env,
 ): PlatformConfig {
+  // Surrounding whitespace (a common paste or dashboard artefact) is not part of a value; an empty value means "unset".
   const cleaned = Object.fromEntries(
-    Object.entries(env).map(([k, v]) => [k, v === "" ? undefined : v]),
+    Object.entries(env).map(([k, v]) => {
+      const t = typeof v === "string" ? v.trim() : v;
+      return [k, t === "" ? undefined : t];
+    }),
   );
-  const c = platformConfigSchema.parse(cleaned);
+  const parsed = platformConfigSchema.safeParse(cleaned);
+  if (!parsed.success)
+    throw new ConfigError(
+      parsed.error.issues.map((i) => {
+        const variable = String(i.path[0] ?? "(unknown)");
+        const flag = FLAG_SYNTAX[variable as keyof typeof FLAG_SYNTAX];
+        return {
+          variable,
+          problem: flag
+            ? `must be exactly ${flag.map((f) => `"${f}"`).join(" or ")} (or unset)`
+            : i.code === "invalid_format" || i.code === "invalid_type"
+              ? "has an invalid format"
+              : "has an invalid value",
+        };
+      }),
+    );
+  const c = parsed.data;
   const prod = c.NODE_ENV === "production";
   return {
     ...c,
@@ -143,4 +189,51 @@ export function loadPlatformConfig(
     // Fake providers must never exist in production.
     KORA_SANDBOX_CHANNELS: prod ? false : (c.KORA_SANDBOX_CHANNELS ?? false),
   };
+}
+
+/**
+ * Problems that do not stop the API from starting (the feature simply reports NOT_CONFIGURED or does nothing) but that an
+ * operator must see at startup, because the flag says one thing and the environment another. Values are never included.
+ */
+export function releaseWarnings(
+  env: Record<string, string | undefined>,
+  c: PlatformConfig,
+  o: { llmConfigured: boolean },
+): string[] {
+  const w: string[] = [];
+  const has = (k: string) => !!env[k]?.trim();
+  if (c.KORA_MEDIA_UNSPLASH === "on") {
+    if (!has("UNSPLASH_ACCESS_KEY"))
+      w.push(
+        "KORA_MEDIA_UNSPLASH=on but UNSPLASH_ACCESS_KEY is not set: stock search will report NOT_CONFIGURED",
+      );
+    if (!has("UNSPLASH_APP_NAME"))
+      w.push(
+        "KORA_MEDIA_UNSPLASH=on but UNSPLASH_APP_NAME is not set: stock search will report NOT_CONFIGURED",
+      );
+    if (!c.KORA_SECRETS_KEY)
+      w.push(
+        "KORA_MEDIA_UNSPLASH=on but KORA_SECRETS_KEY is not set: selection tokens cannot be signed, so stock pictures cannot be applied",
+      );
+  }
+  if (c.KORA_MODEL_COMPOSE && !o.llmConfigured)
+    w.push(
+      "KORA_MODEL_COMPOSE=true but no AI provider is configured (AI_* or INFERENCE_*): composition is skipped and the deterministic copy is used",
+    );
+  if (c.KORA_COPY_ASSIST && !o.llmConfigured)
+    w.push(
+      "KORA_COPY_ASSIST=true but no AI provider is configured (AI_* or INFERENCE_*): the headline assist is skipped",
+    );
+  if (c.KORA_CREATIVE_ENGINE === "v3" && !c.KORA_SECRETS_KEY)
+    w.push(
+      "KORA_CREATIVE_ENGINE=v3 without KORA_SECRETS_KEY: Unsplash selection and provider connections are unavailable (bundled photos still work)",
+    );
+  if (
+    c.KORA_CREATIVE_ENGINE === "v3" &&
+    !(c.KORA_MEDIA_PUBLIC_URL ?? c.KORA_PUBLIC_URL)?.startsWith("https://")
+  )
+    w.push(
+      "KORA_MEDIA_PUBLIC_URL (or KORA_PUBLIC_URL) is not https: owner pictures are not embedded in new designs",
+    );
+  return w;
 }

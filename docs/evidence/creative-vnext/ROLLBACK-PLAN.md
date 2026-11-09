@@ -2,8 +2,8 @@
 
 1. **Behaviour:** set `KORA_CREATIVE_ENGINE=v2` (or unset). New generations return to v2; existing v3 sites keep serving from
    their immutable artifacts. Published artifacts are bytes in `site_versions`; nothing in this change rewrites them.
-   Independent switches: `KORA_MEDIA_UNSPLASH` off (stock search disappears; the bundled catalogue remains) and
-   `KORA_MODEL_COMPOSE` off (deterministic copy only).
+   Independent switches: `KORA_MEDIA_UNSPLASH=off` (stock search disappears; the bundled catalogue remains) and
+   `KORA_MODEL_COMPOSE=false` (deterministic copy only). Exact syntax: CONFIGURATION.md.
 2. **Code:** redeploy the previous commit (`e2b62df`). Migrations 028-030 are additive: the old code ignores the new
    columns/tables, so no schema rollback is needed to roll code back. The one exception to "ignored" is the widened
    `domains.state` CHECK: old code never writes `RELEASED`, and rows already set to `RELEASED` stay unserved by the old Site Host

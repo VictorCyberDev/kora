@@ -16,13 +16,17 @@ deploy; old code ignores the new columns and tables.
 
 ## 2. Configuration (names only; set values in the staging secret store, never in the repository)
 
-| Variable                                                                                                   | Required | Purpose                                                                                                                                                       |
-| ---------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `KORA_SECRETS_KEY`                                                                                         | yes      | Existing key. Media candidate/selection tokens are HMAC-signed with a key derived from it; no new secret is introduced.                                       |
-| `KORA_CREATIVE_ENGINE=v3`                                                                                  | yes      | Enables the Business Blueprint engine for new generations. Unset or `v2` restores the previous behaviour.                                                     |
-| `KORA_MEDIA_UNSPLASH=on`                                                                                   | optional | Leave **off** until the operator has configured the key and accepted the caching decision in `MEDIA-COMPLIANCE.md`. The bundled catalogue works without it.   |
-| `UNSPLASH_ACCESS_KEY`, `UNSPLASH_APP_NAME`, `UNSPLASH_RATE_LIMIT`, `UNSPLASH_RESERVE`, `UNSPLASH_API_BASE` | optional | Backend only. The key is never sent to a browser or a model. Defaults: demo allowance of 50 requests/hour with a reserve kept back.                           |
-| `KORA_MODEL_COMPOSE=on`                                                                                    | optional | Enables one model call per generation to redraft copy (uses the already configured AI provider). Everything it writes passes the fact validator and the gate. |
+The exact syntax of every release switch, and what each does, is in `CONFIGURATION.md`; a test keeps that file and this one
+consistent with the parser. **Boolean switches take exactly `true` or `false`; the Unsplash switch takes exactly `on` or `off`;
+the engine takes exactly `v2` or `v3`.** An invalid value stops the API at startup (exit 78) naming the variable.
+
+| Variable                                                                                                   | Required                | Staging value (first deploy)                   | Purpose                                                                                                                          |
+| ---------------------------------------------------------------------------------------------------------- | ----------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `KORA_SECRETS_KEY`                                                                                         | yes                     | 32 random bytes, base64 (generate for staging) | Encrypts provider tokens and signs media selection tokens. Use a staging-only key, never the production one.                     |
+| `KORA_CREATIVE_ENGINE`                                                                                     | yes                     | `v3`                                           | Enables the Business Blueprint engine for new generations. `v2` or unset restores the previous behaviour.                        |
+| `KORA_MEDIA_UNSPLASH`                                                                                      | optional                | `off` (or unset)                               | Leave off until the operator has configured the key and accepted the caching decision in `MEDIA-COMPLIANCE.md`; then `on`.       |
+| `UNSPLASH_ACCESS_KEY`, `UNSPLASH_APP_NAME`, `UNSPLASH_RATE_LIMIT`, `UNSPLASH_RESERVE`, `UNSPLASH_API_BASE` | only with Unsplash `on` | unset                                          | Backend only. The key is never sent to a browser or a model. Defaults: 50 requests/hour with a reserve of 10.                    |
+| `KORA_MODEL_COMPOSE`                                                                                       | optional                | `false` (or unset)                             | `true` enables one model call per generation (uses the already configured AI provider). **`on` is not valid and stops startup.** |
 
 ## 3. Deploy and verify
 

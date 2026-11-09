@@ -7,7 +7,11 @@ import { llmFromEnv, type LlmClient } from "@kora/reasoner";
 import type { KoraConfig } from "../config.js";
 import { KoraStore } from "../store.js";
 import { SiteAuthor } from "./author.js";
-import { loadPlatformConfig, type PlatformConfig } from "./config.js";
+import {
+  loadPlatformConfig,
+  releaseWarnings,
+  type PlatformConfig,
+} from "./config.js";
 import { registerHosting, sendArtifact } from "./hosting.js";
 import {
   finalizeForPublish,
@@ -128,6 +132,22 @@ export function createPlatform(o: CreatePlatformOptions): PlatformRuntime {
   const publisher =
     o.publisher ?? choosePublisher(config, o.koraConfig, o.koraConfig.API_PORT);
   const llm = o.llm === undefined ? llmFromEnv(config) : o.llm;
+  // One startup line states which release switches are on (never any value of a secret), then each mismatch between a switch
+  // and its environment, so a flag that does nothing is visible in the first log lines of a release.
+  o.log.info(
+    {
+      creativeEngine: config.KORA_CREATIVE_ENGINE,
+      mediaUnsplash: config.KORA_MEDIA_UNSPLASH ?? "off",
+      modelCompose: config.KORA_MODEL_COMPOSE,
+      copyAssist: config.KORA_COPY_ASSIST,
+      aiProviderConfigured: llm !== null,
+    },
+    "release switches",
+  );
+  for (const w of releaseWarnings(process.env, config, {
+    llmConfigured: llm !== null,
+  }))
+    o.log.warn(w);
   const monitors = new SiteMonitors({
     kora: o.kora,
     ops,

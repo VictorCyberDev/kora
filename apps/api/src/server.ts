@@ -1,4 +1,5 @@
 import postgres from "postgres";
+import { ZodError } from "zod";
 import { EVENT_SCHEMA_VERSION } from "@kora/event-schema";
 import { loadConfig } from "./config.js";
 import { migrateWithLock } from "./db/apply-migrations.js";
@@ -8,9 +9,38 @@ import { HealthMonitor } from "./monitor.js";
 import { verifierFromConfig } from "./verification/verifier.js";
 import { RumptyCloudProvider } from "./providers/rumptycloud.js";
 import { createPlatform, type PlatformRuntime } from "./platform/index.js";
-import { loadPlatformConfig } from "./platform/config.js";
+import { ConfigError, loadPlatformConfig } from "./platform/config.js";
 
-const config = loadConfig();
+// Release switches are validated before anything touches the database: an invalid value stops the process here, with
+// the variable named and its accepted values listed, and not after migrations have run.
+let platformConfig: ReturnType<typeof loadPlatformConfig>;
+try {
+  platformConfig = loadPlatformConfig();
+} catch (e) {
+  if (e instanceof ConfigError) {
+    console.error(e.message);
+    process.exit(78); // EX_CONFIG
+  }
+  throw e;
+}
+let config: ReturnType<typeof loadConfig>;
+try {
+  config = loadConfig();
+} catch (e) {
+  if (e instanceof ZodError) {
+    console.error(
+      "Invalid Kora configuration:\n" +
+        e.issues
+          .map(
+            (i) =>
+              `  - ${String(i.path[0] ?? "(unknown)")}: has an invalid value`,
+          )
+          .join("\n"),
+    );
+    process.exit(78); // EX_CONFIG
+  }
+  throw e;
+}
 const sql = postgres(config.DATABASE_URL);
 if (process.env.KORA_AUTO_MIGRATE === "true") {
   await migrateWithLock(sql, (name) =>
@@ -61,7 +91,6 @@ await store.recordEvent({
     resourceId,
   },
 });
-const platformConfig = loadPlatformConfig();
 let platform: PlatformRuntime | undefined;
 const app = buildApi(store, config.NODE_ENV, config.LOG_LEVEL, {
   createPlatform: (log) =>
