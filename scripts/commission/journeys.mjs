@@ -401,11 +401,10 @@ export async function runJourneys(ctx) {
   step("flag v2: a new site is a v2 design", gg.status === 201 && sv2.version === 2, `version ${sv2.version}`);
   const still = await get(made.kochab.publicUrl);
   step("flag v2: the v3 site made earlier keeps serving", still.status === 200);
-  const FA = client(apiUrl);
-  await FA.call("POST", "/api/auth/login", { email: A.email, password: "correct horse battery" });
   const callsBeforeOff = fakeUnsplash.requests.length;
-  const cand2 = await FA.call("POST", `/api/sites/${made.kochab.site.id}/media/candidates`, {});
-  step("flag off: with KORA_MEDIA_UNSPLASH=off a search returns no candidates and makes no upstream call; the catalogue still works", cand2.status === 200 && (cand2.json?.data?.candidates ?? []).length === 0 && fakeUnsplash.requests.length === callsBeforeOff && (await FA.call("GET", `/api/sites/${made.kochab.site.id}/media/catalogue`)).status === 200, `${cand2.status} candidates=${cand2.json?.data?.candidates?.length}`);
+  const cand2 = await A2.call("POST", `/api/sites/${g2.json.data.id}/media/candidates`, {});
+  const cat2 = await A2.call("GET", `/api/sites/${g2.json.data.id}/media/catalogue`);
+  step("flag off: with KORA_MEDIA_UNSPLASH=off a search returns no candidates and makes no upstream call; the bundled catalogue still works", cand2.status === 200 && (cand2.json?.data?.candidates ?? []).length === 0 && fakeUnsplash.requests.length === callsBeforeOff && cat2.status === 200, `${cand2.status} candidates=${cand2.json?.data?.candidates?.length} catalogue=${cat2.status}`);
   const legacyPage = await get(state.legacy.publicUrl ?? `${hostUrl}/`);
   step("legacy v2 site (from the previous release) still renders", legacyPage.status === 200 && legacyPage.text.length > 500);
   await stopProc(live.api);
