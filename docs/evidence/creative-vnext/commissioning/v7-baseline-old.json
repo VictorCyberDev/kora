@@ -1,55 +1,55 @@
 {
  "base": "http://127.0.0.1:3310",
  "phase": "baseline",
- "startedAt": "2026-11-09T12:22:41.604Z",
+ "startedAt": "2026-11-09T12:36:16.838Z",
  "steps": [
   {
    "name": "runtime claim",
    "ok": true,
    "detail": "commit null env development",
-   "at": "2026-11-09T12:22:41.656Z"
+   "at": "2026-11-09T12:36:16.878Z"
   },
   {
    "name": "health",
    "ok": true,
    "detail": "",
-   "at": "2026-11-09T12:22:41.661Z"
+   "at": "2026-11-09T12:36:16.881Z"
   },
   {
    "name": "signup (throwaway)",
    "ok": true,
    "detail": "201",
-   "at": "2026-11-09T12:22:41.791Z"
+   "at": "2026-11-09T12:36:16.999Z"
   },
   {
    "name": "baseline: new site is a v2 design while the flag is v2",
    "ok": true,
    "detail": "",
-   "at": "2026-11-09T12:22:41.873Z"
+   "at": "2026-11-09T12:36:17.077Z"
   },
   {
    "name": "baseline: publish and live-byte verification",
    "ok": true,
    "detail": "MATCH",
-   "at": "2026-11-09T12:22:41.939Z"
+   "at": "2026-11-09T12:36:17.133Z"
   },
   {
    "name": "baseline: no Brand OS exists for a v2 site (nothing v3 leaks in)",
    "ok": true,
    "detail": "",
-   "at": "2026-11-09T12:22:41.962Z"
+   "at": "2026-11-09T12:36:17.153Z"
   },
   {
    "name": "baseline: upgrade to v3 is refused while the flag is v2",
    "ok": true,
    "detail": "409",
-   "at": "2026-11-09T12:22:41.974Z"
+   "at": "2026-11-09T12:36:17.161Z"
   },
   {
    "name": "baseline: three v2 directions, none of them v3",
    "ok": true,
    "detail": "",
-   "at": "2026-11-09T12:22:41.998Z"
+   "at": "2026-11-09T12:36:17.178Z"
   }
  ],
  "claim": {
@@ -59,10 +59,10 @@
   "commit": null,
   "commitSource": "unavailable",
   "builtAt": null,
-  "startedAt": "2026-11-09T12:22:40.041Z",
+  "startedAt": "2026-11-09T12:36:15.282Z",
   "uptimeSeconds": 1
  },
- "finishedAt": "2026-11-09T12:22:42.003Z",
+ "finishedAt": "2026-11-09T12:36:17.184Z",
  "passed": 8,
  "failed": 0
 }

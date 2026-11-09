@@ -17,6 +17,19 @@ accepted for a `true`/`false` switch). An empty or whitespace-only value counts 
 The other `KORA_*` booleans (`KORA_COOKIE_SECURE`, `KORA_TRUST_PROXY`, `KORA_SIGNUP_ENABLED`, `KORA_CHAOS_ENABLED`,
 `KORA_LEGACY_PUBLIC_API`, `KORA_SANDBOX_CHANNELS`, `KORA_EXPERIMENTAL_RUMPTY_BUCKET`) also take exactly `true` or `false`.
 `KORA_AUTO_MIGRATE` is read directly and means "run migrations at startup" only when exactly `true`.
+`KORA_LEGACY_MONITOR` is also read directly: the original single-service demo monitor is switched **off only by the exact string
+`false`** (anything else leaves it on). Set it to `false` when `demo-service` is not deployed, or point `MONITOR_HEALTH_URL` at
+something that exists; otherwise that monitor polls a closed port. Per-site monitors are unaffected by it and start whenever
+`MONITOR_ENABLED=true`.
+
+`KORA_SECRETS_KEY` must be 32 random bytes, base64 encoded (`openssl rand -base64 32`). It is validated at startup, before the
+database is touched; an invalid key ends the process with exit status 78 and a message that never prints the key.
+
+## Readiness and ordering
+
+The Site Host's `/health` returns 503 with `{"status":"degraded","database":"ok","schema":"outdated"}` while the database lacks the
+columns this release reads (migration 028). It returns 200 with `schema: "ok"` once the migrations have run. Run migrations before
+either application takes traffic (HOSTING-ARCHITECTURE.md, "Required migration sequence").
 
 ## What happens with a wrong value
 
@@ -49,6 +62,6 @@ provider) start normally and log one warning per mismatch; a `release switches` 
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | Kora API + web app (`node apps/api/dist/server.js`)    | `DATABASE_URL`, `NODE_ENV=production`, `KORA_PUBLIC_URL`, `SITE_HOST_PUBLIC_URL`, `KORA_SECRETS_KEY` (32 random bytes, base64), `MONITOR_HEALTH_URL` | `KORA_AUTO_MIGRATE=true`, `KORA_MEDIA_PUBLIC_URL`, the four switches above, `AI_*`/`INFERENCE_*`, `UNSPLASH_*`, `MONITOR_*`, `LOG_LEVEL` |
 | Site Host (`node apps/site-host/dist/server.js`)       | `DATABASE_URL` (same database), `SITE_HOST_PUBLIC_URL`                                                                                               | `PORT`/`SITE_HOST_PORT`, `SITE_HOST_HOST`, `LOG_LEVEL`, `SITE_HOST_FAULT_DELAY_MS` (fault injection; leave unset)                        |
-| demo-service (`node apps/demo-service/dist/server.js`) | none (no database)                                                                                                                                   | `KORA_ENVIRONMENT`; **not needed for the creative engine** (see HOSTING-ARCHITECTURE.md)                                                 |
+| demo-service (`node apps/demo-service/dist/server.js`) | none (no database)                                                                                                                                   | `KORA_ENVIRONMENT`; **not deployed for the creative engine** (HOSTING-ARCHITECTURE.md); then set `KORA_LEGACY_MONITOR=false`             |
 
 Do not set `API_PORT` or `PORT` on a platform that injects `PORT` (see `docs/runbooks/rumpty-deploy.md`).

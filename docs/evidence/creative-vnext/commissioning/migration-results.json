@@ -1,8 +1,8 @@
 {
   "timingsMs": {
-    "028_site_deletion.sql": 4,
-    "029_media_provider_quota.sql": 8,
-    "030_retirement_confirmations_media_state.sql": 27
+    "028_site_deletion.sql": 5,
+    "029_media_provider_quota.sql": 4,
+    "030_retirement_confirmations_media_state.sql": 22
   },
   "files": 30,
   "rowCountsBefore": {

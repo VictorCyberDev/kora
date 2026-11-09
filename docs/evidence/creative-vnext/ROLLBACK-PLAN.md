@@ -21,3 +21,22 @@
    Before dropping `erased_at` check no erasure has been recorded, because dropping it would lose that fact.
 5. Existing recovery (bad release → approval → rollback → verified recovery) is untouched and still the first response to a
    bad published version.
+
+## Rehearsed locally (commissioning phase 7) and what it showed
+
+The previous release (`e2b62df`) was run on the database this release had written to (migrations 028-030 applied, soft-deleted sites,
+vNext designs, owner confirmations). Results, all passing (LOCAL-COMMISSIONING-REPORT.md):
+
+- It started and migrated cleanly; its own `KORA_AUTO_MIGRATE=true` re-ran migrations up to 027 on the migrated database without harm.
+- It accepted logins, listed the owner's sites (including those made by this release), listed and opened vNext versions without a server error,
+  accepted new visitor enquiries and showed both old and new enquiries.
+- The previous Site Host served every site this release had published (immutable bytes) and did **not** serve a site deleted under this release.
+- It refused a site over the plan allowance with 402, not a server error.
+- Rolling forward again on the same database worked, and the enquiry made during the rollback was still there.
+
+Order of response (least to most invasive): (1) set the release switches back: `KORA_CREATIVE_ENGINE=v2`, `KORA_MEDIA_UNSPLASH=off`,
+`KORA_MODEL_COMPOSE=false` (exact syntax in CONFIGURATION.md), no deploy needed; (2) redeploy the previous image for the control plane, then the
+Site Host if needed; (3) only if required, and with approval, the schema steps above. **Do not roll the schema back** to make a code rollback work: it is not required.
+
+Things the rehearsal does not cover: a rollback on RumptyCloud itself (platform redeploy behaviour), and custom-domain re-attachment
+after a restore (manual).

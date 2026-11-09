@@ -1,16 +1,16 @@
 {
   "A": {
-    "email": "ada+1794226973811@example.com",
-    "orgId": "dc199e9d-3fa7-4c71-a936-688b2cbe0a60"
+    "email": "ada+1794227790502@example.com",
+    "orgId": "56a82061-dc2b-4ea0-bc42-0fbc69018a9a"
   },
   "urls": {
-    "kochab": "http://127.0.0.1:3311/s/kochab-studio-c2abc7/",
-    "bakery": "http://127.0.0.1:3311/s/sweet-crumbs-bakery-1c4593/",
-    "barber": "http://127.0.0.1:3311/s/mr-lee-8eba49/"
+    "kochab": "http://127.0.0.1:3311/s/kochab-studio-5bb695/",
+    "bakery": "http://127.0.0.1:3311/s/sweet-crumbs-bakery-d7fa35/",
+    "barber": "http://127.0.0.1:3311/s/mr-lee-104a32/"
   },
   "siteIds": {
-    "kochab": "88c7eb0d-ecfa-4c3e-aa25-283943cb2aaf",
-    "bakery": "aab883e1-2c97-470a-9ec9-c9a16518b36f",
-    "barber": "01ede440-b302-4fc4-bce9-708a03b31bd9"
+    "kochab": "b12adfd2-be43-423f-a817-863f273c2da8",
+    "bakery": "85222122-509e-421a-aab8-ef3dce837246",
+    "barber": "19a37b82-b192-402e-9b24-fc094e9a4c98"
   }
 }
