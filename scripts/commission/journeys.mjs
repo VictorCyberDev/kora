@@ -63,9 +63,9 @@ export async function runJourneys(ctx) {
   // ---- 1. invalid configuration stops the release before the database is touched -------------------------------------
   const rowsBefore = Number((await sql`SELECT count(*)::int AS n FROM site_versions`)[0].n);
   for (const [name, env, expect] of [
-    ["KORA_MODEL_COMPOSE=on (the value the staging notes once documented)", { KORA_MODEL_COMPOSE: "on" }, "KORA_MODEL_COMPOSE"],
-    ["KORA_CREATIVE_ENGINE=v4", { KORA_CREATIVE_ENGINE: "v4" }, "KORA_CREATIVE_ENGINE"],
-    ["KORA_MEDIA_UNSPLASH=true", { KORA_MEDIA_UNSPLASH: "true" }, "KORA_MEDIA_UNSPLASH"],
+    ["KORA_MODEL_COMPOSE set to the word on (the value the staging notes once documented)", { KORA_MODEL_COMPOSE: "on" }, "KORA_MODEL_COMPOSE"],
+    ["KORA_CREATIVE_ENGINE set to v4", { KORA_CREATIVE_ENGINE: "v4" }, "KORA_CREATIVE_ENGINE"],
+    ["KORA_MEDIA_UNSPLASH set to true", { KORA_MEDIA_UNSPLASH: "true" }, "KORA_MEDIA_UNSPLASH"],
   ]) {
     const p = startProc(svcLogs, "invalid-config", ["apps/api/dist/server.js"], stackEnv({ ...env, API_PORT: "3330" }), repo);
     await until(() => p.exited, 40, 250);
@@ -326,8 +326,12 @@ export async function runJourneys(ctx) {
   }
   step("tenant isolation: owner B is refused (4xx) on all 13 attempts against owner A's site", leaks.length === 0, leaks.join(","));
   step("tenant isolation: owner A's site is unchanged after those attempts", (await get(made.kochab.publicUrl)).status === 200 && (await specOf(A, tgt, tv)).pages.length >= 6);
-  const lst = await B.c.call("GET", `/api/orgs/${A.orgId}/sites`);
-  step("tenant isolation: owner B cannot list owner A's organisation's sites", lst.status >= 400 && lst.status < 500, String(lst.status));
+  const lstB = await B.c.call("GET", "/api/sites");
+  const lstA = await A.c.call("GET", "/api/sites");
+  const idsB = new Set((lstB.json?.data ?? []).map((x) => x.id));
+  step("tenant isolation: owner B's site list contains none of owner A's sites, and A's list does contain them", lstB.status === 200 && !Object.values(made).some((m) => idsB.has(m.site.id)) && (lstA.json?.data ?? []).some((x) => x.id === made.kochab.site.id), `B sees ${idsB.size}, A sees ${(lstA.json?.data ?? []).length}`);
+  const orgB = await B.c.call("GET", `/api/orgs/${A.orgId}`);
+  step("tenant isolation: owner B cannot read owner A's organisation", orgB.status >= 400 && orgB.status < 500, String(orgB.status));
 
   // ---- 9. concurrent publish and delete ---------------------------------------------------------------------------------
   const RC = await mkOwner("race");

@@ -28,6 +28,19 @@ export class SiteHostStore {
       return false;
     }
   }
+  /**
+   * True when the tables and columns this host reads exist. A new host started against a database that has not been migrated
+   * yet answers `/health` with the database "ok" (a bare SELECT 1) but fails every site request; this is how that state is seen.
+   */
+  async schemaReady(): Promise<boolean> {
+    try {
+      await this.sql`SELECT deleted_at FROM sites LIMIT 0`;
+      await this.sql`SELECT 1 FROM site_versions LIMIT 0`;
+      return true;
+    } catch {
+      return false;
+    }
+  }
   async siteBySlug(slug: string): Promise<HostedSite | null> {
     const r = (
       await this

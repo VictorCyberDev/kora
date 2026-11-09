@@ -104,6 +104,21 @@ describe("release switches: invalid values stop the release loudly and name the 
   });
 });
 
+describe("KORA_SECRETS_KEY is validated at startup, before the database is touched", () => {
+  const good = Buffer.alloc(32, 7).toString("base64");
+  it("accepts 32 random bytes in base64 and an unset key", () => {
+    expect(load({ KORA_SECRETS_KEY: good }).KORA_SECRETS_KEY).toBe(good);
+    expect(load({}).KORA_SECRETS_KEY).toBeUndefined();
+  });
+  it("rejects a key of the wrong length, naming the variable and never echoing it", () => {
+    const short = Buffer.alloc(20, 9).toString("base64");
+    const e = issuesOf({ KORA_SECRETS_KEY: short });
+    expect(e.issues.map((i) => i.variable)).toEqual(["KORA_SECRETS_KEY"]);
+    expect(e.message).toContain("32 random bytes");
+    expect(e.message).not.toContain(short);
+  });
+});
+
 describe("release warnings: a switch that would do nothing is visible", () => {
   const w = (env: Record<string, string>, llmConfigured = false) =>
     releaseWarnings({ NODE_ENV: "test", ...env }, load(env), { llmConfigured });
@@ -114,7 +129,7 @@ describe("release warnings: a switch that would do nothing is visible", () => {
         KORA_CREATIVE_ENGINE: "v3",
         KORA_MEDIA_UNSPLASH: "off",
         KORA_MODEL_COMPOSE: "false",
-        KORA_SECRETS_KEY: "x".repeat(44),
+        KORA_SECRETS_KEY: Buffer.alloc(32, 5).toString("base64"),
         KORA_PUBLIC_URL: "https://kora.example",
       }),
     ).toEqual([]);

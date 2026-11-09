@@ -9,6 +9,7 @@
 // (default /var/tmp/kora-base) for the upgrade and rollback rehearsal.
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { randomBytes } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
@@ -57,6 +58,19 @@ const hostEnv = () => ({ DATABASE_URL: DB_URL, NODE_ENV: "development", PORT: St
 
 let sql = null;
 const live = {};
+// Resident memory of each running Kora process, sampled every 3 s for the whole rehearsal (resources.json).
+const rss = { api: [], "site-host": [], "api-2nd-instance": [] };
+const sampler = setInterval(() => {
+  for (const [role, p] of [["api", live.api], ["site-host", live.host], ["api-2nd-instance", live.api2]]) {
+    if (!p || p.exited || !p.child.pid) continue;
+    try {
+      const kb = Number(fs.readFileSync(`/proc/${p.child.pid}/status`, "utf8").match(/VmRSS:\s+(\d+)/)?.[1]);
+      if (kb) rss[role].push(kb);
+    } catch {
+      /* process ended */
+    }
+  }
+}, 3000);
 async function startApi(name, extra, cwd = repo) {
   live.api = startProc(svcLogs, name, ["apps/api/dist/server.js"], stackEnv(extra), cwd);
   const ok = await until(() => health(apiUrl), 80, 500);
@@ -283,8 +297,8 @@ try {
     const li = await c.call("POST", "/api/auth/login", { email: js?.A.email ?? state.v7.email, password: "correct horse battery" });
     step("owner logs in on the previous release", li.status === 200, String(li.status));
     if (js) {
-      const sites = await c.call("GET", `/api/orgs/${js.A.orgId}/sites`);
-      step("previous release lists the owner's sites without error", sites.status === 200, String(sites.status));
+      const sites = await c.call("GET", "/api/sites");
+      step("previous release lists the owner's sites, including those made by this release", sites.status === 200 && (sites.json?.data ?? []).some((x) => x.id === js.siteIds.kochab), String(sites.status));
       const vs = await c.call("GET", `/api/sites/${js.siteIds.kochab}/versions`);
       step("previous release lists versions of a site made by this release", vs.status === 200 && (vs.json?.data?.length ?? 0) >= 1, String(vs.status));
       const v0 = vs.json?.data?.[0]?.id;
@@ -321,9 +335,46 @@ try {
       step("after roll-forward the bakery site is intact and published", sp.json?.data?.status === "PUBLISHED");
     }
   }
+  // ---------------------------------------------------------------------------------------------------------------- 8
+  if (want("8")) {
+    R.setPhase("8 deployment order: a new Site Host on a database that has not been migrated yet");
+    const r = spawnSync("node", ["scripts/commission/ordering.mjs", outDir], { cwd: repo, encoding: "utf8", timeout: 180_000 });
+    try {
+      for (const x of JSON.parse(r.stdout.trim().split("\n").pop()).steps) step(x.name, x.ok, x.detail);
+    } catch {
+      step("ordering rehearsal ran", false, (r.stderr || r.stdout).slice(-200));
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------- 9
+  if (want("9")) {
+    R.setPhase("9 production-image CONTENTS: services run from a tree built only from the Dockerfile COPY list, NODE_ENV=production (no Docker daemon here: the image itself is not built)");
+    const r = spawnSync("node", ["scripts/commission/image-contents.mjs", outDir], { cwd: repo, encoding: "utf8", timeout: 900_000 });
+    try {
+      const out = JSON.parse(r.stdout.trim().split("\n").pop());
+      for (const x of out.steps) step(x.name, x.ok, x.detail);
+      state.imageSizes = out.sizes;
+      saveState();
+    } catch {
+      step("image-contents rehearsal ran", false, (r.stderr || r.stdout).slice(-200));
+    }
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------- 10
+  if (want("10")) {
+    R.setPhase("10 resources observed on this machine");
+    const stat = (a) => (a.length ? { samples: a.length, medianMB: Math.round(a.slice().sort((x, y) => x - y)[a.length >> 1] / 1024), maxMB: Math.round(Math.max(...a) / 1024) } : null);
+    const dbSize = (await sql`SELECT pg_database_size(current_database()) AS b`)[0].b;
+    const tables = await sql`SELECT relname, pg_total_relation_size(c.oid) AS b FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind='r' ORDER BY b DESC LIMIT 6`;
+    const vers = (await sql`SELECT count(*)::int AS n, coalesce(round(avg(pg_column_size(artifact) + pg_column_size(spec)))::int,0) AS avg_bytes_spec_plus_artifact FROM site_versions`)[0];
+    const res = { rssMB: { api: stat(rss.api), siteHost: stat(rss["site-host"]), secondApiInstance: stat(rss["api-2nd-instance"]) }, databaseBytes: Number(dbSize), largestTables: tables.map((t) => ({ table: t.relname, bytes: Number(t.b) })), siteVersions: vers, imageTree: state.imageSizes ?? null, host: { cpus: os.cpus().length, totalMemMB: Math.round(os.totalmem() / 1048576) } };
+    fs.writeFileSync(path.join(outDir, "resources.json"), JSON.stringify(res, null, 2));
+    step("resource measurements recorded", !!res.rssMB.api, JSON.stringify(res.rssMB));
+  }
 } catch (e) {
   step("commissioning aborted by an unexpected error", false, e.stack?.split("\n").slice(0, 3).join(" "));
 } finally {
+  clearInterval(sampler);
   await ctx5?.fakes?.fakeUnsplash.close().catch(() => {});
   await ctx5?.fakes?.fakeLlm.close().catch(() => {});
   await stopProc(live.api2).catch(() => {});

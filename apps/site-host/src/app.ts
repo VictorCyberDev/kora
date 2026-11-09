@@ -37,10 +37,16 @@ export function buildSiteHost(o: SiteHostOptions) {
     headers: { host?: string | undefined };
   }) => configured ?? `${req.protocol}://${req.headers.host ?? "localhost"}`;
 
-  app.get("/health", async () => ({
-    status: "ok",
-    database: (await o.store.ping()) ? "ok" : "unavailable",
-  }));
+  app.get("/health", async (_req, reply) => {
+    const database = (await o.store.ping()) ? "ok" : "unavailable";
+    // Readiness must not pass while the schema this release needs is missing (migrations run before the host takes traffic).
+    // A database that is merely unreachable keeps the previous behaviour (200 with database "unavailable").
+    if (database === "ok" && !(await o.store.schemaReady()))
+      return reply
+        .code(503)
+        .send({ status: "degraded", database, schema: "outdated" });
+    return { status: "ok", database, schema: "ok" };
+  });
   app.get("/__kora", (_req, reply) =>
     reply.header("cache-control", "no-store").send(claim.snapshot()),
   );

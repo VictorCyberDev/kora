@@ -86,7 +86,10 @@ export const platformConfigSchema = z.object({
   SMTP_URL: optionalString,
   // Marketing channels (all optional; each provider reports NOT_CONFIGURED until its credentials exist).
   /** 32 random bytes, base64. Encrypts provider tokens at rest. Without it no live provider can be connected. */
-  KORA_SECRETS_KEY: optionalString,
+  KORA_SECRETS_KEY: optionalString.refine(
+    (v) => v === undefined || Buffer.from(v, "base64").length === 32,
+    "KORA_SECRETS_KEY must be 32 random bytes, base64 encoded",
+  ),
   /** Fake providers for tests and demos. Ignored in production. */
   KORA_SANDBOX_CHANNELS: bool,
   META_APP_ID: optionalString,
@@ -167,9 +170,11 @@ export function loadPlatformConfig(
           variable,
           problem: flag
             ? `must be exactly ${flag.map((f) => `"${f}"`).join(" or ")} (or unset)`
-            : i.code === "invalid_format" || i.code === "invalid_type"
-              ? "has an invalid format"
-              : "has an invalid value",
+            : variable === "KORA_SECRETS_KEY"
+              ? "must be 32 random bytes, base64 encoded (generate with: openssl rand -base64 32)"
+              : i.code === "invalid_format" || i.code === "invalid_type"
+                ? "has an invalid format"
+                : "has an invalid value",
         };
       }),
     );
