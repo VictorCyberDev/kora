@@ -1,0 +1,68 @@
+{
+ "base": "http://127.0.0.1:3310",
+ "phase": "baseline",
+ "startedAt": "2026-11-09T12:22:41.604Z",
+ "steps": [
+  {
+   "name": "runtime claim",
+   "ok": true,
+   "detail": "commit null env development",
+   "at": "2026-11-09T12:22:41.656Z"
+  },
+  {
+   "name": "health",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-09T12:22:41.661Z"
+  },
+  {
+   "name": "signup (throwaway)",
+   "ok": true,
+   "detail": "201",
+   "at": "2026-11-09T12:22:41.791Z"
+  },
+  {
+   "name": "baseline: new site is a v2 design while the flag is v2",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-09T12:22:41.873Z"
+  },
+  {
+   "name": "baseline: publish and live-byte verification",
+   "ok": true,
+   "detail": "MATCH",
+   "at": "2026-11-09T12:22:41.939Z"
+  },
+  {
+   "name": "baseline: no Brand OS exists for a v2 site (nothing v3 leaks in)",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-09T12:22:41.962Z"
+  },
+  {
+   "name": "baseline: upgrade to v3 is refused while the flag is v2",
+   "ok": true,
+   "detail": "409",
+   "at": "2026-11-09T12:22:41.974Z"
+  },
+  {
+   "name": "baseline: three v2 directions, none of them v3",
+   "ok": true,
+   "detail": "",
+   "at": "2026-11-09T12:22:41.998Z"
+  }
+ ],
+ "claim": {
+  "schema": "kora.runtime-claim/v1",
+  "service": "kora-api",
+  "environment": "development",
+  "commit": null,
+  "commitSource": "unavailable",
+  "builtAt": null,
+  "startedAt": "2026-11-09T12:22:40.041Z",
+  "uptimeSeconds": 1
+ },
+ "finishedAt": "2026-11-09T12:22:42.003Z",
+ "passed": 8,
+ "failed": 0
+}
