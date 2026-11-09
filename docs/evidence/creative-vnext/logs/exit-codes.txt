@@ -1,7 +1,2 @@
 install EXIT=0
 format EXIT=0
-lint EXIT=0
-typecheck EXIT=0
-build EXIT=0
-test EXIT=0
-finished

@@ -2,6 +2,15 @@ Scope: all 19 workspace projects
 Lockfile is up to date, resolution step is skipped
 Already up to date
 
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 10.18.3 → 12.18.0.   │
+   │   Changelog: https://pnpm.io/v/12.18.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+
+
 ╭ Warning ─────────────────────────────────────────────────────────────────────╮
 │                                                                              │
 │   Ignored build scripts: esbuild.                                            │
@@ -10,4 +19,4 @@ Already up to date
 │                                                                              │
 ╰──────────────────────────────────────────────────────────────────────────────╯
 
-Done in 899ms using pnpm v10.18.3
+Done in 821ms using pnpm v10.18.3
