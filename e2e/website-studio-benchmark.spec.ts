@@ -293,8 +293,11 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
       }
       const gate = studioSchema.screenshotGate([observation]);
       const vision = await reviewRenderedWithVision(
-        await page.screenshot({clip:{x:0,y:0,width,height:800},animations:"disabled"}),
-        {industry:item.key,device},
+        await page.screenshot({
+          clip: { x: 0, y: 0, width, height: 800 },
+          animations: "disabled",
+        }),
+        { industry: item.key, device },
       );
       reports.push({
         vision,

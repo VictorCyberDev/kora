@@ -221,11 +221,21 @@ function mediaFor(
       source: "owner",
       ownerCount: own.all.length,
     };
-  const approved = (opts.stockPhotos ?? []).filter((photo) =>
-    photo.provenance.sourceType === "licensed-stock" &&
-    !!photo.provenance.license && photo.url.startsWith("https://"),
-  ).slice(0,8);
-  if(approved.length) return {media:approved,hero:approved[0],source:"stock",ownerCount:0};
+  const approved = (opts.stockPhotos ?? [])
+    .filter(
+      (photo) =>
+        photo.provenance.sourceType === "licensed-stock" &&
+        !!photo.provenance.license &&
+        photo.url.startsWith("https://"),
+    )
+    .slice(0, 8);
+  if (approved.length)
+    return {
+      media: approved,
+      hero: approved[0],
+      source: "stock",
+      ownerCount: 0,
+    };
   const recipe = CATALOG[vertical.id];
   if (!recipe)
     return { media: [], hero: undefined, source: "none", ownerCount: 0 };

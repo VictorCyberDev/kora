@@ -298,22 +298,27 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
       const owner = ownerPhotos.find((x) => x.url === p.imageUrl);
       const existing = knownMedia.find((media) => media.url === p.imageUrl);
       if (!owner && !existing)
-        throw new Error("Choose a photo from this site's approved asset library.");
-      section.media = existing ? {
-        ...existing,role:section.type === "hero" ? "hero":"feature",
-      } : {
-        url: owner.url,
-        alt: owner.alt || "Customer uploaded photo",
-        width: owner.width,
-        height: owner.height,
-        focalPoint: owner.focal,
-        role: section.type === "hero" ? "hero" : "feature",
-        treatment: "none",
-        provenance: {
-          sourceType: "owner-supplied",
-          reviewStatus: "owner-approved",
-        },
-      };
+        throw new Error(
+          "Choose a photo from this site's approved asset library.",
+        );
+      section.media = existing
+        ? {
+            ...existing,
+            role: section.type === "hero" ? "hero" : "feature",
+          }
+        : {
+            url: owner.url,
+            alt: owner.alt || "Customer uploaded photo",
+            width: owner.width,
+            height: owner.height,
+            focalPoint: owner.focal,
+            role: section.type === "hero" ? "hero" : "feature",
+            treatment: "none",
+            provenance: {
+              sourceType: "owner-supplied",
+              reviewStatus: "owner-approved",
+            },
+          };
       delete section.plate;
     }
     return section;
@@ -352,14 +357,35 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
       })),
     ],
   };
-  const layoutField = (values:string[]) => ({type:"select" as const,label:"Section layout",options:values.map(value=>({value,label:value.replace(/-/g," ")}))});
+  const layoutField = (values: string[]) => ({
+    type: "select" as const,
+    label: "Section layout",
+    options: values.map((value) => ({
+      value,
+      label: value.replace(/-/g, " "),
+    })),
+  });
   const headingFields = {
     heading: { type: "text" as const, label: "Headline" },
     subheading: { type: "textarea" as const, label: "Supporting text" },
     imageUrl: imageField,
     buttonLabel: { type: "text" as const, label: "Button label" },
     buttonHref: { type: "text" as const, label: "Button link" },
-    layout:layoutField(["cinematic","editorial-split","type-dominant","poster","menu-focus","booking-focus","location-focus","collage","arch-portrait","minimal-statement","ticker-energy","product-dominant","call-first"]),
+    layout: layoutField([
+      "cinematic",
+      "editorial-split",
+      "type-dominant",
+      "poster",
+      "menu-focus",
+      "booking-focus",
+      "location-focus",
+      "collage",
+      "arch-portrait",
+      "minimal-statement",
+      "ticker-energy",
+      "product-dominant",
+      "call-first",
+    ]),
   };
   return {
     components: {
@@ -381,7 +407,16 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           subheading: { type: "textarea" },
           itemsText: { type: "textarea" },
-          layout: layoutField(["editorial-index","menu-list","image-tiles","stacked-panels","accordion","sticky-split","board","ladder"]),
+          layout: layoutField([
+            "editorial-index",
+            "menu-list",
+            "image-tiles",
+            "stacked-panels",
+            "accordion",
+            "sticky-split",
+            "board",
+            "ladder",
+          ]),
         },
         defaultProps: defaults("Offer"),
         render: blockRender,
@@ -393,7 +428,12 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           subheading: { type: "textarea" },
           itemsText: { type: "textarea" },
-          layout: layoutField(["rail","gallery-grid","featured-pair","price-menu"]),
+          layout: layoutField([
+            "rail",
+            "gallery-grid",
+            "featured-pair",
+            "price-menu",
+          ]),
         },
         defaultProps: defaults("Products"),
         render: blockRender,
@@ -405,7 +445,12 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           body: { type: "textarea" },
           imageUrl: imageField,
-          layout: layoutField(["manifesto","founder-note","split-image","craft"]),
+          layout: layoutField([
+            "manifesto",
+            "founder-note",
+            "split-image",
+            "craft",
+          ]),
         },
         defaultProps: defaults("Story"),
         render: blockRender,
@@ -416,7 +461,11 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           subheading: { type: "textarea" },
           itemsText: { type: "textarea" },
-          layout: layoutField(["numerals","horizontal-steps","timeline-line"]),
+          layout: layoutField([
+            "numerals",
+            "horizontal-steps",
+            "timeline-line",
+          ]),
         },
         defaultProps: defaults("Process"),
         render: blockRender,
@@ -429,21 +478,39 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
       },
       Gallery: {
         label: "Gallery",
-        fields: { heading: { type: "text" }, itemsText: { type: "textarea" }, layout:layoutField(["mosaic","rail","pair","grid"]) },
+        fields: {
+          heading: { type: "text" },
+          itemsText: { type: "textarea" },
+          layout: layoutField(["mosaic", "rail", "pair", "grid"]),
+        },
         defaultProps: defaults("Gallery"),
         render: blockRender,
         permissions: { insert: false },
       },
       Visit: {
         label: "Visit us",
-        fields: { heading: { type: "text" }, subheading: { type: "textarea" },layout:layoutField(["card","split"]) },
+        fields: {
+          heading: { type: "text" },
+          subheading: { type: "textarea" },
+          layout: layoutField(["card", "split"]),
+        },
         defaultProps: defaults("Visit"),
         render: blockRender,
         permissions: { insert: false },
       },
       Contact: {
         label: "Contact",
-        fields: { heading: { type: "text" }, subheading: { type: "textarea" },layout:layoutField(["whatsapp-first","call-first","booking-form","enquiry-form","visit"]) },
+        fields: {
+          heading: { type: "text" },
+          subheading: { type: "textarea" },
+          layout: layoutField([
+            "whatsapp-first",
+            "call-first",
+            "booking-form",
+            "enquiry-form",
+            "visit",
+          ]),
+        },
         defaultProps: defaults("Contact"),
         render: blockRender,
       },
@@ -454,7 +521,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           body: { type: "textarea" },
           buttonLabel: { type: "text" },
           buttonHref: { type: "text" },
-          layout:layoutField(["statement","outline","marquee"]),
+          layout: layoutField(["statement", "outline", "marquee"]),
         },
         defaultProps: defaults("CTA"),
         render: blockRender,
@@ -902,11 +969,17 @@ export function WebsiteStudio() {
                     await edit({
                       kind: "replace-page-sections",
                       slug: page.slug,
-                      sections: fromPuck(data, assets.data?.photos ?? [],
-                        (spec.pages ?? []).flatMap((pg:J)=>(pg.sections ?? []).flatMap((sec:J)=>[
-                          ...(sec.media ? [sec.media]:[]),
-                          ...(sec.items ?? []).flatMap((it:J)=>it.media?[it.media]:[]),
-                        ])),
+                      sections: fromPuck(
+                        data,
+                        assets.data?.photos ?? [],
+                        (spec.pages ?? []).flatMap((pg: J) =>
+                          (pg.sections ?? []).flatMap((sec: J) => [
+                            ...(sec.media ? [sec.media] : []),
+                            ...(sec.items ?? []).flatMap((it: J) =>
+                              it.media ? [it.media] : [],
+                            ),
+                          ]),
+                        ),
                       ),
                     });
                   }}

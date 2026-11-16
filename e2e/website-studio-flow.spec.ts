@@ -73,12 +73,16 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     // Local test Site Host lifecycle: older version, new draft, then restore.
     const firstPublish = await ctx.request.post(
       "/api/sites/" + siteId + "/versions/" + original + "/publish",
-      {headers},
+      { headers },
     );
     expect(firstPublish.ok()).toBe(true);
     const newPublish = await ctx.request.post(
-      "/api/sites/" + siteId + "/versions/" + site.currentVersionId + "/publish",
-      {headers},
+      "/api/sites/" +
+        siteId +
+        "/versions/" +
+        site.currentVersionId +
+        "/publish",
+      { headers },
     );
     expect(newPublish.ok()).toBe(true);
     const publicUrl = (await newPublish.json()).data.publicUrl as string;
@@ -86,7 +90,7 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     expect((await ctx.request.get(publicUrl)).status()).toBe(200);
     const restore = await ctx.request.post(
       "/api/sites/" + siteId + "/versions/" + original + "/rollback",
-      {headers},
+      { headers },
     );
     expect(restore.ok()).toBe(true);
 

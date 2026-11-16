@@ -432,17 +432,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     config.KORA_MEDIA_PUBLIC_URL ?? config.KORA_PUBLIC_URL,
   );
   /** The owner's good pictures and logo, in the planner's terms. Empty when no https media origin is configured. */
-  const ownerPlan = async (siteId: string, orgId: string, industry?: string) => {
+  const ownerPlan = async (
+    siteId: string,
+    orgId: string,
+    industry?: string,
+  ) => {
     const m = await loadOwnerMedia(platform.sql, siteId, mediaBaseUrl);
     const ctx = await designContext(brandOs, orgId);
-    const stock = m.photos.length || !industry ? [] :
-      await findUnsplashStock(industry, process.env.KORA_UNSPLASH_ACCESS_KEY);
+    const stock =
+      m.photos.length || !industry
+        ? []
+        : await findUnsplashStock(
+            industry,
+            process.env.KORA_UNSPLASH_ACCESS_KEY,
+          );
     return {
       stockPhotos: stock.map((photo) => photo.media),
-      trackStock: (urls: string[]) => trackUnsplashSelection(
-        stock.filter((photo) => urls.includes(photo.media.url)),
-        process.env.KORA_UNSPLASH_ACCESS_KEY,
-      ),
+      trackStock: (urls: string[]) =>
+        trackUnsplashSelection(
+          stock.filter((photo) => urls.includes(photo.media.url)),
+          process.env.KORA_UNSPLASH_ACCESS_KEY,
+        ),
       ownerPhotos: m.photos,
       ...(m.logo ? { ownerLogo: m.logo } : {}),
       ...ctx,
