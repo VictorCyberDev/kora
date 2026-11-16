@@ -400,7 +400,12 @@ export function WebsiteStudio() {
                       className="btn sm ghost"
                       aria-pressed={p.slug === page.slug}
                       onClick={() => {
-                        if (!dirty || window.confirm("Discard unsaved changes to this page?")) {
+                        if (
+                          !dirty ||
+                          window.confirm(
+                            "Discard unsaved changes to this page?",
+                          )
+                        ) {
                           setDirty(false);
                           setSelectedPage(p.slug);
                         }
@@ -444,7 +449,12 @@ export function WebsiteStudio() {
                     type="button"
                     className="btn sm quiet"
                     onClick={() => {
-                      if (!dirty || window.confirm("Discard unsaved changes before preview?")) {
+                      if (
+                        !dirty ||
+                        window.confirm(
+                          "Discard unsaved changes before preview?",
+                        )
+                      ) {
                         setDirty(false);
                         setPreview(!preview);
                       }
