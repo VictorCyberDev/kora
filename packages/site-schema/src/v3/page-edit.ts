@@ -23,6 +23,7 @@ export const pageEditSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("reorder-page"), slug: pageSlug, to: index }),
   z.object({ kind: z.literal("set-navigation"), slug: pageSlug, visible: z.boolean() }),
   z.object({ kind: z.literal("page-seo"), slug: pageSlug, title: z.string().max(70), description: z.string().max(180) }),
+  z.object({ kind: z.literal("replace-page-sections"), slug: pageSlug, sections: z.array(sectionV3Schema).min(1).max(16) }),
   z.object({ kind: z.literal("insert-section"), slug: pageSlug, at: index, section: sectionV3Schema }),
   z.object({ kind: z.literal("replace-section"), slug: pageSlug, at: index, section: sectionV3Schema }),
   z.object({ kind: z.literal("remove-section"), slug: pageSlug, at: index }),
@@ -108,6 +109,10 @@ export function editPagesV3(spec: SiteSpecV3, input: unknown): SiteSpecV3 {
     }
     case "page-seo": {
       const p=get(e.slug); p.seoTitle=e.title; p.seoDescription=e.description; break;
+    }
+    case "replace-page-sections": {
+      get(e.slug).sections=e.sections;
+      break;
     }
     case "insert-section":
       { const p=get(e.slug); if(p.sections.length>=16||e.at>p.sections.length)throw new PageEditError("Invalid section position or limit."); p.sections.splice(e.at,0,e.section); }
