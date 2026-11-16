@@ -10,6 +10,7 @@ import { Puck, type Config, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 import { api, type J } from "../api";
 import { Async, Notice, errText, useLoad } from "../ui";
+import { MediaLibraryPanel } from "./media-library";
 
 type EditProps = {
   id?: string;
@@ -288,6 +289,9 @@ export function WebsiteStudio() {
   const spec = detail.data?.spec;
   const [selectedPage, setSelectedPage] = useState("home");
   const [newTitle, setNewTitle] = useState("");
+  const [metaTitle, setMetaTitle] = useState("");
+  const [metaDescription, setMetaDescription] = useState("");
+  const [showAssets, setShowAssets] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState("");
@@ -428,6 +432,29 @@ export function WebsiteStudio() {
                     {preview ? "Editor" : "Actual saved preview"}
                   </button>
                 </form>
+                <div className="row" role="group" aria-label="Page actions">
+                  <button className="btn sm ghost" disabled={busy || page.slug === "home"} onClick={() => void edit({kind:"reorder-page",slug:page.slug,to:Math.max(1,spec.pages.findIndex((p:J)=>p.slug===page.slug)-1)}).catch(()=>{})}>Move page earlier</button>
+                  <button className="btn sm ghost" disabled={busy || page.slug === "home"} onClick={() => void edit({kind:"reorder-page",slug:page.slug,to:Math.min(spec.pages.length-1,spec.pages.findIndex((p:J)=>p.slug===page.slug)+1)}).catch(()=>{})}>Move page later</button>
+                  <button className="btn sm ghost" disabled={busy || spec.pages.length >= 7} onClick={() => {
+                    const slug = window.prompt("New unique URL slug for this copy");
+                    if(slug)void edit({kind:"duplicate-page",slug:page.slug,newSlug:slug,title:page.title+" Copy"}).catch(()=>{});
+                  }}>Duplicate page</button>
+                  <button className="btn sm ghost" disabled={busy} onClick={() => {
+                    const title = window.prompt("Page title",page.title);
+                    if(title)void edit({kind:"rename-page",slug:page.slug,title}).catch(()=>{});
+                  }}>Rename page</button>
+                  <button className="btn sm ghost" disabled={busy || page.slug==="home"} onClick={() => void edit({kind:"set-navigation",slug:page.slug,visible:page.navHidden}).catch(()=>{})}>{page.navHidden?"Show in navigation":"Hide from navigation"}</button>
+                  <button className="btn sm ghost" onClick={()=>setShowAssets(!showAssets)}>{showAssets?"Close assets":"Open photo library"}</button>
+                </div>
+                <form className="row" onSubmit={e => {
+                  e.preventDefault();
+                  void edit({kind:"page-seo",slug:page.slug,title:metaTitle || page.seoTitle || page.title,description:metaDescription || page.seoDescription || spec.seo.description}).catch(()=>{});
+                }}>
+                  <label>SEO title<input maxLength={70} value={metaTitle} onChange={e=>setMetaTitle(e.target.value)} placeholder={page.seoTitle || page.title}/></label>
+                  <label>SEO description<input maxLength={180} value={metaDescription} onChange={e=>setMetaDescription(e.target.value)} placeholder={page.seoDescription || spec.seo.description}/></label>
+                  <button className="btn sm" disabled={busy}>Save page SEO</button>
+                </form>
+                {showAssets && <MediaLibraryPanel siteId={id} />}
                 <p className="muted">
                   Up to seven complete pages. Select a section to edit; drag to
                   reorder. Use Puck's undo/redo, then Save draft.
