@@ -89,6 +89,8 @@ export interface PlanV3Options {
   /** The owner's own photos, already validated and re-encoded by the API. Used before any stock. */
   ownerPhotos?: OwnerPhotoInput[];
   ownerLogo?: OwnerLogoInput;
+  /** Already license-checked and hotlinkable external photos (e.g. Unsplash). */
+  stockPhotos?: MediaV3[];
   /** Real reviews the owner supplied. Without them no testimonial section exists. */
   quotes?: Array<{ quote: string; author: string; role?: string }>;
   /** Real figures the owner supplied ("Since 2015", "3 branches") as value/label pairs. */
@@ -217,6 +219,11 @@ function mediaFor(
       source: "owner",
       ownerCount: own.all.length,
     };
+  const approved = (opts.stockPhotos ?? []).filter((photo) =>
+    photo.provenance.sourceType === "licensed-stock" &&
+    !!photo.provenance.license && photo.url.startsWith("https://"),
+  ).slice(0,8);
+  if(approved.length) return {media:approved,hero:approved[0],source:"stock",ownerCount:0};
   const recipe = CATALOG[vertical.id];
   if (!recipe)
     return { media: [], hero: undefined, source: "none", ownerCount: 0 };
