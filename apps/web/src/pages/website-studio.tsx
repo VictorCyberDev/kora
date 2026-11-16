@@ -201,7 +201,7 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
           const existing = section.items ?? [];
           section.items = p.itemsText.split("\n").map((line:string,index:number)=>{
             const [rawTitle,...description] = line.split(" | ");
-            const title = rawTitle.trim();
+            const title = (rawTitle ?? "").trim();
             const old = existing[index] ?? {};
             const next = {...old,title,text:description.join(" | ").trim()};
             if(old.title && old.title !== title) { delete next.media; delete next.plate; }
@@ -220,7 +220,7 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
         section.heading = p.heading;
         section.items = p.itemsText.split("\n").map((line:string)=>{
           const [question,...answer] = line.split(" | ");
-          return {question:question.trim(),answer:answer.join(" | ").trim()};
+          return {question:(question ?? "").trim(),answer:answer.join(" | ").trim()};
         }).filter((item:J)=>item.question&&item.answer);
         break;
       }
