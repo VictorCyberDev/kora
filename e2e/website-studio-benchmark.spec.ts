@@ -4,6 +4,7 @@ import { extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
 import { observeRenderedScreenshot } from "./visual-observe";
+import { reviewRenderedWithVision } from "./vision-critic";
 import type { SiteSpecV3 } from "../packages/site-schema/src/v3/spec.js";
 
 /** Actual published-renderer benchmark, not screenshots of a mock template. */
@@ -291,7 +292,12 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
         });
       }
       const gate = studioSchema.screenshotGate([observation]);
+      const vision = await reviewRenderedWithVision(
+        await page.screenshot({clip:{x:0,y:0,width,height:800},animations:"disabled"}),
+        {industry:item.key,device},
+      );
       reports.push({
+        vision,
         industry: item.key,
         device,
         observations: observation,
