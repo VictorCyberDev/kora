@@ -4,7 +4,7 @@
  * The toolbar's Save Draft button goes through Kora's existing protected
  * /edit endpoint. Site publishing remains a separate owner action.
  */
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Puck, type Config, type Data } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
@@ -296,6 +296,16 @@ export function WebsiteStudio() {
   const [error, setError] = useState("");
   const [saved, setSaved] = useState("");
   const [preview, setPreview] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  useEffect(() => {
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!dirty) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
   const page =
     spec?.pages?.find((p: J) => p.slug === selectedPage) ?? spec?.pages?.[0];
   const puckData = useMemo(() => (page ? toPuck(page) : null), [page]);
@@ -309,6 +319,7 @@ export function WebsiteStudio() {
         baseVersionId: current,
         designEdit,
       });
+      setDirty(false);
       setSelectedVersion(result.version.id);
       setSaved(`Draft saved as version ${result.version.number}.`);
       versions.reload();
@@ -388,7 +399,12 @@ export function WebsiteStudio() {
                       key={p.slug}
                       className="btn sm ghost"
                       aria-pressed={p.slug === page.slug}
-                      onClick={() => setSelectedPage(p.slug)}
+                      onClick={() => {
+                        if (!dirty || window.confirm("Discard unsaved changes to this page?")) {
+                          setDirty(false);
+                          setSelectedPage(p.slug);
+                        }
+                      }}
                     >
                       {p.nav || p.title}
                     </button>
@@ -427,7 +443,12 @@ export function WebsiteStudio() {
                   <button
                     type="button"
                     className="btn sm quiet"
-                    onClick={() => setPreview(!preview)}
+                    onClick={() => {
+                      if (!dirty || window.confirm("Discard unsaved changes before preview?")) {
+                        setDirty(false);
+                        setPreview(!preview);
+                      }
+                    }}
                   >
                     {preview ? "Editor" : "Actual saved preview"}
                   </button>
@@ -581,6 +602,7 @@ export function WebsiteStudio() {
                   key={`${current}:${page.slug}`}
                   config={websiteConfig}
                   data={puckData}
+                  onChange={() => setDirty(true)}
                   onPublish={async (data) => {
                     await edit({
                       kind: "replace-page-sections",
