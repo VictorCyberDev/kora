@@ -586,7 +586,7 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   // and visibly attribute Unsplash with referral parameters.
   const by = new Map<string,{name:string;url:string}>();
   const page = spec.pages.find((p) => p.slug === from);
-  const addCredit = (media: SectionV3 extends never ? never : unknown) => {
+  const addCredit = (media: unknown) => {
     if (!media || typeof media !== "object" || !("provenance" in media)) return;
     const provenance = media.provenance;
     if (!provenance || typeof provenance !== "object" ||
@@ -601,7 +601,7 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   for (const section of page?.sections ?? []) {
     if ("media" in section) addCredit(section.media);
     if ("items" in section && Array.isArray(section.items)) {
-      for (const item of section.items) if ("media" in item) addCredit(item.media);
+      for (const item of section.items) if (item && typeof item === "object" && "media" in item) addCredit(item.media);
     }
   }
   const photoCredits = by.size
