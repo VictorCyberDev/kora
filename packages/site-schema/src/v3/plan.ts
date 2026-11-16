@@ -14,6 +14,7 @@ import {
   ctaLabel,
   offerPhrase,
   resolveVertical,
+  selectDesignRules,
   type BrandOS,
   type BusinessTruth,
   type ComposeOptions,
@@ -332,6 +333,8 @@ export function planSiteV3(
   const b = truth.brief;
   const v = resolveVertical(`${b.name} ${b.industry ?? ""} ${b.description}`);
   const g = direction.genome;
+  const activeDesignRules = selectDesignRules({ industry: v.cluster });
+  const designEffects = new Set(activeDesignRules.map((rule) => rule.effect).filter(Boolean));
   const colorway = GRAMMARS.find(
     (x) => x.id === direction.grammarId,
   )!.colorways.find((c) => c.id === direction.colorwayId)!;
@@ -430,7 +433,7 @@ export function planSiteV3(
       ? "call-first"
       : g.heroPhilosophy;
   const gram = GRAMMARS.find((x) => x.id === direction.grammarId);
-  const heroLayout = resolveHero(
+  let heroLayout = resolveHero(
     adaptHero(wantHero, gram?.alternates.hero ?? [], {
       hasHeroPhoto: !!mp.hero,
       photoTrust: v.photoTrust,
@@ -444,6 +447,13 @@ export function planSiteV3(
       highlights: highlights.length,
     },
   );
+  // Licensed, pinned guidance changes the actual rendered spec; rules are not
+  // merely copied into anti-pattern metadata. Only fact-safe changes apply.
+  if (
+    designEffects.has("editorial-photo-hero") &&
+    mp.hero &&
+    heroLayout === "type-dominant"
+  ) heroLayout = "editorial-split";
   const plateKinds = [
     "arch",
     "circles",
@@ -821,6 +831,25 @@ export function planSiteV3(
     heroSec,
     ...(seq[g.compositionMode] ?? seq["editorial-asymmetric"]!),
   ]);
+  // Reorder the existing factual sections for varied editorial reading rhythm.
+  if (designEffects.has("section-rhythm")) {
+    for (let index = 2; index < homeSections.length - 1; index++) {
+      const prev = homeSections[index - 1];
+      const current = homeSections[index];
+      if (
+        prev && current &&
+        (prev.type === "offer" || prev.type === "products") &&
+        (current.type === "offer" || current.type === "products")
+      ) {
+        const storyIndex = homeSections.findIndex(
+          (section, at) => at > index && section.type === "story",
+        );
+        if (storyIndex > index) {
+          homeSections.splice(index, 0, homeSections.splice(storyIndex, 1)[0]!);
+        }
+      }
+    }
+  }
   // ticker-energy heroes sit directly above the band
   if (heroLayout === "ticker-energy") {
     const t = ticker();
@@ -1136,7 +1165,7 @@ export function planSiteV3(
         ? { canonicalOrigin: opts.canonicalOrigin }
         : {}),
     },
-    pages,
+    pages: pages.slice(0, 7),
     footer: { text: `© ${b.name}`, links: [] },
     meta: {
       engine: "kora-creative/1",
