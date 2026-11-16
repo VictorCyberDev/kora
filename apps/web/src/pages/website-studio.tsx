@@ -355,7 +355,7 @@ export function WebsiteStudio() {
         title: newTitle.trim(),
         purpose: "about",
         sections: [
-          { ...hero, heading: newTitle.trim(), subheading: "" },
+          { ...hero, heading: newTitle.trim(), subheading: "", primaryCta: {label:"Back to home",href:"/"}, secondaryCta: undefined },
           ...(contact ? [contact] : []),
         ],
       });
