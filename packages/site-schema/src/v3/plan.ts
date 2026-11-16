@@ -877,6 +877,7 @@ export function planSiteV3(
   const home: Page = {
     slug: "home",
     title: b.name,
+    navHidden: false,
     purpose: "home",
     conversionGoal: v.primaryIntent,
     sections: homeSections,
@@ -931,6 +932,7 @@ export function planSiteV3(
       slug: slugOf[kind],
       title: titleOf[kind],
       nav: titleOf[kind].slice(0, 28),
+      navHidden: false,
       purpose: kind,
       conversionGoal: goal,
       sections: secs,
