@@ -6,7 +6,6 @@ import { expect, test } from "@playwright/test";
 import { observeRenderedScreenshot } from "./visual-observe";
 import type { SiteSpecV3 } from "../packages/site-schema/src/v3/spec.js";
 
-
 /** Actual published-renderer benchmark, not screenshots of a mock template. */
 const root = resolve(__dirname, "..");
 const mediaDir = join(root, "packages/site-media/files");
@@ -74,16 +73,66 @@ const briefs = [
     "We repair laptops, mobile phones and business computer equipment.",
     ["Laptop repair", "Phone repair", "Computer support"],
   ],
-  ["fitness","Pulse Movement","We teach functional movement classes, strength sessions and personal training.","Strength classes,Personal training,Movement sessions".split(",")],
-  ["health","North Point Clinic","We provide primary care consultations, preventative checkups and general medical guidance.","Consultations,Wellness checkups,Primary care".split(",")],
-  ["education","Bright Path Academy","We teach learners in small group classes, hands-on workshops and tutoring sessions.","Group classes,Workshops,Tutoring".split(",")],
-  ["homeservices","Lumen Home Care","We maintain and clean homes, offer deep cleaning and scheduled property upkeep.","Home cleaning,Deep cleaning,Property upkeep".split(",")],
-  ["photography","Luma Portraits","We photograph portraits, brand campaigns and special events for clients.","Portrait sessions,Brand photography,Event photography".split(",")],
-  ["travel","Open Atlas Tours","We plan guided cultural tours and personal travel itineraries for visiting guests.","Guided tours,Trip planning,Travel itineraries".split(",")],
-  ["nonprofit","Grow Together Foundation","We coordinate community education workshops and local volunteer programmes.","Workshops,Volunteering,Community programs".split(",")],
-  ["architecture","Formline Practice","We design residential architecture, interior spaces and building renovation concepts.","Architecture,Interiors,Renovation".split(",")],
-  ["portfolio","Amina Creates","I produce editorial illustrations, web design work and visual identity projects for clients.","Illustration,Branding,Web design".split(",")],
-  ["consulting","Northstar Advisory","We advise organizations on operations improvement, leadership development and strategic planning.","Operations,Leadership,Strategy".split(",")],
+  [
+    "fitness",
+    "Pulse Movement",
+    "We teach functional movement classes, strength sessions and personal training.",
+    "Strength classes,Personal training,Movement sessions".split(","),
+  ],
+  [
+    "health",
+    "North Point Clinic",
+    "We provide primary care consultations, preventative checkups and general medical guidance.",
+    "Consultations,Wellness checkups,Primary care".split(","),
+  ],
+  [
+    "education",
+    "Bright Path Academy",
+    "We teach learners in small group classes, hands-on workshops and tutoring sessions.",
+    "Group classes,Workshops,Tutoring".split(","),
+  ],
+  [
+    "homeservices",
+    "Lumen Home Care",
+    "We maintain and clean homes, offer deep cleaning and scheduled property upkeep.",
+    "Home cleaning,Deep cleaning,Property upkeep".split(","),
+  ],
+  [
+    "photography",
+    "Luma Portraits",
+    "We photograph portraits, brand campaigns and special events for clients.",
+    "Portrait sessions,Brand photography,Event photography".split(","),
+  ],
+  [
+    "travel",
+    "Open Atlas Tours",
+    "We plan guided cultural tours and personal travel itineraries for visiting guests.",
+    "Guided tours,Trip planning,Travel itineraries".split(","),
+  ],
+  [
+    "nonprofit",
+    "Grow Together Foundation",
+    "We coordinate community education workshops and local volunteer programmes.",
+    "Workshops,Volunteering,Community programs".split(","),
+  ],
+  [
+    "architecture",
+    "Formline Practice",
+    "We design residential architecture, interior spaces and building renovation concepts.",
+    "Architecture,Interiors,Renovation".split(","),
+  ],
+  [
+    "portfolio",
+    "Amina Creates",
+    "I produce editorial illustrations, web design work and visual identity projects for clients.",
+    "Illustration,Branding,Web design".split(","),
+  ],
+  [
+    "consulting",
+    "Northstar Advisory",
+    "We advise organizations on operations improvement, leadership development and strategic planning.",
+    "Operations,Leadership,Strategy".split(","),
+  ],
   [
     "hotel",
     "The Fern House",
@@ -117,7 +166,12 @@ test.beforeAll(async () => {
     const files = schema.renderSiteV3(direction.spec, {
       formEndpoint: "https://forms.example.test/submit",
     });
-    return { key, files, pageCount: direction.spec.pages.length, spec:direction.spec };
+    return {
+      key,
+      files,
+      pageCount: direction.spec.pages.length,
+      spec: direction.spec,
+    };
   });
   server = createServer((req, res) => {
     const pathname = decodeURIComponent((req.url ?? "/").split("?")[0]!);
@@ -166,7 +220,14 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
   test.setTimeout(240_000);
   mkdirSync("test-results/kora-studio-benchmark", { recursive: true });
   expect(samples).toHaveLength(20);
-  const reports:Array<{industry:string;device:string;observations:unknown;findings:unknown;revisions:string[];accepted:boolean}> = [];
+  const reports: Array<{
+    industry: string;
+    device: string;
+    observations: unknown;
+    findings: unknown;
+    revisions: string[];
+    accepted: boolean;
+  }> = [];
   for (const item of samples) {
     expect(item.pageCount).toBeGreaterThanOrEqual(1);
     expect(item.pageCount).toBeLessThanOrEqual(7);
@@ -192,33 +253,58 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
             document.documentElement.clientWidth,
         ),
       ).toBeLessThanOrEqual(1);
-      const shotPath=`test-results/kora-studio-benchmark/${item.key}-${device}.png`;
-      await page.screenshot({path:shotPath,fullPage:true,animations:"disabled"});
-      let observation=await observeRenderedScreenshot(page,"home",device);
-      let findings=studioSchema.reviewScreenshot(observation);
-      const revisions:string[]=[];
+      const shotPath = `test-results/kora-studio-benchmark/${item.key}-${device}.png`;
+      await page.screenshot({
+        path: shotPath,
+        fullPage: true,
+        animations: "disabled",
+      });
+      let observation = await observeRenderedScreenshot(page, "home", device);
+      let findings = studioSchema.reviewScreenshot(observation);
+      const revisions: string[] = [];
       // Bounded, screenshot-driven repair: rerender and inspect real pixels again.
       // An unverified proposal is never described as a successful fix.
-      for(let attempt=0;attempt<studioSchema.MAX_VISUAL_REVISIONS;attempt++){
-        if(!findings.some(x=>x.autoRepairable))break;
-        const change=studioSchema.proposeVisualRevision(item.spec,observation,attempt);
-        if(!change.applied.length)break;
-        item.spec=change.spec;
-        item.files=studioSchema.renderSiteV3(item.spec,{formEndpoint:"https://forms.example.test/submit"});
+      for (
+        let attempt = 0;
+        attempt < studioSchema.MAX_VISUAL_REVISIONS;
+        attempt++
+      ) {
+        if (!findings.some((x) => x.autoRepairable)) break;
+        const change = studioSchema.proposeVisualRevision(
+          item.spec,
+          observation,
+          attempt,
+        );
+        if (!change.applied.length) break;
+        item.spec = change.spec;
+        item.files = studioSchema.renderSiteV3(item.spec, {
+          formEndpoint: "https://forms.example.test/submit",
+        });
         revisions.push(...change.applied);
-        await page.reload({waitUntil:"domcontentloaded"});
-        observation=await observeRenderedScreenshot(page,"home",device);
-        findings=studioSchema.reviewScreenshot(observation);
+        await page.reload({ waitUntil: "domcontentloaded" });
+        observation = await observeRenderedScreenshot(page, "home", device);
+        findings = studioSchema.reviewScreenshot(observation);
         await page.screenshot({
-          path:`test-results/kora-studio-benchmark/${item.key}-${device}-revised-${attempt+1}.png`,
-          fullPage:true,animations:"disabled",
+          path: `test-results/kora-studio-benchmark/${item.key}-${device}-revised-${attempt + 1}.png`,
+          fullPage: true,
+          animations: "disabled",
         });
       }
-      const gate=studioSchema.screenshotGate([observation]);
-      reports.push({industry:item.key,device,observations:observation,findings,revisions,accepted:gate.ok});
-      expect(gate.ok,JSON.stringify(findings)).toBe(true);
+      const gate = studioSchema.screenshotGate([observation]);
+      reports.push({
+        industry: item.key,
+        device,
+        observations: observation,
+        findings,
+        revisions,
+        accepted: gate.ok,
+      });
+      expect(gate.ok, JSON.stringify(findings)).toBe(true);
       await ctx.close();
     }
   }
-  writeFileSync("test-results/kora-studio-benchmark/visual-review.json",JSON.stringify(reports,null,2));
+  writeFileSync(
+    "test-results/kora-studio-benchmark/visual-review.json",
+    JSON.stringify(reports, null, 2),
+  );
 });

@@ -76,7 +76,11 @@ const blockRender = (p: EditProps) => (
     </h2>
     {p.subheading ? <p style={{ fontSize: "1.1rem" }}>{p.subheading}</p> : null}
     {p.body ? <p>{p.body}</p> : null}
-    {p.itemsText ? <div style={{whiteSpace:"pre-line",lineHeight:1.7}}>{p.itemsText}</div> : null}
+    {p.itemsText ? (
+      <div style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
+        {p.itemsText}
+      </div>
+    ) : null}
     {p.buttonLabel ? (
       <span
         style={{
@@ -126,11 +130,28 @@ function defaultSection(type: ComponentName): J {
       submitLabel: "Send message",
     };
   if (type === "Process")
-    return {type:"process",layout:"horizontal-steps",heading:"How it works",intro:"",
-      items:[{title:"First step",text:"Describe the first step"},{title:"Next step",text:"Describe the next step"}]};
+    return {
+      type: "process",
+      layout: "horizontal-steps",
+      heading: "How it works",
+      intro: "",
+      items: [
+        { title: "First step", text: "Describe the first step" },
+        { title: "Next step", text: "Describe the next step" },
+      ],
+    };
   if (type === "FAQ")
-    return {type:"faq",layout:"accordion",heading:"Questions",
-      items:[{question:"How can I contact you?",answer:"Use the contact options on this website."}]};
+    return {
+      type: "faq",
+      layout: "accordion",
+      heading: "Questions",
+      items: [
+        {
+          question: "How can I contact you?",
+          answer: "Use the contact options on this website.",
+        },
+      ],
+    };
   if (type === "CTA")
     return {
       type: "cta",
@@ -157,11 +178,16 @@ function dataProps(section: J, id: string): EditProps {
     buttonLabel: section.button?.label ?? section.primaryCta?.label ?? "",
     buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
     layout: section.layout ?? "",
-    itemsText: section.type === "faq"
-      ? (section.items ?? []).map((it:J)=>[it.question,it.answer].join(" | ")).join("\n")
-      : section.type === "gallery"
-        ? (section.items ?? []).map((it:J)=>it.caption ?? "").join("\n")
-        : (section.items ?? []).map((it:J)=>[it.title,it.text].filter(Boolean).join(" | ")).join("\n"),
+    itemsText:
+      section.type === "faq"
+        ? (section.items ?? [])
+            .map((it: J) => [it.question, it.answer].join(" | "))
+            .join("\n")
+        : section.type === "gallery"
+          ? (section.items ?? []).map((it: J) => it.caption ?? "").join("\n")
+          : (section.items ?? [])
+              .map((it: J) => [it.title, it.text].filter(Boolean).join(" | "))
+              .join("\n"),
   };
 }
 function toPuck(page: J): Data {
@@ -186,8 +212,10 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
       case "hero":
         section.heading = p.heading;
         section.subheading = p.subheading;
-        if (section.primaryCta && p.buttonLabel) section.primaryCta.label = p.buttonLabel;
-        if (section.primaryCta && p.buttonHref) section.primaryCta.href = p.buttonHref;
+        if (section.primaryCta && p.buttonLabel)
+          section.primaryCta.label = p.buttonLabel;
+        if (section.primaryCta && p.buttonHref)
+          section.primaryCta.href = p.buttonHref;
         break;
       case "statement":
         section.text = p.heading;
@@ -199,14 +227,24 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
         section.intro = p.subheading;
         if (p.itemsText.trim()) {
           const existing = section.items ?? [];
-          section.items = p.itemsText.split("\n").map((line:string,index:number)=>{
-            const [rawTitle,...description] = line.split(" | ");
-            const title = (rawTitle ?? "").trim();
-            const old = existing[index] ?? {};
-            const next = {...old,title,text:description.join(" | ").trim()};
-            if(old.title && old.title !== title) { delete next.media; delete next.plate; }
-            return next;
-          }).filter((item:J)=>item.title);
+          section.items = p.itemsText
+            .split("\n")
+            .map((line: string, index: number) => {
+              const [rawTitle, ...description] = line.split(" | ");
+              const title = (rawTitle ?? "").trim();
+              const old = existing[index] ?? {};
+              const next = {
+                ...old,
+                title,
+                text: description.join(" | ").trim(),
+              };
+              if (old.title && old.title !== title) {
+                delete next.media;
+                delete next.plate;
+              }
+              return next;
+            })
+            .filter((item: J) => item.title);
         }
         break;
       case "story":
@@ -218,16 +256,26 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
         break;
       case "faq": {
         section.heading = p.heading;
-        section.items = p.itemsText.split("\n").map((line:string)=>{
-          const [question,...answer] = line.split(" | ");
-          return {question:(question ?? "").trim(),answer:answer.join(" | ").trim()};
-        }).filter((item:J)=>item.question&&item.answer);
+        section.items = p.itemsText
+          .split("\n")
+          .map((line: string) => {
+            const [question, ...answer] = line.split(" | ");
+            return {
+              question: (question ?? "").trim(),
+              answer: answer.join(" | ").trim(),
+            };
+          })
+          .filter((item: J) => item.question && item.answer);
         break;
       }
       case "gallery":
         section.heading = p.heading;
-        section.items = section.items.map((item:J,index:number)=>({
-          ...item,caption:(p.itemsText.split("\n")[index] ?? item.caption ?? "").slice(0,120),
+        section.items = section.items.map((item: J, index: number) => ({
+          ...item,
+          caption: (p.itemsText.split("\n")[index] ?? item.caption ?? "").slice(
+            0,
+            120,
+          ),
         }));
         break;
       case "visit":
@@ -247,13 +295,20 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
     }
     if (p.imageUrl && p.imageUrl !== section.media?.url) {
       const owner = ownerPhotos.find((x) => x.url === p.imageUrl);
-      if (!owner) throw new Error("Choose a photo from your uploaded asset library.");
+      if (!owner)
+        throw new Error("Choose a photo from your uploaded asset library.");
       section.media = {
-        url: owner.url, alt: owner.alt || "Customer uploaded photo",
-        width: owner.width, height: owner.height,
-        focalPoint: owner.focal, role: section.type === "hero" ? "hero" : "feature",
+        url: owner.url,
+        alt: owner.alt || "Customer uploaded photo",
+        width: owner.width,
+        height: owner.height,
+        focalPoint: owner.focal,
+        role: section.type === "hero" ? "hero" : "feature",
         treatment: "none",
-        provenance: {sourceType:"owner-supplied",reviewStatus:"owner-approved"},
+        provenance: {
+          sourceType: "owner-supplied",
+          reviewStatus: "owner-approved",
+        },
       };
       delete section.plate;
     }
@@ -270,108 +325,145 @@ const defaults = (type: ComponentName) => {
     );
   }
 };
-function createWebsiteConfig(ownerPhotos:J[],pages:J[]):Config {
-  const sources = new Map<string,string>();
-  for (const p of pages) for (const section of p.sections) {
-    if (section.media?.url) sources.set(section.media.url, section.media.alt || "Existing approved image");
-  }
+function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
+  const sources = new Map<string, string>();
+  for (const p of pages)
+    for (const section of p.sections) {
+      if (section.media?.url)
+        sources.set(
+          section.media.url,
+          section.media.alt || "Existing approved image",
+        );
+    }
   for (const photo of ownerPhotos)
     if (photo.url) sources.set(photo.url, photo.alt || "Uploaded photo");
   const imageField = {
     type: "select" as const,
     label: "Image from approved library",
     options: [
-      {label:"No change / no image",value:""},
-      ...[...sources].map(([value,label])=>({value,label:label.slice(0,85)})),
+      { label: "No change / no image", value: "" },
+      ...[...sources].map(([value, label]) => ({
+        value,
+        label: label.slice(0, 85),
+      })),
     ],
   };
   const headingFields = {
     heading: { type: "text" as const, label: "Headline" },
     subheading: { type: "textarea" as const, label: "Supporting text" },
     imageUrl: imageField,
-    buttonLabel: {type:"text" as const,label:"Button label"},
-    buttonHref: {type:"text" as const,label:"Button link"},
+    buttonLabel: { type: "text" as const, label: "Button label" },
+    buttonHref: { type: "text" as const, label: "Button link" },
   };
   return {
-  components: {
-    Hero: {
-      label: "Hero",
-      fields: headingFields,
-      defaultProps: defaults("Hero"),
-      render: blockRender,
-    },
-    Statement: {
-      label: "Statement",
-      fields: { heading: { type: "textarea" } },
-      defaultProps: defaults("Statement"),
-      render: blockRender,
-    },
-    Offer: {
-      label: "Services",
-      fields: { heading: { type: "text" }, subheading: { type: "textarea" }, itemsText:{type:"textarea"} },
-      defaultProps: defaults("Offer"),
-      render: blockRender,
-      permissions: { insert: false },
-    },
-    Products: {
-      label: "Products",
-      fields: { heading: { type: "text" }, subheading: { type: "textarea" }, itemsText:{type:"textarea"} },
-      defaultProps: defaults("Products"),
-      render: blockRender,
-      permissions: { insert: false },
-    },
-    Story: {
-      label: "Story",
-      fields: {
-        heading: { type: "text" },
-        body: { type: "textarea" },
-        imageUrl: imageField,
+    components: {
+      Hero: {
+        label: "Hero",
+        fields: headingFields,
+        defaultProps: defaults("Hero"),
+        render: blockRender,
       },
-      defaultProps: defaults("Story"),
-      render: blockRender,
-    },
-    Process: {label:"Process steps",
-      fields:{heading:{type:"text"},subheading:{type:"textarea"},itemsText:{type:"textarea"}},
-      defaultProps:defaults("Process"),render:blockRender},
-    FAQ: {label:"Questions & answers",
-      fields:{heading:{type:"text"},itemsText:{type:"textarea"}},
-      defaultProps:defaults("FAQ"),render:blockRender},
-    Gallery: {label:"Gallery",
-      fields:{heading:{type:"text"},itemsText:{type:"textarea"}},
-      defaultProps:defaults("Gallery"),render:blockRender,permissions:{insert:false}},
-    Visit: {label:"Visit us",
-      fields:{heading:{type:"text"},subheading:{type:"textarea"}},
-      defaultProps:defaults("Visit"),render:blockRender,permissions:{insert:false}},
-    Contact: {
-      label: "Contact",
-      fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
-      defaultProps: defaults("Contact"),
-      render: blockRender,
-    },
-    CTA: {
-      label: "Call to action",
-      fields: {
-        heading: { type: "text" },
-        body: { type: "textarea" },
-        buttonLabel: { type: "text" },
-        buttonHref: {type:"text"},
+      Statement: {
+        label: "Statement",
+        fields: { heading: { type: "textarea" } },
+        defaultProps: defaults("Statement"),
+        render: blockRender,
       },
-      defaultProps: defaults("CTA"),
-      render: blockRender,
+      Offer: {
+        label: "Services",
+        fields: {
+          heading: { type: "text" },
+          subheading: { type: "textarea" },
+          itemsText: { type: "textarea" },
+        },
+        defaultProps: defaults("Offer"),
+        render: blockRender,
+        permissions: { insert: false },
+      },
+      Products: {
+        label: "Products",
+        fields: {
+          heading: { type: "text" },
+          subheading: { type: "textarea" },
+          itemsText: { type: "textarea" },
+        },
+        defaultProps: defaults("Products"),
+        render: blockRender,
+        permissions: { insert: false },
+      },
+      Story: {
+        label: "Story",
+        fields: {
+          heading: { type: "text" },
+          body: { type: "textarea" },
+          imageUrl: imageField,
+        },
+        defaultProps: defaults("Story"),
+        render: blockRender,
+      },
+      Process: {
+        label: "Process steps",
+        fields: {
+          heading: { type: "text" },
+          subheading: { type: "textarea" },
+          itemsText: { type: "textarea" },
+        },
+        defaultProps: defaults("Process"),
+        render: blockRender,
+      },
+      FAQ: {
+        label: "Questions & answers",
+        fields: { heading: { type: "text" }, itemsText: { type: "textarea" } },
+        defaultProps: defaults("FAQ"),
+        render: blockRender,
+      },
+      Gallery: {
+        label: "Gallery",
+        fields: { heading: { type: "text" }, itemsText: { type: "textarea" } },
+        defaultProps: defaults("Gallery"),
+        render: blockRender,
+        permissions: { insert: false },
+      },
+      Visit: {
+        label: "Visit us",
+        fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
+        defaultProps: defaults("Visit"),
+        render: blockRender,
+        permissions: { insert: false },
+      },
+      Contact: {
+        label: "Contact",
+        fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
+        defaultProps: defaults("Contact"),
+        render: blockRender,
+      },
+      CTA: {
+        label: "Call to action",
+        fields: {
+          heading: { type: "text" },
+          body: { type: "textarea" },
+          buttonLabel: { type: "text" },
+          buttonHref: { type: "text" },
+        },
+        defaultProps: defaults("CTA"),
+        render: blockRender,
+      },
+      Existing: {
+        label: "Existing section",
+        fields: {},
+        defaultProps: defaults("Existing"),
+        render: blockRender,
+        permissions: { insert: false },
+      },
     },
-    Existing: {
-      label: "Existing section",
-      fields: {},
-      defaultProps: defaults("Existing"),
-      render: blockRender,
-      permissions: { insert: false },
-    },
-  },
-} as unknown as Config;
+  } as unknown as Config;
 }
 export function WebsiteStudio() {
   const { id } = useParams();
-  const assets = useLoad(() => api<J>("GET", "/api/sites/" + id + "/studio-assets"), [id]);
+  const assets = useLoad(
+    () => api<J>("GET", "/api/sites/" + id + "/studio-assets"),
+    [id],
+  );
   const versions = useLoad(
     () => api<J[]>("GET", `/api/sites/${id}/versions`),
     [id],
@@ -410,7 +502,10 @@ export function WebsiteStudio() {
   const page =
     spec?.pages?.find((p: J) => p.slug === selectedPage) ?? spec?.pages?.[0];
   const puckData = useMemo(() => (page ? toPuck(page) : null), [page]);
-  const config = useMemo(() => createWebsiteConfig(assets.data?.photos ?? [],spec?.pages ?? []),[assets.data,spec]);
+  const config = useMemo(
+    () => createWebsiteConfig(assets.data?.photos ?? [], spec?.pages ?? []),
+    [assets.data, spec],
+  );
   async function edit(designEdit: J) {
     if (!current) throw new Error("Select an existing draft.");
     setBusy(true);
@@ -764,7 +859,12 @@ export function WebsiteStudio() {
                     Save page SEO
                   </button>
                 </form>
-                {showAssets && <MediaLibraryPanel siteId={id} onUpdated={() => assets.reload()} />}
+                {showAssets && (
+                  <MediaLibraryPanel
+                    siteId={id}
+                    onUpdated={() => assets.reload()}
+                  />
+                )}
                 <p className="muted">
                   Up to seven complete pages. Select a section to edit; drag to
                   reorder. Use Puck's undo/redo, then Save draft.
@@ -791,7 +891,7 @@ export function WebsiteStudio() {
                     await edit({
                       kind: "replace-page-sections",
                       slug: page.slug,
-                      sections: fromPuck(data,assets.data?.photos ?? []),
+                      sections: fromPuck(data, assets.data?.photos ?? []),
                     });
                   }}
                   dictionary={{ "header-publish": "Save draft" }}

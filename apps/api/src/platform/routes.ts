@@ -1020,8 +1020,13 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
   app.get("/api/sites/:id/studio-assets", async (req) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id);
     const media = await loadOwnerMedia(platform.sql, site.id, mediaBaseUrl);
-    return { data: { photos: media.photos, logo: media.logo ?? null,
-      enabled: Boolean(mediaBaseUrl) } };
+    return {
+      data: {
+        photos: media.photos,
+        logo: media.logo ?? null,
+        enabled: Boolean(mediaBaseUrl),
+      },
+    };
   });
   app.post("/api/sites/:id/edit", async (req, reply) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
@@ -1050,39 +1055,60 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       // Asset provenance is enforced at the API boundary, not trusted from Puck.
       // An edit can retain already-licensed assets, or select owner uploads
       // belonging to this exact site. A pasted third-party URL is rejected.
-      if (body.designEdit && typeof body.designEdit === "object" &&
-          "kind" in body.designEdit &&
-          body.designEdit.kind === "replace-page-sections") {
+      if (
+        body.designEdit &&
+        typeof body.designEdit === "object" &&
+        "kind" in body.designEdit &&
+        body.designEdit.kind === "replace-page-sections"
+      ) {
         const original = parseAnySiteSpec(base.spec);
         const allowed = new Set<string>();
         const gather = (value: unknown) => {
           if (!value || typeof value !== "object") return;
-          if ("media" in value && value.media &&
-              typeof value.media === "object" && "url" in value.media &&
-              typeof value.media.url === "string") allowed.add(value.media.url);
+          if (
+            "media" in value &&
+            value.media &&
+            typeof value.media === "object" &&
+            "url" in value.media &&
+            typeof value.media.url === "string"
+          )
+            allowed.add(value.media.url);
           if ("items" in value && Array.isArray(value.items))
             for (const item of value.items) gather(item);
         };
-        for (const page of original.pages) for (const section of page.sections)
-          gather(section);
-        const uploads = await loadOwnerMedia(platform.sql, site.id, mediaBaseUrl);
+        for (const page of original.pages)
+          for (const section of page.sections) gather(section);
+        const uploads = await loadOwnerMedia(
+          platform.sql,
+          site.id,
+          mediaBaseUrl,
+        );
         for (const photo of uploads.photos) allowed.add(photo.url);
-        const requestSections = (body.designEdit as { sections?: unknown }).sections;
+        const requestSections = (body.designEdit as { sections?: unknown })
+          .sections;
         if (Array.isArray(requestSections)) {
           for (const section of requestSections) {
             const candidate = new Set<string>();
             const collect = (value: unknown) => {
               if (!value || typeof value !== "object") return;
-              if ("media" in value && value.media &&
-                  typeof value.media === "object" && "url" in value.media &&
-                  typeof value.media.url === "string") candidate.add(value.media.url);
+              if (
+                "media" in value &&
+                value.media &&
+                typeof value.media === "object" &&
+                "url" in value.media &&
+                typeof value.media.url === "string"
+              )
+                candidate.add(value.media.url);
               if ("items" in value && Array.isArray(value.items))
                 for (const item of value.items) collect(item);
             };
             collect(section);
             if ([...candidate].some((url) => !allowed.has(url)))
-              throw new HttpError(422,"unapproved_studio_asset",
-                "Choose an image from this site's approved media library.");
+              throw new HttpError(
+                422,
+                "unapproved_studio_asset",
+                "Choose an image from this site's approved media library.",
+              );
           }
         }
       }
