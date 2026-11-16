@@ -26,6 +26,34 @@ export class LlmUnavailableError extends Error {
   }
 }
 
+/** A provider backoff signal. Do not attach raw responses or request credentials. */
+export class LlmProviderError extends LlmUnavailableError {
+  constructor(
+    readonly status: number,
+    readonly retryAfterMs: number | null,
+  ) {
+    super(`inference returned HTTP ${status}`);
+  }
+}
+
+function backoffMs(headers: Headers, now = Date.now()): number | null {
+  const retry = headers.get("retry-after");
+  if (retry) {
+    const secs = Number(retry);
+    const until = Number.isFinite(secs) ? secs * 1000 : Date.parse(retry) - now;
+    if (Number.isFinite(until)) return Math.max(1000, Math.min(until, 86_400_000));
+  }
+  const reset = headers.get("x-ratelimit-reset");
+  if (reset) {
+    const value = Number(reset);
+    const until = Number.isFinite(value)
+      ? value * (value < 1e12 ? 1000 : 1) - now
+      : Date.parse(reset) - now;
+    if (Number.isFinite(until)) return Math.max(1000, Math.min(until, 86_400_000));
+  }
+  return null;
+}
+
 export interface OpenAiCompatibleConfig {
   baseUrl: string;
   apiKey: string;
@@ -82,7 +110,7 @@ export class OpenAiCompatibleClient implements LlmClient {
       );
     }
     if (!res.ok)
-      throw new LlmUnavailableError(`inference returned HTTP ${res.status}`);
+      throw new LlmProviderError(res.status, backoffMs(res.headers));
     let body: unknown;
     try {
       body = await res.json();
@@ -139,10 +167,13 @@ export interface AiEnv extends InferenceEnv {
   AI_FALLBACK_3_MODEL?: string | undefined;
 }
 
-/** Tries each provider in order, one retry on a transient failure, and labels who answered. */
+/** Quota-aware fallback. Cooldowns are per provider instance and reset on process restart.
+ * For multi-instance production, move cooldown records to a shared Redis/Postgres lease.
+ */
 export class FallbackLlmClient implements LlmClient {
   readonly model: string;
   readonly provider: string;
+  private readonly unavailableUntil = new Map<LlmClient, number>();
   constructor(private readonly clients: LlmClient[]) {
     if (clients.length === 0) throw new Error("at least one client");
     this.model = clients[0]!.model;
@@ -151,22 +182,37 @@ export class FallbackLlmClient implements LlmClient {
   async complete(req: LlmRequest, signal?: AbortSignal): Promise<LlmResponse> {
     const failures: string[] = [];
     for (const c of this.clients) {
+      if ((this.unavailableUntil.get(c) ?? 0) > Date.now()) continue;
       for (let attempt = 0; attempt < 2; attempt++) {
         try {
           const r = await c.complete(req, signal);
+          this.unavailableUntil.delete(c);
           return { ...r, provider: c.provider ?? r.provider ?? "unlabelled" };
         } catch (error) {
           if (signal?.aborted) throw error;
-          failures.push(
-            `${c.provider ?? c.model}: ${error instanceof Error ? error.message : "error"}`,
-          );
-          // A rejected key or model will not improve on retry.
-          if (/HTTP (401|403|404)/.test(failures.at(-1)!)) break;
+          const name = c.provider ?? c.model;
+          const status = error instanceof LlmProviderError ? error.status : null;
+          failures.push(`${name}: ${error instanceof Error ? error.message : "error"}`);
+          if (status === 429 || status === 402 || status === 403 || status === 401) {
+            // Retry-After / X-RateLimit-Reset can cover daily quotas.
+            // Without provider guidance, use a cautious bounded cooldown.
+            const fallback = status === 429 ? 60_000 : 3_600_000;
+            this.unavailableUntil.set(
+              c,
+              Date.now() + (error instanceof LlmProviderError ? error.retryAfterMs ?? fallback : fallback),
+            );
+            break;
+          }
+          if (status === 400 || status === 404 || status === 422) break;
+          // Only retry transient gateway errors and network failures; never duplicate
+          // on ambiguous errors where a provider may have processed a billed request.
+          if (![502, 503, 504].includes(status ?? 0)) break;
+          if (attempt === 1) this.unavailableUntil.set(c, Date.now() + 30_000);
         }
       }
     }
     throw new LlmUnavailableError(
-      `all inference providers failed (${failures.join("; ")})`,
+      `all inference providers unavailable (${failures.join("; ") || "cooldown active"})`,
     );
   }
 }
