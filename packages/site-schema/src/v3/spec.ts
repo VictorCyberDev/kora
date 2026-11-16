@@ -363,7 +363,7 @@ export const siteSpecV3Schema = z
         }),
       )
       .min(1)
-      .max(7),
+      .max(8), // Read compatibility for existing 8-page v3 sites; generator/editor enforce 7.
     footer: z.object({
       text: text(200).default(""),
       links: z.array(link).max(6).default([]),
