@@ -74,6 +74,16 @@ const briefs = [
     "We repair laptops, mobile phones and business computer equipment.",
     ["Laptop repair", "Phone repair", "Computer support"],
   ],
+  ["fitness","Pulse Movement","We teach functional movement classes, strength sessions and personal training.","Strength classes,Personal training,Movement sessions".split(",")],
+  ["health","North Point Clinic","We provide primary care consultations, preventative checkups and general medical guidance.","Consultations,Wellness checkups,Primary care".split(",")],
+  ["education","Bright Path Academy","We teach learners in small group classes, hands-on workshops and tutoring sessions.","Group classes,Workshops,Tutoring".split(",")],
+  ["homeservices","Lumen Home Care","We maintain and clean homes, offer deep cleaning and scheduled property upkeep.","Home cleaning,Deep cleaning,Property upkeep".split(",")],
+  ["photography","Luma Portraits","We photograph portraits, brand campaigns and special events for clients.","Portrait sessions,Brand photography,Event photography".split(",")],
+  ["travel","Open Atlas Tours","We plan guided cultural tours and personal travel itineraries for visiting guests.","Guided tours,Trip planning,Travel itineraries".split(",")],
+  ["nonprofit","Grow Together Foundation","We coordinate community education workshops and local volunteer programmes.","Workshops,Volunteering,Community programs".split(",")],
+  ["architecture","Formline Practice","We design residential architecture, interior spaces and building renovation concepts.","Architecture,Interiors,Renovation".split(",")],
+  ["portfolio","Amina Creates","I produce editorial illustrations, web design work and visual identity projects for clients.","Illustration,Branding,Web design".split(",")],
+  ["consulting","Northstar Advisory","We advise organizations on operations improvement, leadership development and strategic planning.","Operations,Leadership,Strategy".split(",")],
   [
     "hotel",
     "The Fern House",
@@ -150,12 +160,12 @@ test.afterAll(async () => {
   await new Promise<void>((resolve) => server.close(() => resolve()));
 });
 
-test("10 industries have real rendered desktop/mobile screenshots, navigation and layout checks", async ({
+test("20 industries have real rendered desktop/mobile screenshots, navigation and layout checks", async ({
   browser,
 }) => {
   test.setTimeout(240_000);
   mkdirSync("test-results/kora-studio-benchmark", { recursive: true });
-  expect(samples).toHaveLength(10);
+  expect(samples).toHaveLength(20);
   const reports:Array<{industry:string;device:string;observations:unknown;findings:unknown;revisions:string[];accepted:boolean}> = [];
   for (const item of samples) {
     expect(item.pageCount).toBeGreaterThanOrEqual(1);
