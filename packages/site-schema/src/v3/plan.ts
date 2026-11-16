@@ -334,7 +334,9 @@ export function planSiteV3(
   const v = resolveVertical(`${b.name} ${b.industry ?? ""} ${b.description}`);
   const g = direction.genome;
   const activeDesignRules = selectDesignRules({ industry: v.cluster });
-  const designEffects = new Set(activeDesignRules.map((rule) => rule.effect).filter(Boolean));
+  const designEffects = new Set(
+    activeDesignRules.map((rule) => rule.effect).filter(Boolean),
+  );
   const colorway = GRAMMARS.find(
     (x) => x.id === direction.grammarId,
   )!.colorways.find((c) => c.id === direction.colorwayId)!;
@@ -453,7 +455,8 @@ export function planSiteV3(
     designEffects.has("editorial-photo-hero") &&
     mp.hero &&
     heroLayout === "type-dominant"
-  ) heroLayout = "editorial-split";
+  )
+    heroLayout = "editorial-split";
   const plateKinds = [
     "arch",
     "circles",
@@ -519,8 +522,14 @@ export function planSiteV3(
   const photoForOffer = (name: string, index: number): MediaV3 | undefined => {
     if (!media.length) return undefined;
     if (mp.source === "owner") return media[index % media.length];
-    const words = name.toLowerCase().split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, "")).filter((w) => w.length >= 4);
-    return media.find((m) => words.some((word) => m.alt.toLowerCase().includes(word)));
+    const words = name
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .map((w) => w.replace(/s$/, ""))
+      .filter((w) => w.length >= 4);
+    return media.find((m) =>
+      words.some((word) => m.alt.toLowerCase().includes(word)),
+    );
   };
   const offerItems = services.map((name, i) => {
     const photo = photoForOffer(name, i);
@@ -841,7 +850,8 @@ export function planSiteV3(
       const prev = homeSections[index - 1];
       const current = homeSections[index];
       if (
-        prev && current &&
+        prev &&
+        current &&
         (prev.type === "offer" || prev.type === "products") &&
         (current.type === "offer" || current.type === "products")
       ) {
