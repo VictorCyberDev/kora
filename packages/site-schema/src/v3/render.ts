@@ -508,7 +508,7 @@ function toneFor(spec: SiteSpecV3, sections: SectionV3[], i: number): Tone {
 
 function navItems(spec: SiteSpecV3, from: string) {
   return spec.pages
-    .filter((p) => p.slug !== "home")
+    .filter((p) => p.slug !== "home" && !p.navHidden)
     .map((p) => ({
       label: p.nav ?? p.title,
       href: relFrom(from, p.slug),
@@ -648,7 +648,7 @@ export function renderPageV3(
   const page = spec.pages.find((p) => p.slug === slug)!;
   const root = slug === "home" ? "" : "../";
   const title =
-    slug === "home" ? spec.seo.title : `${page.title} | ${spec.business.name}`;
+    page.seoTitle || (slug === "home" ? spec.seo.title : `${page.title} | ${spec.business.name}`);
   const fo = origin(rc.formEndpoint);
   const csp = `default-src 'none'; img-src 'self' https: data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src ${fo}; form-action ${fo}; base-uri 'none'`;
   const c: Ctx = {
@@ -687,7 +687,7 @@ export function renderPageV3(
         `<link rel="preload" href="/_kora/fonts/${f}" as="font" type="font/woff2" crossorigin>`,
     )
     .join("\n");
-  const desc = spec.seo.description;
+  const desc = page.seoDescription || spec.seo.description;
   const canon = spec.seo.canonicalOrigin
     ? `${spec.seo.canonicalOrigin}${slug === "home" ? "/" : `/${slug}/`}`
     : "";
