@@ -72,7 +72,8 @@ const intents: Record<string, string[]> = {
 };
 const cache = new Map<string, { expires: number; photos: StockPhoto[] }>();
 let remaining = 50,
-  pauseUntil = 0;
+  pauseUntil = 0,
+  nextBudgetReset = Date.now() + 3600_000;
 const MAX_PER_BUILD = 3,
   MIN_REMAINING = 4;
 const valid = (uri: string, host: string) => {
@@ -90,6 +91,10 @@ export async function findUnsplashStock(
   fetcher: typeof fetch = fetch,
 ): Promise<StockPhoto[]> {
   if (!key || Date.now() < pauseUntil) return [];
+  if (Date.now() >= nextBudgetReset) {
+    remaining = 50;
+    nextBudgetReset = Date.now() + 3600_000;
+  }
   const labels = intents[industry.toLowerCase()] ?? [];
   if (!labels.length) return [];
   const found: StockPhoto[] = [];
@@ -109,6 +114,7 @@ export async function findUnsplashStock(
       const response = await fetcher(url, {
         headers: { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" },
         signal: AbortSignal.timeout(4000),
+        redirect:"error",
       });
       const left = response.headers.get("x-ratelimit-remaining");
       if (left !== null && Number.isFinite(Number(left)))
@@ -116,6 +122,7 @@ export async function findUnsplashStock(
       else remaining = Math.max(0, remaining - 1);
       if (response.status === 429) {
         pauseUntil = Date.now() + 3600000;
+        nextBudgetReset = pauseUntil;
         break;
       }
       if (!response.ok) continue;
@@ -184,6 +191,7 @@ export async function trackUnsplashSelection(
       const response = await fetcher(photo.downloadLocation, {
         headers: { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" },
         signal: AbortSignal.timeout(3500),
+        redirect:"error",
       });
       if (!response.ok) return false;
     } catch {
