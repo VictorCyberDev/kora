@@ -40,11 +40,6 @@ const names: Record<string, ComponentName> = {
   contact: "Contact",
   cta: "CTA",
 };
-const headingFields = {
-  heading: { type: "text" as const, label: "Headline" },
-  subheading: { type: "textarea" as const, label: "Supporting text" },
-  imageUrl: { type: "text" as const, label: "Approved image URL" },
-};
 const blockRender = (p: EditProps) => (
   <section
     style={{
