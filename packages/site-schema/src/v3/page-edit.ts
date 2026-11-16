@@ -122,6 +122,7 @@ export function editPagesV3(spec: SiteSpecV3, input: unknown): SiteSpecV3 {
         slug: e.slug,
         title: e.title,
         nav: e.title.slice(0, 30),
+        navHidden: false,
         purpose: e.purpose,
         conversionGoal: "enquire",
         sections: e.sections,
