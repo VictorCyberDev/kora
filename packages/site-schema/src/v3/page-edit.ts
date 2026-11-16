@@ -22,6 +22,7 @@ export const pageEditSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("duplicate-page"), slug: pageSlug, newSlug: pageSlug, title }),
   z.object({ kind: z.literal("reorder-page"), slug: pageSlug, to: index }),
   z.object({ kind: z.literal("set-navigation"), slug: pageSlug, visible: z.boolean() }),
+  z.object({ kind: z.literal("page-seo"), slug: pageSlug, title: z.string().max(70), description: z.string().max(180) }),
   z.object({ kind: z.literal("insert-section"), slug: pageSlug, at: index, section: sectionV3Schema }),
   z.object({ kind: z.literal("replace-section"), slug: pageSlug, at: index, section: sectionV3Schema }),
   z.object({ kind: z.literal("remove-section"), slug: pageSlug, at: index }),
@@ -60,7 +61,7 @@ export function editPagesV3(spec: SiteSpecV3, input: unknown): SiteSpecV3 {
   switch (e.kind) {
     case "create-page":
       if (next.pages.length >= 7) throw new PageEditError("A website can have at most seven pages.");
-      if (e.slug === "home") throw new PageEditError("The homepage already exists.");
+      if (e.slug === "home" || e.purpose === "home") throw new PageEditError("A second homepage is not allowed.");
       available(e.slug);
       next.pages.push({
         slug: e.slug, title: e.title, nav: e.title.slice(0,30), purpose: e.purpose,
@@ -72,6 +73,7 @@ export function editPagesV3(spec: SiteSpecV3, input: unknown): SiteSpecV3 {
       break;
     case "change-slug": {
       if (e.slug === "home" || e.newSlug === "home") throw new PageEditError("Homepage slug is fixed.");
+      if(e.newSlug===e.slug) return next;
       available(e.newSlug);
       if (usedLinks(next,e.slug)) throw new PageEditError("Update links to this page before changing its URL.");
       get(e.slug).slug=e.newSlug;
@@ -101,8 +103,11 @@ export function editPagesV3(spec: SiteSpecV3, input: unknown): SiteSpecV3 {
     case "set-navigation": {
       const p=get(e.slug);
       if (e.slug === "home") throw new PageEditError("Homepage is always available.");
-      p.nav=e.visible?(p.title.slice(0,30)) : undefined;
+      p.navHidden=!e.visible;
       break;
+    }
+    case "page-seo": {
+      const p=get(e.slug); p.seoTitle=e.title; p.seoDescription=e.description; break;
     }
     case "insert-section":
       { const p=get(e.slug); if(p.sections.length>=16||e.at>p.sections.length)throw new PageEditError("Invalid section position or limit."); p.sections.splice(e.at,0,e.section); }
