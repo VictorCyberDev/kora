@@ -21,6 +21,8 @@ type EditProps = {
   imageUrl: string;
   buttonLabel: string;
   buttonHref: string;
+  itemsText: string;
+  layout: string;
 };
 type ComponentName =
   | "Hero"
@@ -30,6 +32,10 @@ type ComponentName =
   | "Story"
   | "Contact"
   | "CTA"
+  | "Process"
+  | "FAQ"
+  | "Gallery"
+  | "Visit"
   | "Existing";
 const names: Record<string, ComponentName> = {
   hero: "Hero",
@@ -39,6 +45,10 @@ const names: Record<string, ComponentName> = {
   story: "Story",
   contact: "Contact",
   cta: "CTA",
+  process: "Process",
+  faq: "FAQ",
+  gallery: "Gallery",
+  visit: "Visit",
 };
 const blockRender = (p: EditProps) => (
   <section
@@ -66,6 +76,7 @@ const blockRender = (p: EditProps) => (
     </h2>
     {p.subheading ? <p style={{ fontSize: "1.1rem" }}>{p.subheading}</p> : null}
     {p.body ? <p>{p.body}</p> : null}
+    {p.itemsText ? <div style={{whiteSpace:"pre-line",lineHeight:1.7}}>{p.itemsText}</div> : null}
     {p.buttonLabel ? (
       <span
         style={{
@@ -114,6 +125,12 @@ function defaultSection(type: ComponentName): J {
       formFields: ["name", "email", "message"],
       submitLabel: "Send message",
     };
+  if (type === "Process")
+    return {type:"process",layout:"steps",heading:"How it works",intro:"",
+      items:[{title:"First step",text:"Describe the first step"},{title:"Next step",text:"Describe the next step"}]};
+  if (type === "FAQ")
+    return {type:"faq",layout:"accordion",heading:"Questions",
+      items:[{question:"How can I contact you?",answer:"Use the contact options on this website."}]};
   if (type === "CTA")
     return {
       type: "cta",
@@ -139,6 +156,12 @@ function dataProps(section: J, id: string): EditProps {
     imageUrl: section.media?.url ?? "",
     buttonLabel: section.button?.label ?? section.primaryCta?.label ?? "",
     buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
+    layout: section.layout ?? "",
+    itemsText: section.type === "faq"
+      ? (section.items ?? []).map((it:J)=>[it.question,it.answer].join(" | ")).join("\n")
+      : section.type === "gallery"
+        ? (section.items ?? []).map((it:J)=>it.caption ?? "").join("\n")
+        : (section.items ?? []).map((it:J)=>[it.title,it.text].filter(Boolean).join(" | ")).join("\n"),
   };
 }
 function toPuck(page: J): Data {
@@ -171,8 +194,20 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
         break;
       case "offer":
       case "products":
+      case "process":
         section.heading = p.heading;
         section.intro = p.subheading;
+        if (p.itemsText.trim()) {
+          const existing = section.items ?? [];
+          section.items = p.itemsText.split("\n").map((line:string,index:number)=>{
+            const [rawTitle,...description] = line.split(" | ");
+            const title = rawTitle.trim();
+            const old = existing[index] ?? {};
+            const next = {...old,title,text:description.join(" | ").trim()};
+            if(old.title && old.title !== title) { delete next.media; delete next.plate; }
+            return next;
+          }).filter((item:J)=>item.title);
+        }
         break;
       case "story":
         section.heading = p.heading;
@@ -180,6 +215,24 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
           .split("\n")
           .map((s) => s.trim())
           .filter(Boolean);
+        break;
+      case "faq": {
+        section.heading = p.heading;
+        section.items = p.itemsText.split("\n").map((line:string)=>{
+          const [question,...answer] = line.split(" | ");
+          return {question:question.trim(),answer:answer.join(" | ").trim()};
+        }).filter((item:J)=>item.question&&item.answer);
+        break;
+      }
+      case "gallery":
+        section.heading = p.heading;
+        section.items = section.items.map((item:J,index:number)=>({
+          ...item,caption:(p.itemsText.split("\n")[index] ?? item.caption ?? "").slice(0,120),
+        }));
+        break;
+      case "visit":
+        section.heading = p.heading;
+        section.intro = p.subheading;
         break;
       case "contact":
         section.heading = p.heading;
@@ -255,14 +308,14 @@ function createWebsiteConfig(ownerPhotos:J[],pages:J[]):Config {
     },
     Offer: {
       label: "Services",
-      fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
+      fields: { heading: { type: "text" }, subheading: { type: "textarea" }, itemsText:{type:"textarea"} },
       defaultProps: defaults("Offer"),
       render: blockRender,
       permissions: { insert: false },
     },
     Products: {
       label: "Products",
-      fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
+      fields: { heading: { type: "text" }, subheading: { type: "textarea" }, itemsText:{type:"textarea"} },
       defaultProps: defaults("Products"),
       render: blockRender,
       permissions: { insert: false },
@@ -277,6 +330,18 @@ function createWebsiteConfig(ownerPhotos:J[],pages:J[]):Config {
       defaultProps: defaults("Story"),
       render: blockRender,
     },
+    Process: {label:"Process steps",
+      fields:{heading:{type:"text"},subheading:{type:"textarea"},itemsText:{type:"textarea"}},
+      defaultProps:defaults("Process"),render:blockRender},
+    FAQ: {label:"Questions & answers",
+      fields:{heading:{type:"text"},itemsText:{type:"textarea"}},
+      defaultProps:defaults("FAQ"),render:blockRender},
+    Gallery: {label:"Gallery",
+      fields:{heading:{type:"text"},itemsText:{type:"textarea"}},
+      defaultProps:defaults("Gallery"),render:blockRender,permissions:{insert:false}},
+    Visit: {label:"Visit us",
+      fields:{heading:{type:"text"},subheading:{type:"textarea"}},
+      defaultProps:defaults("Visit"),render:blockRender,permissions:{insert:false}},
     Contact: {
       label: "Contact",
       fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
