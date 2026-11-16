@@ -29,7 +29,6 @@ type ComponentName =
   | "Contact"
   | "CTA"
   | "Existing";
-type Components = Record<ComponentName, EditProps>;
 const names: Record<string, ComponentName> = {
   hero: "Hero",
   statement: "Statement",
@@ -206,7 +205,7 @@ const defaults = (type: ComponentName) => {
     );
   }
 };
-const websiteConfig: Config<Components> = {
+const websiteConfig = {
   components: {
     Hero: {
       label: "Hero",
@@ -268,7 +267,7 @@ const websiteConfig: Config<Components> = {
       permissions: { insert: false },
     },
   },
-};
+} as unknown as Config;
 export function WebsiteStudio() {
   const { id } = useParams();
   const versions = useLoad(
