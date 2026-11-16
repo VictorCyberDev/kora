@@ -276,6 +276,7 @@ export class Operations {
     if (!built) throw notFound();
     const result = await reason(this.d.llm, built.input, {
       versionIds: built.versionIds,
+      ...(built.site ? { tenantId: built.site.orgId } : {}),
     });
     const id = await this.d.ops.saveReasoning({
       incidentId,
@@ -295,6 +296,11 @@ export class Operations {
           built.site.id,
           "AI_INPUT_TOKENS",
           result.inputTokens,
+          {
+            provider: result.provider,
+            model: result.model,
+            latencyMs: result.latencyMs,
+          },
         );
       if (result.outputTokens)
         await this.d.platform.recordUsage(
@@ -302,6 +308,11 @@ export class Operations {
           built.site.id,
           "AI_OUTPUT_TOKENS",
           result.outputTokens,
+          {
+            provider: result.provider,
+            model: result.model,
+            latencyMs: result.latencyMs,
+          },
         );
     }
     return { id, ...result, snapshotId: built.snapshotId };
