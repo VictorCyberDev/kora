@@ -1173,6 +1173,7 @@ export function planSiteV3(
       engine: "kora-creative/1",
       direction: direction.index,
       generator: "deterministic",
+      appliedDesignRules: activeDesignRules.map((rule) => rule.id),
     },
   });
   return { spec, direction, brandOs: osBase };
