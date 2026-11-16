@@ -463,19 +463,69 @@ export function WebsiteStudio() {
                     {preview ? "Editor" : "Actual saved preview"}
                   </button>
                 </form>
-                <div className="row" role="group" aria-label="Brand colors and typography">
+                <div
+                  className="row"
+                  role="group"
+                  aria-label="Brand colors and typography"
+                >
                   <span className="muted">Brand appearance:</span>
-                  {(["warmer","cooler","darker","lighter"] as const).map(nudge => (
-                    <button key={nudge} type="button" className="btn sm ghost" disabled={busy} onClick={() => void edit({kind:"nudge",nudge}).catch(()=>{})}>{nudge}</button>
-                  ))}
-                  <label>Typography
-                    <select disabled={busy} value={spec.design.genome.typeVoice}
-                      onChange={e=>void edit({kind:"type-voice",typeVoice:e.target.value}).catch(()=>{})}>
-                      {(["editorial-luxury","modern-serif","technical-grotesk","friendly-humanist","craft-warm","minimal-modernist","poster-condensed","high-fashion"] as const).map(font=>
-                        <option key={font} value={font}>{font.replace(/-/g," ")}</option>
+                  {(["warmer", "cooler", "darker", "lighter"] as const).map(
+                    (nudge) => (
+                      <button
+                        key={nudge}
+                        type="button"
+                        className="btn sm ghost"
+                        disabled={busy}
+                        onClick={() =>
+                          void edit({ kind: "nudge", nudge }).catch(() => {})
+                        }
+                      >
+                        {nudge}
+                      </button>
+                    ),
+                  )}
+                  <label>
+                    Typography
+                    <select
+                      disabled={busy}
+                      value={spec.design.genome.typeVoice}
+                      onChange={(e) =>
+                        void edit({
+                          kind: "type-voice",
+                          typeVoice: e.target.value,
+                        }).catch(() => {})
+                      }
+                    >
+                      {(
+                        [
+                          "editorial-luxury",
+                          "modern-serif",
+                          "technical-grotesk",
+                          "friendly-humanist",
+                          "craft-warm",
+                          "minimal-modernist",
+                          "poster-condensed",
+                          "high-fashion",
+                        ] as const
+                      ).map((font) => (
+                        <option key={font} value={font}>
+                          {font.replace(/-/g, " ")}
+                        </option>
+                      ))}
+                      {![
+                        "editorial-luxury",
+                        "modern-serif",
+                        "technical-grotesk",
+                        "friendly-humanist",
+                        "craft-warm",
+                        "minimal-modernist",
+                        "poster-condensed",
+                        "high-fashion",
+                      ].includes(spec.design.genome.typeVoice) && (
+                        <option value={spec.design.genome.typeVoice}>
+                          {spec.design.genome.typeVoice.replace(/-/g, " ")}
+                        </option>
                       )}
-                      {!["editorial-luxury","modern-serif","technical-grotesk","friendly-humanist","craft-warm","minimal-modernist","poster-condensed","high-fashion"].includes(spec.design.genome.typeVoice) &&
-                        <option value={spec.design.genome.typeVoice}>{spec.design.genome.typeVoice.replace(/-/g," ")}</option>}
                     </select>
                   </label>
                 </div>
