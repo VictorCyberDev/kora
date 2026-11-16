@@ -208,6 +208,7 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
     const section: J = JSON.parse(p.original);
     if ((names[section.type] ?? "Existing") !== component.type)
       throw new Error("Unsupported section conversion.");
+    if (p.layout && p.layout !== section.layout) section.layout = p.layout;
     switch (section.type) {
       case "hero":
         section.heading = p.heading;
@@ -351,12 +352,14 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
       })),
     ],
   };
+  const layoutField = (values:string[]) => ({type:"select" as const,label:"Section layout",options:values.map(value=>({value,label:value.replace(/-/g," ")}))});
   const headingFields = {
     heading: { type: "text" as const, label: "Headline" },
     subheading: { type: "textarea" as const, label: "Supporting text" },
     imageUrl: imageField,
     buttonLabel: { type: "text" as const, label: "Button label" },
     buttonHref: { type: "text" as const, label: "Button link" },
+    layout:layoutField(["cinematic","editorial-split","type-dominant","poster","menu-focus","booking-focus","location-focus","collage","arch-portrait","minimal-statement","ticker-energy","product-dominant","call-first"]),
   };
   return {
     components: {
@@ -378,6 +381,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           subheading: { type: "textarea" },
           itemsText: { type: "textarea" },
+          layout: layoutField(["editorial-index","menu-list","image-tiles","stacked-panels","accordion","sticky-split","board","ladder"]),
         },
         defaultProps: defaults("Offer"),
         render: blockRender,
@@ -389,6 +393,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           subheading: { type: "textarea" },
           itemsText: { type: "textarea" },
+          layout: layoutField(["rail","gallery-grid","featured-pair","price-menu"]),
         },
         defaultProps: defaults("Products"),
         render: blockRender,
@@ -400,6 +405,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           body: { type: "textarea" },
           imageUrl: imageField,
+          layout: layoutField(["manifesto","founder-note","split-image","craft"]),
         },
         defaultProps: defaults("Story"),
         render: blockRender,
@@ -410,6 +416,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           heading: { type: "text" },
           subheading: { type: "textarea" },
           itemsText: { type: "textarea" },
+          layout: layoutField(["numerals","horizontal-steps","timeline-line"]),
         },
         defaultProps: defaults("Process"),
         render: blockRender,
@@ -422,21 +429,21 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
       },
       Gallery: {
         label: "Gallery",
-        fields: { heading: { type: "text" }, itemsText: { type: "textarea" } },
+        fields: { heading: { type: "text" }, itemsText: { type: "textarea" }, layout:layoutField(["mosaic","rail","pair","grid"]) },
         defaultProps: defaults("Gallery"),
         render: blockRender,
         permissions: { insert: false },
       },
       Visit: {
         label: "Visit us",
-        fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
+        fields: { heading: { type: "text" }, subheading: { type: "textarea" },layout:layoutField(["card","split"]) },
         defaultProps: defaults("Visit"),
         render: blockRender,
         permissions: { insert: false },
       },
       Contact: {
         label: "Contact",
-        fields: { heading: { type: "text" }, subheading: { type: "textarea" } },
+        fields: { heading: { type: "text" }, subheading: { type: "textarea" },layout:layoutField(["whatsapp-first","call-first","booking-form","enquiry-form","visit"]) },
         defaultProps: defaults("Contact"),
         render: blockRender,
       },
@@ -447,6 +454,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           body: { type: "textarea" },
           buttonLabel: { type: "text" },
           buttonHref: { type: "text" },
+          layout:layoutField(["statement","outline","marquee"]),
         },
         defaultProps: defaults("CTA"),
         render: blockRender,
