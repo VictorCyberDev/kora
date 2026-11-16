@@ -14,7 +14,7 @@ import {
   ctaLabel,
   offerPhrase,
   resolveVertical,
-  selectDesignRules,
+  loadDesignSkills,
   type BrandOS,
   type BusinessTruth,
   type ComposeOptions,
@@ -352,7 +352,7 @@ export function planSiteV3(
   const b = truth.brief;
   const v = resolveVertical(`${b.name} ${b.industry ?? ""} ${b.description}`);
   const g = direction.genome;
-  const activeDesignRules = selectDesignRules({ industry: v.cluster });
+  const activeDesignRules = loadDesignSkills({ industry: v.cluster }).rules;
   const designEffects = new Set(
     activeDesignRules.map((rule) => rule.effect).filter(Boolean),
   );
