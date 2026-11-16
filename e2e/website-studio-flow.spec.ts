@@ -70,6 +70,26 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     ).toBeVisible();
     await page.getByRole("button", { name: "Actual saved preview" }).click();
     await expect(page.getByTitle(/Saved website preview/)).toBeVisible();
+    // Local test Site Host lifecycle: older version, new draft, then restore.
+    const firstPublish = await ctx.request.post(
+      "/api/sites/" + siteId + "/versions/" + original + "/publish",
+      {headers},
+    );
+    expect(firstPublish.ok()).toBe(true);
+    const newPublish = await ctx.request.post(
+      "/api/sites/" + siteId + "/versions/" + site.currentVersionId + "/publish",
+      {headers},
+    );
+    expect(newPublish.ok()).toBe(true);
+    const publicUrl = (await newPublish.json()).data.publicUrl as string;
+    expect(publicUrl).toMatch(/^https?:/);
+    expect((await ctx.request.get(publicUrl)).status()).toBe(200);
+    const restore = await ctx.request.post(
+      "/api/sites/" + siteId + "/versions/" + original + "/rollback",
+      {headers},
+    );
+    expect(restore.ok()).toBe(true);
+
     await expect(
       page.getByRole("link", { name: "Versions & publish" }),
     ).toBeVisible();
