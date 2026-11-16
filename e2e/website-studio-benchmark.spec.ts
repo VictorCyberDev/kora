@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
 import { observeRenderedScreenshot } from "./visual-observe";
 import type { SiteSpecV3 } from "../packages/site-schema/src/v3/spec.js";
-import {reviewScreenshot,proposeVisualRevision,MAX_VISUAL_REVISIONS,screenshotGate} from "../packages/site-schema/src/v3/visual-qa.js";
+
 
 /** Actual published-renderer benchmark, not screenshots of a mock template. */
 const root = resolve(__dirname, "..");
@@ -195,26 +195,26 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
       const shotPath=`test-results/kora-studio-benchmark/${item.key}-${device}.png`;
       await page.screenshot({path:shotPath,fullPage:true,animations:"disabled"});
       let observation=await observeRenderedScreenshot(page,"home",device);
-      let findings=reviewScreenshot(observation);
+      let findings=studioSchema.reviewScreenshot(observation);
       const revisions:string[]=[];
       // Bounded, screenshot-driven repair: rerender and inspect real pixels again.
       // An unverified proposal is never described as a successful fix.
-      for(let attempt=0;attempt<MAX_VISUAL_REVISIONS;attempt++){
+      for(let attempt=0;attempt<studioSchema.MAX_VISUAL_REVISIONS;attempt++){
         if(!findings.some(x=>x.autoRepairable))break;
-        const change=proposeVisualRevision(item.spec,observation,attempt);
+        const change=studioSchema.proposeVisualRevision(item.spec,observation,attempt);
         if(!change.applied.length)break;
         item.spec=change.spec;
         item.files=studioSchema.renderSiteV3(item.spec,{formEndpoint:"https://forms.example.test/submit"});
         revisions.push(...change.applied);
         await page.reload({waitUntil:"domcontentloaded"});
         observation=await observeRenderedScreenshot(page,"home",device);
-        findings=reviewScreenshot(observation);
+        findings=studioSchema.reviewScreenshot(observation);
         await page.screenshot({
           path:`test-results/kora-studio-benchmark/${item.key}-${device}-revised-${attempt+1}.png`,
           fullPage:true,animations:"disabled",
         });
       }
-      const gate=screenshotGate([observation]);
+      const gate=studioSchema.screenshotGate([observation]);
       reports.push({industry:item.key,device,observations:observation,findings,revisions,accepted:gate.ok});
       expect(gate.ok,JSON.stringify(findings)).toBe(true);
       await ctx.close();
