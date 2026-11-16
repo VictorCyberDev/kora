@@ -20,6 +20,7 @@ type EditProps = {
   body: string;
   imageUrl: string;
   buttonLabel: string;
+  buttonHref: string;
 };
 type ComponentName =
   | "Hero"
@@ -141,7 +142,8 @@ function dataProps(section: J, id: string): EditProps {
         ? (section.body ?? []).join("\n")
         : (section.body ?? ""),
     imageUrl: section.media?.url ?? "",
-    buttonLabel: section.button?.label ?? "",
+    buttonLabel: section.button?.label ?? section.primaryCta?.label ?? "",
+    buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
   };
 }
 function toPuck(page: J): Data {
@@ -154,7 +156,7 @@ function toPuck(page: J): Data {
   };
 }
 /** Rehydrate existing validated sections; never allow the editor to supply executable markup. */
-function fromPuck(data: Data): J[] {
+function fromPuck(data: Data, ownerPhotos: J[]): J[] {
   return data.content.map((component) => {
     const p = component.props as unknown as EditProps;
     if (!p.original)
@@ -166,6 +168,8 @@ function fromPuck(data: Data): J[] {
       case "hero":
         section.heading = p.heading;
         section.subheading = p.subheading;
+        if (section.primaryCta && p.buttonLabel) section.primaryCta.label = p.buttonLabel;
+        if (section.primaryCta && p.buttonHref) section.primaryCta.href = p.buttonHref;
         break;
       case "statement":
         section.text = p.heading;
@@ -190,9 +194,21 @@ function fromPuck(data: Data): J[] {
         section.heading = p.heading;
         section.body = p.body;
         section.button.label = p.buttonLabel;
+        if (p.buttonHref) section.button.href = p.buttonHref;
         break;
     }
-    if (section.media && p.imageUrl) section.media.url = p.imageUrl;
+    if (p.imageUrl && p.imageUrl !== section.media?.url) {
+      const owner = ownerPhotos.find((x) => x.url === p.imageUrl);
+      if (!owner) throw new Error("Choose a photo from your uploaded asset library.");
+      section.media = {
+        url: owner.url, alt: owner.alt || "Customer uploaded photo",
+        width: owner.width, height: owner.height,
+        focalPoint: owner.focal, role: section.type === "hero" ? "hero" : "feature",
+        treatment: "none",
+        provenance: {sourceType:"owner-supplied",reviewStatus:"owner-approved"},
+      };
+      delete section.plate;
+    }
     return section;
   });
 }
@@ -206,7 +222,29 @@ const defaults = (type: ComponentName) => {
     );
   }
 };
-const websiteConfig = {
+function createWebsiteConfig(ownerPhotos:J[],pages:J[]):Config {
+  const sources = new Map<string,string>();
+  for (const p of pages) for (const section of p.sections) {
+    if (section.media?.url) sources.set(section.media.url, section.media.alt || "Existing approved image");
+  }
+  for (const photo of ownerPhotos)
+    if (photo.url) sources.set(photo.url, photo.alt || "Uploaded photo");
+  const imageField = {
+    type: "select" as const,
+    label: "Image from approved library",
+    options: [
+      {label:"No change / no image",value:""},
+      ...[...sources].map(([value,label])=>({value,label:label.slice(0,85)})),
+    ],
+  };
+  const headingFields = {
+    heading: { type: "text" as const, label: "Headline" },
+    subheading: { type: "textarea" as const, label: "Supporting text" },
+    imageUrl: imageField,
+    buttonLabel: {type:"text" as const,label:"Button label"},
+    buttonHref: {type:"text" as const,label:"Button link"},
+  };
+  return {
   components: {
     Hero: {
       label: "Hero",
@@ -239,7 +277,7 @@ const websiteConfig = {
       fields: {
         heading: { type: "text" },
         body: { type: "textarea" },
-        imageUrl: { type: "text" },
+        imageUrl: imageField,
       },
       defaultProps: defaults("Story"),
       render: blockRender,
@@ -256,6 +294,7 @@ const websiteConfig = {
         heading: { type: "text" },
         body: { type: "textarea" },
         buttonLabel: { type: "text" },
+        buttonHref: {type:"text"},
       },
       defaultProps: defaults("CTA"),
       render: blockRender,
@@ -269,8 +308,10 @@ const websiteConfig = {
     },
   },
 } as unknown as Config;
+}
 export function WebsiteStudio() {
   const { id } = useParams();
+  const assets = useLoad(() => api<J>("GET", "/api/sites/" + id + "/studio-assets"), [id]);
   const versions = useLoad(
     () => api<J[]>("GET", `/api/sites/${id}/versions`),
     [id],
@@ -309,6 +350,7 @@ export function WebsiteStudio() {
   const page =
     spec?.pages?.find((p: J) => p.slug === selectedPage) ?? spec?.pages?.[0];
   const puckData = useMemo(() => (page ? toPuck(page) : null), [page]);
+  const config = useMemo(() => createWebsiteConfig(assets.data?.photos ?? [],spec?.pages ?? []),[assets.data,spec]);
   async function edit(designEdit: J) {
     if (!current) throw new Error("Select an existing draft.");
     setBusy(true);
@@ -662,7 +704,7 @@ export function WebsiteStudio() {
                     Save page SEO
                   </button>
                 </form>
-                {showAssets && <MediaLibraryPanel siteId={id} />}
+                {showAssets && <MediaLibraryPanel siteId={id} onUpdated={() => assets.reload()} />}
                 <p className="muted">
                   Up to seven complete pages. Select a section to edit; drag to
                   reorder. Use Puck's undo/redo, then Save draft.
@@ -682,14 +724,14 @@ export function WebsiteStudio() {
               ) : (
                 <Puck
                   key={`${current}:${page.slug}`}
-                  config={websiteConfig}
+                  config={config}
                   data={puckData}
                   onChange={() => setDirty(true)}
                   onPublish={async (data) => {
                     await edit({
                       kind: "replace-page-sections",
                       slug: page.slug,
-                      sections: fromPuck(data),
+                      sections: fromPuck(data,assets.data?.photos ?? []),
                     });
                   }}
                   dictionary={{ "header-publish": "Save draft" }}
