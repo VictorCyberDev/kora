@@ -126,7 +126,7 @@ function defaultSection(type: ComponentName): J {
       submitLabel: "Send message",
     };
   if (type === "Process")
-    return {type:"process",layout:"steps",heading:"How it works",intro:"",
+    return {type:"process",layout:"horizontal-steps",heading:"How it works",intro:"",
       items:[{title:"First step",text:"Describe the first step"},{title:"Next step",text:"Describe the next step"}]};
   if (type === "FAQ")
     return {type:"faq",layout:"accordion",heading:"Questions",
