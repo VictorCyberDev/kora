@@ -91,6 +91,8 @@ export interface PlanV3Options {
   ownerLogo?: OwnerLogoInput;
   /** Already license-checked and hotlinkable external photos (e.g. Unsplash). */
   stockPhotos?: MediaV3[];
+  /** Provider selection tracking; failure triggers safe local-stock fallback. */
+  trackStock?: (usedUrls: string[]) => Promise<boolean>;
   /** Real reviews the owner supplied. Without them no testimonial section exists. */
   quotes?: Array<{ quote: string; author: string; role?: string }>;
   /** Real figures the owner supplied ("Since 2015", "3 branches") as value/label pairs. */
