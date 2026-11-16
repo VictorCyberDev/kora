@@ -345,7 +345,10 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
         );
       for (const item of section.items ?? [])
         if (item.media?.url)
-          sources.set(item.media.url,item.media.alt || "Existing approved image");
+          sources.set(
+            item.media.url,
+            item.media.alt || "Existing approved image",
+          );
     }
   for (const photo of ownerPhotos)
     if (photo.url) sources.set(photo.url, photo.alt || "Uploaded photo");

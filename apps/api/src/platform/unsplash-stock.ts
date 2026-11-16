@@ -114,7 +114,7 @@ export async function findUnsplashStock(
       const response = await fetcher(url, {
         headers: { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" },
         signal: AbortSignal.timeout(4000),
-        redirect:"error",
+        redirect: "error",
       });
       const left = response.headers.get("x-ratelimit-remaining");
       if (left !== null && Number.isFinite(Number(left)))
@@ -191,7 +191,7 @@ export async function trackUnsplashSelection(
       const response = await fetcher(photo.downloadLocation, {
         headers: { Authorization: `Client-ID ${key}`, "Accept-Version": "v1" },
         signal: AbortSignal.timeout(3500),
-        redirect:"error",
+        redirect: "error",
       });
       if (!response.ok) return false;
     } catch {

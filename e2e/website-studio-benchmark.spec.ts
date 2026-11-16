@@ -313,16 +313,23 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
       // and functional contact paths instead of assuming a page array is enough.
       if (device === "desktop") {
         for (const pg of item.spec.pages.filter((p) => p.slug !== "home")) {
-          const child = await page.goto(`${origin}/${item.key}/${pg.slug}/`,{
-            waitUntil:"domcontentloaded",
+          const child = await page.goto(`${origin}/${item.key}/${pg.slug}/`, {
+            waitUntil: "domcontentloaded",
           });
-          expect(child?.status(),item.key + ":" + pg.slug).toBe(200);
+          expect(child?.status(), item.key + ":" + pg.slug).toBe(200);
           await expect(page.locator("main")).toBeVisible();
           await expect(page.locator("h1")).toHaveCount(1);
-          await expect(page).toHaveTitle(pg.seoTitle || `${pg.title} | ${item.spec.business.name}`);
-          expect(await page.evaluate(() =>
-            document.documentElement.scrollWidth-document.documentElement.clientWidth
-          ),item.key + ":" + pg.slug).toBeLessThanOrEqual(1);
+          await expect(page).toHaveTitle(
+            pg.seoTitle || `${pg.title} | ${item.spec.business.name}`,
+          );
+          expect(
+            await page.evaluate(
+              () =>
+                document.documentElement.scrollWidth -
+                document.documentElement.clientWidth,
+            ),
+            item.key + ":" + pg.slug,
+          ).toBeLessThanOrEqual(1);
         }
       }
       await ctx.close();
