@@ -310,9 +310,9 @@ export class SiteAuthor {
       if (chosen.length && !await o.trackStock(chosen)) {
         // Tracking must succeed before Unsplash images enter a generated site.
         // Retry once with Kora's curated licensed local catalog instead.
-        return this.generateV3(rawBrief, direction, {
-          ...o,stockPhotos:[],trackStock:undefined,
-        },assist);
+        const safeOptions: PlanV3Options = {...o,stockPhotos:[]};
+        delete safeOptions.trackStock;
+        return this.generateV3(rawBrief,direction,safeOptions,assist);
       }
     }
     return {
