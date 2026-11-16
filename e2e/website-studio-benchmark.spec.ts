@@ -1,8 +1,11 @@
 import { createServer, type Server } from "node:http";
-import { mkdirSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
+import { observeRenderedScreenshot } from "./visual-observe";
+import type { SiteSpecV3 } from "../packages/site-schema/src/v3/spec.js";
+import {reviewScreenshot,proposeVisualRevision,MAX_VISUAL_REVISIONS,screenshotGate} from "../packages/site-schema/src/v3/visual-qa.js";
 
 /** Actual published-renderer benchmark, not screenshots of a mock template. */
 const root = resolve(__dirname, "..");
@@ -84,11 +87,14 @@ let samples: Array<{
   key: string;
   files: Record<string, string>;
   pageCount: number;
+  spec: SiteSpecV3;
 }> = [];
+let studioSchema: typeof import("../packages/site-schema/src/index.js");
 test.beforeAll(async () => {
   const schema = (await import(
     pathToFileURL(join(root, "packages/site-schema/dist/src/index.js")).href
   )) as typeof import("../packages/site-schema/src/index.js");
+  studioSchema = schema;
   samples = briefs.map(([key, name, description, services]) => {
     const input = {
       name,
@@ -101,7 +107,7 @@ test.beforeAll(async () => {
     const files = schema.renderSiteV3(direction.spec, {
       formEndpoint: "https://forms.example.test/submit",
     });
-    return { key, files, pageCount: direction.spec.pages.length };
+    return { key, files, pageCount: direction.spec.pages.length, spec:direction.spec };
   });
   server = createServer((req, res) => {
     const pathname = decodeURIComponent((req.url ?? "/").split("?")[0]!);
@@ -150,6 +156,7 @@ test("10 industries have real rendered desktop/mobile screenshots, navigation an
   test.setTimeout(240_000);
   mkdirSync("test-results/kora-studio-benchmark", { recursive: true });
   expect(samples).toHaveLength(10);
+  const reports:Array<{industry:string;device:string;observations:unknown;findings:unknown;revisions:string[];accepted:boolean}> = [];
   for (const item of samples) {
     expect(item.pageCount).toBeGreaterThanOrEqual(1);
     expect(item.pageCount).toBeLessThanOrEqual(7);
@@ -175,12 +182,33 @@ test("10 industries have real rendered desktop/mobile screenshots, navigation an
             document.documentElement.clientWidth,
         ),
       ).toBeLessThanOrEqual(1);
-      await page.screenshot({
-        path: `test-results/kora-studio-benchmark/${item.key}-${device}.png`,
-        fullPage: true,
-        animations: "disabled",
-      });
+      const shotPath=`test-results/kora-studio-benchmark/${item.key}-${device}.png`;
+      await page.screenshot({path:shotPath,fullPage:true,animations:"disabled"});
+      let observation=await observeRenderedScreenshot(page,"home",device);
+      let findings=reviewScreenshot(observation);
+      const revisions:string[]=[];
+      // Bounded, screenshot-driven repair: rerender and inspect real pixels again.
+      // An unverified proposal is never described as a successful fix.
+      for(let attempt=0;attempt<MAX_VISUAL_REVISIONS;attempt++){
+        if(!findings.some(x=>x.autoRepairable))break;
+        const change=proposeVisualRevision(item.spec,observation,attempt);
+        if(!change.applied.length)break;
+        item.spec=change.spec;
+        item.files=studioSchema.renderSiteV3(item.spec,{formEndpoint:"https://forms.example.test/submit"});
+        revisions.push(...change.applied);
+        await page.reload({waitUntil:"domcontentloaded"});
+        observation=await observeRenderedScreenshot(page,"home",device);
+        findings=reviewScreenshot(observation);
+        await page.screenshot({
+          path:`test-results/kora-studio-benchmark/${item.key}-${device}-revised-${attempt+1}.png`,
+          fullPage:true,animations:"disabled",
+        });
+      }
+      const gate=screenshotGate([observation]);
+      reports.push({industry:item.key,device,observations:observation,findings,revisions,accepted:gate.ok});
+      expect(gate.ok,JSON.stringify(findings)).toBe(true);
       await ctx.close();
     }
   }
+  writeFileSync("test-results/kora-studio-benchmark/visual-review.json",JSON.stringify(reports,null,2));
 });
