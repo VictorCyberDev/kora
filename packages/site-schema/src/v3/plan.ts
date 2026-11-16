@@ -513,21 +513,25 @@ export function planSiteV3(
       return hasMedia ? ("stacked-panels" as const) : ("image-tiles" as const);
     return L;
   })();
-  const offerItems = services.map((s, i) => ({
-    title: s,
-    text: "",
-    ...(truth.can.prices ? {} : {}),
-    ...(!hasMedia
-      ? { plate: plateFor(i + 1) }
-      : media[i % media.length]
-        ? {
-            media: {
-              ...media[(i + 1) % media.length]!,
-              role: "feature" as const,
-            },
-          }
-        : {}),
-  }));
+  // Stock imagery is an illustration, never evidence of a customer's actual
+  // products. Avoid putting cake photographs beside an unrelated bread
+  // offering simply because the curated library has too few images.
+  const photoForOffer = (name: string, index: number): MediaV3 | undefined => {
+    if (!media.length) return undefined;
+    if (mp.source === "owner") return media[index % media.length];
+    const words = name.toLowerCase().split(/[^a-z0-9]+/).map((w) => w.replace(/s$/, "")).filter((w) => w.length >= 4);
+    return media.find((m) => words.some((word) => m.alt.toLowerCase().includes(word)));
+  };
+  const offerItems = services.map((name, i) => {
+    const photo = photoForOffer(name, i);
+    return {
+      title: name,
+      text: "",
+      ...(photo
+        ? { media: { ...photo, role: "feature" as const } }
+        : { plate: plateFor(i + 1) }),
+    };
+  });
   const offer = (): SectionV3 | null =>
     services.length
       ? {
