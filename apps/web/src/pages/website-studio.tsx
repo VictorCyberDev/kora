@@ -200,7 +200,7 @@ function toPuck(page: J): Data {
   };
 }
 /** Rehydrate existing validated sections; never allow the editor to supply executable markup. */
-function fromPuck(data: Data, ownerPhotos: J[]): J[] {
+function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
   return data.content.map((component) => {
     const p = component.props as unknown as EditProps;
     if (!p.original)
@@ -295,9 +295,12 @@ function fromPuck(data: Data, ownerPhotos: J[]): J[] {
     }
     if (p.imageUrl && p.imageUrl !== section.media?.url) {
       const owner = ownerPhotos.find((x) => x.url === p.imageUrl);
-      if (!owner)
-        throw new Error("Choose a photo from your uploaded asset library.");
-      section.media = {
+      const existing = knownMedia.find((media) => media.url === p.imageUrl);
+      if (!owner && !existing)
+        throw new Error("Choose a photo from this site's approved asset library.");
+      section.media = existing ? {
+        ...existing,role:section.type === "hero" ? "hero":"feature",
+      } : {
         url: owner.url,
         alt: owner.alt || "Customer uploaded photo",
         width: owner.width,
@@ -891,7 +894,12 @@ export function WebsiteStudio() {
                     await edit({
                       kind: "replace-page-sections",
                       slug: page.slug,
-                      sections: fromPuck(data, assets.data?.photos ?? []),
+                      sections: fromPuck(data, assets.data?.photos ?? [],
+                        (spec.pages ?? []).flatMap((pg:J)=>(pg.sections ?? []).flatMap((sec:J)=>[
+                          ...(sec.media ? [sec.media]:[]),
+                          ...(sec.items ?? []).flatMap((it:J)=>it.media?[it.media]:[]),
+                        ])),
+                      ),
                     });
                   }}
                   dictionary={{ "header-publish": "Save draft" }}
