@@ -4,7 +4,7 @@
  * Selection is deterministic: the same brief always yields the same three directions.
  */
 import { z } from "zod";
-import { selectDesignRules } from "./design-rules.js";
+import { loadDesignSkills } from "./skill-registry.js";
 import { artDirect, type ImageBrief } from "./artdirection.js";
 import { distinctColorway } from "./palette.js";
 import {
@@ -278,7 +278,7 @@ export function composeDirections(
     );
     used.push(colorway);
     const strategy = deriveBrandStrategy(truth, v, g);
-    const designRules = selectDesignRules({ industry: v.cluster });
+    const designRules = loadDesignSkills({ industry: v.cluster }).rules;
     const thing = offerPhrase(truth, v);
     const ad = (["hero", "feature", "gallery"] as const).map((placement) =>
       artDirect({
