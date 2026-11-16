@@ -1,6 +1,8 @@
 import {
   applySitePatch,
   applyStructuredEditV3,
+  editPagesV3,
+  pageEditSchema,
   ruleBasedEditV3,
   applyIntelligence,
   applyStructuredEditV2,
@@ -451,11 +453,15 @@ export class SiteAuthor {
       note,
     });
     try {
-      if (input.designEdit)
-        return done(applyStructuredEditV3(spec, input.designEdit), null);
+      if (input.designEdit) {
+        const pageOperation = pageEditSchema.safeParse(input.designEdit);
+        return done(pageOperation.success
+          ? editPagesV3(spec, pageOperation.data)
+          : applyStructuredEditV3(spec, input.designEdit), null);
+      }
     } catch (e) {
       throw new EditNotUnderstood(
-        e instanceof Error && e.name === "EditV3Error"
+        e instanceof Error && (e.name === "EditV3Error" || e.name === "PageEditError")
           ? e.message
           : "That change is not available. Nothing was changed.",
       );
