@@ -648,7 +648,10 @@ export function renderPageV3(
   const page = spec.pages.find((p) => p.slug === slug)!;
   const root = slug === "home" ? "" : "../";
   const title =
-    page.seoTitle || (slug === "home" ? spec.seo.title : `${page.title} | ${spec.business.name}`);
+    page.seoTitle ||
+    (slug === "home"
+      ? spec.seo.title
+      : `${page.title} | ${spec.business.name}`);
   const fo = origin(rc.formEndpoint);
   const csp = `default-src 'none'; img-src 'self' https: data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src ${fo}; form-action ${fo}; base-uri 'none'`;
   const c: Ctx = {

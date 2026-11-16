@@ -6,11 +6,22 @@
 import { z } from "zod";
 
 export const DesignPhaseSchema = z.enum([
-  "brief", "concept", "composition", "render", "critique", "revise", "validate",
+  "brief",
+  "concept",
+  "composition",
+  "render",
+  "critique",
+  "revise",
+  "validate",
 ]);
 export const DesignPrioritySchema = z.enum([
-  "security", "accessibility", "approved-brand", "functionality",
-  "creative", "refinement", "decoration",
+  "security",
+  "accessibility",
+  "approved-brand",
+  "functionality",
+  "creative",
+  "refinement",
+  "decoration",
 ]);
 export const DesignRuleSchema = z.object({
   id: z.string().regex(/^[a-z][a-z0-9-]{2,79}$/),
@@ -36,33 +47,58 @@ const priority: Record<z.infer<typeof DesignPrioritySchema>, number> = {
 
 export const FIRST_PARTY_DESIGN_RULES = z.array(DesignRuleSchema).parse([
   {
-    id: "accessible-navigation", source: "kora-first-party", version: 1,
-    phase: "validate", priority: "accessibility", industries: ["*"],
-    instruction: "Navigation and interactive controls must remain keyboard accessible.",
+    id: "accessible-navigation",
+    source: "kora-first-party",
+    version: 1,
+    phase: "validate",
+    priority: "accessibility",
+    industries: ["*"],
+    instruction:
+      "Navigation and interactive controls must remain keyboard accessible.",
     incompatibleWith: ["decorative-navigation-only"],
   },
   {
-    id: "verified-business-claims", source: "kora-first-party", version: 1,
-    phase: "brief", priority: "security", industries: ["*"],
-    instruction: "Do not present unverified business facts, testimonials or awards as real.",
+    id: "verified-business-claims",
+    source: "kora-first-party",
+    version: 1,
+    phase: "brief",
+    priority: "security",
+    industries: ["*"],
+    instruction:
+      "Do not present unverified business facts, testimonials or awards as real.",
     incompatibleWith: ["invented-social-proof"],
   },
   {
-    id: "food-photography-relevance", source: "kora-first-party", version: 1,
-    phase: "composition", priority: "creative", industries: ["food"],
-    instruction: "Prioritize relevant food imagery with a crop that preserves the product.",
+    id: "food-photography-relevance",
+    source: "kora-first-party",
+    version: 1,
+    phase: "composition",
+    priority: "creative",
+    industries: ["food"],
+    instruction:
+      "Prioritize relevant food imagery with a crop that preserves the product.",
     incompatibleWith: [],
   },
   {
-    id: "professional-trust-hierarchy", source: "kora-first-party", version: 1,
-    phase: "composition", priority: "creative", industries: ["professional"],
-    instruction: "Use clear expertise and service hierarchy without invented credentials.",
+    id: "professional-trust-hierarchy",
+    source: "kora-first-party",
+    version: 1,
+    phase: "composition",
+    priority: "creative",
+    industries: ["professional"],
+    instruction:
+      "Use clear expertise and service hierarchy without invented credentials.",
     incompatibleWith: [],
   },
   {
-    id: "avoid-repetitive-grids", source: "kora-first-party", version: 1,
-    phase: "critique", priority: "refinement", industries: ["*"],
-    instruction: "Avoid three consecutive sections with the same card-grid composition.",
+    id: "avoid-repetitive-grids",
+    source: "kora-first-party",
+    version: 1,
+    phase: "critique",
+    priority: "refinement",
+    industries: ["*"],
+    instruction:
+      "Avoid three consecutive sections with the same card-grid composition.",
     incompatibleWith: [],
   },
 ]);
@@ -82,18 +118,23 @@ export function selectDesignRules(
   const disabled = new Set(args.disabledRuleIds);
   const candidates = registry
     .map((r) => DesignRuleSchema.parse(r))
-    .filter((r) =>
-      !disabled.has(r.id) &&
-      (r.industries.includes("*") || r.industries.includes(args.industry)) &&
-      (!args.phase || r.phase === args.phase),
+    .filter(
+      (r) =>
+        !disabled.has(r.id) &&
+        (r.industries.includes("*") || r.industries.includes(args.industry)) &&
+        (!args.phase || r.phase === args.phase),
     )
-    .sort((a, b) => priority[a.priority] - priority[b.priority] || a.id.localeCompare(b.id));
+    .sort(
+      (a, b) =>
+        priority[a.priority] - priority[b.priority] || a.id.localeCompare(b.id),
+    );
 
   const selected: DesignRule[] = [];
   const active = new Set<string>();
   for (const candidate of candidates) {
     if (candidate.incompatibleWith.some((id) => active.has(id))) continue;
-    if (selected.some((rule) => rule.incompatibleWith.includes(candidate.id))) continue;
+    if (selected.some((rule) => rule.incompatibleWith.includes(candidate.id)))
+      continue;
     if (active.has(candidate.id)) continue;
     selected.push(candidate);
     active.add(candidate.id);

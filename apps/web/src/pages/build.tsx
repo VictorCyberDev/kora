@@ -143,7 +143,13 @@ export function Build() {
 
   return (
     <div className="studio">
-      {isV3 && <div className="card"><Link className="btn" to={`/app/sites/${id}/website-studio`}>Open visual website editor</Link></div>}
+      {isV3 && (
+        <div className="card">
+          <Link className="btn" to={`/app/sites/${id}/website-studio`}>
+            Open visual website editor
+          </Link>
+        </div>
+      )}
       <div className="studio-side">
         <div className="card">
           <div className="tabs" role="tablist" aria-label="Editor">

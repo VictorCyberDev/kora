@@ -455,13 +455,17 @@ export class SiteAuthor {
     try {
       if (input.designEdit) {
         const pageOperation = pageEditSchema.safeParse(input.designEdit);
-        return done(pageOperation.success
-          ? editPagesV3(spec, pageOperation.data)
-          : applyStructuredEditV3(spec, input.designEdit), null);
+        return done(
+          pageOperation.success
+            ? editPagesV3(spec, pageOperation.data)
+            : applyStructuredEditV3(spec, input.designEdit),
+          null,
+        );
       }
     } catch (e) {
       throw new EditNotUnderstood(
-        e instanceof Error && (e.name === "EditV3Error" || e.name === "PageEditError")
+        e instanceof Error &&
+          (e.name === "EditV3Error" || e.name === "PageEditError")
           ? e.message
           : "That change is not available. Nothing was changed.",
       );

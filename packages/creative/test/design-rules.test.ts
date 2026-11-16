@@ -13,15 +13,23 @@ describe("first-party design rule registry", () => {
   it("prefers accessibility over conflicting decoration", () => {
     const rules = selectDesignRules({ industry: "food" }, [
       {
-        id: "decorative-navigation-only", source: "kora-first-party",
-        version: 1, phase: "render", priority: "decoration",
-        industries: ["*"], instruction: "Render a decorative navigation-only treatment.",
+        id: "decorative-navigation-only",
+        source: "kora-first-party",
+        version: 1,
+        phase: "render",
+        priority: "decoration",
+        industries: ["*"],
+        instruction: "Render a decorative navigation-only treatment.",
         incompatibleWith: ["accessible-navigation"],
       },
       {
-        id: "accessible-navigation", source: "kora-first-party",
-        version: 1, phase: "validate", priority: "accessibility",
-        industries: ["*"], instruction: "Preserve keyboard-accessible navigation controls.",
+        id: "accessible-navigation",
+        source: "kora-first-party",
+        version: 1,
+        phase: "validate",
+        priority: "accessibility",
+        industries: ["*"],
+        instruction: "Preserve keyboard-accessible navigation controls.",
         incompatibleWith: ["decorative-navigation-only"],
       },
     ]);
@@ -29,6 +37,8 @@ describe("first-party design rule registry", () => {
   });
 
   it("rejects malformed metadata instead of executing unknown rules", () => {
-    expect(() => DesignRuleSchema.parse({ id: "<script>", source: "remote" })).toThrow();
+    expect(() =>
+      DesignRuleSchema.parse({ id: "<script>", source: "remote" }),
+    ).toThrow();
   });
 });

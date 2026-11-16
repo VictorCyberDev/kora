@@ -314,7 +314,14 @@ export function composeDirections(
       signatureDevice: g.signature,
       pagePhilosophy: `${v.pages.join(" · ")}${v.singlePageSuffices ? " (one strong page can carry this business)" : ""}`,
       campaignBehaviour: g.campaignBehaviour,
-      antiPatterns: [...new Set([...g.antiPatterns, ...designRules.filter((r) => r.phase === "critique").map((r) => r.instruction.slice(0, 80))])].slice(0, 10),
+      antiPatterns: [
+        ...new Set([
+          ...g.antiPatterns,
+          ...designRules
+            .filter((r) => r.phase === "critique")
+            .map((r) => r.instruction.slice(0, 80)),
+        ]),
+      ].slice(0, 10),
       artDirection: ad,
       seed,
       fit: { score: Math.round(fit.score * 10) / 10, reasons: fit.reasons },
