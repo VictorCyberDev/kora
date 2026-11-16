@@ -32,6 +32,7 @@ import { fatigueAvoid, tasteSignals } from "@kora/creative";
 import { designContext } from "./design-context.js";
 import type { DirectionTrace } from "./author.js";
 import { loadOwnerMedia, mediaBase } from "./owner-media-loader.js";
+import { findUnsplashStock, trackUnsplashSelection } from "./unsplash-stock.js";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
 import { sendArtifact } from "./hosting.js";
@@ -431,10 +432,17 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     config.KORA_MEDIA_PUBLIC_URL ?? config.KORA_PUBLIC_URL,
   );
   /** The owner's good pictures and logo, in the planner's terms. Empty when no https media origin is configured. */
-  const ownerPlan = async (siteId: string, orgId: string) => {
+  const ownerPlan = async (siteId: string, orgId: string, industry?: string) => {
     const m = await loadOwnerMedia(platform.sql, siteId, mediaBaseUrl);
     const ctx = await designContext(brandOs, orgId);
+    const stock = m.photos.length || !industry ? [] :
+      await findUnsplashStock(industry, process.env.KORA_UNSPLASH_ACCESS_KEY);
     return {
+      stockPhotos: stock.map((photo) => photo.media),
+      trackStock: (urls: string[]) => trackUnsplashSelection(
+        stock.filter((photo) => urls.includes(photo.media.url)),
+        process.env.KORA_UNSPLASH_ACCESS_KEY,
+      ),
       ownerPhotos: m.photos,
       ...(m.logo ? { ownerLogo: m.logo } : {}),
       ...ctx,
@@ -540,7 +548,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
           .generateV3(
             { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
             extra.direction ?? 0,
-            await ownerPlan(site.id, site.orgId),
+            await ownerPlan(site.id, site.orgId, brief.industry),
             config.KORA_COPY_ASSIST,
           )
           .then((r) => {
@@ -667,7 +675,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     const { directions: planned, recommended } = previewDirections(
       config.KORA_CREATIVE_ENGINE,
       brief,
-      await ownerPlan(site.id, site.orgId),
+      await ownerPlan(site.id, site.orgId, brief.industry),
     );
     const token = randomBytes(16).toString("hex");
     for (const [k, v] of directionPreviews)
@@ -801,7 +809,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       const authored = await author.generateV3(
         brief,
         parsed.direction ?? 0,
-        await ownerPlan(site.id, site.orgId),
+        await ownerPlan(site.id, site.orgId, brief.industry),
       );
       const version = await buildVersion(
         site,
