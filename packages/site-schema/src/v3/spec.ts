@@ -95,6 +95,9 @@ export const mediaV3Schema = z.object({
       provider: text(80).optional(),
       license: text(120).optional(),
       attribution: text(200).optional(),
+      photographer: text(100).optional(),
+      photographerUrl: z.string().url().max(500).optional(),
+      sourceUrl: z.string().url().max(500).optional(),
       reviewStatus: z
         .enum(["owner-approved", "unreviewed", "kora-curated"])
         .default("unreviewed"),
