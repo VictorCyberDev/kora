@@ -37,8 +37,8 @@ jobs:
             apps/web/src/pages/website-studio.tsx \
             apps/web/src/pages/build.tsx \
             apps/web/src/App.tsx \
-            apps/web/package.json \\
-            e2e/website-studio-benchmark.spec.ts \\
+            apps/web/package.json \
+            e2e/website-studio-benchmark.spec.ts \
             e2e/website-studio-flow.spec.ts
       - name: Commit reproducible lockfile and formatting
         run: |
