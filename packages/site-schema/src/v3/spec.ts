@@ -374,6 +374,7 @@ export const siteSpecV3Schema = z
       generator: z
         .enum(["deterministic", "model", "edit"])
         .default("deterministic"),
+      appliedDesignRules: z.array(z.string().max(80)).max(24).default([]),
     }),
   })
   .superRefine((spec, ctx) => {
