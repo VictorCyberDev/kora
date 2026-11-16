@@ -295,6 +295,26 @@ export class SiteAuthor {
           ". The opening headline was suggested by the AI and checked against what you told us.";
       }
     }
+    if (o.stockPhotos?.length && o.trackStock) {
+      const urls = new Set<string>();
+      for (const page of spec.pages) for (const section of page.sections) {
+        if ("media" in section && section.media?.url) urls.add(section.media.url);
+        if ("items" in section && Array.isArray(section.items))
+          for (const item of section.items)
+            if (item && typeof item === "object" && "media" in item &&
+                item.media && typeof item.media === "object" &&
+                "url" in item.media && typeof item.media.url === "string")
+              urls.add(item.media.url);
+      }
+      const chosen = o.stockPhotos.filter((photo) => urls.has(photo.url)).map((photo) => photo.url);
+      if (chosen.length && !await o.trackStock(chosen)) {
+        // Tracking must succeed before Unsplash images enter a generated site.
+        // Retry once with Kora's curated licensed local catalog instead.
+        return this.generateV3(rawBrief, direction, {
+          ...o,stockPhotos:[],trackStock:undefined,
+        },assist);
+      }
+    }
     return {
       spec,
       source,
