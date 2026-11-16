@@ -13,3 +13,5 @@ export * from "./brandos.js";
 export * from "./artifact.js";
 export * from "./references.js";
 export * from "./design-rules.js";
+
+export * from "./skill-registry.js";
