@@ -354,13 +354,16 @@ export const siteSpecV3Schema = z
           slug,
           title: line(80),
           nav: text(30).optional(),
+          navHidden: z.boolean().default(false),
+          seoTitle: text(70).optional(),
+          seoDescription: text(180).optional(),
           purpose: z.enum(PAGE_PURPOSES),
           conversionGoal: z.enum(INTENTS),
           sections: z.array(sectionV3Schema).min(1).max(16),
         }),
       )
       .min(1)
-      .max(8),
+      .max(7),
     footer: z.object({
       text: text(200).default(""),
       links: z.array(link).max(6).default([]),
