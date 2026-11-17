@@ -1,4 +1,4 @@
-import type {BillingService} from "./billing.js";
+import type { BillingService } from "./billing.js";
 import { mediaBase, loadOwnerMedia } from "./owner-media-loader.js";
 import { brandOsHash } from "@kora/creative";
 import type { FastifyInstance, FastifyRequest } from "fastify";
@@ -100,15 +100,24 @@ export function registerCreativeDocumentRoutes(
       "MEMBER",
     );
     const request = createDocumentSchema.parse(req.body);
-    if(billing){
-      const {entitlements}=await billing.entitlements(site.orgId);
-      if(!entitlements.canGenerate)throw new HttpError(402,"plan_restriction",
-        "Your current plan does not permit new design generations.");
+    if (billing) {
+      const { entitlements } = await billing.entitlements(site.orgId);
+      if (!entitlements.canGenerate)
+        throw new HttpError(
+          402,
+          "plan_restriction",
+          "Your current plan does not permit new design generations.",
+        );
     }
-    const limit=await platform.sql`SELECT count(*)::int AS total FROM creative_documents
+    const limit =
+      await platform.sql`SELECT count(*)::int AS total FROM creative_documents
       WHERE site_id=${site.id} AND org_id=${site.orgId} AND status<>'ARCHIVED'`;
-    if(Number(limit[0]?.total??0)>=200)throw new HttpError(429,"creative_library_limit",
-      "This business has reached its active creative document limit.");
+    if (Number(limit[0]?.total ?? 0) >= 200)
+      throw new HttpError(
+        429,
+        "creative_library_limit",
+        "This business has reached its active creative document limit.",
+      );
     const brand = await brandStore.latest(site.id);
     const version = brand?.version ?? 1;
     const owner = requireUser(req).userId;
@@ -167,8 +176,12 @@ export function registerCreativeDocumentRoutes(
     const { id, documentId } = routeIds.parse(req.params);
     const { site, row } = await docFor(req, id, documentId, "MEMBER");
     const { revision, source } = editDocumentSchema.parse(req.body);
-    if(revision>=250)throw new HttpError(429,"creative_history_limit",
-      "This document has reached its revision limit. Create a new document.");
+    if (revision >= 250)
+      throw new HttpError(
+        429,
+        "creative_history_limit",
+        "This document has reached its revision limit. Create a new document.",
+      );
     await validateDocumentMedia(site.id, source);
     if (
       source.approvedLogoId !==
