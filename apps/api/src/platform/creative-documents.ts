@@ -34,6 +34,7 @@ export const graphicLayerSchema = z.discriminatedUnion("type", [
     type: z.literal("line"),
     strokeWidth: z.number().min(0.5).max(100).default(4),
   }),
+  common.extend({type:z.literal("image"),src:z.string().url().max(2000).refine(value=>value.startsWith("https://")),alt:z.string().min(1).max(200),fit:z.enum(["cover","contain"]).default("cover")}),
 ]);
 export type GraphicLayer = z.infer<typeof graphicLayerSchema>;
 export const slideSchema = z.object({
@@ -316,7 +317,8 @@ export function renderSlideSvg(slide: z.infer<typeof slideSchema>): string {
         return `<rect ${attributes} width="${layer.width}" height="${layer.height}" rx="${layer.radius}" fill="${layer.fill}"/>`;
       if (layer.type === "ellipse")
         return `<ellipse ${attributes} cx="${layer.width / 2}" cy="${layer.height / 2}" rx="${layer.width / 2}" ry="${layer.height / 2}" fill="${layer.fill}"/>`;
-      if (layer.type === "line")
+      if (layer.type === "image") return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${layer.fit==="cover"?"xMidYMid slice":"xMidYMid meet"}"/>`;
+    if (layer.type === "line")
         return `<line ${attributes} x1="0" y1="0" x2="${layer.width}" y2="${layer.height}" stroke-width="${layer.strokeWidth}" stroke="${layer.fill}"/>`;
       const lines = layer.text
         .split("\n")
