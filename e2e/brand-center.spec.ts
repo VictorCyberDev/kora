@@ -1,7 +1,7 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 
 /**
- * The Brand Center journey on the v3 engine: an owner opens the brand system Kora made, changes it, saves, reloads,
+ * The Brand Center journey on the v3 engine: an owner opens the brand system Krevstudio made, changes it, saves, reloads,
  * and finds a new version while the old one is untouched. Also: phone layout, owner uploads, and who may see what.
  */
 const BASE = `http://127.0.0.1:${process.env.E2E_V3_PORT ?? "3212"}`;
@@ -18,7 +18,7 @@ async function signup(browser: Browser, tag: string) {
   await p.getByLabel("Password").fill("correct horse battery");
   await p.getByRole("button", { name: "Create account" }).click();
   await expect(
-    p.getByRole("heading", { name: /Tell Kora about your business/ }),
+    p.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
   ).toBeVisible();
   const me = await (await ctx.request.get("/api/auth/me")).json();
   return { ctx, page: p, orgId: me.data.orgs[0].id as string };
@@ -76,7 +76,7 @@ test.afterAll(async () => {
   await other?.ctx.close();
 });
 
-test("the owner reads the brand system Kora made", async () => {
+test("the owner reads the brand system Krevstudio made", async () => {
   const p = owner.page;
   await p.goto(`/app/sites/${siteId}/brand`);
   await expect(p.getByText(/Brand system · version 1/)).toBeVisible();
@@ -118,7 +118,7 @@ test("changing the look saves a new draft and brand version; history stays untou
   expect(versions.length).toBeGreaterThanOrEqual(2);
 });
 
-test("a design request Kora does not offer is refused, not guessed at", async () => {
+test("a design request Krevstudio does not offer is refused, not guessed at", async () => {
   const p = owner.page;
   const r = await owner.ctx.request.post(`/api/sites/${siteId}/edit`, {
     headers: H,
