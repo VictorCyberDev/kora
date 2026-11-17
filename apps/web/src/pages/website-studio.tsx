@@ -36,6 +36,8 @@ type ComponentName =
   | "FAQ"
   | "Gallery"
   | "Visit"
+  | "Ticker"
+  | "Proof"
   | "Existing";
 const names: Record<string, ComponentName> = {
   hero: "Hero",
@@ -49,6 +51,8 @@ const names: Record<string, ComponentName> = {
   faq: "FAQ",
   gallery: "Gallery",
   visit: "Visit",
+  ticker: "Ticker",
+  proof: "Proof",
 };
 const blockRender = (p: EditProps, palette: J = {}) => (
   <section
@@ -142,6 +146,7 @@ function defaultSection(type: ComponentName): J {
         { title: "Next step", text: "Describe the next step" },
       ],
     };
+  if (type === "Ticker") return {type:"ticker",layout:"band",items:["Your first highlight","Your second highlight"]};
   if (type === "FAQ")
     return {
       type: "faq",
@@ -181,7 +186,10 @@ function dataProps(section: J, id: string): EditProps {
     buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
     layout: section.layout ?? "",
     itemsText:
-      section.type === "faq"
+      section.type === "ticker" ? (section.items ?? []).join("\\n")
+      : section.type === "proof" ?
+        (section.quotes ?? []).map((q:J)=>[q.quote,q.author,q.role].filter(Boolean).join(" | ")).join("\\n")
+      : section.type === "faq"
         ? (section.items ?? [])
             .map((it: J) => [it.question, it.answer].join(" | "))
             .join("\n")
@@ -222,6 +230,19 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
         break;
       case "statement":
         section.text = p.heading;
+        break;
+      case "ticker":
+        section.items = p.itemsText.split("\\n").map((x:string)=>x.trim()).filter(Boolean);
+        break;
+      case "proof":
+        // Proof is editable only when supplied by the owner. Never generate
+        // a testimonial as a block default or remove provenance.
+        if(section.supplied !== true) throw new Error("Unverified testimonials cannot be published.");
+        section.heading = p.heading;
+        section.quotes = p.itemsText.split("\\n").map((line:string)=>{
+          const [quote,author,role] = line.split(" | ");
+          return {quote:(quote??"").trim(),author:(author??"").trim(),...(role?.trim()?{role:role.trim()}: {})};
+        }).filter((x:J)=>x.quote && x.author);
         break;
       case "offer":
       case "products":
@@ -478,6 +499,17 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Con
         },
         defaultProps: defaults("Process"),
         render: renderBlock,
+      },
+      Ticker: {
+        label:"Highlight ticker",
+        fields:{itemsText:{type:"textarea"}},
+        defaultProps:defaults("Ticker"),render:renderBlock,
+      },
+      Proof: {
+        label:"Verified customer proof",
+        fields:{heading:{type:"text"},itemsText:{type:"textarea"}},
+        defaultProps:defaults("Proof"),render:renderBlock,
+        permissions:{insert:false},
       },
       FAQ: {
         label: "Questions & answers",
