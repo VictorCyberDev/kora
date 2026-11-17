@@ -57,54 +57,109 @@ const names: Record<string, ComponentName> = {
   ticker: "Ticker",
   proof: "Proof",
 };
-const blockRender = (p: EditProps, palette: J = {}) => (
-  <section
-    style={{
-      padding: "clamp(32px,6vw,92px) 5vw",
-      margin: "12px",
-      background: palette.background || "#fffaf2",
-      color: palette.foreground || "#171319",
-      borderTop: "3px solid " + (palette.accent || "#aa6447"),
-      borderRadius: "min(1vw, 12px)",
-    }}
-  >
-    {p.imageUrl ? (
-      <img
-        src={p.imageUrl}
-        alt=""
-        style={{
-          width: "100%",
-          maxHeight: 340,
-          objectFit: "cover",
-          objectPosition: `${Number(p.focalX) || 50}% ${Number(p.focalY) || 50}%`,
-          marginBottom: 24,
-        }}
-      />
-    ) : null}
-    <h2 style={{ fontSize: "clamp(2rem,5vw,4.5rem)", lineHeight: 1.08 }}>
-      {p.heading}
-    </h2>
-    {p.subheading ? <p style={{ fontSize: "1.1rem" }}>{p.subheading}</p> : null}
-    {p.body ? <p>{p.body}</p> : null}
-    {p.itemsText ? (
-      <div style={{ whiteSpace: "pre-line", lineHeight: 1.7 }}>
-        {p.itemsText}
+const blockRender = (p: EditProps, palette: J = {}) => {
+  // The customer-facing canvas reflects the chosen layout, colorway and actual
+  // content. The saved SiteSpec renderer remains authoritative in Preview.
+  const source: J = (() => {
+    try { return JSON.parse(p.original) as J; } catch { return {}; }
+  })();
+  const kind = source.type as string;
+  const isHero = kind === "hero";
+  const split = /split|pair|portrait|cinematic|collage/i.test(p.layout);
+  const isItems = ["offer","products","process","proof","faq","ticker"].includes(kind);
+  const background = kind === "cta" || kind === "hero"
+    ? palette.background || "#fffaf2"
+    : palette.surface || palette.background || "#f4f1ec";
+  const fg = palette.foreground || "#171319";
+  const accent = palette.primary || "#171319";
+  const displayFont = isHero ? "Georgia, Cambria, serif" : "inherit";
+  const items = p.itemsText.split("\n").map(x=>x.trim()).filter(Boolean);
+  const photo = p.imageUrl ? (
+    <img src={p.imageUrl} alt={p.imageAlt || "Section photograph"}
+      style={{
+        width:split?"min(100%,440px)":"100%",
+        maxHeight:isHero?520:350,
+        aspectRatio:split?"4 / 5":"16 / 9",
+        objectFit:"cover",
+        objectPosition:`${Number(p.focalX)||50}% ${Number(p.focalY)||50}%`,
+        borderRadius:6,
+      }}/>
+  ) : null;
+  return (
+    <section style={{
+      background,color:fg,padding:"clamp(32px,5vw,88px)",
+      borderTop:"2px solid "+(palette.accent || accent),
+      margin:"6px 0",
+    }}>
+      <div style={{
+        display:"flex",
+        flexDirection:split?"row":"column",
+        flexWrap:"wrap",gap:"clamp(20px,4vw,64px)",
+        alignItems:"center",
+      }}>
+        {photo && split ? photo : null}
+        <div style={{flex:"1 1 260px",minWidth:0}}>
+          <div style={{
+            fontSize:12,letterSpacing:"0.15em",textTransform:"uppercase",
+            color:palette.mutedForeground || fg,marginBottom:12,
+          }}>{kind==="hero"?"Welcome":kind==="offer"?"Our expertise":kind==="story"?"Our story":kind==="contact"?"Get in touch":""}</div>
+          {kind==="ticker" ? null : <h2 style={{
+            fontFamily:displayFont,
+            fontSize:isHero?"clamp(2.5rem,6vw,5.5rem)":"clamp(1.75rem,3.2vw,3rem)",
+            lineHeight:1.07,letterSpacing:"-0.035em",maxWidth:750,
+          }}>{p.heading}</h2>}
+          {p.subheading && <p style={{fontSize:"clamp(1rem,1.4vw,1.25rem)",lineHeight:1.7,maxWidth:650}}>
+            {p.subheading}</p>}
+          {p.body && <p style={{whiteSpace:"pre-line",lineHeight:1.65,maxWidth:650}}>{p.body}</p>}
+          {p.buttonLabel && <span style={{
+            display:"inline-block",padding:"13px 22px",marginTop:20,
+            background:accent,color:palette.primaryForeground || "#fff",
+            borderRadius:4,fontSize:14,fontWeight:600,
+          }}>{p.buttonLabel}</span>}
+        </div>
+        {photo && !split ? photo : null}
       </div>
-    ) : null}
-    {p.buttonLabel ? (
-      <span
-        style={{
-          display: "inline-block",
-          padding: "12px 20px",
-          background: palette.primary || "#171319",
-          color: palette.primaryForeground || "white",
-        }}
-      >
-        {p.buttonLabel}
-      </span>
-    ) : null}
-  </section>
-);
+      {kind==="gallery" ? (
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginTop:22}}>
+          {(source.items??[]).map((entry:J,index:number)=>(
+            <div key={index}>
+              {entry.media?.url && <img src={entry.media.url} alt={entry.media.alt||"Gallery image"}
+                style={{width:"100%",aspectRatio:"4/3",objectFit:"cover"}}/>}
+              <p style={{fontSize:13}}>{items[index]||entry.caption}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {isItems && items.length ? (
+        <div style={{
+          display:"grid",gridTemplateColumns:kind==="ticker"?"1fr": "repeat(auto-fit,minmax(180px,1fr))",
+          gap:14,marginTop:28,
+        }}>
+          {items.map((item,index)=>(
+            <div key={index} style={{
+              borderTop:"1px solid "+(palette.accent||accent),
+              padding:"16px 4px",minWidth:0,overflowWrap:"break-word",
+              fontSize:kind==="ticker"?18:15,lineHeight:1.5,
+            }}>
+              {item.split(" | ").map((part,i)=>(
+                <div key={i} style={{fontWeight:i===0?650:400}}>{part}</div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {kind==="contact" && (
+        <div style={{maxWidth:640,display:"grid",gap:12,marginTop:24}}>
+          <span style={{fontSize:13,opacity:.75}}>Published form preview</span>
+          <input disabled aria-label="Preview name" placeholder="Your name" style={{padding:12}}/>
+          <input disabled aria-label="Preview email" placeholder="Your email" style={{padding:12}}/>
+          <textarea disabled aria-label="Preview message" placeholder="Your message" style={{padding:12}}/>
+          <span style={{padding:12,background:accent,color:palette.primaryForeground||"#fff",textAlign:"center"}}>Send message</span>
+        </div>
+      )}
+    </section>
+  );
+};
 function defaultSection(type: ComponentName): J {
   if (type === "Hero")
     return {
