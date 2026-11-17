@@ -228,7 +228,7 @@ function mediaFor(
         !!photo.provenance.license &&
         photo.url.startsWith("https://"),
     )
-    .slice(0, 8);
+    .slice(0, 12);
   if (approved.length)
     return {
       media: approved,
