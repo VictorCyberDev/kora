@@ -1,3 +1,4 @@
+import { KrevCreativeStudio } from "./pages/krev-creative-studio";
 import { IdentityPage } from "./pages/identity";
 import { ImagesPage } from "./pages/creative";
 import { PublicAuditPage, SharedAuditPage } from "./pages/audit";
@@ -360,6 +361,7 @@ export function App() {
           <Route path="customers" element={<CustomersPage />} />
           <Route path="build" element={<Build />} />
           <Route path="website-studio" element={<WebsiteStudio />} />
+          <Route path="creative-studio" element={<KrevCreativeStudio />} />
           <Route path="deployments" element={<DeploymentsPage />} />
           <Route path="incidents" element={<IncidentsList />} />
           <Route path="incidents/:incidentId" element={<IncidentPage />} />
