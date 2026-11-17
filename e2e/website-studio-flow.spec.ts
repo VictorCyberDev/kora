@@ -76,18 +76,17 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
       { headers },
     );
     expect(firstPublish.ok()).toBe(true);
-    const newPublish = await ctx.request.post(
-      "/api/sites/" +
-        siteId +
-        "/versions/" +
-        site.currentVersionId +
-        "/publish",
-      { headers },
-    );
-    expect(newPublish.ok()).toBe(true);
-    const publicUrl = (await newPublish.json()).data.publicUrl as string;
+    // Publish via the real owner-facing Studio control, not only through a
+    // direct API call. The confirmation dialog requires explicit approval.
+    page.once("dialog", (dialog) => void dialog.accept());
+    await page.getByRole("button", { name: "Publish selected version" }).click();
+    const publishedLink = page.getByRole("link", { name: "Open published website" });
+    await expect(publishedLink).toBeVisible({ timeout: 20000 });
+    const publicUrl = await publishedLink.getAttribute("href");
     expect(publicUrl).toMatch(/^https?:/);
-    expect((await ctx.request.get(publicUrl)).status()).toBe(200);
+    expect((await ctx.request.get(publicUrl!)).status()).toBe(200);
+    const now = (await (await ctx.request.get("/api/sites/" + siteId)).json()).data;
+    expect(now.publishedVersionId).toBe(site.currentVersionId);
     const restore = await ctx.request.post(
       "/api/sites/" + siteId + "/versions/" + original + "/rollback",
       { headers },
