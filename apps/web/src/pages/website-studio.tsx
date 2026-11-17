@@ -574,6 +574,9 @@ export function WebsiteStudio() {
   const [saved, setSaved] = useState("");
   const [preview, setPreview] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [publicRelease, setPublicRelease] = useState<{url:string;verified:boolean}|null>(null);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (!dirty) return;
@@ -611,6 +614,23 @@ export function WebsiteStudio() {
     } finally {
       setBusy(false);
     }
+  }
+  async function releaseVersion(versionId: string, rollback = false) {
+    if (dirty) { setError("Save or discard unsaved changes before publishing."); return; }
+    if (!window.confirm(rollback ? "Restore this previously published version?" : "Publish this saved version to the public site?")) return;
+    setPublishing(true);
+    setError("");
+    setPublicRelease(null);
+    try {
+      const response = await api<J>("POST", "/api/sites/" + id + "/versions/" + versionId + (rollback ? "/rollback" : "/publish"), {});
+      const url = response.publicUrl as string;
+      if (!url || !/^https?:/.test(url)) throw new Error("Publisher returned no public URL.");
+      setPublicRelease({url, verified:response.verification?.status === "MATCH"});
+      setSaved(rollback ? "Previously published version restored." : "Version published.");
+      versions.reload();
+      site.reload();
+    } catch (e) { setError(errText(e)); }
+    finally { setPublishing(false); }
   }
   async function createPage(e: FormEvent) {
     e.preventDefault();
@@ -670,6 +690,43 @@ export function WebsiteStudio() {
       </header>
       {error && <Notice kind="bad">{error}</Notice>}
       {saved && <Notice kind="ok">{saved}</Notice>}
+      {publicRelease && (
+        <Notice kind={publicRelease.verified ? "ok" : "warn"}>
+          <a href={publicRelease.url} target="_blank" rel="noopener noreferrer">Open published website</a>
+          {publicRelease.verified ? " — Live artifact verified." : " — Publication verification not confirmed."}
+        </Notice>
+      )}
+      <section className="card stack" aria-label="Website publishing and rollback">
+        <div className="row between">
+          <div>
+            <strong>Publish and restore</strong>
+            <p className="muted">Publishing requires owner approval. Previous published versions are preserved.</p>
+          </div>
+          <button type="button" className="btn sm ghost" onClick={()=>setShowVersionHistory(!showVersionHistory)}>
+            {showVersionHistory ? "Hide versions" : "Version history"}
+          </button>
+        </div>
+        <div className="row">
+          <button type="button" className="btn" disabled={!current || dirty || busy || publishing || spec?.version !== 3}
+            onClick={()=>current && void releaseVersion(current)}>
+            {publishing ? "Publishing…" : "Publish selected version"}
+          </button>
+          {site.data?.publishedVersionId && <span className="muted">A published version is live</span>}
+        </div>
+        {showVersionHistory && (versions.data ?? []).map((version:J)=>(
+          <div className="row between" key={version.id}>
+            <span>Version {version.number} {version.id === site.data?.publishedVersionId ? "— Live" : ""}</span>
+            <div className="row">
+              <button type="button" className="btn sm ghost" disabled={dirty || busy || publishing}
+                onClick={()=>{setSelectedVersion(version.id);setPreview(true);}}>Review</button>
+              {version.publish_status === "PUBLISHED" && version.id !== site.data?.publishedVersionId && (
+                <button type="button" className="btn sm ghost" disabled={dirty || busy || publishing}
+                  onClick={()=>void releaseVersion(version.id,true)}>Restore</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </section>
       <Async state={detail}>
         {() =>
           !spec || spec.version !== 3 || !page || !puckData ? (
