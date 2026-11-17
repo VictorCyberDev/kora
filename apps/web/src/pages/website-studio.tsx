@@ -719,7 +719,7 @@ export function WebsiteStudio() {
             <div className="row">
               <button type="button" className="btn sm ghost" disabled={dirty || busy || publishing}
                 onClick={()=>{setSelectedVersion(version.id);setPreview(true);}}>Review</button>
-              {version.publish_status === "PUBLISHED" && version.id !== site.data?.publishedVersionId && (
+              {version.publishStatus === "PUBLISHED" && version.id !== site.data?.publishedVersionId && (
                 <button type="button" className="btn sm ghost" disabled={dirty || busy || publishing}
                   onClick={()=>void releaseVersion(version.id,true)}>Restore</button>
               )}
