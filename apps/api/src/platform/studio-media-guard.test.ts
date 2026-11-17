@@ -32,7 +32,7 @@ describe("Studio media tenancy",()=>{
  });
  it("rejects a swapped srcset variant even when the primary image URL stays unchanged",()=>{
    const mutated=structuredClone(old);
-   mutated.pages[0]!.sections[0]!.media!.srcset=[{url:"https://attacker.example.test/trojan.webp"}];
+   (mutated.pages[0]!.sections[0] as {media:{srcset:Array<{url:string}>}}).media.srcset=[{url:"https://attacker.example.test/trojan.webp"}];
    expect(unapprovedMediaUrls(old,mutated,[])).toContain("https://attacker.example.test/trojan.webp");
  });
 });
