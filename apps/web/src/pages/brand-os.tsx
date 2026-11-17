@@ -1,4 +1,4 @@
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { api, type J } from "../api";
 import { Async, Notice, errText, useLoad } from "../ui";
@@ -134,24 +134,54 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
               ))}
             </ul>
             <div className="row" aria-label="Brand kit export and logos">
-              <button className="btn sm" onClick={()=>{
-                const kit={schemaVersion:1,source:"Krevstudio Brand OS",exportedAt:new Date().toISOString(),
-                  version:cur.version,hash:cur.hash,brand:b,
-                  guidelines:{minimumLogoSize:32,logoClearSpace:"At least the height of one symbol stroke",
-                    palette:p,typography:b.visual.typeVoice,tone:b.voice.tone,
-                    approvedLogoDocumentId:b.visual.logoAssetId,
-                    dos:b.rules.dos,donts:b.rules.donts}};
-                const blob=new Blob([JSON.stringify(kit,null,2)],{type:"application/json"});
-                const url=URL.createObjectURL(blob);
-                const a=document.createElement("a");a.href=url;a.download="krevstudio-brand-kit-v"+cur.version+".json";a.click();
-                URL.revokeObjectURL(url);
-              }}>Export versioned Brand Kit JSON</button>
-              <Link className="btn sm ghost" to={`/app/sites/${siteId}/creative-studio`}>
-                {b.visual.logoAssetId?"Edit approved logo":"Create a vector logo"}
+              <button
+                className="btn sm"
+                onClick={() => {
+                  const kit = {
+                    schemaVersion: 1,
+                    source: "Krevstudio Brand OS",
+                    exportedAt: new Date().toISOString(),
+                    version: cur.version,
+                    hash: cur.hash,
+                    brand: b,
+                    guidelines: {
+                      minimumLogoSize: 32,
+                      logoClearSpace:
+                        "At least the height of one symbol stroke",
+                      palette: p,
+                      typography: b.visual.typeVoice,
+                      tone: b.voice.tone,
+                      approvedLogoDocumentId: b.visual.logoAssetId,
+                      dos: b.rules.dos,
+                      donts: b.rules.donts,
+                    },
+                  };
+                  const blob = new Blob([JSON.stringify(kit, null, 2)], {
+                    type: "application/json",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "krevstudio-brand-kit-v" + cur.version + ".json";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export versioned Brand Kit JSON
+              </button>
+              <Link
+                className="btn sm ghost"
+                to={`/app/sites/${siteId}/creative-studio`}
+              >
+                {b.visual.logoAssetId
+                  ? "Edit approved logo"
+                  : "Create a vector logo"}
               </Link>
-              {b.visual.logoAssetId&&<span className="small muted">
-                Approved logo linked to Brand OS version {cur.version}
-              </span>}
+              {b.visual.logoAssetId && (
+                <span className="small muted">
+                  Approved logo linked to Brand OS version {cur.version}
+                </span>
+              )}
             </div>
             <p className="small">
               Type: <strong>{b.visual.typeVoice.replace(/-/g, " ")}</strong> ·

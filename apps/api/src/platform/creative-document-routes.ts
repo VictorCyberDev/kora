@@ -382,26 +382,43 @@ export function registerCreativeDocumentRoutes(
       return { data: result };
     },
   );
-  app.get("/api/sites/:id/creative-documents/:documentId/publishing-package",async(req)=>{
-    const {id,documentId}=routeIds.parse(req.params);
-    const {row}=await docFor(req,id,documentId);
-    if(row.status!=="APPROVED")throw new HttpError(409,"needs_approval",
-      "Approve this saved creative version before preparing a publishing package.");
-    const source=creativeDocumentSchema.parse(row.source);
-    const media=source.slides.map((_,index)=>({
-      format:"svg",mime:"image/svg+xml",slide:index+1,
-      downloadPath:`/api/sites/${id}/creative-documents/${documentId}/export/${index}`,
-    }));
-    return {data:{documentId,revision:Number(row.revision),kind:source.kind,
-      brandVersion:source.brandVersion,
-      caption:source.sourcePrompt,
-      altText:source.title,
-      hashtags:[],
-      media,
-      status:"APPROVED_NOT_PUBLISHED",requestedChannels:[],
-      publicationEvidence:null,
-      guidance:"Use exports with an authorized connected channel; a prepared package is not a published post."}};
-  });
+  app.get(
+    "/api/sites/:id/creative-documents/:documentId/publishing-package",
+    async (req) => {
+      const { id, documentId } = routeIds.parse(req.params);
+      const { row } = await docFor(req, id, documentId);
+      if (row.status !== "APPROVED")
+        throw new HttpError(
+          409,
+          "needs_approval",
+          "Approve this saved creative version before preparing a publishing package.",
+        );
+      const source = creativeDocumentSchema.parse(row.source);
+      const media = source.slides.map((_, index) => ({
+        format: "svg",
+        mime: "image/svg+xml",
+        slide: index + 1,
+        downloadPath: `/api/sites/${id}/creative-documents/${documentId}/export/${index}`,
+      }));
+      return {
+        data: {
+          documentId,
+          revision: Number(row.revision),
+          kind: source.kind,
+          brandVersion: source.brandVersion,
+          caption: source.sourcePrompt,
+          altText: source.title,
+          hashtags: [],
+          media,
+          status: "APPROVED_NOT_PUBLISHED",
+          requestedChannels: [],
+          publicationEvidence: null,
+          guidance:
+            "Use exports with an authorized connected channel; a prepared package is not a published post.",
+        },
+      };
+    },
+  );
   app.get(
     "/api/sites/:id/creative-documents/:documentId/export/:slide",
     async (req, reply) => {

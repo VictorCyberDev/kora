@@ -171,9 +171,9 @@ export function KrevCreativeStudio() {
     y: number;
     layerX: number;
     layerY: number;
-    layerWidth:number;
-    layerHeight:number;
-    kind:"move"|"resize";
+    layerWidth: number;
+    layerHeight: number;
+    kind: "move" | "resize";
     id: string;
   } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -335,22 +335,44 @@ export function KrevCreativeStudio() {
     });
     setSelected(created.id);
   };
-  const approveCreative=async()=>{
-    if(!documentId||!source||dirty)return;
-    setBusy(true);setError("");
-    try{
-      await api<J>("POST",`/api/sites/${id}/creative-documents/${documentId}/approve`,{revision});
+  const approveCreative = async () => {
+    if (!documentId || !source || dirty) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/approve`,
+        { revision },
+      );
       setNotice("Design version approved. It is not published or scheduled.");
-      doc.reload();list.reload();
-    }catch(e){setError(errText(e));}finally{setBusy(false);}
+      doc.reload();
+      list.reload();
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
   };
-  const preparePackage=async()=>{
-    if(!documentId)return;
-    setBusy(true);setError("");
-    try{
-      const packageInfo=await api<J>("GET",`/api/sites/${id}/creative-documents/${documentId}/publishing-package`);
-      setNotice("Publishing package ready: "+packageInfo.media.length+" SVG slide(s), caption and alt text. No channel post has been made.");
-    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  const preparePackage = async () => {
+    if (!documentId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const packageInfo = await api<J>(
+        "GET",
+        `/api/sites/${id}/creative-documents/${documentId}/publishing-package`,
+      );
+      setNotice(
+        "Publishing package ready: " +
+          packageInfo.media.length +
+          " SVG slide(s), caption and alt text. No channel post has been made.",
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
   };
   const addLayer = (type: Layer["type"]) => {
     if (!slide) return;
@@ -458,29 +480,38 @@ export function KrevCreativeStudio() {
     if (!svg || !slide || !svg.current) return;
     setError("");
     try {
-      const snapshot=svg.current.cloneNode(true) as SVGSVGElement;
-      let budget=24*1024*1024;
-      for(const element of snapshot.querySelectorAll("image")){
-        const src=element.getAttribute("href");
-        if(!src)continue;
+      const snapshot = svg.current.cloneNode(true) as SVGSVGElement;
+      let budget = 24 * 1024 * 1024;
+      for (const element of snapshot.querySelectorAll("image")) {
+        const src = element.getAttribute("href");
+        if (!src) continue;
         // Fetch through the browser's normal CORS policy; no arbitrary
         // cross-tenant image proxy or opaque canvas reads.
-        const response=await fetch(src,{mode:"cors",credentials:"omit"});
-        if(!response.ok)throw new Error("Approved image could not be loaded for PNG export.");
-        const size=Number(response.headers.get("content-length")??0);
-        if(size>budget)throw new Error("PNG export exceeds its image memory budget.");
-        const blob=await response.blob();
-        if(!["image/png","image/jpeg","image/webp"].includes(blob.type))
-          throw new Error("PNG export supports PNG, JPEG and WebP photo sources.");
-        budget-=blob.size;
-        if(budget<0)throw new Error("PNG export exceeds its 24 MB image budget.");
-        const dataUrl=await new Promise<string>((resolve,reject)=>{
-          const reader=new FileReader();
-          reader.onload=()=>resolve(String(reader.result));
-          reader.onerror=()=>reject(new Error("Photo export encoding failed."));
+        const response = await fetch(src, {
+          mode: "cors",
+          credentials: "omit",
+        });
+        if (!response.ok)
+          throw new Error("Approved image could not be loaded for PNG export.");
+        const size = Number(response.headers.get("content-length") ?? 0);
+        if (size > budget)
+          throw new Error("PNG export exceeds its image memory budget.");
+        const blob = await response.blob();
+        if (!["image/png", "image/jpeg", "image/webp"].includes(blob.type))
+          throw new Error(
+            "PNG export supports PNG, JPEG and WebP photo sources.",
+          );
+        budget -= blob.size;
+        if (budget < 0)
+          throw new Error("PNG export exceeds its 24 MB image budget.");
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () =>
+            reject(new Error("Photo export encoding failed."));
           reader.readAsDataURL(blob);
         });
-        element.setAttribute("href",dataUrl);
+        element.setAttribute("href", dataUrl);
       }
       const content = new XMLSerializer().serializeToString(snapshot);
       const image = new Image();
@@ -539,19 +570,29 @@ export function KrevCreativeStudio() {
       y: pt.y,
       layerX: item.x,
       layerY: item.y,
-      layerWidth:item.width,
-      layerHeight:item.height,
-      kind:"move",
+      layerWidth: item.width,
+      layerHeight: item.height,
+      kind: "move",
     };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
-  const startResize=(event:React.PointerEvent)=>{
-    if(!layer||layer.locked||!source)return;
+  const startResize = (event: React.PointerEvent) => {
+    if (!layer || layer.locked || !source) return;
     event.stopPropagation();
-    const p=svgPoint(event);if(!p)return;
-    history.current.push(clone(source));future.current=[];
-    dragging.current={id:layer.id,x:p.x,y:p.y,layerX:layer.x,layerY:layer.y,
-      layerWidth:layer.width,layerHeight:layer.height,kind:"resize"};
+    const p = svgPoint(event);
+    if (!p) return;
+    history.current.push(clone(source));
+    future.current = [];
+    dragging.current = {
+      id: layer.id,
+      x: p.x,
+      y: p.y,
+      layerX: layer.x,
+      layerY: layer.y,
+      layerWidth: layer.width,
+      layerHeight: layer.height,
+      kind: "resize",
+    };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const draggingMove = (e: React.PointerEvent) => {
@@ -561,15 +602,21 @@ export function KrevCreativeStudio() {
     if (!p) return;
     update((next) => {
       const item = next.slides[slideIndex]?.layers.find((l) => l.id === d.id);
-      if(item){
-        if(d.kind==="resize"){
-          item.width=Math.max(1,Math.min(8000,Math.round(d.layerWidth+p.x-d.x)));
-          item.height=Math.max(1,Math.min(8000,Math.round(d.layerHeight+p.y-d.y)));
+      if (item) {
+        if (d.kind === "resize") {
+          item.width = Math.max(
+            1,
+            Math.min(8000, Math.round(d.layerWidth + p.x - d.x)),
+          );
+          item.height = Math.max(
+            1,
+            Math.min(8000, Math.round(d.layerHeight + p.y - d.y)),
+          );
         } else {
           // Eight-point snap improves alignment without replacing deliberate
           // manual x/y edits in the right-side panel.
-          item.x=Math.round((d.layerX+p.x-d.x)/8)*8;
-          item.y=Math.round((d.layerY+p.y-d.y)/8)*8;
+          item.x = Math.round((d.layerX + p.x - d.x) / 8) * 8;
+          item.y = Math.round((d.layerY + p.y - d.y) / 8) * 8;
         }
       }
     }, false);
@@ -733,13 +780,25 @@ export function KrevCreativeStudio() {
                     >
                       {busy ? "Saving…" : "Save draft"}
                     </button>
-                    {source.kind!=="logo"&&<button className="btn sm" disabled={dirty||busy}
-              onClick={()=>void approveCreative()}>Approve design</button>}
-            {doc.data?.status==="APPROVED"&&source.kind!=="logo"&&
-              <button className="btn sm ghost" onClick={()=>void preparePackage()}>
-                Prepare social publishing package
-              </button>}
-            {source.kind === "logo" && (
+                    {source.kind !== "logo" && (
+                      <button
+                        className="btn sm"
+                        disabled={dirty || busy}
+                        onClick={() => void approveCreative()}
+                      >
+                        Approve design
+                      </button>
+                    )}
+                    {doc.data?.status === "APPROVED" &&
+                      source.kind !== "logo" && (
+                        <button
+                          className="btn sm ghost"
+                          onClick={() => void preparePackage()}
+                        >
+                          Prepare social publishing package
+                        </button>
+                      )}
+                    {source.kind === "logo" && (
                       <button
                         className="btn sm"
                         disabled={dirty || busy}
@@ -952,11 +1011,22 @@ export function KrevCreativeStudio() {
                           )}
                         </g>
                       ))}
-                      {layer && !layer.locked && <rect
-                        x={layer.x+layer.width-11} y={layer.y+layer.height-11}
-                        width={23} height={23} rx={4} fill="#2869e3" stroke="#ffffff" strokeWidth={2}
-                        style={{cursor:"nwse-resize"}} onPointerDown={startResize}
-                        aria-label="Drag to resize selected layer" role="button"/>}
+                      {layer && !layer.locked && (
+                        <rect
+                          x={layer.x + layer.width - 11}
+                          y={layer.y + layer.height - 11}
+                          width={23}
+                          height={23}
+                          rx={4}
+                          fill="#2869e3"
+                          stroke="#ffffff"
+                          strokeWidth={2}
+                          style={{ cursor: "nwse-resize" }}
+                          onPointerDown={startResize}
+                          aria-label="Drag to resize selected layer"
+                          role="button"
+                        />
+                      )}
                     </svg>
                   </div>
                   <aside className="stack" aria-label="Layer properties">
@@ -1041,10 +1111,30 @@ export function KrevCreativeStudio() {
                           </>
                         )}
                         <div className="row" aria-label="Align selected layer">
-                          <button className="btn sm ghost" disabled={layer.locked} onClick={()=>
-                            editLayer({x:Math.round((slide.width-layer.width)/2)})}>Center horizontally</button>
-                          <button className="btn sm ghost" disabled={layer.locked} onClick={()=>
-                            editLayer({y:Math.round((slide.height-layer.height)/2)})}>Center vertically</button>
+                          <button
+                            className="btn sm ghost"
+                            disabled={layer.locked}
+                            onClick={() =>
+                              editLayer({
+                                x: Math.round((slide.width - layer.width) / 2),
+                              })
+                            }
+                          >
+                            Center horizontally
+                          </button>
+                          <button
+                            className="btn sm ghost"
+                            disabled={layer.locked}
+                            onClick={() =>
+                              editLayer({
+                                y: Math.round(
+                                  (slide.height - layer.height) / 2,
+                                ),
+                              })
+                            }
+                          >
+                            Center vertically
+                          </button>
                         </div>
                         {layer.type === "text" && (
                           <>
