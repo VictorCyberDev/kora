@@ -342,7 +342,7 @@ export function registerPlatform(
     }
   });
 
-  registerCreativeDocumentRoutes(app, platform, config.KORA_PUBLIC_URL);
+  registerCreativeDocumentRoutes(app, platform, config.KORA_PUBLIC_URL, rt.billing);
   registerRoutes(app, {
     platform,
     ops: rt.ops,
