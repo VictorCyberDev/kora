@@ -640,8 +640,10 @@ export function planSiteV3(
               g.compositionMode === "monograph" ||
                 g.compositionMode === "poster-bold"
                 ? 4
-                : media.length >= 6
-                  ? 6
+                : media.length >= 9
+                  ? 9
+                  : media.length >= 6
+                    ? 6
                   : media.length >= 3
                     ? 3
                     : 2,
