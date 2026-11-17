@@ -171,6 +171,9 @@ export function KrevCreativeStudio() {
     y: number;
     layerX: number;
     layerY: number;
+    layerWidth:number;
+    layerHeight:number;
+    kind:"move"|"resize";
     id: string;
   } | null>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -519,8 +522,20 @@ export function KrevCreativeStudio() {
       y: pt.y,
       layerX: item.x,
       layerY: item.y,
+      layerWidth:item.width,
+      layerHeight:item.height,
+      kind:"move",
     };
     e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const startResize=(event:React.PointerEvent)=>{
+    if(!layer||layer.locked||!source)return;
+    event.stopPropagation();
+    const p=svgPoint(event);if(!p)return;
+    history.current.push(clone(source));future.current=[];
+    dragging.current={id:layer.id,x:p.x,y:p.y,layerX:layer.x,layerY:layer.y,
+      layerWidth:layer.width,layerHeight:layer.height,kind:"resize"};
+    event.currentTarget.setPointerCapture(event.pointerId);
   };
   const draggingMove = (e: React.PointerEvent) => {
     const d = dragging.current;
@@ -529,9 +544,16 @@ export function KrevCreativeStudio() {
     if (!p) return;
     update((next) => {
       const item = next.slides[slideIndex]?.layers.find((l) => l.id === d.id);
-      if (item) {
-        item.x = Math.round(d.layerX + p.x - d.x);
-        item.y = Math.round(d.layerY + p.y - d.y);
+      if(item){
+        if(d.kind==="resize"){
+          item.width=Math.max(1,Math.min(8000,Math.round(d.layerWidth+p.x-d.x)));
+          item.height=Math.max(1,Math.min(8000,Math.round(d.layerHeight+p.y-d.y)));
+        } else {
+          // Eight-point snap improves alignment without replacing deliberate
+          // manual x/y edits in the right-side panel.
+          item.x=Math.round((d.layerX+p.x-d.x)/8)*8;
+          item.y=Math.round((d.layerY+p.y-d.y)/8)*8;
+        }
       }
     }, false);
   };
@@ -907,6 +929,11 @@ export function KrevCreativeStudio() {
                           )}
                         </g>
                       ))}
+                      {layer && !layer.locked && <rect
+                        x={layer.x+layer.width-11} y={layer.y+layer.height-11}
+                        width={23} height={23} rx={4} fill="#2869e3" stroke="#ffffff" strokeWidth={2}
+                        style={{cursor:"nwse-resize"}} onPointerDown={startResize}
+                        aria-label="Drag to resize selected layer" role="button"/>}
                     </svg>
                   </div>
                   <aside className="stack" aria-label="Layer properties">
@@ -990,6 +1017,12 @@ export function KrevCreativeStudio() {
                             </label>
                           </>
                         )}
+                        <div className="row" aria-label="Align selected layer">
+                          <button className="btn sm ghost" disabled={layer.locked} onClick={()=>
+                            editLayer({x:Math.round((slide.width-layer.width)/2)})}>Center horizontally</button>
+                          <button className="btn sm ghost" disabled={layer.locked} onClick={()=>
+                            editLayer({y:Math.round((slide.height-layer.height)/2)})}>Center vertically</button>
+                        </div>
                         {layer.type === "text" && (
                           <>
                             <label>
