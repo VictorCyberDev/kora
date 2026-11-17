@@ -1,0 +1,26 @@
+name: Krevstudio verify format
+on:
+  push:
+    branches: [feature/krevstudio-m3-m4-transformation]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: {version: 10.18.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: pnpm}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/api/src/platform/creative-document-routes.ts apps/web/src/pages/krev-creative-studio.tsx e2e/brand-center.spec.ts e2e/critical-flow.spec.ts e2e/local-ai.spec.ts e2e/responsive.spec.ts e2e/website-studio-flow.spec.ts
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/api/src/platform/creative-document-routes.ts apps/web/src/pages/krev-creative-studio.tsx e2e/brand-center.spec.ts e2e/critical-flow.spec.ts e2e/local-ai.spec.ts e2e/responsive.spec.ts e2e/website-studio-flow.spec.ts
+          if ! git diff --cached --quiet; then
+            git commit -m 'style: format final brand direction and editor changes'
+            git push origin HEAD:feature/krevstudio-m3-m4-transformation
+          fi
