@@ -386,8 +386,9 @@ export function NewSiteV6() {
       <p className="k-overline">New website</p>
       <h1 style={{ fontSize: "2rem" }}>Tell Krevstudio about your business</h1>
       <p className="muted">
-        First compare three directions. Krevstudio only creates the website after you
-        choose one, so previewing can never trap you in a create-site loop.
+        First compare three directions. Krevstudio only creates the website
+        after you choose one, so previewing can never trap you in a create-site
+        loop.
       </p>
       <label>
         Business name
@@ -408,8 +409,8 @@ export function NewSiteV6() {
           placeholder="We repair fridges, washing machines and cookers in Ikeja."
         />
         <span className="field-hint">
-          Two lines is enough. Krevstudio only uses what you write here. It will not
-          invent services, prices or reviews.
+          Two lines is enough. Krevstudio only uses what you write here. It will
+          not invent services, prices or reviews.
         </span>
       </label>
       <div className="grid">

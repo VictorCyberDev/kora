@@ -71,9 +71,9 @@ export function Dashboard() {
           if (rows.length === 0)
             return (
               <Empty title="Put your business online">
-                Give Krevstudio the business name and two lines about what you do. You
-                will get three directions to choose from, then Krevstudio keeps
-                watching after launch.
+                Give Krevstudio the business name and two lines about what you
+                do. You will get three directions to choose from, then
+                Krevstudio keeps watching after launch.
                 <p>
                   <Link className="btn" to="/app/sites/new">
                     Create my first website
@@ -174,8 +174,8 @@ export function Dashboard() {
                     Quiet when everything is fine. Specific when it is not.
                   </h2>
                   <p>
-                    Krevstudio watches the live site, keeps the evidence, and asks
-                    before a fix changes what customers see. A repair only
+                    Krevstudio watches the live site, keeps the evidence, and
+                    asks before a fix changes what customers see. A repair only
                     counts after new checks pass.
                   </p>
                   <LevelLine state="steady" />

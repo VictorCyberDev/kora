@@ -67,8 +67,8 @@ export function Transformation() {
         <p className="k-kicker">One business, start to finish</p>
         <h2 id="v7-h">From two sentences to a brand people recognise.</h2>
         <p className="lead v7-lead">
-          This is a home bakery in Lagos. Everything below was made by Krevstudio from
-          what the owner wrote. Nothing is a mock-up.
+          This is a home bakery in Lagos. Everything below was made by
+          Krevstudio from what the owner wrote. Nothing is a mock-up.
         </p>
 
         <ol className="v7-steps">
@@ -99,8 +99,8 @@ export function Transformation() {
                   button is Order on WhatsApp
                 </li>
                 <li>
-                  <b>Still missing</b> prices, hours, reviews, photos. Krevstudio
-                  asks; it never invents them
+                  <b>Still missing</b> prices, hours, reviews, photos.
+                  Krevstudio asks; it never invents them
                 </li>
               </ul>
             </div>
@@ -261,7 +261,10 @@ export function BeforeAfter() {
       {PAIRS.map(([after, before, label]) => (
         <div key={label} className="v7-ba-row">
           <figure>
-            <Shot name={before} alt={`${label}: the previous Krevstudio design`} />
+            <Shot
+              name={before}
+              alt={`${label}: the previous Krevstudio design`}
+            />
             <figcaption className="small muted">Before</figcaption>
           </figure>
           <figure>

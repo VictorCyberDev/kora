@@ -75,14 +75,15 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
             <section className="card stack" aria-labelledby="bos-h">
               <h2 id="bos-h">Your brand system</h2>
               <p className="muted">
-                Krevstudio builds a full brand system when you create a website with
-                the new design engine: strategy, colours, type, voice and rules
-                that every flyer, post and story will follow.
+                Krevstudio builds a full brand system when you create a website
+                with the new design engine: strategy, colours, type, voice and
+                rules that every flyer, post and story will follow.
               </p>
               <p className="muted">
-                Already have a website made earlier? Krevstudio can read its colours
-                and type and write them down as your brand system. It is marked
-                as worked out from your site, and your website is not changed.
+                Already have a website made earlier? Krevstudio can read its
+                colours and type and write them down as your brand system. It is
+                marked as worked out from your site, and your website is not
+                changed.
               </p>
               <div className="row">
                 <button
@@ -103,9 +104,10 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
             <p className="k-overline">Brand system · version {cur.version}</p>
             {b.provenance?.createdBy === "inferred-from-site" && (
               <Notice kind="info">
-                Worked out from your earlier website, not chosen by you. Krevstudio
-                could not know: {b.provenance.inferred?.unknown.join("; ")}.
-                Change anything below to make it yours.
+                Worked out from your earlier website, not chosen by you.
+                Krevstudio could not know:{" "}
+                {b.provenance.inferred?.unknown.join("; ")}. Change anything
+                below to make it yours.
               </Notice>
             )}
             <h2 id="bos-h">
@@ -301,8 +303,8 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
       {out && (
         <div className="stack">
           <p className="small muted">
-            Created, not posted. Krevstudio cannot post for you yet: download each one
-            and post it yourself, or send it through the calendar.
+            Created, not posted. Krevstudio cannot post for you yet: download
+            each one and post it yourself, or send it through the calendar.
           </p>
           <div className="row" style={{ alignItems: "flex-start", gap: 12 }}>
             {out.results.map((r: J) =>

@@ -55,8 +55,8 @@ export function StudioPage() {
         <p className="k-overline">Create</p>
         <h2>Posts, images and video in your brand</h2>
         <p className="muted">
-          Everything is made from your business details and Brand Kit. Krevstudio
-          never invents a price, time or phone number.
+          Everything is made from your business details and Brand Kit.
+          Krevstudio never invents a price, time or phone number.
         </p>
         <div className="chips" role="group" aria-label="What to make">
           {TABS.map(([v, t]) => (
@@ -403,9 +403,9 @@ function ImagesTab({ id, facts, o }: { id: string; facts: J; o: J }) {
           </span>
         </div>
         <p className="muted">
-          Krevstudio retrieves a business-specific direction, then maps it to the real
-          layouts, colors and sizes supported by your live renderer. Pick a
-          direction and the editable preview below updates immediately.
+          Krevstudio retrieves a business-specific direction, then maps it to
+          the real layouts, colors and sizes supported by your live renderer.
+          Pick a direction and the editable preview below updates immediately.
         </p>
         <div className="k-campaign-filters">
           <label>
@@ -465,8 +465,8 @@ function ImagesTab({ id, facts, o }: { id: string; facts: J; o: J }) {
         </div>
         <p className="muted k-atlas-note">
           The Atlas stores compositional intelligence, not copied marketplace
-          files. Your final asset remains an original Krevstudio render using your
-          Brand Kit and confirmed business facts.
+          files. Your final asset remains an original Krevstudio render using
+          your Brand Kit and confirmed business facts.
         </p>
       </section>
       <div className="k-studio">

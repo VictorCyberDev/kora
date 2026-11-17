@@ -56,8 +56,8 @@ export function Landing() {
           <p className="lead">
             A template website, a different style on every post, a flyer made in
             a hurry. Customers cannot tell why to choose you, and you have no
-            time to fix it. Krevstudio is built to close that gap without turning you
-            into a designer.
+            time to fix it. Krevstudio is built to close that gap without
+            turning you into a designer.
           </p>
         </div>
       </section>
@@ -67,10 +67,10 @@ export function Landing() {
           <p className="k-kicker">Act 2 · Truth first</p>
           <h2 id="truth-h">Krevstudio only says what you have told it.</h2>
           <p className="lead">
-            Every price, opening time, offer and product comes from you. If Krevstudio
-            is missing something, it asks. It will not invent a testimonial, a
-            team photo or a number, and it records which facts each post and
-            page relied on.
+            Every price, opening time, offer and product comes from you. If
+            Krevstudio is missing something, it asks. It will not invent a
+            testimonial, a team photo or a number, and it records which facts
+            each post and page relied on.
           </p>
         </div>
       </section>
@@ -98,9 +98,9 @@ export function Landing() {
           <LevelLine state="steady" />
           <h2>Calm control.</h2>
           <p className="lead">
-            Krevstudio does not make noise to look busy. It watches quietly, tells you
-            in plain words when something needs you, and never changes anything
-            important without asking.
+            Krevstudio does not make noise to look busy. It watches quietly,
+            tells you in plain words when something needs you, and never changes
+            anything important without asking.
           </p>
         </div>
       </section>
@@ -140,8 +140,8 @@ export function Landing() {
             </p>
             <h2>You get the truth, not a guess.</h2>
             <p>
-              Krevstudio says what happened, when it began, what changed around that
-              time and what it still does not know. It only calls a fix
+              Krevstudio says what happened, when it began, what changed around
+              that time and what it still does not know. It only calls a fix
               successful after new checks pass.
             </p>
           </div>
@@ -163,9 +163,9 @@ export function Landing() {
                 />
               </div>
               <figcaption>
-                <Status kind="warn">Waiting for approval</Status> Krevstudio found the
-                problem and has a safe fix ready. It asks before changing what
-                customers see.
+                <Status kind="warn">Waiting for approval</Status> Krevstudio
+                found the problem and has a safe fix ready. It asks before
+                changing what customers see.
               </figcaption>
             </figure>
             <figure>
@@ -195,8 +195,8 @@ export function Landing() {
             <LevelLine state="recovered" />
           </div>
           <p className="small muted">
-            Real screens from Krevstudio, with a fictional laundry business and a
-            controlled test failure. Developers get the same facts in Proof
+            Real screens from Krevstudio, with a fictional laundry business and
+            a controlled test failure. Developers get the same facts in Proof
             view: evidence, diagnosis, the policy decision, the approval and a
             report you can verify offline.
           </p>
@@ -249,7 +249,9 @@ export function PlanCard({ p, action }: { p: Plan; action?: React.ReactNode }) {
         <li>
           {String(c.sites)} website{c.sites === 1 ? "" : "s"}
         </li>
-        <li>{c.customDomain ? "Your own domain" : "Krevstudio address only"}</li>
+        <li>
+          {c.customDomain ? "Your own domain" : "Krevstudio address only"}
+        </li>
         <li>
           {c.managedRecovery
             ? "Guided recovery"
@@ -417,8 +419,8 @@ const Legal = ({
     <div className="stack">
       <h1>{title}</h1>
       <Notice kind="warn">
-        This is a plain-language draft that describes how Krevstudio behaves today.
-        Have it reviewed by counsel before relying on it.
+        This is a plain-language draft that describes how Krevstudio behaves
+        today. Have it reviewed by counsel before relying on it.
       </Notice>
       {children}
     </div>
@@ -427,16 +429,19 @@ const Legal = ({
 export const Privacy = () => (
   <Legal title="Privacy">
     <p>
-      Krevstudio stores your account details, the websites you build, the messages
-      visitors send through your contact forms, and the health checks and
-      incidents for your websites.
+      Krevstudio stores your account details, the websites you build, the
+      messages visitors send through your contact forms, and the health checks
+      and incidents for your websites.
     </p>
     <p>
-      Passwords are stored only as salted hashes. Krevstudio does not sell your data.
-      Text you ask the AI to work on is sent to the inference provider this Krevstudio
-      is configured with, and nothing else about your account is.
+      Passwords are stored only as salted hashes. Krevstudio does not sell your
+      data. Text you ask the AI to work on is sent to the inference provider
+      this Krevstudio is configured with, and nothing else about your account
+      is.
     </p>
-    <p>You can ask the operator of your Krevstudio to export or delete your data.</p>
+    <p>
+      You can ask the operator of your Krevstudio to export or delete your data.
+    </p>
   </Legal>
 );
 export const Terms = () => (

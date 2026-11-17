@@ -54,8 +54,8 @@ export function IdentityPage() {
           What Krevstudio knows
         </h2>
         <p className="muted">
-          Krevstudio only writes about things on this list. Anything missing, it asks
-          you instead of guessing.
+          Krevstudio only writes about things on this list. Anything missing, it
+          asks you instead of guessing.
         </p>
         <Async state={truth}>
           {(t: J) =>

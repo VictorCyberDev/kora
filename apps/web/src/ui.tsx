@@ -75,14 +75,25 @@ export const kindFor = (s: string): Kind =>
   })[s] as Kind) ?? "wait";
 
 export function Logo() {
-  return <Link to="/" className="logo krev-wordmark" aria-label="Krevstudio home">
-    <svg width="32" height="32" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
-      <rect x="0" y="0" width="64" height="64" rx="13" fill="#17242A"/>
-      <path d="M16 12h10v17l17-17h13L35 33l22 19H43L26 37v15H16z" fill="#F3EDE0"/>
-      <rect x="46" y="12" width="10" height="10" rx="2" fill="#E37C5C"/>
-    </svg>
-    <span>Krevstudio</span>
-  </Link>;
+  return (
+    <Link to="/" className="logo krev-wordmark" aria-label="Krevstudio home">
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 64 64"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect x="0" y="0" width="64" height="64" rx="13" fill="#17242A" />
+        <path
+          d="M16 12h10v17l17-17h13L35 33l22 19H43L26 37v15H16z"
+          fill="#F3EDE0"
+        />
+        <rect x="46" y="12" width="10" height="10" rx="2" fill="#E37C5C" />
+      </svg>
+      <span>Krevstudio</span>
+    </Link>
+  );
 }
 export const Spinner = ({ label = "Loading" }: { label?: string }) => (
   <span className="row" role="status">
