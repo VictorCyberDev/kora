@@ -1,3 +1,4 @@
+import { registerCreativeDocumentRoutes } from "./creative-document-routes.js";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -341,6 +342,7 @@ export function registerPlatform(
     }
   });
 
+  registerCreativeDocumentRoutes(app, platform);
   registerRoutes(app, {
     platform,
     ops: rt.ops,
