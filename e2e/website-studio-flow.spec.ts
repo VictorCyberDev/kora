@@ -64,6 +64,24 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     expect(
       saved.spec.pages.some((p: { slug: string }) => p.slug === "our-methods"),
     ).toBe(true);
+    // Enforce the site media boundary at the real API layer for an arbitrary
+    // replace-section operation, not only Puck's replace-page-sections route.
+    const home = saved.spec.pages.find((p:{slug:string})=>p.slug==="home");
+    const oldHero = home?.sections?.[0];
+    if (oldHero?.media) {
+      const crossTenant = await ctx.request.post("/api/sites/"+siteId+"/edit",{
+        headers,
+        data:{
+          baseVersionId:site.currentVersionId,
+          designEdit:{kind:"replace-section",slug:"home",at:0,
+            section:{...oldHero,media:{...oldHero.media,
+              url:"https://other-customer.example.test/stolen-image.webp"}}},
+        },
+      });
+      expect(crossTenant.status()).toBe(422);
+      const unchanged = (await (await ctx.request.get("/api/sites/"+siteId)).json()).data;
+      expect(unchanged.currentVersionId).toBe(site.currentVersionId);
+    }
     await page.reload();
     await expect(
       page.getByRole("button", { name: "Our Methods" }),
