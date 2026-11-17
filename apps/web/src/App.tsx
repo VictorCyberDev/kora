@@ -341,6 +341,7 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/product/:topic" element={<KrevMarketingPage />} />
         <Route path="/audit" element={<PublicAuditPage />} />
         <Route path="/audit/shared" element={<SharedAuditPage />} />
         <Route path="/login" element={<Login />} />
