@@ -19,8 +19,9 @@ const linkList=[
  ["websites","Websites"],["graphics","Graphic design"],["branding","Logo & brand"],
  ["use-cases","Use cases"],["templates","Templates"],["how-it-works","How it works"]
 ] as const;
+type Plan = Parameters<typeof PlanCard>[0]["p"];
 export function KrevLanding(){
- const plans=useLoad(()=>api("GET","/api/billing/plans"));
+ const plans=useLoad(()=>api<Plan[]>("GET","/api/billing/plans"));
  return <div className="krev-site">
   <section className="krev-hero">
    <div className="wrap krev-hero-grid">
@@ -63,7 +64,7 @@ export function KrevLanding(){
   </div></section>
   <section className="krev-plan"><div className="wrap">
    <div className="krev-section-head"><span className="krev-eyebrow">04 / PRICING</span><h2>See the plans actually configured.</h2><p>Prices and included capabilities come from the running billing system, not from marketing estimates.</p></div>
-   <Async state={plans}>{(rows:any)=><div className="grid">{(rows as any[]).map((p:any)=><PlanCard key={p.code} p={p}/>)}</div>}</Async>
+   <Async state={plans}>{(rows:Plan[])=><div className="grid">{rows.map((p)=><PlanCard key={p.code} p={p}/>)}</div>}</Async>
    <p className="krev-fine">Some Studio features may be under release validation. Plan entitlements are shown as configured.</p>
   </div></section>
   <section className="krev-close"><div className="wrap"><span className="krev-eyebrow">LET'S MAKE SOMETHING DISTINCTIVE</span><h2>Your next idea deserves a real identity.</h2><Link className="krev-button" to="/signup">Create your account ↗</Link></div></section>
