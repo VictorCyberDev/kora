@@ -9,9 +9,9 @@ const CONF: Record<string, string> = {
   low: "Early signal",
 };
 const AUTH: Record<string, string> = {
-  AUTO_SAFE: "Kora can do this safely on its own.",
-  APPROVAL_REQUIRED: "Kora will ask you before anything goes public.",
-  DENY: "Kora will not do this for you.",
+  AUTO_SAFE: "Krevstudio can do this safely on its own.",
+  APPROVAL_REQUIRED: "Krevstudio will ask you before anything goes public.",
+  DENY: "Krevstudio will not do this for you.",
 };
 
 type Rec = {
@@ -33,8 +33,8 @@ const speechCtor = (): (new () => Rec) | null => {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 };
 
-/** Say or type what you need. Kora restates it and only goes there after you agree; it never acts on its own. */
-function TellKora({ id }: { id: string }) {
+/** Say or type what you need. Krevstudio restates it and only goes there after you agree; it never acts on its own. */
+function TellKrevstudio({ id }: { id: string }) {
   const nav = useNavigate();
   const [text, setText] = useState("");
   const [intent, setIntent] = useState<J | null>(null);
@@ -59,7 +59,7 @@ function TellKora({ id }: { id: string }) {
       setText(t);
       if (t) void ask(t);
     };
-    r.onerror = () => setErr("Kora could not hear that. You can type instead.");
+    r.onerror = () => setErr("Krevstudio could not hear that. You can type instead.");
     r.onend = () => setListening(false);
     setListening(true);
     r.start();
@@ -74,7 +74,7 @@ function TellKora({ id }: { id: string }) {
   };
   return (
     <section className="card stack" aria-labelledby="tell-h">
-      <h2 id="tell-h">Tell Kora what you need</h2>
+      <h2 id="tell-h">Tell Krevstudio what you need</h2>
       <form
         className="row"
         onSubmit={(e: FormEvent) => {
@@ -197,7 +197,7 @@ export function TodayPage() {
     .slice(0, 4);
   return (
     <div className="stack">
-      <TellKora id={id!} />
+      <TellKrevstudio id={id!} />
       <Async state={actions}>
         {(a) =>
           a.actions.length === 0 ? null : (
@@ -236,7 +236,7 @@ export function TodayPage() {
               </div>
             ))}
             <details>
-              <summary>What Kora cannot tell you yet</summary>
+              <summary>What Krevstudio cannot tell you yet</summary>
               <ul className="k-notes">
                 {b.brief.unavailable.map((u: J) => (
                   <li key={u.topic}>
@@ -262,12 +262,12 @@ export function TodayPage() {
       </Async>
       {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
       <section aria-labelledby="sugg">
-        <h2 id="sugg">What Kora suggests</h2>
+        <h2 id="sugg">What Krevstudio suggests</h2>
         <Async state={recs}>
           {(rows) =>
             rows.length === 0 ? (
               <Empty title="Nothing to suggest right now">
-                Kora looks again each time you open this page.
+                Krevstudio looks again each time you open this page.
               </Empty>
             ) : (
               <ul className="k-checks">
@@ -283,7 +283,7 @@ export function TodayPage() {
                     </div>
                     <p className="muted">{r.rec.hypothesis}</p>
                     <details>
-                      <summary>What Kora saw</summary>
+                      <summary>What Krevstudio saw</summary>
                       <ul className="k-notes">
                         {r.evidence.map((e: J) => (
                           <li key={e.label}>
@@ -388,7 +388,7 @@ export function CampaignsPage() {
         <p className="k-overline">Campaigns</p>
         <h2>One offer, every channel</h2>
         <p className="muted">
-          Kora builds the images and posts from your offer and Brand Kit.
+          Krevstudio builds the images and posts from your offer and Brand Kit.
           Nothing goes out until you approve it.
         </p>
         <div className="row">
@@ -456,7 +456,7 @@ export function CampaignsPage() {
         {(rows) =>
           rows.length === 0 ? (
             <Empty title="No campaigns yet">
-              Pick an offer and Kora will plan the posts.
+              Pick an offer and Krevstudio will plan the posts.
             </Empty>
           ) : (
             <ul className="k-checks">

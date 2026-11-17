@@ -115,7 +115,7 @@ export function Dashboard() {
         {(rows: J[]) =>
           rows.length === 0 ? (
             <Empty title="You have no website yet">
-              Describe your business and Kora builds the first version in
+              Describe your business and Krevstudio builds the first version in
               seconds.
               <p>
                 <Link className="btn" to="/app/sites/new">
@@ -175,7 +175,7 @@ function Operator() {
   const ch = useLoad(() => api("GET", "/api/notifications/channels"));
   return (
     <div className="card">
-      <h3>Kora operator</h3>
+      <h3>Krevstudio operator</h3>
       <p className="muted">
         Watches your websites, explains problems from evidence, and proposes
         typed fixes. Anything that changes what customers see needs your
@@ -346,7 +346,7 @@ export function NewSite() {
     setErr(null);
     setStage(3);
     try {
-      // Optional: ask the on-device model first. Kora validates whatever it says; failure is silent.
+      // Optional: ask the on-device model first. Krevstudio validates whatever it says; failure is silent.
       let local: { text: string; provider: string } | null = null;
       if (useAi && (ai === "available" || ai === "downloadable")) {
         setAiNote(
@@ -493,7 +493,7 @@ export function NewSite() {
       style={{ maxWidth: 640 }}
       onSubmit={describe}
     >
-      <h1 style={{ fontSize: "2rem" }}>Tell Kora about your business</h1>
+      <h1 style={{ fontSize: "2rem" }}>Tell Krevstudio about your business</h1>
       <label>
         Business name
         <input
@@ -513,7 +513,7 @@ export function NewSite() {
           placeholder="We repair fridges, washing machines and cookers in Ikeja."
         />
         <span className="field-hint">
-          Two lines is enough. Kora only uses what you write here. It will not
+          Two lines is enough. Krevstudio only uses what you write here. It will not
           invent services, prices or reviews.
         </span>
       </label>
@@ -562,7 +562,7 @@ export function NewSite() {
       </details>
       {questions.length > 0 && (
         <Notice kind="warn">
-          <strong>Kora needs a little more:</strong>
+          <strong>Krevstudio needs a little more:</strong>
           <ul>
             {questions.map((q) => (
               <li key={q}>{q}</li>

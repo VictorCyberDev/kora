@@ -41,7 +41,7 @@ export function SuggestionsPanel() {
               ))}
             </ul>
             <p className="small muted">
-              Kora never sends these. You write or approve every message.
+              Krevstudio never sends these. You write or approve every message.
             </p>
           </section>
         )
@@ -51,7 +51,7 @@ export function SuggestionsPanel() {
 }
 
 const EVIDENCE: Record<string, string> = {
-  OBSERVED: "Counted by Kora",
+  OBSERVED: "Counted by Krevstudio",
   INFERRED: "Likely",
   ESTIMATED: "Estimate",
 };
@@ -137,7 +137,7 @@ export function ImagesPage() {
           Pictures made by AI
         </h2>
         <p className="muted">
-          Made with open-source models. Kora only pictures things you have told
+          Made with open-source models. Krevstudio only pictures things you have told
           it you sell, adds no people or text, and labels every picture as
           AI-made. You approve each one before it is used.
         </p>
@@ -146,7 +146,7 @@ export function ImagesPage() {
             !s.image.configured ? (
               <Empty title="Not set up yet">
                 Picture generation needs an image provider to be configured on
-                this Kora. Nothing has been made.
+                this Krevstudio. Nothing has been made.
               </Empty>
             ) : (
               <form className="row" onSubmit={make}>

@@ -403,7 +403,7 @@ function ItemDetail({
                       }
                     }}
                   >
-                    Add a link Kora can track
+                    Add a link Krevstudio can track
                   </button>
                 )}
               <button
