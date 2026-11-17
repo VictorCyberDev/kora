@@ -1,0 +1,3 @@
+# Reviewed design guidance sources
+
+The license files listed in [manifest.json](./manifest.json) are available at the pinned upstream repositories. Apache-2.0 applies to the three selected Anthropic skill directories and Impeccable. MIT applies to Vercel Web Interface Guidelines and UI UX Pro Max. Kora does not redistribute these skill files or third-party assets, execute their scripts or claim any affiliation. Original Kora data-only design rules summarize applicable design ideas, without source code copying. All repository and file URLs, pinned SHAs and license paths are in the manifest. If future versions copy source files, preserve the original licenses, copyright notices and any required NOTICE texts before distribution.

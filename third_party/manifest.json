@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "policy": "data-only Kora-authored design rules; upstream code and assets are not copied",
+  "sources": [
+    {
+      "id": "anthropic-frontend",
+      "repository": "https://github.com/anthropics/skills",
+      "path": "skills/frontend-design/SKILL.md",
+      "commit": "1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064",
+      "license": "Apache-2.0",
+      "licensePath": "skills/frontend-design/LICENSE.txt",
+      "usage": "Original Kora editorial photography composition rule"
+    },
+    {
+      "id": "anthropic-canvas",
+      "repository": "https://github.com/anthropics/skills",
+      "path": "skills/canvas-design/SKILL.md",
+      "commit": "1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064",
+      "license": "Apache-2.0",
+      "licensePath": "skills/canvas-design/LICENSE.txt",
+      "usage": "Original Kora restrained motif guideline"
+    },
+    {
+      "id": "anthropic-brand",
+      "repository": "https://github.com/anthropics/skills",
+      "path": "skills/brand-guidelines/SKILL.md",
+      "commit": "1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064",
+      "license": "Apache-2.0",
+      "licensePath": "skills/brand-guidelines/LICENSE.txt",
+      "usage": "Customer identity preservation principles; no Anthropic branding assets"
+    },
+    {
+      "id": "impeccable",
+      "repository": "https://github.com/pbakaus/impeccable",
+      "path": "skill/SKILL.src.md",
+      "commit": "d41d9860b0094dcb68030657da63461212835aaa",
+      "license": "Apache-2.0",
+      "licensePath": "LICENSE",
+      "usage": "First-party section rhythm and critique rule"
+    },
+    {
+      "id": "vercel-interface",
+      "repository": "https://github.com/vercel-labs/web-interface-guidelines",
+      "path": "command.md",
+      "commit": "434b7f91364665f2f733b310ec54809bf8f37937",
+      "license": "MIT",
+      "licensePath": "LICENSE",
+      "usage": "First-party keyboard/focus/contact usability rule"
+    },
+    {
+      "id": "ui-ux-pro-max",
+      "repository": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "path": "README.md",
+      "commit": "e59ff376a41f7ca47b7541ad5c116495cbade3ee",
+      "license": "MIT",
+      "licensePath": "LICENSE",
+      "usage": "First-party typography and responsive focal treatment"
+    }
+  ]
+}

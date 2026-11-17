@@ -108,6 +108,14 @@ jobs:
         with:
           name: playwright-traces
           path: test-results/
+      - name: Preserve ten-industry website studio screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kora-studio-benchmark-screenshots
+          path: test-results/kora-studio-benchmark/
+          retention-days: 7
+          if-no-files-found: warn
 
   docker-image:
     name: docker image (build, no push)

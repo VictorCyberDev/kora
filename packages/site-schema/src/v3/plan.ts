@@ -14,6 +14,7 @@ import {
   ctaLabel,
   offerPhrase,
   resolveVertical,
+  loadDesignSkills,
   type BrandOS,
   type BusinessTruth,
   type ComposeOptions,
@@ -88,6 +89,10 @@ export interface PlanV3Options {
   /** The owner's own photos, already validated and re-encoded by the API. Used before any stock. */
   ownerPhotos?: OwnerPhotoInput[];
   ownerLogo?: OwnerLogoInput;
+  /** Already license-checked and hotlinkable external photos (e.g. Unsplash). */
+  stockPhotos?: MediaV3[];
+  /** Provider selection tracking; failure triggers safe local-stock fallback. */
+  trackStock?: (usedUrls: string[]) => Promise<boolean>;
   /** Real reviews the owner supplied. Without them no testimonial section exists. */
   quotes?: Array<{ quote: string; author: string; role?: string }>;
   /** Real figures the owner supplied ("Since 2015", "3 branches") as value/label pairs. */
@@ -216,6 +221,21 @@ function mediaFor(
       source: "owner",
       ownerCount: own.all.length,
     };
+  const approved = (opts.stockPhotos ?? [])
+    .filter(
+      (photo) =>
+        photo.provenance.sourceType === "licensed-stock" &&
+        !!photo.provenance.license &&
+        photo.url.startsWith("https://"),
+    )
+    .slice(0, 12);
+  if (approved.length)
+    return {
+      media: approved,
+      hero: approved[0],
+      source: "stock",
+      ownerCount: 0,
+    };
   const recipe = CATALOG[vertical.id];
   if (!recipe)
     return { media: [], hero: undefined, source: "none", ownerCount: 0 };
@@ -332,6 +352,10 @@ export function planSiteV3(
   const b = truth.brief;
   const v = resolveVertical(`${b.name} ${b.industry ?? ""} ${b.description}`);
   const g = direction.genome;
+  const activeDesignRules = loadDesignSkills({ industry: v.cluster }).rules;
+  const designEffects = new Set(
+    activeDesignRules.map((rule) => rule.effect).filter(Boolean),
+  );
   const colorway = GRAMMARS.find(
     (x) => x.id === direction.grammarId,
   )!.colorways.find((c) => c.id === direction.colorwayId)!;
@@ -430,7 +454,7 @@ export function planSiteV3(
       ? "call-first"
       : g.heroPhilosophy;
   const gram = GRAMMARS.find((x) => x.id === direction.grammarId);
-  const heroLayout = resolveHero(
+  let heroLayout = resolveHero(
     adaptHero(wantHero, gram?.alternates.hero ?? [], {
       hasHeroPhoto: !!mp.hero,
       photoTrust: v.photoTrust,
@@ -444,6 +468,14 @@ export function planSiteV3(
       highlights: highlights.length,
     },
   );
+  // Licensed, pinned guidance changes the actual rendered spec; rules are not
+  // merely copied into anti-pattern metadata. Only fact-safe changes apply.
+  if (
+    designEffects.has("editorial-photo-hero") &&
+    mp.hero &&
+    heroLayout === "type-dominant"
+  )
+    heroLayout = "editorial-split";
   const plateKinds = [
     "arch",
     "circles",
@@ -503,21 +535,31 @@ export function planSiteV3(
       return hasMedia ? ("stacked-panels" as const) : ("image-tiles" as const);
     return L;
   })();
-  const offerItems = services.map((s, i) => ({
-    title: s,
-    text: "",
-    ...(truth.can.prices ? {} : {}),
-    ...(!hasMedia
-      ? { plate: plateFor(i + 1) }
-      : media[i % media.length]
-        ? {
-            media: {
-              ...media[(i + 1) % media.length]!,
-              role: "feature" as const,
-            },
-          }
-        : {}),
-  }));
+  // Stock imagery is an illustration, never evidence of a customer's actual
+  // products. Avoid putting cake photographs beside an unrelated bread
+  // offering simply because the curated library has too few images.
+  const photoForOffer = (name: string, index: number): MediaV3 | undefined => {
+    if (!media.length) return undefined;
+    if (mp.source === "owner") return media[index % media.length];
+    const words = name
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .map((w) => w.replace(/s$/, ""))
+      .filter((w) => w.length >= 4);
+    return media.find((m) =>
+      words.some((word) => m.alt.toLowerCase().includes(word)),
+    );
+  };
+  const offerItems = services.map((name, i) => {
+    const photo = photoForOffer(name, i);
+    return {
+      title: name,
+      text: "",
+      ...(photo
+        ? { media: { ...photo, role: "feature" as const } }
+        : { plate: plateFor(i + 1) }),
+    };
+  });
   const offer = (): SectionV3 | null =>
     services.length
       ? {
@@ -598,11 +640,13 @@ export function planSiteV3(
               g.compositionMode === "monograph" ||
                 g.compositionMode === "poster-bold"
                 ? 4
-                : media.length >= 6
-                  ? 6
-                  : media.length >= 3
-                    ? 3
-                    : 2,
+                : media.length >= 9
+                  ? 9
+                  : media.length >= 6
+                    ? 6
+                    : media.length >= 3
+                      ? 3
+                      : 2,
             )
             .map((m) => ({
               caption: "",
@@ -821,6 +865,26 @@ export function planSiteV3(
     heroSec,
     ...(seq[g.compositionMode] ?? seq["editorial-asymmetric"]!),
   ]);
+  // Reorder the existing factual sections for varied editorial reading rhythm.
+  if (designEffects.has("section-rhythm")) {
+    for (let index = 2; index < homeSections.length - 1; index++) {
+      const prev = homeSections[index - 1];
+      const current = homeSections[index];
+      if (
+        prev &&
+        current &&
+        (prev.type === "offer" || prev.type === "products") &&
+        (current.type === "offer" || current.type === "products")
+      ) {
+        const storyIndex = homeSections.findIndex(
+          (section, at) => at > index && section.type === "story",
+        );
+        if (storyIndex > index) {
+          homeSections.splice(index, 0, homeSections.splice(storyIndex, 1)[0]!);
+        }
+      }
+    }
+  }
   // ticker-energy heroes sit directly above the band
   if (heroLayout === "ticker-energy") {
     const t = ticker();
@@ -848,6 +912,7 @@ export function planSiteV3(
   const home: Page = {
     slug: "home",
     title: b.name,
+    navHidden: false,
     purpose: "home",
     conversionGoal: v.primaryIntent,
     sections: homeSections,
@@ -902,6 +967,7 @@ export function planSiteV3(
       slug: slugOf[kind],
       title: titleOf[kind],
       nav: titleOf[kind].slice(0, 28),
+      navHidden: false,
       purpose: kind,
       conversionGoal: goal,
       sections: secs,
@@ -1136,12 +1202,13 @@ export function planSiteV3(
         ? { canonicalOrigin: opts.canonicalOrigin }
         : {}),
     },
-    pages,
+    pages: pages.slice(0, 7),
     footer: { text: `© ${b.name}`, links: [] },
     meta: {
       engine: "kora-creative/1",
       direction: direction.index,
       generator: "deterministic",
+      appliedDesignRules: activeDesignRules.map((rule) => rule.id),
     },
   });
   return { spec, direction, brandOs: osBase };

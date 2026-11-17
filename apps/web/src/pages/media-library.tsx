@@ -16,7 +16,13 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 /** Owner-facing media library: logo and photos in plain words. No technical metadata is shown. */
-export function MediaLibraryPanel({ siteId }: { siteId: string }) {
+export function MediaLibraryPanel({
+  siteId,
+  onUpdated,
+}: {
+  siteId: string;
+  onUpdated?: () => void;
+}) {
   const lib = useLoad(
     () => api<J>("GET", `/api/sites/${siteId}/media-library`),
     [siteId],
@@ -33,6 +39,7 @@ export function MediaLibraryPanel({ siteId }: { siteId: string }) {
       await fn();
       setMsg({ ok: true, text: ok });
       lib.reload();
+      onUpdated?.();
     } catch (x) {
       setMsg({ ok: false, text: errText(x) });
     } finally {

@@ -4,6 +4,7 @@
  * Selection is deterministic: the same brief always yields the same three directions.
  */
 import { z } from "zod";
+import { loadDesignSkills } from "./skill-registry.js";
 import { artDirect, type ImageBrief } from "./artdirection.js";
 import { distinctColorway } from "./palette.js";
 import {
@@ -277,6 +278,7 @@ export function composeDirections(
     );
     used.push(colorway);
     const strategy = deriveBrandStrategy(truth, v, g);
+    const designRules = loadDesignSkills({ industry: v.cluster }).rules;
     const thing = offerPhrase(truth, v);
     const ad = (["hero", "feature", "gallery"] as const).map((placement) =>
       artDirect({
@@ -312,7 +314,14 @@ export function composeDirections(
       signatureDevice: g.signature,
       pagePhilosophy: `${v.pages.join(" · ")}${v.singlePageSuffices ? " (one strong page can carry this business)" : ""}`,
       campaignBehaviour: g.campaignBehaviour,
-      antiPatterns: g.antiPatterns,
+      antiPatterns: [
+        ...new Set([
+          ...g.antiPatterns,
+          ...designRules
+            .filter((r) => r.phase === "critique")
+            .map((r) => r.instruction.slice(0, 80)),
+        ]),
+      ].slice(0, 10),
       artDirection: ad,
       seed,
       fit: { score: Math.round(fit.score * 10) / 10, reasons: fit.reasons },
