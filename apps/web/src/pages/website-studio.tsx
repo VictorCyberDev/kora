@@ -19,6 +19,9 @@ type EditProps = {
   subheading: string;
   body: string;
   imageUrl: string;
+  imageAlt: string;
+  focalX: string;
+  focalY: string;
   buttonLabel: string;
   buttonHref: string;
   itemsText: string;
@@ -73,6 +76,7 @@ const blockRender = (p: EditProps, palette: J = {}) => (
           width: "100%",
           maxHeight: 340,
           objectFit: "cover",
+          objectPosition: `${Number(p.focalX) || 50}% ${Number(p.focalY) || 50}%`,
           marginBottom: 24,
         }}
       />
@@ -182,6 +186,9 @@ function dataProps(section: J, id: string): EditProps {
         ? (section.body ?? []).join("\n")
         : (section.body ?? ""),
     imageUrl: section.media?.url ?? "",
+    imageAlt: section.media?.alt ?? "",
+    focalX: String(Math.round((section.media?.focalPoint?.x ?? 0.5)*100)),
+    focalY: String(Math.round((section.media?.focalPoint?.y ?? 0.5)*100)),
     buttonLabel: section.button?.label ?? section.primaryCta?.label ?? "",
     buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
     layout: section.layout ?? "",
