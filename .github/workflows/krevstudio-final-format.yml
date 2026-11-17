@@ -1,0 +1,26 @@
+name: Krevstudio one-shot integrated formatting
+on:
+  push:
+    branches: [feature/krevstudio-m3-m4-transformation]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: {version: 10.18.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: pnpm}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/api/src/creative-documents.integration.test.ts apps/api/src/platform/creative-document-routes.ts apps/api/src/platform/creative-documents.test.ts apps/api/src/platform/creative-documents.ts apps/api/src/platform/index.ts apps/web/index.html apps/web/src/App.tsx apps/web/src/krev-brand.css apps/web/src/main.tsx apps/web/src/pages/brand-os.tsx apps/web/src/pages/dashboard-v3.tsx apps/web/src/pages/identity.tsx apps/web/src/pages/krev-creative-studio.tsx apps/web/src/pages/krev-marketing.tsx apps/web/src/pages/krev-workspace-entry.tsx apps/web/src/pages/landing-v7.tsx apps/web/src/pages/more.tsx apps/web/src/pages/new-site-v6.tsx apps/web/src/pages/public.tsx apps/web/src/pages/studio.tsx apps/web/src/pages/website-studio.tsx apps/web/src/ui.tsx
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/api/src/creative-documents.integration.test.ts apps/api/src/platform/creative-document-routes.ts apps/api/src/platform/creative-documents.test.ts apps/api/src/platform/creative-documents.ts apps/api/src/platform/index.ts apps/web/index.html apps/web/src/App.tsx apps/web/src/krev-brand.css apps/web/src/main.tsx apps/web/src/pages/brand-os.tsx apps/web/src/pages/dashboard-v3.tsx apps/web/src/pages/identity.tsx apps/web/src/pages/krev-creative-studio.tsx apps/web/src/pages/krev-marketing.tsx apps/web/src/pages/krev-workspace-entry.tsx apps/web/src/pages/landing-v7.tsx apps/web/src/pages/more.tsx apps/web/src/pages/new-site-v6.tsx apps/web/src/pages/public.tsx apps/web/src/pages/studio.tsx apps/web/src/pages/website-studio.tsx apps/web/src/ui.tsx
+          if ! git diff --cached --quiet; then
+            git commit -m 'style(krevstudio): normalize full graphics, logo, marketing and navigation integration'
+            git push origin HEAD:feature/krevstudio-m3-m4-transformation
+          fi
