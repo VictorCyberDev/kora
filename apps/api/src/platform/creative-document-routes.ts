@@ -1,3 +1,4 @@
+import {mediaBase,loadOwnerMedia} from "./owner-media-loader.js";
 import { brandOsHash } from "@kora/creative";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { randomUUID } from "node:crypto";
@@ -19,8 +20,21 @@ const json = (value: unknown) =>
 export function registerCreativeDocumentRoutes(
   app: FastifyInstance,
   platform: PlatformStore,
+  publicMediaUrl?: string,
 ) {
   const brandStore = new BrandOsStore(platform.sql);
+  async function validateDocumentMedia(siteId:string,source:import("./creative-documents.js").CreativeDocument){
+    const urls=source.slides.flatMap(slide=>slide.layers.filter(layer=>layer.type==="image").map(layer=>layer.src));
+    if(!urls.length)return;
+    const media=await loadOwnerMedia(platform.sql,siteId,mediaBase(publicMediaUrl));
+    const allowed=new Set(media.photos.flatMap(photo=>[photo.url,...photo.srcset.map(x=>x.url)]));
+    if(urls.some(url=>!allowed.has(url)))
+      throw new HttpError(422,"unapproved_graphic_asset",
+        "Choose a photo from this business's approved image library.");
+    if(source.kind==="logo")throw new HttpError(422,"logo_must_be_vector",
+      "Approved logos must remain editable vectors.");
+  }
+
   async function siteFor(
     req: FastifyRequest,
     id: string,
@@ -119,6 +133,7 @@ export function registerCreativeDocumentRoutes(
     const { id, documentId } = routeIds.parse(req.params);
     const { site, row } = await docFor(req, id, documentId, "MEMBER");
     const { revision, source } = editDocumentSchema.parse(req.body);
+    await validateDocumentMedia(site.id,source);
     if (
       source.approvedLogoId !==
       creativeDocumentSchema.parse(row.source).approvedLogoId
@@ -199,6 +214,7 @@ export function registerCreativeDocumentRoutes(
           "Document changed; reload.",
         );
       const source = creativeDocumentSchema.parse(history.source);
+      await validateDocumentMedia(site.id,source);
       const owner = requireUser(req).userId;
       const next = await platform.inTransaction(async (tx) => {
         const updated =
@@ -223,6 +239,7 @@ export function registerCreativeDocumentRoutes(
     async (req) => {
       const { id, documentId } = routeIds.parse(req.params);
       const { site, row } = await docFor(req, id, documentId, "ADMIN");
+      await validateDocumentMedia(site.id,creativeDocumentSchema.parse(row.source));
       const revision = z
         .object({ revision: z.number().int().positive() })
         .parse(req.body).revision;
