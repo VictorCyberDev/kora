@@ -112,6 +112,8 @@ export function registerCreativeDocumentRoutes(
     const { id, documentId } = routeIds.parse(req.params);
     const { site, row } = await docFor(req, id, documentId, "MEMBER");
     const { revision, source } = editDocumentSchema.parse(req.body);
+    if(source.approvedLogoId !== creativeDocumentSchema.parse(row.source).approvedLogoId)
+      throw new HttpError(409,"brand_asset_immutable","Approved logo reference is controlled by Brand OS.");
     if (source.kind !== row.kind)
       throw new HttpError(
         409,
