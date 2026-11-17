@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, type J } from "../api";
 import { Async, Notice, errText, useLoad } from "../ui";
@@ -39,7 +39,6 @@ type Source = {
 };
 const clone = (s: Source): Source => structuredClone(s);
 const uid = () => crypto.randomUUID();
-const toLocal = (id: string) => document.getElementById(id);
 function renderLayer(layer: Layer) {
   const transform = `translate(${layer.x} ${layer.y}) rotate(${layer.rotation} ${layer.width / 2} ${layer.height / 2})`;
   const common = { transform, opacity: layer.opacity };
@@ -213,7 +212,7 @@ export function KrevCreativeStudio() {
     setError("");
     setNotice("");
   };
-  const create = async (e: React.FormEvent) => {
+  const create = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError("");
