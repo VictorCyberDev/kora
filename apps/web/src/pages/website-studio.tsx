@@ -351,6 +351,11 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
           };
       delete section.plate;
     }
+    if (section.media && p.imageUrl) {
+      const percent=(value:string)=>Math.max(0,Math.min(100,Number(value)||0))/100;
+      section.media.focalPoint={x:percent(p.focalX),y:percent(p.focalY)};
+      if (p.imageAlt.trim()) section.media.alt=p.imageAlt.trim().slice(0,120);
+    }
     return section;
   });
 }
