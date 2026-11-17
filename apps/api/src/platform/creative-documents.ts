@@ -131,7 +131,7 @@ export function buildCreativeDocument(
   brand: {
     version: number;
     name: string;
-    approvedLogo?: {id:string; source:CreativeDocument} | null;
+    approvedLogo?: { id: string; source: CreativeDocument } | null;
     colors?: {
       background: string;
       foreground: string;
@@ -169,14 +169,18 @@ export function buildCreativeDocument(
     const layers: GraphicLayer[] = [];
     // Only the explicitly owner-approved logo may propagate. Its existing
     // vector geometry is reused, never hallucinated from the brand name.
-    if(request.kind!=="logo" && brand.approvedLogo?.source.slides[0]){
-      for(const part of brand.approvedLogo.source.slides[0].layers.filter(
-        (l)=>l.type!=="text").slice(0,8)){
-        const factor=.085;
-        layers.push({...part,id:uid(),x:Math.round(55+part.x*factor),
-          y:Math.round(25+part.y*factor),
-          width:Math.round(part.width*factor),
-          height:Math.round(part.height*factor),
+    if (request.kind !== "logo" && brand.approvedLogo?.source.slides[0]) {
+      for (const part of brand.approvedLogo.source.slides[0].layers
+        .filter((l) => l.type !== "text")
+        .slice(0, 8)) {
+        const factor = 0.085;
+        layers.push({
+          ...part,
+          id: uid(),
+          x: Math.round(55 + part.x * factor),
+          y: Math.round(25 + part.y * factor),
+          width: Math.round(part.width * factor),
+          height: Math.round(part.height * factor),
         });
       }
     }
