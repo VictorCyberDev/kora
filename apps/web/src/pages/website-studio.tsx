@@ -186,9 +186,9 @@ function dataProps(section: J, id: string): EditProps {
     buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
     layout: section.layout ?? "",
     itemsText:
-      section.type === "ticker" ? (section.items ?? []).join("\\n")
+      section.type === "ticker" ? (section.items ?? []).join("\n")
       : section.type === "proof" ?
-        (section.quotes ?? []).map((q:J)=>[q.quote,q.author,q.role].filter(Boolean).join(" | ")).join("\\n")
+        (section.quotes ?? []).map((q:J)=>[q.quote,q.author,q.role].filter(Boolean).join(" | ")).join("\n")
       : section.type === "faq"
         ? (section.items ?? [])
             .map((it: J) => [it.question, it.answer].join(" | "))
@@ -232,14 +232,14 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
         section.text = p.heading;
         break;
       case "ticker":
-        section.items = p.itemsText.split("\\n").map((x:string)=>x.trim()).filter(Boolean);
+        section.items = p.itemsText.split("\n").map((x:string)=>x.trim()).filter(Boolean);
         break;
       case "proof":
         // Proof is editable only when supplied by the owner. Never generate
         // a testimonial as a block default or remove provenance.
         if(section.supplied !== true) throw new Error("Unverified testimonials cannot be published.");
         section.heading = p.heading;
-        section.quotes = p.itemsText.split("\\n").map((line:string)=>{
+        section.quotes = p.itemsText.split("\n").map((line:string)=>{
           const [quote,author,role] = line.split(" | ");
           return {quote:(quote??"").trim(),author:(author??"").trim(),...(role?.trim()?{role:role.trim()}: {})};
         }).filter((x:J)=>x.quote && x.author);
