@@ -411,6 +411,9 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Con
     heading: { type: "text" as const, label: "Headline" },
     subheading: { type: "textarea" as const, label: "Supporting text" },
     imageUrl: imageField,
+    imageAlt:{type:"text" as const,label:"Image description for screen readers"},
+    focalX:{type:"text" as const,label:"Horizontal focal point 0-100"},
+    focalY:{type:"text" as const,label:"Vertical focal point 0-100"},
     buttonLabel: { type: "text" as const, label: "Button label" },
     buttonHref: { type: "text" as const, label: "Button link" },
     layout: layoutField([
@@ -487,6 +490,9 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Con
           heading: { type: "text" },
           body: { type: "textarea" },
           imageUrl: imageField,
+          imageAlt:{type:"text",label:"Image description"},
+          focalX:{type:"text",label:"Focal X 0-100"},
+          focalY:{type:"text",label:"Focal Y 0-100"},
           layout: layoutField([
             "manifesto",
             "founder-note",
