@@ -175,7 +175,7 @@ export async function findUnsplashStock(
   }
   return [...new Map(found.map((photo) => [photo.id, photo])).values()].slice(
     0,
-    8,
+    12,
   );
 }
 export async function trackUnsplashSelection(
