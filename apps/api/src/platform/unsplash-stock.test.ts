@@ -33,7 +33,7 @@ describe("Unsplash compliance adapter", () => {
   });
   it("uses only public intent queries, hotlinks, stores attribution and deduplicates", async () => {
     const fetcher = vi.fn(
-      async () =>
+      () =>
         new Response(JSON.stringify({ results: [validPhoto, validPhoto] }), {
           status: 200,
           headers: { "x-ratelimit-remaining": "41" },
@@ -75,13 +75,13 @@ describe("Unsplash compliance adapter", () => {
       },
     };
     const accept = vi.fn(
-      async () => new Response("{}", { status: 200 }),
+      () => new Response("{}", { status: 200 }),
     ) as unknown as typeof fetch;
     expect(await trackUnsplashSelection([item], "demo-test-key", accept)).toBe(
       true,
     );
     const reject = vi.fn(
-      async () => new Response("{}", { status: 429 }),
+      () => new Response("{}", { status: 429 }),
     ) as unknown as typeof fetch;
     expect(await trackUnsplashSelection([item], "demo-test-key", reject)).toBe(
       false,
