@@ -139,7 +139,7 @@ export async function findUnsplashStock(
             valid(p.user.links.html, "unsplash.com") &&
             valid(p.links.html, "unsplash.com"),
         )
-        .slice(0, 4)
+        .slice(0, 6)
         .map((p): StockPhoto => ({
           id: p.id,
           downloadLocation: p.links.download_location,
