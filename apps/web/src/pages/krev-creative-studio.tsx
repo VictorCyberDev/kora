@@ -164,7 +164,9 @@ export function KrevCreativeStudio() {
   const [cta, setCta] = useState("");
   const [direction, setDirection] = useState(0);
   const [slideCount, setSlideCount] = useState(4);
-  const [previews,setPreviews]=useState<Array<{direction:number;svg:string}>>([]);
+  const [previews, setPreviews] = useState<
+    Array<{ direction: number; svg: string }>
+  >([]);
   const history = useRef<Source[]>([]);
   const future = useRef<Source[]>([]);
   const dragging = useRef<{
@@ -237,14 +239,29 @@ export function KrevCreativeStudio() {
     setError("");
     setNotice("");
   };
-  const previewDirections=async()=>{
-    setBusy(true);setError("");
-    try{
-      const r=await api<J>("POST",`/api/sites/${id}/creative-documents/preview`,{
-        kind:createKind,title,headline,description,cta,slides:createKind==="carousel"?slideCount:1,direction,
-      });
-      setPreviews(r.directions as Array<{direction:number;svg:string}>);
-    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  const previewDirections = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/preview`,
+        {
+          kind: createKind,
+          title,
+          headline,
+          description,
+          cta,
+          slides: createKind === "carousel" ? slideCount : 1,
+          direction,
+        },
+      );
+      setPreviews(r.directions as Array<{ direction: number; svg: string }>);
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
   };
   const create = async (e: FormEvent) => {
     e.preventDefault();
@@ -731,17 +748,46 @@ export function KrevCreativeStudio() {
               onChange={(e) => setCta(e.target.value)}
             />
           </label>
-          <button type="button" className="btn ghost" disabled={busy||!title.trim()||!headline.trim()}
-            onClick={()=>void previewDirections()}>Explore three real directions</button>
-          {previews.length>0&&<div className="grid" role="group" aria-label="Real creative direction previews">
-            {previews.map(p=><button type="button" className="card stack" key={p.direction}
-              aria-pressed={direction===p.direction} onClick={()=>setDirection(p.direction)}>
-                <img alt={`Rendered concept ${p.direction+1}`} loading="lazy"
-                  style={{width:"100%",maxHeight:260,objectFit:"contain"}}
-                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(p.svg)}`}/>
-                <strong>Concept {p.direction+1} {direction===p.direction?"— Selected":""}</strong>
-              </button>)}
-          </div>}
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={busy || !title.trim() || !headline.trim()}
+            onClick={() => void previewDirections()}
+          >
+            Explore three real directions
+          </button>
+          {previews.length > 0 && (
+            <div
+              className="grid"
+              role="group"
+              aria-label="Real creative direction previews"
+            >
+              {previews.map((p) => (
+                <button
+                  type="button"
+                  className="card stack"
+                  key={p.direction}
+                  aria-pressed={direction === p.direction}
+                  onClick={() => setDirection(p.direction)}
+                >
+                  <img
+                    alt={`Rendered concept ${p.direction + 1}`}
+                    loading="lazy"
+                    style={{
+                      width: "100%",
+                      maxHeight: 260,
+                      objectFit: "contain",
+                    }}
+                    src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(p.svg)}`}
+                  />
+                  <strong>
+                    Concept {p.direction + 1}{" "}
+                    {direction === p.direction ? "— Selected" : ""}
+                  </strong>
+                </button>
+              ))}
+            </div>
+          )}
           <button className="btn" disabled={busy}>
             Generate editable design
           </button>

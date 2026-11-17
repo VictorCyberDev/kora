@@ -95,24 +95,38 @@ export function registerCreativeDocumentRoutes(
   });
   // Three genuine editable composition previews rendered by the same
   // generator as saved source, with no hidden persistence or outside model.
-  app.post("/api/sites/:id/creative-documents/preview",async(req)=>{
-    const site=await siteFor(req,z.object({id:uuid}).parse(req.params).id,"MEMBER");
-    const request=createDocumentSchema.parse(req.body);
-    const brand=await brandStore.latest(site.id);
-    const approvedLogoId=brand?.brandOs.visual.logoAssetId;
-    const logo=approvedLogoId?(await platform.sql`SELECT id,source FROM creative_documents
+  app.post("/api/sites/:id/creative-documents/preview", async (req) => {
+    const site = await siteFor(
+      req,
+      z.object({ id: uuid }).parse(req.params).id,
+      "MEMBER",
+    );
+    const request = createDocumentSchema.parse(req.body);
+    const brand = await brandStore.latest(site.id);
+    const approvedLogoId = brand?.brandOs.visual.logoAssetId;
+    const logo = approvedLogoId
+      ? (
+          await platform.sql`SELECT id,source FROM creative_documents
       WHERE id=${approvedLogoId} AND site_id=${site.id} AND org_id=${site.orgId}
-        AND kind='logo' AND status='APPROVED'`)[0]:null;
-    const identity={
-      version:brand?.version??1,name:brand?.brandOs.name??site.name,
-      ...(brand?{colors:brand.brandOs.visual.palette}:{}),
-      approvedLogo:logo?{id:String(logo.id),source:creativeDocumentSchema.parse(logo.source)}:null,
+        AND kind='logo' AND status='APPROVED'`
+        )[0]
+      : null;
+    const identity = {
+      version: brand?.version ?? 1,
+      name: brand?.brandOs.name ?? site.name,
+      ...(brand ? { colors: brand.brandOs.visual.palette } : {}),
+      approvedLogo: logo
+        ? {
+            id: String(logo.id),
+            source: creativeDocumentSchema.parse(logo.source),
+          }
+        : null,
     };
-    const directions=[0,1,2].map((direction)=>{
-      const source=buildCreativeDocument({...request,direction},identity);
-      return {direction,source,svg:renderSlideSvg(source.slides[0]!)};
+    const directions = [0, 1, 2].map((direction) => {
+      const source = buildCreativeDocument({ ...request, direction }, identity);
+      return { direction, source, svg: renderSlideSvg(source.slides[0]!) };
     });
-    return {data:{directions,brandVersion:identity.version}};
+    return { data: { directions, brandVersion: identity.version } };
   });
   app.post("/api/sites/:id/creative-documents", async (req, reply) => {
     const site = await siteFor(

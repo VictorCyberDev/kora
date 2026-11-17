@@ -315,7 +315,12 @@ for (const w of WIDTHS) {
     for (const [label, url] of pages) {
       await page.goto(url);
       if (label === "builder")
-        for (const tab of ["Ask Krevstudio", "Design", "Sections", "Versions"]) {
+        for (const tab of [
+          "Ask Krevstudio",
+          "Design",
+          "Sections",
+          "Versions",
+        ]) {
           await page.getByRole("tab", { name: tab }).click();
           await check(page, `builder/${tab}`, w, problems);
         }

@@ -19,7 +19,9 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     await page.getByLabel("Password").fill("correct horse battery");
     await page.getByRole("button", { name: "Create account" }).click();
     await expect(
-      page.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
+      page.getByRole("heading", {
+        name: /Tell Krevstudio about your business/,
+      }),
     ).toBeVisible();
     const me = (await (await ctx.request.get("/api/auth/me")).json()).data;
     const created = await ctx.request.post("/api/sites", {
