@@ -200,9 +200,9 @@ export function registerCreativeDocumentRoutes(
     const { row } = await docFor(req, id, documentId);
     return {
       data: {
-        id: row.id,
+        id: String(row.id),
         revision: Number(row.revision),
-        status: row.status,
+        status: String(row.status),
         source: creativeDocumentSchema.parse(row.source),
       },
     };
