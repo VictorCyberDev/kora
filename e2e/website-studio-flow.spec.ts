@@ -50,6 +50,7 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     ).toBeVisible();
     await page.screenshot({
       path: "test-results/kora-studio-benchmark/studio-editor.png",
+      fullPage: true,
       animations: "disabled",
     });
     await page.getByLabel("New page title").fill("Our Methods");
