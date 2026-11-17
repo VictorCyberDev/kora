@@ -99,6 +99,13 @@ export async function observeRenderedScreenshot(
         return (
           style.visibility !== "hidden" &&
           style.display !== "none" &&
+          !t.hasAttribute("disabled") &&
+          t.getAttribute("aria-hidden") !== "true" &&
+          // Offscreen anti-spam honeypots are intentionally not interactive.
+          r.right > 0 &&
+          r.left < window.innerWidth &&
+          r.bottom > 0 &&
+          r.top < document.documentElement.scrollHeight &&
           r.width > 0 &&
           r.height > 0 &&
           (r.width < 24 || r.height < 24)
