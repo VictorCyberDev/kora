@@ -335,6 +335,23 @@ export function KrevCreativeStudio() {
     });
     setSelected(created.id);
   };
+  const approveCreative=async()=>{
+    if(!documentId||!source||dirty)return;
+    setBusy(true);setError("");
+    try{
+      await api<J>("POST",`/api/sites/${id}/creative-documents/${documentId}/approve`,{revision});
+      setNotice("Design version approved. It is not published or scheduled.");
+      doc.reload();list.reload();
+    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  };
+  const preparePackage=async()=>{
+    if(!documentId)return;
+    setBusy(true);setError("");
+    try{
+      const packageInfo=await api<J>("GET",`/api/sites/${id}/creative-documents/${documentId}/publishing-package`);
+      setNotice("Publishing package ready: "+packageInfo.media.length+" SVG slide(s), caption and alt text. No channel post has been made.");
+    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  };
   const addLayer = (type: Layer["type"]) => {
     if (!slide) return;
     const created: Layer = {
@@ -716,7 +733,13 @@ export function KrevCreativeStudio() {
                     >
                       {busy ? "Saving…" : "Save draft"}
                     </button>
-                    {source.kind === "logo" && (
+                    {source.kind!=="logo"&&<button className="btn sm" disabled={dirty||busy}
+              onClick={()=>void approveCreative()}>Approve design</button>}
+            {doc.data?.status==="APPROVED"&&source.kind!=="logo"&&
+              <button className="btn sm ghost" onClick={()=>void preparePackage()}>
+                Prepare social publishing package
+              </button>}
+            {source.kind === "logo" && (
                       <button
                         className="btn sm"
                         disabled={dirty || busy}
