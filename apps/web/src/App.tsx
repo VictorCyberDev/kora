@@ -1,5 +1,9 @@
-import {KrevWorkspaceEntry} from "./pages/krev-workspace-entry";
-import {KrevLanding as Landing,KrevMarketingPage,KrevMarketingNav} from "./pages/krev-marketing";
+import { KrevWorkspaceEntry } from "./pages/krev-workspace-entry";
+import {
+  KrevLanding as Landing,
+  KrevMarketingPage,
+  KrevMarketingNav,
+} from "./pages/krev-marketing";
 import { KrevCreativeStudio } from "./pages/krev-creative-studio";
 import { IdentityPage } from "./pages/identity";
 import { ImagesPage } from "./pages/creative";
@@ -18,13 +22,7 @@ import {
 import { api } from "./api";
 import { useAuth } from "./auth";
 import { Logo, Spinner, useLoad } from "./ui";
-import {
-  Login,
-  Pricing,
-  Privacy,
-  Signup,
-  Terms,
-} from "./pages/public";
+import { Login, Pricing, Privacy, Signup, Terms } from "./pages/public";
 import { SitesList } from "./pages/sites";
 import { NewSiteV6 } from "./pages/new-site-v6";
 import { Dashboard } from "./pages/dashboard-v3";
@@ -94,7 +92,9 @@ function PublicLayout() {
       </main>
       <footer className="site">
         <div className="wrap row between">
-          <span>© Krevstudio. Create your brand and everything that follows.</span>
+          <span>
+            © Krevstudio. Create your brand and everything that follows.
+          </span>
           <span className="row">
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
@@ -349,11 +349,11 @@ export function App() {
       </Route>
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="create" element={<KrevWorkspaceEntry mode="create"/>}/>
-        <Route path="designs" element={<KrevWorkspaceEntry mode="designs"/>}/>
-        <Route path="brand" element={<KrevWorkspaceEntry mode="brand"/>}/>
-        <Route path="assets" element={<KrevWorkspaceEntry mode="assets"/>}/>
-        <Route path="publish" element={<KrevWorkspaceEntry mode="publish"/>}/>
+        <Route path="create" element={<KrevWorkspaceEntry mode="create" />} />
+        <Route path="designs" element={<KrevWorkspaceEntry mode="designs" />} />
+        <Route path="brand" element={<KrevWorkspaceEntry mode="brand" />} />
+        <Route path="assets" element={<KrevWorkspaceEntry mode="assets" />} />
+        <Route path="publish" element={<KrevWorkspaceEntry mode="publish" />} />
         <Route path="sites" element={<SitesList />} />
         <Route path="sites/new" element={<NewSiteV6 />} />
         <Route path="sites/:id" element={<SiteShell />}>
