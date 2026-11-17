@@ -26,6 +26,9 @@ import {
   type SiteSpecV3,
   type StructuredEdit,
   assistCopy,
+  criticV3,
+  repairV3,
+  parseSiteSpecV3,
 } from "@kora/site-schema";
 import type { BrandOS, CreativeDirection } from "@kora/creative";
 
@@ -294,6 +297,21 @@ export class SiteAuthor {
         note +=
           ". The opening headline was suggested by the AI and checked against what you told us.";
       }
+    }
+    // Run the real deterministic creative critic as part of customer website
+    // generation, not only as a separate report in the QA endpoint.
+    // Repairs are fact-preserving, schema-checked and capped at two attempts.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const before = criticV3(spec);
+      const proposal = repairV3(spec);
+      if (!proposal.applied.length) break;
+      const candidate = parseSiteSpecV3(proposal.spec);
+      const after = criticV3(candidate);
+      const blockers = (issues: typeof before) =>
+        issues.filter((issue) => issue.severity === "block").length;
+      if (blockers(after) > blockers(before)) break;
+      spec = candidate;
+      note += ". Validated repair: " + proposal.applied.join(", ");
     }
     if (o.stockPhotos?.length && o.trackStock) {
       const urls = new Set<string>();
