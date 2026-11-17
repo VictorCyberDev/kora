@@ -1,9 +1,9 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches: [main, feature/krevstudio-m3-m4-transformation]
   pull_request:
-    branches: [main]
+    branches: [main, feature/kora-creative-intelligence-m1-m2]
 
 jobs:
   quality:
