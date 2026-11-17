@@ -644,9 +644,9 @@ export function planSiteV3(
                   ? 9
                   : media.length >= 6
                     ? 6
-                  : media.length >= 3
-                    ? 3
-                    : 2,
+                    : media.length >= 3
+                      ? 3
+                      : 2,
             )
             .map((m) => ({
               caption: "",
