@@ -140,6 +140,8 @@ export interface ReasonResult {
   output: ReasonerOutput;
   source: "MODEL" | "DETERMINISTIC_FALLBACK";
   model: string | null;
+  provider: string | null;
+  latencyMs: number | null;
   rejectionReason: string | null;
   inputHash: string;
   inputTokens: number | null;
@@ -149,13 +151,19 @@ export interface ReasonResult {
 export async function reason(
   llm: LlmClient | null,
   input: ReasonerInput,
-  options: { versionIds?: string[]; signal?: AbortSignal } = {},
+  options: {
+    versionIds?: string[];
+    signal?: AbortSignal;
+    tenantId?: string;
+  } = {},
 ): Promise<ReasonResult> {
   const hash = inputHash(input);
   const fallback = (rejectionReason: string | null): ReasonResult => ({
     output: deterministicReasoning(input),
     source: "DETERMINISTIC_FALLBACK",
     model: null,
+    provider: null,
+    latencyMs: null,
     rejectionReason,
     inputHash: hash,
     inputTokens: null,
@@ -175,7 +183,12 @@ export async function reason(
   });
   try {
     const res = await llm.complete(
-      { system: SYSTEM_PROMPT, user },
+      {
+        system: SYSTEM_PROMPT,
+        user,
+        task: "incident_reasoning",
+        ...(options.tenantId ? { tenantId: options.tenantId } : {}),
+      },
       options.signal,
     );
     let json: unknown;
@@ -189,6 +202,8 @@ export async function reason(
       output,
       source: "MODEL",
       model: res.model,
+      provider: res.provider ?? null,
+      latencyMs: res.latencyMs ?? null,
       rejectionReason: null,
       inputHash: hash,
       inputTokens: res.inputTokens,
