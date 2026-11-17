@@ -1,4 +1,4 @@
-import {brandOsHash} from "@kora/creative";
+import { brandOsHash } from "@kora/creative";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -64,13 +64,20 @@ export function registerCreativeDocumentRoutes(
     const brand = await brandStore.latest(site.id);
     const version = brand?.version ?? 1;
     const owner = requireUser(req).userId;
-    const approvedLogoId=brand?.brandOs.visual.logoAssetId;
-    const logoRow=approvedLogoId
-      ? (await platform.sql`SELECT id,source FROM creative_documents
+    const approvedLogoId = brand?.brandOs.visual.logoAssetId;
+    const logoRow = approvedLogoId
+      ? (
+          await platform.sql`SELECT id,source FROM creative_documents
           WHERE id=${approvedLogoId} AND site_id=${site.id} AND org_id=${site.orgId}
-            AND kind='logo' AND status='APPROVED'`)[0]
+            AND kind='logo' AND status='APPROVED'`
+        )[0]
       : null;
-    const approvedLogo=logoRow?{id:String(logoRow.id),source:creativeDocumentSchema.parse(logoRow.source)}:null;
+    const approvedLogo = logoRow
+      ? {
+          id: String(logoRow.id),
+          source: creativeDocumentSchema.parse(logoRow.source),
+        }
+      : null;
     const source = buildCreativeDocument(request, {
       version,
       approvedLogo,
@@ -112,8 +119,15 @@ export function registerCreativeDocumentRoutes(
     const { id, documentId } = routeIds.parse(req.params);
     const { site, row } = await docFor(req, id, documentId, "MEMBER");
     const { revision, source } = editDocumentSchema.parse(req.body);
-    if(source.approvedLogoId !== creativeDocumentSchema.parse(row.source).approvedLogoId)
-      throw new HttpError(409,"brand_asset_immutable","Approved logo reference is controlled by Brand OS.");
+    if (
+      source.approvedLogoId !==
+      creativeDocumentSchema.parse(row.source).approvedLogoId
+    )
+      throw new HttpError(
+        409,
+        "brand_asset_immutable",
+        "Approved logo reference is controlled by Brand OS.",
+      );
     if (source.kind !== row.kind)
       throw new HttpError(
         409,
@@ -232,39 +246,73 @@ export function registerCreativeDocumentRoutes(
       return { data: { id: documentId, status: "APPROVED" } };
     },
   );
-  app.post("/api/sites/:id/creative-documents/:documentId/activate-logo",async(req)=>{
-    const {id,documentId}=routeIds.parse(req.params);
-    const {site,row}=await docFor(req,id,documentId,"ADMIN");
-    if(row.kind!=="logo"||row.status!=="APPROVED")throw new HttpError(409,
-      "logo_not_approved","Approve a saved vector logo before adding it to your brand.");
-    const owner=requireUser(req).userId;
-    const result=await platform.inTransaction(async tx=>{
-      const history=new BrandOsStore(tx.sql);
-      const latest=await history.latest(site.id);
-      if(!latest)throw new HttpError(409,"brand_missing",
-        "Create a versioned Brand OS before activating your logo.");
-      if(latest.brandOs.visual.logoAssetId===documentId)
-        return {version:latest.version,logoDocumentId:documentId,unchanged:true};
-      const nextVersion=latest.version+1;
-      const nextBrand={...latest.brandOs,version:nextVersion,
-        visual:{...latest.brandOs.visual,logoAssetId:documentId},
-        provenance:{...latest.brandOs.provenance,createdBy:"owner-edit" as const},
-      };
-      const inserted=await tx.sql`INSERT INTO brand_os_versions
+  app.post(
+    "/api/sites/:id/creative-documents/:documentId/activate-logo",
+    async (req) => {
+      const { id, documentId } = routeIds.parse(req.params);
+      const { site, row } = await docFor(req, id, documentId, "ADMIN");
+      if (row.kind !== "logo" || row.status !== "APPROVED")
+        throw new HttpError(
+          409,
+          "logo_not_approved",
+          "Approve a saved vector logo before adding it to your brand.",
+        );
+      const owner = requireUser(req).userId;
+      const result = await platform.inTransaction(async (tx) => {
+        const history = new BrandOsStore(tx.sql);
+        const latest = await history.latest(site.id);
+        if (!latest)
+          throw new HttpError(
+            409,
+            "brand_missing",
+            "Create a versioned Brand OS before activating your logo.",
+          );
+        if (latest.brandOs.visual.logoAssetId === documentId)
+          return {
+            version: latest.version,
+            logoDocumentId: documentId,
+            unchanged: true,
+          };
+        const nextVersion = latest.version + 1;
+        const nextBrand = {
+          ...latest.brandOs,
+          version: nextVersion,
+          visual: { ...latest.brandOs.visual, logoAssetId: documentId },
+          provenance: {
+            ...latest.brandOs.provenance,
+            createdBy: "owner-edit" as const,
+          },
+        };
+        const inserted = await tx.sql`INSERT INTO brand_os_versions
         (id,site_id,org_id,version,hash,grammar_id,direction_name,brand_os,created_by)
         VALUES(${randomUUID()},${site.id},${site.orgId},${nextVersion},
           ${brandOsHash(nextBrand)},${nextBrand.grammarId},${"Approved vector logo"},
           ${tx.sql.json(json(nextBrand))},${owner})
         ON CONFLICT(site_id,version) DO NOTHING RETURNING version`;
-      if(!inserted.length)throw new HttpError(409,"brand_conflict",
-        "Brand settings changed. Reload and approve again.");
-      return {version:nextVersion,logoDocumentId:documentId,unchanged:false};
-    });
-    await platform.audit({orgId:site.orgId,actorUserId:owner,
-      action:"brand.logo_activated",objectType:"creative_document",
-      objectId:documentId,requestId:req.id,metadata:{brandVersion:result.version}});
-    return {data:result};
-  });
+        if (!inserted.length)
+          throw new HttpError(
+            409,
+            "brand_conflict",
+            "Brand settings changed. Reload and approve again.",
+          );
+        return {
+          version: nextVersion,
+          logoDocumentId: documentId,
+          unchanged: false,
+        };
+      });
+      await platform.audit({
+        orgId: site.orgId,
+        actorUserId: owner,
+        action: "brand.logo_activated",
+        objectType: "creative_document",
+        objectId: documentId,
+        requestId: req.id,
+        metadata: { brandVersion: result.version },
+      });
+      return { data: result };
+    },
+  );
   app.get(
     "/api/sites/:id/creative-documents/:documentId/export/:slide",
     async (req, reply) => {

@@ -260,14 +260,32 @@ export function KrevCreativeStudio() {
     }
   };
   const approveLogo = async () => {
-    if(!documentId || !source || source.kind!=="logo" || dirty)return;
-    setBusy(true);setError("");
-    try{
-      await api<J>("POST",`/api/sites/${id}/creative-documents/${documentId}/approve`,{revision});
-      const result=await api<J>("POST",`/api/sites/${id}/creative-documents/${documentId}/activate-logo`,{});
-      setNotice("Approved logo added to Brand OS version "+result.version+". New graphics will reuse it.");
-      list.reload();doc.reload();
-    }catch(e){setError(errText(e));}finally{setBusy(false);}
+    if (!documentId || !source || source.kind !== "logo" || dirty) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/approve`,
+        { revision },
+      );
+      const result = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/activate-logo`,
+        {},
+      );
+      setNotice(
+        "Approved logo added to Brand OS version " +
+          result.version +
+          ". New graphics will reuse it.",
+      );
+      list.reload();
+      doc.reload();
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
   };
   const addLayer = (type: Layer["type"]) => {
     if (!slide) return;
@@ -607,9 +625,16 @@ export function KrevCreativeStudio() {
                     >
                       {busy ? "Saving…" : "Save draft"}
                     </button>
-                    {source.kind==="logo" && <button className="btn sm" disabled={dirty||busy}
-              onClick={()=>void approveLogo()}>Approve and use as brand logo</button>}
-            <button className="btn sm ghost" onClick={exportSource}>
+                    {source.kind === "logo" && (
+                      <button
+                        className="btn sm"
+                        disabled={dirty || busy}
+                        onClick={() => void approveLogo()}
+                      >
+                        Approve and use as brand logo
+                      </button>
+                    )}
+                    <button className="btn sm ghost" onClick={exportSource}>
                       Export editable JSON
                     </button>
                     <button
