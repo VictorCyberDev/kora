@@ -84,6 +84,8 @@ export function SiteShell() {
             items: [
               [`${base}/create`, "Create"],
               [`${base}/images`, "Images"],
+              [`${base}/creative-studio`, "Graphics & logos"],
+              [`${base}/website-studio`, "Website editor"],
               [`${base}/build`, "Build"],
             ],
           },
