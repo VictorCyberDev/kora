@@ -9,7 +9,7 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
   test.setTimeout(180_000);
   const ctx = await browser.newContext({ baseURL: BASE });
   const page = await ctx.newPage();
-  mkdirSync("test-results/kora-studio-benchmark",{recursive:true});
+  mkdirSync("test-results/kora-studio-benchmark", { recursive: true });
   try {
     await page.goto("/signup");
     const token = Date.now().toString(36);
@@ -49,8 +49,8 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
       page.getByText("Up to seven complete pages.", { exact: false }),
     ).toBeVisible();
     await page.screenshot({
-      path:"test-results/kora-studio-benchmark/studio-editor.png",
-      animations:"disabled",
+      path: "test-results/kora-studio-benchmark/studio-editor.png",
+      animations: "disabled",
     });
     await page.getByLabel("New page title").fill("Our Methods");
     await page.getByRole("button", { name: "Add page" }).click();
@@ -72,20 +72,36 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     ).toBe(true);
     // Enforce the site media boundary at the real API layer for an arbitrary
     // replace-section operation, not only Puck's replace-page-sections route.
-    const home = saved.spec.pages.find((p:{slug:string})=>p.slug==="home");
+    const home = saved.spec.pages.find(
+      (p: { slug: string }) => p.slug === "home",
+    );
     const oldHero = home?.sections?.[0];
     if (oldHero?.media) {
-      const crossTenant = await ctx.request.post("/api/sites/"+siteId+"/edit",{
-        headers,
-        data:{
-          baseVersionId:site.currentVersionId,
-          designEdit:{kind:"replace-section",slug:"home",at:0,
-            section:{...oldHero,media:{...oldHero.media,
-              url:"https://other-customer.example.test/stolen-image.webp"}}},
+      const crossTenant = await ctx.request.post(
+        "/api/sites/" + siteId + "/edit",
+        {
+          headers,
+          data: {
+            baseVersionId: site.currentVersionId,
+            designEdit: {
+              kind: "replace-section",
+              slug: "home",
+              at: 0,
+              section: {
+                ...oldHero,
+                media: {
+                  ...oldHero.media,
+                  url: "https://other-customer.example.test/stolen-image.webp",
+                },
+              },
+            },
+          },
         },
-      });
+      );
       expect(crossTenant.status()).toBe(422);
-      const unchanged = (await (await ctx.request.get("/api/sites/"+siteId)).json()).data;
+      const unchanged = (
+        await (await ctx.request.get("/api/sites/" + siteId)).json()
+      ).data;
       expect(unchanged.currentVersionId).toBe(site.currentVersionId);
     }
     await page.reload();
@@ -103,20 +119,26 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     // Publish via the real owner-facing Studio control, not only through a
     // direct API call. The confirmation dialog requires explicit approval.
     page.once("dialog", (dialog) => void dialog.accept());
-    await page.getByRole("button", { name: "Publish selected version" }).click();
-    const publishedLink = page.getByRole("link", { name: "Open published website" });
+    await page
+      .getByRole("button", { name: "Publish selected version" })
+      .click();
+    const publishedLink = page.getByRole("link", {
+      name: "Open published website",
+    });
     await expect(publishedLink).toBeVisible({ timeout: 20000 });
     const publicUrl = await publishedLink.getAttribute("href");
     expect(publicUrl).toMatch(/^https?:/);
     expect((await ctx.request.get(publicUrl!)).status()).toBe(200);
-    const publishedPage=await ctx.newPage();
-    await publishedPage.goto(publicUrl!,{waitUntil:"domcontentloaded"});
+    const publishedPage = await ctx.newPage();
+    await publishedPage.goto(publicUrl!, { waitUntil: "domcontentloaded" });
     await publishedPage.screenshot({
-      path:"test-results/kora-studio-benchmark/published-test-site.png",
-      fullPage:true,animations:"disabled",
+      path: "test-results/kora-studio-benchmark/published-test-site.png",
+      fullPage: true,
+      animations: "disabled",
     });
     await publishedPage.close();
-    const now = (await (await ctx.request.get("/api/sites/" + siteId)).json()).data;
+    const now = (await (await ctx.request.get("/api/sites/" + siteId)).json())
+      .data;
     expect(now.publishedVersionId).toBe(site.currentVersionId);
     const restore = await ctx.request.post(
       "/api/sites/" + siteId + "/versions/" + original + "/rollback",

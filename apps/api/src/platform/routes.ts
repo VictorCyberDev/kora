@@ -32,7 +32,7 @@ import { fatigueAvoid, tasteSignals } from "@kora/creative";
 import { designContext } from "./design-context.js";
 import type { DirectionTrace } from "./author.js";
 import { loadOwnerMedia, mediaBase } from "./owner-media-loader.js";
-import {mediaUrls,unapprovedMediaUrls} from "./studio-media-guard.js";
+import { mediaUrls, unapprovedMediaUrls } from "./studio-media-guard.js";
 import { findUnsplashStock, trackUnsplashSelection } from "./unsplash-stock.js";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
@@ -1078,10 +1078,23 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       const prior = mediaUrls(base.spec);
       const proposed = mediaUrls(authored.spec);
       if ([...proposed].some((url) => !prior.has(url))) {
-        const uploads = await loadOwnerMedia(platform.sql,site.id,mediaBaseUrl);
-        const invalid = unapprovedMediaUrls(base.spec,authored.spec,uploads.photos,uploads.logo);
-        if(invalid.length) throw new HttpError(422,"unapproved_studio_asset",
-          "Choose an image from this site's approved media library.");
+        const uploads = await loadOwnerMedia(
+          platform.sql,
+          site.id,
+          mediaBaseUrl,
+        );
+        const invalid = unapprovedMediaUrls(
+          base.spec,
+          authored.spec,
+          uploads.photos,
+          uploads.logo,
+        );
+        if (invalid.length)
+          throw new HttpError(
+            422,
+            "unapproved_studio_asset",
+            "Choose an image from this site's approved media library.",
+          );
       }
       const version = await buildVersion(
         site,

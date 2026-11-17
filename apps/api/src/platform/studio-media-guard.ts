@@ -14,13 +14,22 @@ export function mediaUrls(spec: unknown): Set<string> {
     }
     const obj = value as Record<string, unknown>;
     for (const [key, val] of Object.entries(obj)) {
-      if ((key === "media" || key === "logo") && val && typeof val === "object") {
+      if (
+        (key === "media" || key === "logo") &&
+        val &&
+        typeof val === "object"
+      ) {
         const m = val as Record<string, unknown>;
         if (typeof m.url === "string") output.add(m.url);
         if (Array.isArray(m.srcset))
           for (const variant of m.srcset)
-            if (variant && typeof variant === "object" && "url" in variant &&
-                typeof variant.url === "string") output.add(variant.url);
+            if (
+              variant &&
+              typeof variant === "object" &&
+              "url" in variant &&
+              typeof variant.url === "string"
+            )
+              output.add(variant.url);
       }
       inspect(val, depth + 1);
     }
@@ -31,8 +40,8 @@ export function mediaUrls(spec: unknown): Set<string> {
 export function unapprovedMediaUrls(
   oldSpec: unknown,
   candidate: unknown,
-  ownerPhotos: readonly {url:string;srcset?:readonly {url:string}[]}[],
-  ownerLogo?: {url:string} | null,
+  ownerPhotos: readonly { url: string; srcset?: readonly { url: string }[] }[],
+  ownerLogo?: { url: string } | null,
 ): string[] {
   const allowed = mediaUrls(oldSpec);
   for (const photo of ownerPhotos) {

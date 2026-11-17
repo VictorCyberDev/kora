@@ -5,17 +5,17 @@ This ledger is intentionally evidence-based; a green test on an earlier commit n
 
 ## Source architecture
 
-| Area | Implementation |
-| --- | --- |
-| Approved design skills | `packages/creative/src/design-rules.ts` and `skill-registry.ts`; pinned provenance in `third_party/manifest.json` |
+| Area                     | Implementation                                                                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Approved design skills   | `packages/creative/src/design-rules.ts` and `skill-registry.ts`; pinned provenance in `third_party/manifest.json`                |
 | Creative brief / BrandOS | Existing typed design brief, direction composition, BrandOS; augmented runtime guidance in `packages/creative/src/directions.ts` |
-| Site generation | `packages/site-schema/src/v3/plan.ts` and `render.ts`; seven-page limit with legacy v1/v2 compatibility |
-| Media | Approved owner library, client focal points, Pexels fallback, optional Unsplash server-side search/attribution/quota logic |
-| Deterministic critique | `packages/site-schema/src/v3/critic.ts`; bounded repairs run during `SiteAuthor.generateV3` |
-| Screenshot QA | `e2e/visual-observe.ts`, `e2e/vision-critic.ts`, `e2e/website-studio-benchmark.spec.ts` |
-| Studio | `apps/web/src/pages/website-studio.tsx`, Puck 0.24.0, existing authenticated API and immutable version store |
-| Media isolation | `apps/api/src/platform/studio-media-guard.ts`: validates resulting canonical edit across all operations |
-| Release and rollback | Existing Site Host, publish/restore API, plus explicit Studio confirmation and live link |
+| Site generation          | `packages/site-schema/src/v3/plan.ts` and `render.ts`; seven-page limit with legacy v1/v2 compatibility                          |
+| Media                    | Approved owner library, client focal points, Pexels fallback, optional Unsplash server-side search/attribution/quota logic       |
+| Deterministic critique   | `packages/site-schema/src/v3/critic.ts`; bounded repairs run during `SiteAuthor.generateV3`                                      |
+| Screenshot QA            | `e2e/visual-observe.ts`, `e2e/vision-critic.ts`, `e2e/website-studio-benchmark.spec.ts`                                          |
+| Studio                   | `apps/web/src/pages/website-studio.tsx`, Puck 0.24.0, existing authenticated API and immutable version store                     |
+| Media isolation          | `apps/api/src/platform/studio-media-guard.ts`: validates resulting canonical edit across all operations                          |
+| Release and rollback     | Existing Site Host, publish/restore API, plus explicit Studio confirmation and live link                                         |
 
 The Puck canvas is an interactive, branded structural representation of the site. **Only the saved iframe preview is a byte-equivalent view of the published renderer.** Do not confuse the two.
 
@@ -30,28 +30,29 @@ The Puck canvas is an interactive, branded structural representation of the site
 
 ## Completion/verification matrix
 
-| Acceptance gate | Source | Evidence status |
-| --- | --- | --- |
-| Licensed versioned skill registry | Installed, activated in direction and generation engines | Implemented; latest-head tests pending |
-| Creative brief + Brand DNA | Existing shared schemas and persisted BrandOS | Implemented; integration present |
-| Three different art directions | Production planner + existing previews | Browser-covered; visual diversity still requires review |
-| Responsive multi-page generation | v3 PageSpec, routes, metadata, navigation | Tested on baseline; final-head coverage pending |
-| Owner uploads + provenance | Media library, server-side provenance checks | Unit tests added; final-head tests pending |
-| Unsplash API | Optional rate-aware hotlinking, attribution and download event tracking | Mock tests; **live API and quota not verified** |
-| Deterministic design critique + bounded repair | Production author and v3 critic | Integrated; final-head verification pending |
-| Screenshot critique + bounded repair | Real Playwright rendered PNGs and DOM measurements | 40 screenshots from baseline; stricter acceptance pending |
-| AI vision critique | Optional vision adapter invoked on captured PNGs | **Not verified with an actual provider** |
-| Puck editor properties, sections, media, BrandOS | Studio source and auth API | Implemented; full customer editing acceptance pending |
-| Publish, verify, restore | Existing Site Host + new Studio controls | Earlier publisher browser tests passed; latest combined UI test pending |
-| Accessibility and performance | Playwright design QA and axe / browser checks | Existing tests; new mobile target findings need retest |
-| Security / tenant isolation | Auth API, test guard, version persistence | Tests added; final-head test pending |
-| Provider reconciliation PR #39 | Main changed six non-overlapping provider files | Incorporated in merge commit `4fcf1470`; combined CI pending |
-| Production deployment | Deferred until complete acceptance | **Not deployed** |
-| Live production credentials / paid services | Not altered | No new recurring costs |
+| Acceptance gate                                  | Source                                                                  | Evidence status                                                         |
+| ------------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Licensed versioned skill registry                | Installed, activated in direction and generation engines                | Implemented; latest-head tests pending                                  |
+| Creative brief + Brand DNA                       | Existing shared schemas and persisted BrandOS                           | Implemented; integration present                                        |
+| Three different art directions                   | Production planner + existing previews                                  | Browser-covered; visual diversity still requires review                 |
+| Responsive multi-page generation                 | v3 PageSpec, routes, metadata, navigation                               | Tested on baseline; final-head coverage pending                         |
+| Owner uploads + provenance                       | Media library, server-side provenance checks                            | Unit tests added; final-head tests pending                              |
+| Unsplash API                                     | Optional rate-aware hotlinking, attribution and download event tracking | Mock tests; **live API and quota not verified**                         |
+| Deterministic design critique + bounded repair   | Production author and v3 critic                                         | Integrated; final-head verification pending                             |
+| Screenshot critique + bounded repair             | Real Playwright rendered PNGs and DOM measurements                      | 40 screenshots from baseline; stricter acceptance pending               |
+| AI vision critique                               | Optional vision adapter invoked on captured PNGs                        | **Not verified with an actual provider**                                |
+| Puck editor properties, sections, media, BrandOS | Studio source and auth API                                              | Implemented; full customer editing acceptance pending                   |
+| Publish, verify, restore                         | Existing Site Host + new Studio controls                                | Earlier publisher browser tests passed; latest combined UI test pending |
+| Accessibility and performance                    | Playwright design QA and axe / browser checks                           | Existing tests; new mobile target findings need retest                  |
+| Security / tenant isolation                      | Auth API, test guard, version persistence                               | Tests added; final-head test pending                                    |
+| Provider reconciliation PR #39                   | Main changed six non-overlapping provider files                         | Incorporated in merge commit `4fcf1470`; combined CI pending            |
+| Production deployment                            | Deferred until complete acceptance                                      | **Not deployed**                                                        |
+| Live production credentials / paid services      | Not altered                                                             | No new recurring costs                                                  |
 
 ## Product acceptance scenario
 
 The required bakery journey is partially automated through:
+
 - `e2e/critical-flow.spec.ts`: sign-up, choose direction, preview, edit, publish, public URL, monitor, fault, recovery, audit.
 - `e2e/website-studio-flow.spec.ts`: v3 generation, create page, save immutable version, reload, preview, UI publish, live URL, rollback, wrong-tenant image rejection, editor and public screenshot evidence.
 - `e2e/website-studio-benchmark.spec.ts`: twenty verticals, real renderer, per-page route/SEO checks, responsive screenshots and visual review.

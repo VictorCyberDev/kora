@@ -313,7 +313,7 @@ test("20 industries have real rendered desktop/mobile screenshots, navigation an
       // never quietly accepted as harmless aesthetic warnings.
       expect(
         findings.filter((finding) => finding.code === "SMALL_TOUCH_TARGET"),
-        item.key+" "+device+" touch targets",
+        item.key + " " + device + " touch targets",
       ).toHaveLength(0);
       // Verify actual generated additional-page routes, page titles, navigation
       // and functional contact paths instead of assuming a page array is enough.

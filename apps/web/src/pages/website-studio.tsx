@@ -61,100 +61,235 @@ const blockRender = (p: EditProps, palette: J = {}) => {
   // The customer-facing canvas reflects the chosen layout, colorway and actual
   // content. The saved SiteSpec renderer remains authoritative in Preview.
   const source: J = (() => {
-    try { return JSON.parse(p.original) as J; } catch { return {}; }
+    try {
+      return JSON.parse(p.original) as J;
+    } catch {
+      return {};
+    }
   })();
   const kind = source.type as string;
   const isHero = kind === "hero";
   const split = /split|pair|portrait|cinematic|collage/i.test(p.layout);
-  const isItems = ["offer","products","process","proof","faq","ticker"].includes(kind);
-  const background = kind === "cta" || kind === "hero"
-    ? palette.background || "#fffaf2"
-    : palette.surface || palette.background || "#f4f1ec";
+  const isItems = [
+    "offer",
+    "products",
+    "process",
+    "proof",
+    "faq",
+    "ticker",
+  ].includes(kind);
+  const background =
+    kind === "cta" || kind === "hero"
+      ? palette.background || "#fffaf2"
+      : palette.surface || palette.background || "#f4f1ec";
   const fg = palette.foreground || "#171319";
   const accent = palette.primary || "#171319";
   const displayFont = isHero ? "Georgia, Cambria, serif" : "inherit";
-  const items = p.itemsText.split("\n").map(x=>x.trim()).filter(Boolean);
+  const items = p.itemsText
+    .split("\n")
+    .map((x) => x.trim())
+    .filter(Boolean);
   const photo = p.imageUrl ? (
-    <img src={p.imageUrl} alt={p.imageAlt || "Section photograph"}
+    <img
+      src={p.imageUrl}
+      alt={p.imageAlt || "Section photograph"}
       style={{
-        width:split?"min(100%,440px)":"100%",
-        maxHeight:isHero?520:350,
-        aspectRatio:split?"4 / 5":"16 / 9",
-        objectFit:"cover",
-        objectPosition:`${Number(p.focalX)||50}% ${Number(p.focalY)||50}%`,
-        borderRadius:6,
-      }}/>
+        width: split ? "min(100%,440px)" : "100%",
+        maxHeight: isHero ? 520 : 350,
+        aspectRatio: split ? "4 / 5" : "16 / 9",
+        objectFit: "cover",
+        objectPosition: `${Number(p.focalX) || 50}% ${Number(p.focalY) || 50}%`,
+        borderRadius: 6,
+      }}
+    />
   ) : null;
   return (
-    <section style={{
-      background,color:fg,padding:"clamp(32px,5vw,88px)",
-      borderTop:"2px solid "+(palette.accent || accent),
-      margin:"6px 0",
-    }}>
-      <div style={{
-        display:"flex",
-        flexDirection:split?"row":"column",
-        flexWrap:"wrap",gap:"clamp(20px,4vw,64px)",
-        alignItems:"center",
-      }}>
+    <section
+      style={{
+        background,
+        color: fg,
+        padding: "clamp(32px,5vw,88px)",
+        borderTop: "2px solid " + (palette.accent || accent),
+        margin: "6px 0",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          flexDirection: split ? "row" : "column",
+          flexWrap: "wrap",
+          gap: "clamp(20px,4vw,64px)",
+          alignItems: "center",
+        }}
+      >
         {photo && split ? photo : null}
-        <div style={{flex:"1 1 260px",minWidth:0}}>
-          <div style={{
-            fontSize:12,letterSpacing:"0.15em",textTransform:"uppercase",
-            color:palette.mutedForeground || fg,marginBottom:12,
-          }}>{kind==="hero"?"Welcome":kind==="offer"?"Our expertise":kind==="story"?"Our story":kind==="contact"?"Get in touch":""}</div>
-          {kind==="ticker" ? null : <h2 style={{
-            fontFamily:displayFont,
-            fontSize:isHero?"clamp(2.5rem,6vw,5.5rem)":"clamp(1.75rem,3.2vw,3rem)",
-            lineHeight:1.07,letterSpacing:"-0.035em",maxWidth:750,
-          }}>{p.heading}</h2>}
-          {p.subheading && <p style={{fontSize:"clamp(1rem,1.4vw,1.25rem)",lineHeight:1.7,maxWidth:650}}>
-            {p.subheading}</p>}
-          {p.body && <p style={{whiteSpace:"pre-line",lineHeight:1.65,maxWidth:650}}>{p.body}</p>}
-          {p.buttonLabel && <span style={{
-            display:"inline-block",padding:"13px 22px",marginTop:20,
-            background:accent,color:palette.primaryForeground || "#fff",
-            borderRadius:4,fontSize:14,fontWeight:600,
-          }}>{p.buttonLabel}</span>}
+        <div style={{ flex: "1 1 260px", minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 12,
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+              color: palette.mutedForeground || fg,
+              marginBottom: 12,
+            }}
+          >
+            {kind === "hero"
+              ? "Welcome"
+              : kind === "offer"
+                ? "Our expertise"
+                : kind === "story"
+                  ? "Our story"
+                  : kind === "contact"
+                    ? "Get in touch"
+                    : ""}
+          </div>
+          {kind === "ticker" ? null : (
+            <h2
+              style={{
+                fontFamily: displayFont,
+                fontSize: isHero
+                  ? "clamp(2.5rem,6vw,5.5rem)"
+                  : "clamp(1.75rem,3.2vw,3rem)",
+                lineHeight: 1.07,
+                letterSpacing: "-0.035em",
+                maxWidth: 750,
+              }}
+            >
+              {p.heading}
+            </h2>
+          )}
+          {p.subheading && (
+            <p
+              style={{
+                fontSize: "clamp(1rem,1.4vw,1.25rem)",
+                lineHeight: 1.7,
+                maxWidth: 650,
+              }}
+            >
+              {p.subheading}
+            </p>
+          )}
+          {p.body && (
+            <p
+              style={{
+                whiteSpace: "pre-line",
+                lineHeight: 1.65,
+                maxWidth: 650,
+              }}
+            >
+              {p.body}
+            </p>
+          )}
+          {p.buttonLabel && (
+            <span
+              style={{
+                display: "inline-block",
+                padding: "13px 22px",
+                marginTop: 20,
+                background: accent,
+                color: palette.primaryForeground || "#fff",
+                borderRadius: 4,
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              {p.buttonLabel}
+            </span>
+          )}
         </div>
         {photo && !split ? photo : null}
       </div>
-      {kind==="gallery" ? (
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginTop:22}}>
-          {(source.items??[]).map((entry:J,index:number)=>(
+      {kind === "gallery" ? (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
+            gap: 12,
+            marginTop: 22,
+          }}
+        >
+          {(source.items ?? []).map((entry: J, index: number) => (
             <div key={index}>
-              {entry.media?.url && <img src={entry.media.url} alt={entry.media.alt||"Gallery image"}
-                style={{width:"100%",aspectRatio:"4/3",objectFit:"cover"}}/>}
-              <p style={{fontSize:13}}>{items[index]||entry.caption}</p>
+              {entry.media?.url && (
+                <img
+                  src={entry.media.url}
+                  alt={entry.media.alt || "Gallery image"}
+                  style={{
+                    width: "100%",
+                    aspectRatio: "4/3",
+                    objectFit: "cover",
+                  }}
+                />
+              )}
+              <p style={{ fontSize: 13 }}>{items[index] || entry.caption}</p>
             </div>
           ))}
         </div>
       ) : null}
       {isItems && items.length ? (
-        <div style={{
-          display:"grid",gridTemplateColumns:kind==="ticker"?"1fr": "repeat(auto-fit,minmax(180px,1fr))",
-          gap:14,marginTop:28,
-        }}>
-          {items.map((item,index)=>(
-            <div key={index} style={{
-              borderTop:"1px solid "+(palette.accent||accent),
-              padding:"16px 4px",minWidth:0,overflowWrap:"break-word",
-              fontSize:kind==="ticker"?18:15,lineHeight:1.5,
-            }}>
-              {item.split(" | ").map((part,i)=>(
-                <div key={i} style={{fontWeight:i===0?650:400}}>{part}</div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              kind === "ticker" ? "1fr" : "repeat(auto-fit,minmax(180px,1fr))",
+            gap: 14,
+            marginTop: 28,
+          }}
+        >
+          {items.map((item, index) => (
+            <div
+              key={index}
+              style={{
+                borderTop: "1px solid " + (palette.accent || accent),
+                padding: "16px 4px",
+                minWidth: 0,
+                overflowWrap: "break-word",
+                fontSize: kind === "ticker" ? 18 : 15,
+                lineHeight: 1.5,
+              }}
+            >
+              {item.split(" | ").map((part, i) => (
+                <div key={i} style={{ fontWeight: i === 0 ? 650 : 400 }}>
+                  {part}
+                </div>
               ))}
             </div>
           ))}
         </div>
       ) : null}
-      {kind==="contact" && (
-        <div style={{maxWidth:640,display:"grid",gap:12,marginTop:24}}>
-          <span style={{fontSize:13,opacity:.75}}>Published form preview</span>
-          <input disabled aria-label="Preview name" placeholder="Your name" style={{padding:12}}/>
-          <input disabled aria-label="Preview email" placeholder="Your email" style={{padding:12}}/>
-          <textarea disabled aria-label="Preview message" placeholder="Your message" style={{padding:12}}/>
-          <span style={{padding:12,background:accent,color:palette.primaryForeground||"#fff",textAlign:"center"}}>Send message</span>
+      {kind === "contact" && (
+        <div style={{ maxWidth: 640, display: "grid", gap: 12, marginTop: 24 }}>
+          <span style={{ fontSize: 13, opacity: 0.75 }}>
+            Published form preview
+          </span>
+          <input
+            disabled
+            aria-label="Preview name"
+            placeholder="Your name"
+            style={{ padding: 12 }}
+          />
+          <input
+            disabled
+            aria-label="Preview email"
+            placeholder="Your email"
+            style={{ padding: 12 }}
+          />
+          <textarea
+            disabled
+            aria-label="Preview message"
+            placeholder="Your message"
+            style={{ padding: 12 }}
+          />
+          <span
+            style={{
+              padding: 12,
+              background: accent,
+              color: palette.primaryForeground || "#fff",
+              textAlign: "center",
+            }}
+          >
+            Send message
+          </span>
         </div>
       )}
     </section>
@@ -205,7 +340,12 @@ function defaultSection(type: ComponentName): J {
         { title: "Next step", text: "Describe the next step" },
       ],
     };
-  if (type === "Ticker") return {type:"ticker",layout:"band",items:["Your first highlight","Your second highlight"]};
+  if (type === "Ticker")
+    return {
+      type: "ticker",
+      layout: "band",
+      items: ["Your first highlight", "Your second highlight"],
+    };
   if (type === "FAQ")
     return {
       type: "faq",
@@ -242,24 +382,33 @@ function dataProps(section: J, id: string): EditProps {
         : (section.body ?? ""),
     imageUrl: section.media?.url ?? "",
     imageAlt: section.media?.alt ?? "",
-    focalX: String(Math.round((section.media?.focalPoint?.x ?? 0.5)*100)),
-    focalY: String(Math.round((section.media?.focalPoint?.y ?? 0.5)*100)),
+    focalX: String(Math.round((section.media?.focalPoint?.x ?? 0.5) * 100)),
+    focalY: String(Math.round((section.media?.focalPoint?.y ?? 0.5) * 100)),
     buttonLabel: section.button?.label ?? section.primaryCta?.label ?? "",
     buttonHref: section.button?.href ?? section.primaryCta?.href ?? "",
     layout: section.layout ?? "",
     itemsText:
-      section.type === "ticker" ? (section.items ?? []).join("\n")
-      : section.type === "proof" ?
-        (section.quotes ?? []).map((q:J)=>[q.quote,q.author,q.role].filter(Boolean).join(" | ")).join("\n")
-      : section.type === "faq"
-        ? (section.items ?? [])
-            .map((it: J) => [it.question, it.answer].join(" | "))
-            .join("\n")
-        : section.type === "gallery"
-          ? (section.items ?? []).map((it: J) => it.caption ?? "").join("\n")
-          : (section.items ?? [])
-              .map((it: J) => [it.title, it.text].filter(Boolean).join(" | "))
-              .join("\n"),
+      section.type === "ticker"
+        ? (section.items ?? []).join("\n")
+        : section.type === "proof"
+          ? (section.quotes ?? [])
+              .map((q: J) =>
+                [q.quote, q.author, q.role].filter(Boolean).join(" | "),
+              )
+              .join("\n")
+          : section.type === "faq"
+            ? (section.items ?? [])
+                .map((it: J) => [it.question, it.answer].join(" | "))
+                .join("\n")
+            : section.type === "gallery"
+              ? (section.items ?? [])
+                  .map((it: J) => it.caption ?? "")
+                  .join("\n")
+              : (section.items ?? [])
+                  .map((it: J) =>
+                    [it.title, it.text].filter(Boolean).join(" | "),
+                  )
+                  .join("\n"),
   };
 }
 function toPuck(page: J): Data {
@@ -294,17 +443,28 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
         section.text = p.heading;
         break;
       case "ticker":
-        section.items = p.itemsText.split("\n").map((x:string)=>x.trim()).filter(Boolean);
+        section.items = p.itemsText
+          .split("\n")
+          .map((x: string) => x.trim())
+          .filter(Boolean);
         break;
       case "proof":
         // Proof is editable only when supplied by the owner. Never generate
         // a testimonial as a block default or remove provenance.
-        if(section.supplied !== true) throw new Error("Unverified testimonials cannot be published.");
+        if (section.supplied !== true)
+          throw new Error("Unverified testimonials cannot be published.");
         section.heading = p.heading;
-        section.quotes = p.itemsText.split("\n").map((line:string)=>{
-          const [quote,author,role] = line.split(" | ");
-          return {quote:(quote??"").trim(),author:(author??"").trim(),...(role?.trim()?{role:role.trim()}: {})};
-        }).filter((x:J)=>x.quote && x.author);
+        section.quotes = p.itemsText
+          .split("\n")
+          .map((line: string) => {
+            const [quote, author, role] = line.split(" | ");
+            return {
+              quote: (quote ?? "").trim(),
+              author: (author ?? "").trim(),
+              ...(role?.trim() ? { role: role.trim() } : {}),
+            };
+          })
+          .filter((x: J) => x.quote && x.author);
         break;
       case "offer":
       case "products":
@@ -407,9 +567,11 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
       delete section.plate;
     }
     if (section.media && p.imageUrl) {
-      const percent=(value:string)=>Math.max(0,Math.min(100,Number(value)||0))/100;
-      section.media.focalPoint={x:percent(p.focalX),y:percent(p.focalY)};
-      if (p.imageAlt.trim()) section.media.alt=p.imageAlt.trim().slice(0,120);
+      const percent = (value: string) =>
+        Math.max(0, Math.min(100, Number(value) || 0)) / 100;
+      section.media.focalPoint = { x: percent(p.focalX), y: percent(p.focalY) };
+      if (p.imageAlt.trim())
+        section.media.alt = p.imageAlt.trim().slice(0, 120);
     }
     return section;
   });
@@ -424,7 +586,11 @@ const defaults = (type: ComponentName) => {
     );
   }
 };
-function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Config {
+function createWebsiteConfig(
+  ownerPhotos: J[],
+  pages: J[],
+  palette: J = {},
+): Config {
   const renderBlock = (props: EditProps) => blockRender(props, palette);
   const sources = new Map<string, string>();
   for (const p of pages)
@@ -466,9 +632,12 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Con
     heading: { type: "text" as const, label: "Headline" },
     subheading: { type: "textarea" as const, label: "Supporting text" },
     imageUrl: imageField,
-    imageAlt:{type:"text" as const,label:"Image description for screen readers"},
-    focalX:{type:"text" as const,label:"Horizontal focal point 0-100"},
-    focalY:{type:"text" as const,label:"Vertical focal point 0-100"},
+    imageAlt: {
+      type: "text" as const,
+      label: "Image description for screen readers",
+    },
+    focalX: { type: "text" as const, label: "Horizontal focal point 0-100" },
+    focalY: { type: "text" as const, label: "Vertical focal point 0-100" },
     buttonLabel: { type: "text" as const, label: "Button label" },
     buttonHref: { type: "text" as const, label: "Button link" },
     layout: layoutField([
@@ -545,9 +714,9 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Con
           heading: { type: "text" },
           body: { type: "textarea" },
           imageUrl: imageField,
-          imageAlt:{type:"text",label:"Image description"},
-          focalX:{type:"text",label:"Focal X 0-100"},
-          focalY:{type:"text",label:"Focal Y 0-100"},
+          imageAlt: { type: "text", label: "Image description" },
+          focalX: { type: "text", label: "Focal X 0-100" },
+          focalY: { type: "text", label: "Focal Y 0-100" },
           layout: layoutField([
             "manifesto",
             "founder-note",
@@ -574,15 +743,17 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Con
         render: renderBlock,
       },
       Ticker: {
-        label:"Highlight ticker",
-        fields:{itemsText:{type:"textarea"}},
-        defaultProps:defaults("Ticker"),render:renderBlock,
+        label: "Highlight ticker",
+        fields: { itemsText: { type: "textarea" } },
+        defaultProps: defaults("Ticker"),
+        render: renderBlock,
       },
       Proof: {
-        label:"Verified customer proof",
-        fields:{heading:{type:"text"},itemsText:{type:"textarea"}},
-        defaultProps:defaults("Proof"),render:renderBlock,
-        permissions:{insert:false},
+        label: "Verified customer proof",
+        fields: { heading: { type: "text" }, itemsText: { type: "textarea" } },
+        defaultProps: defaults("Proof"),
+        render: renderBlock,
+        permissions: { insert: false },
       },
       FAQ: {
         label: "Questions & answers",
@@ -684,7 +855,10 @@ export function WebsiteStudio() {
   const [dirty, setDirty] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [publicRelease, setPublicRelease] = useState<{url:string;verified:boolean}|null>(null);
+  const [publicRelease, setPublicRelease] = useState<{
+    url: string;
+    verified: boolean;
+  } | null>(null);
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
       if (!dirty) return;
@@ -698,7 +872,12 @@ export function WebsiteStudio() {
     spec?.pages?.find((p: J) => p.slug === selectedPage) ?? spec?.pages?.[0];
   const puckData = useMemo(() => (page ? toPuck(page) : null), [page]);
   const config = useMemo(
-    () => createWebsiteConfig(assets.data?.photos ?? [], spec?.pages ?? [], spec?.design?.palette),
+    () =>
+      createWebsiteConfig(
+        assets.data?.photos ?? [],
+        spec?.pages ?? [],
+        spec?.design?.palette,
+      ),
     [assets.data, spec],
   );
   async function edit(designEdit: J) {
@@ -724,21 +903,50 @@ export function WebsiteStudio() {
     }
   }
   async function releaseVersion(versionId: string, rollback = false) {
-    if (dirty) { setError("Save or discard unsaved changes before publishing."); return; }
-    if (!window.confirm(rollback ? "Restore this previously published version?" : "Publish this saved version to the public site?")) return;
+    if (dirty) {
+      setError("Save or discard unsaved changes before publishing.");
+      return;
+    }
+    if (
+      !window.confirm(
+        rollback
+          ? "Restore this previously published version?"
+          : "Publish this saved version to the public site?",
+      )
+    )
+      return;
     setPublishing(true);
     setError("");
     setPublicRelease(null);
     try {
-      const response = await api<J>("POST", "/api/sites/" + id + "/versions/" + versionId + (rollback ? "/rollback" : "/publish"), {});
+      const response = await api<J>(
+        "POST",
+        "/api/sites/" +
+          id +
+          "/versions/" +
+          versionId +
+          (rollback ? "/rollback" : "/publish"),
+        {},
+      );
       const url = response.publicUrl as string;
-      if (!url || !/^https?:/.test(url)) throw new Error("Publisher returned no public URL.");
-      setPublicRelease({url, verified:response.verification?.status === "MATCH"});
-      setSaved(rollback ? "Previously published version restored." : "Version published.");
+      if (!url || !/^https?:/.test(url))
+        throw new Error("Publisher returned no public URL.");
+      setPublicRelease({
+        url,
+        verified: response.verification?.status === "MATCH",
+      });
+      setSaved(
+        rollback
+          ? "Previously published version restored."
+          : "Version published.",
+      );
       versions.reload();
       site.reload();
-    } catch (e) { setError(errText(e)); }
-    finally { setPublishing(false); }
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setPublishing(false);
+    }
   }
   async function createPage(e: FormEvent) {
     e.preventDefault();
@@ -800,40 +1008,82 @@ export function WebsiteStudio() {
       {saved && <Notice kind="ok">{saved}</Notice>}
       {publicRelease && (
         <Notice kind={publicRelease.verified ? "ok" : "warn"}>
-          <a href={publicRelease.url} target="_blank" rel="noopener noreferrer">Open published website</a>
-          {publicRelease.verified ? " — Live artifact verified." : " — Publication verification not confirmed."}
+          <a href={publicRelease.url} target="_blank" rel="noopener noreferrer">
+            Open published website
+          </a>
+          {publicRelease.verified
+            ? " — Live artifact verified."
+            : " — Publication verification not confirmed."}
         </Notice>
       )}
-      <section className="card stack" aria-label="Website publishing and rollback">
+      <section
+        className="card stack"
+        aria-label="Website publishing and rollback"
+      >
         <div className="row between">
           <div>
             <strong>Publish and restore</strong>
-            <p className="muted">Publishing requires owner approval. Previous published versions are preserved.</p>
+            <p className="muted">
+              Publishing requires owner approval. Previous published versions
+              are preserved.
+            </p>
           </div>
-          <button type="button" className="btn sm ghost" onClick={()=>setShowVersionHistory(!showVersionHistory)}>
+          <button
+            type="button"
+            className="btn sm ghost"
+            onClick={() => setShowVersionHistory(!showVersionHistory)}
+          >
             {showVersionHistory ? "Hide versions" : "Version history"}
           </button>
         </div>
         <div className="row">
-          <button type="button" className="btn" disabled={!current || dirty || busy || publishing || spec?.version !== 3}
-            onClick={()=>current && void releaseVersion(current)}>
+          <button
+            type="button"
+            className="btn"
+            disabled={
+              !current || dirty || busy || publishing || spec?.version !== 3
+            }
+            onClick={() => current && void releaseVersion(current)}
+          >
             {publishing ? "Publishing…" : "Publish selected version"}
           </button>
-          {site.data?.publishedVersionId && <span className="muted">A published version is live</span>}
+          {site.data?.publishedVersionId && (
+            <span className="muted">A published version is live</span>
+          )}
         </div>
-        {showVersionHistory && (versions.data ?? []).map((version:J)=>(
-          <div className="row between" key={version.id}>
-            <span>Version {version.number} {version.id === site.data?.publishedVersionId ? "— Live" : ""}</span>
-            <div className="row">
-              <button type="button" className="btn sm ghost" disabled={dirty || busy || publishing}
-                onClick={()=>{setSelectedVersion(version.id);setPreview(true);}}>Review</button>
-              {version.publishStatus === "PUBLISHED" && version.id !== site.data?.publishedVersionId && (
-                <button type="button" className="btn sm ghost" disabled={dirty || busy || publishing}
-                  onClick={()=>void releaseVersion(version.id,true)}>Restore</button>
-              )}
+        {showVersionHistory &&
+          (versions.data ?? []).map((version: J) => (
+            <div className="row between" key={version.id}>
+              <span>
+                Version {version.number}{" "}
+                {version.id === site.data?.publishedVersionId ? "— Live" : ""}
+              </span>
+              <div className="row">
+                <button
+                  type="button"
+                  className="btn sm ghost"
+                  disabled={dirty || busy || publishing}
+                  onClick={() => {
+                    setSelectedVersion(version.id);
+                    setPreview(true);
+                  }}
+                >
+                  Review
+                </button>
+                {version.publishStatus === "PUBLISHED" &&
+                  version.id !== site.data?.publishedVersionId && (
+                    <button
+                      type="button"
+                      className="btn sm ghost"
+                      disabled={dirty || busy || publishing}
+                      onClick={() => void releaseVersion(version.id, true)}
+                    >
+                      Restore
+                    </button>
+                  )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </section>
       <Async state={detail}>
         {() =>
