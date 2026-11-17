@@ -201,7 +201,7 @@ ${tones}
 /* Actual mobile browser audit found undersized footer and brand links in all
    twenty sample industries. Increase their interactive geometry, not just font. */
 @media(max-width:859px){
-  .ft a{display:inline-flex;align-items:center;min-height:36px;padding-block:7px}
+  .ft a{display:inline-flex;align-items:center;min-width:24px;min-height:36px;padding-block:7px}
   .ft .brand{min-height:44px}
   .hd .brand{min-height:44px}
   .ft .fg{gap:22px}
