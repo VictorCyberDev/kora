@@ -1,3 +1,4 @@
+import {KrevWorkspaceEntry} from "./pages/krev-workspace-entry";
 import {KrevLanding as Landing,KrevMarketingPage,KrevMarketingNav} from "./pages/krev-marketing";
 import { KrevCreativeStudio } from "./pages/krev-creative-studio";
 import { IdentityPage } from "./pages/identity";
@@ -237,9 +238,14 @@ function AppLayout() {
             <NavLink to="/app" end>
               Home
             </NavLink>
-            <NavLink to="/app/presence">Presence</NavLink>
+            <NavLink to="/app/create">Create</NavLink>
+            <NavLink to="/app/sites">Websites</NavLink>
+            <NavLink to="/app/designs">Designs</NavLink>
+            <NavLink to="/app/brand">Logo & Brand</NavLink>
+            <NavLink to="/app/assets">Assets</NavLink>
             <NavLink to="/app/customers">Customers</NavLink>
-            <NavLink to="/app/marketing">Marketing</NavLink>
+            <NavLink to="/app/campaigns">Campaigns</NavLink>
+            <NavLink to="/app/publish">Publish</NavLink>
             <NavLink to="/app/operations">Health</NavLink>
             <NavLink
               to="/app/more"
@@ -343,6 +349,11 @@ export function App() {
       </Route>
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<Dashboard />} />
+        <Route path="create" element={<KrevWorkspaceEntry mode="create"/>}/>
+        <Route path="designs" element={<KrevWorkspaceEntry mode="designs"/>}/>
+        <Route path="brand" element={<KrevWorkspaceEntry mode="brand"/>}/>
+        <Route path="assets" element={<KrevWorkspaceEntry mode="assets"/>}/>
+        <Route path="publish" element={<KrevWorkspaceEntry mode="publish"/>}/>
         <Route path="sites" element={<SitesList />} />
         <Route path="sites/new" element={<NewSiteV6 />} />
         <Route path="sites/:id" element={<SiteShell />}>
