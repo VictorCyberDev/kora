@@ -1,3 +1,4 @@
+import {KrevLanding as Landing,KrevMarketingPage,KrevMarketingNav} from "./pages/krev-marketing";
 import { KrevCreativeStudio } from "./pages/krev-creative-studio";
 import { IdentityPage } from "./pages/identity";
 import { ImagesPage } from "./pages/creative";
@@ -17,7 +18,6 @@ import { api } from "./api";
 import { useAuth } from "./auth";
 import { Logo, Spinner, useLoad } from "./ui";
 import {
-  Landing,
   Login,
   Pricing,
   Privacy,
@@ -67,6 +67,7 @@ function PublicLayout() {
       <header className="top">
         <div className="wrap">
           <Logo />
+          <KrevMarketingNav />
           <nav className="main" aria-label="Public">
             <NavLink to="/audit">Free website check</NavLink>
             <NavLink to="/pricing">Pricing</NavLink>
@@ -81,7 +82,7 @@ function PublicLayout() {
                 Sign in
               </Link>
               <Link className="btn sm" to="/signup">
-                Build my website
+                Start creating
               </Link>
             </>
           )}
@@ -92,7 +93,7 @@ function PublicLayout() {
       </main>
       <footer className="site">
         <div className="wrap row between">
-          <span>© Kora. Build it. Launch it. Keep it running.</span>
+          <span>© Krevstudio. Create your brand and everything that follows.</span>
           <span className="row">
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
