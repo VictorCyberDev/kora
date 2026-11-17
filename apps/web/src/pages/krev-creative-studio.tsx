@@ -438,7 +438,31 @@ export function KrevCreativeStudio() {
     if (!svg || !slide || !svg.current) return;
     setError("");
     try {
-      const content = new XMLSerializer().serializeToString(svg.current);
+      const snapshot=svg.current.cloneNode(true) as SVGSVGElement;
+      let budget=24*1024*1024;
+      for(const element of snapshot.querySelectorAll("image")){
+        const src=element.getAttribute("href");
+        if(!src)continue;
+        // Fetch through the browser's normal CORS policy; no arbitrary
+        // cross-tenant image proxy or opaque canvas reads.
+        const response=await fetch(src,{mode:"cors",credentials:"omit"});
+        if(!response.ok)throw new Error("Approved image could not be loaded for PNG export.");
+        const size=Number(response.headers.get("content-length")??0);
+        if(size>budget)throw new Error("PNG export exceeds its image memory budget.");
+        const blob=await response.blob();
+        if(!["image/png","image/jpeg","image/webp"].includes(blob.type))
+          throw new Error("PNG export supports PNG, JPEG and WebP photo sources.");
+        budget-=blob.size;
+        if(budget<0)throw new Error("PNG export exceeds its 24 MB image budget.");
+        const dataUrl=await new Promise<string>((resolve,reject)=>{
+          const reader=new FileReader();
+          reader.onload=()=>resolve(String(reader.result));
+          reader.onerror=()=>reject(new Error("Photo export encoding failed."));
+          reader.readAsDataURL(blob);
+        });
+        element.setAttribute("href",dataUrl);
+      }
+      const content = new XMLSerializer().serializeToString(snapshot);
       const image = new Image();
       const url = URL.createObjectURL(
         new Blob([content], { type: "image/svg+xml" }),
