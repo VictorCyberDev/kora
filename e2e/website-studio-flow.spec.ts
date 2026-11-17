@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 const BASE = `http://127.0.0.1:${process.env.E2E_V3_PORT ?? "3212"}`;
 const headers = { "x-requested-with": "kora" };
@@ -8,6 +9,7 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
   test.setTimeout(180_000);
   const ctx = await browser.newContext({ baseURL: BASE });
   const page = await ctx.newPage();
+  mkdirSync("test-results/kora-studio-benchmark",{recursive:true});
   try {
     await page.goto("/signup");
     const token = Date.now().toString(36);
@@ -46,6 +48,10 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     await expect(
       page.getByText("Up to seven complete pages.", { exact: false }),
     ).toBeVisible();
+    await page.screenshot({
+      path:"test-results/kora-studio-benchmark/studio-editor.png",
+      animations:"disabled",
+    });
     await page.getByLabel("New page title").fill("Our Methods");
     await page.getByRole("button", { name: "Add page" }).click();
     await expect(
@@ -103,6 +109,13 @@ test("customer manages pages in Website Studio with immutable drafts and real pr
     const publicUrl = await publishedLink.getAttribute("href");
     expect(publicUrl).toMatch(/^https?:/);
     expect((await ctx.request.get(publicUrl!)).status()).toBe(200);
+    const publishedPage=await ctx.newPage();
+    await publishedPage.goto(publicUrl!,{waitUntil:"domcontentloaded"});
+    await publishedPage.screenshot({
+      path:"test-results/kora-studio-benchmark/published-test-site.png",
+      fullPage:true,animations:"disabled",
+    });
+    await publishedPage.close();
     const now = (await (await ctx.request.get("/api/sites/" + siteId)).json()).data;
     expect(now.publishedVersionId).toBe(site.currentVersionId);
     const restore = await ctx.request.post(
