@@ -62,7 +62,7 @@ const blockRender = (p: EditProps, palette: J = {}) => {
   // content. The saved SiteSpec renderer remains authoritative in Preview.
   const source: J = (() => {
     try {
-      return JSON.parse(p.original) as J;
+      return JSON.parse(p.original);
     } catch {
       return {};
     }
