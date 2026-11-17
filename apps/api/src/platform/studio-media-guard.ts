@@ -22,7 +22,7 @@ export function mediaUrls(spec: unknown): Set<string> {
         const m = val as Record<string, unknown>;
         if (typeof m.url === "string") output.add(m.url);
         if (Array.isArray(m.srcset))
-          for (const variant of m.srcset)
+          for (const variant of m.srcset as unknown[])
             if (
               variant &&
               typeof variant === "object" &&
