@@ -50,13 +50,15 @@ const names: Record<string, ComponentName> = {
   gallery: "Gallery",
   visit: "Visit",
 };
-const blockRender = (p: EditProps) => (
+const blockRender = (p: EditProps, palette: J = {}) => (
   <section
     style={{
       padding: "clamp(32px,6vw,92px) 5vw",
       margin: "12px",
-      background: "#fffaf2",
-      color: "#171319",
+      background: palette.background || "#fffaf2",
+      color: palette.foreground || "#171319",
+      borderTop: "3px solid " + (palette.accent || "#aa6447"),
+      borderRadius: "min(1vw, 12px)",
     }}
   >
     {p.imageUrl ? (
@@ -86,8 +88,8 @@ const blockRender = (p: EditProps) => (
         style={{
           display: "inline-block",
           padding: "12px 20px",
-          background: "#171319",
-          color: "white",
+          background: palette.primary || "#171319",
+          color: palette.primaryForeground || "white",
         }}
       >
         {p.buttonLabel}
@@ -334,7 +336,8 @@ const defaults = (type: ComponentName) => {
     );
   }
 };
-function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
+function createWebsiteConfig(ownerPhotos: J[], pages: J[], palette: J = {}): Config {
+  const renderBlock = (props: EditProps) => blockRender(props, palette);
   const sources = new Map<string, string>();
   for (const p of pages)
     for (const section of p.sections) {
@@ -399,13 +402,13 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
         label: "Hero",
         fields: headingFields,
         defaultProps: defaults("Hero"),
-        render: blockRender,
+        render: renderBlock,
       },
       Statement: {
         label: "Statement",
         fields: { heading: { type: "textarea" } },
         defaultProps: defaults("Statement"),
-        render: blockRender,
+        render: renderBlock,
       },
       Offer: {
         label: "Services",
@@ -425,7 +428,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           ]),
         },
         defaultProps: defaults("Offer"),
-        render: blockRender,
+        render: renderBlock,
         permissions: { insert: false },
       },
       Products: {
@@ -442,7 +445,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           ]),
         },
         defaultProps: defaults("Products"),
-        render: blockRender,
+        render: renderBlock,
         permissions: { insert: false },
       },
       Story: {
@@ -459,7 +462,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           ]),
         },
         defaultProps: defaults("Story"),
-        render: blockRender,
+        render: renderBlock,
       },
       Process: {
         label: "Process steps",
@@ -474,13 +477,13 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           ]),
         },
         defaultProps: defaults("Process"),
-        render: blockRender,
+        render: renderBlock,
       },
       FAQ: {
         label: "Questions & answers",
         fields: { heading: { type: "text" }, itemsText: { type: "textarea" } },
         defaultProps: defaults("FAQ"),
-        render: blockRender,
+        render: renderBlock,
       },
       Gallery: {
         label: "Gallery",
@@ -490,7 +493,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           layout: layoutField(["mosaic", "rail", "pair", "grid"]),
         },
         defaultProps: defaults("Gallery"),
-        render: blockRender,
+        render: renderBlock,
         permissions: { insert: false },
       },
       Visit: {
@@ -501,7 +504,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           layout: layoutField(["card", "split"]),
         },
         defaultProps: defaults("Visit"),
-        render: blockRender,
+        render: renderBlock,
         permissions: { insert: false },
       },
       Contact: {
@@ -518,7 +521,7 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           ]),
         },
         defaultProps: defaults("Contact"),
-        render: blockRender,
+        render: renderBlock,
       },
       CTA: {
         label: "Call to action",
@@ -530,13 +533,13 @@ function createWebsiteConfig(ownerPhotos: J[], pages: J[]): Config {
           layout: layoutField(["statement", "outline", "marquee"]),
         },
         defaultProps: defaults("CTA"),
-        render: blockRender,
+        render: renderBlock,
       },
       Existing: {
         label: "Existing section",
         fields: {},
         defaultProps: defaults("Existing"),
-        render: blockRender,
+        render: renderBlock,
         permissions: { insert: false },
       },
     },
@@ -590,7 +593,7 @@ export function WebsiteStudio() {
     spec?.pages?.find((p: J) => p.slug === selectedPage) ?? spec?.pages?.[0];
   const puckData = useMemo(() => (page ? toPuck(page) : null), [page]);
   const config = useMemo(
-    () => createWebsiteConfig(assets.data?.photos ?? [], spec?.pages ?? []),
+    () => createWebsiteConfig(assets.data?.photos ?? [], spec?.pages ?? [], spec?.design?.palette),
     [assets.data, spec],
   );
   async function edit(designEdit: J) {
