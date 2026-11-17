@@ -30,18 +30,18 @@ function Shot({
   );
 }
 
-/** Hero visual: the actual output Kora produced for one small bakery, three ways, at once. No mock-ups. */
+/** Hero visual: the actual output Krevstudio produced for one small bakery, three ways, at once. No mock-ups. */
 export function HeroCollage() {
   return (
     <figure
       className="v7-collage"
-      aria-label="A website, a story and a flyer Kora made for one bakery"
+      aria-label="A website, a story and a flyer Krevstudio made for one bakery"
     >
       <div className="v7-collage-site">
         <Shot
           name="bakery-d0"
           eager
-          alt="Website Kora generated for a home bakery: arched cake photograph, italic serif headline, an Order on WhatsApp button"
+          alt="Website Krevstudio generated for a home bakery: arched cake photograph, italic serif headline, an Order on WhatsApp button"
         />
       </div>
       <div className="v7-collage-phone">
@@ -67,7 +67,7 @@ export function Transformation() {
         <p className="k-kicker">One business, start to finish</p>
         <h2 id="v7-h">From two sentences to a brand people recognise.</h2>
         <p className="lead v7-lead">
-          This is a home bakery in Lagos. Everything below was made by Kora from
+          This is a home bakery in Lagos. Everything below was made by Krevstudio from
           what the owner wrote. Nothing is a mock-up.
         </p>
 
@@ -89,7 +89,7 @@ export function Transformation() {
           <li className="v7-step">
             <span className="v7-n">2</span>
             <div>
-              <h3>Kora understands what is true</h3>
+              <h3>Krevstudio understands what is true</h3>
               <ul className="v7-facts">
                 <li>
                   <b>Told by the owner</b> name, what she bakes, WhatsApp, area
@@ -99,7 +99,7 @@ export function Transformation() {
                   button is Order on WhatsApp
                 </li>
                 <li>
-                  <b>Still missing</b> prices, hours, reviews, photos. Kora
+                  <b>Still missing</b> prices, hours, reviews, photos. Krevstudio
                   asks; it never invents them
                 </li>
               </ul>
@@ -124,7 +124,7 @@ export function Transformation() {
                     <p>
                       <strong>{d.name}</strong>
                       {d.recommended && (
-                        <span className="v7-rec"> Kora's pick</span>
+                        <span className="v7-rec"> Krevstudio's pick</span>
                       )}
                       <span className="small muted">{d.concept}</span>
                     </p>
@@ -200,9 +200,9 @@ export function Transformation() {
           <li className="v7-step">
             <span className="v7-n">6</span>
             <div>
-              <h3>Then Kora keeps it working</h3>
+              <h3>Then Krevstudio keeps it working</h3>
               <p className="muted">
-                The site is checked all day. If a release breaks it, Kora
+                The site is checked all day. If a release breaks it, Krevstudio
                 explains what happened in plain words, proposes the fix, waits
                 for your approval, rolls back, and proves the recovery with
                 fresh checks. Posts go out only after you approve the exact
@@ -238,7 +238,7 @@ export function WorkShowcase() {
         <li key={id}>
           <Shot
             name={id}
-            alt={`Website Kora generated for a ${label.toLowerCase()}`}
+            alt={`Website Krevstudio generated for a ${label.toLowerCase()}`}
           />
           <span>
             {label} <em>· {dir}</em>
@@ -254,18 +254,18 @@ const PAIRS: Array<[string, string, string]> = [
   ["bakery-d0", "bakery-v2", "Home bakery"],
   ["law", "law-v2", "Law firm"],
 ];
-/** The same brief through Kora's previous designer and through v7. Real renders of both. */
+/** The same brief through Krevstudio's previous designer and through v7. Real renders of both. */
 export function BeforeAfter() {
   return (
     <div className="v7-ba">
       {PAIRS.map(([after, before, label]) => (
         <div key={label} className="v7-ba-row">
           <figure>
-            <Shot name={before} alt={`${label}: the previous Kora design`} />
+            <Shot name={before} alt={`${label}: the previous Krevstudio design`} />
             <figcaption className="small muted">Before</figcaption>
           </figure>
           <figure>
-            <Shot name={after} alt={`${label}: the new Kora design`} />
+            <Shot name={after} alt={`${label}: the new Krevstudio design`} />
             <figcaption className="small">
               <b>Now</b>
             </figcaption>

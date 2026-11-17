@@ -71,8 +71,8 @@ export function Dashboard() {
           if (rows.length === 0)
             return (
               <Empty title="Put your business online">
-                Give Kora the business name and two lines about what you do. You
-                will get three directions to choose from, then Kora keeps
+                Give Krevstudio the business name and two lines about what you do. You
+                will get three directions to choose from, then Krevstudio keeps
                 watching after launch.
                 <p>
                   <Link className="btn" to="/app/sites/new">
@@ -158,23 +158,23 @@ export function Dashboard() {
                   <QuickAction
                     to="/app/operations"
                     eyebrow="Health"
-                    title="See what Kora is watching"
+                    title="See what Krevstudio is watching"
                     detail="Incidents, recovery and operational proof"
                   />
                 </div>
               </section>
 
-              <section className="k-home-grid" aria-label="Kora overview">
+              <section className="k-home-grid" aria-label="Krevstudio overview">
                 <div className="k-panel k-panel-ink">
                   <div className="row between">
-                    <p className="k-overline">Kora signal</p>
+                    <p className="k-overline">Krevstudio signal</p>
                     <Status kind="ok">Watching</Status>
                   </div>
                   <h2>
                     Quiet when everything is fine. Specific when it is not.
                   </h2>
                   <p>
-                    Kora watches the live site, keeps the evidence, and asks
+                    Krevstudio watches the live site, keeps the evidence, and asks
                     before a fix changes what customers see. A repair only
                     counts after new checks pass.
                   </p>

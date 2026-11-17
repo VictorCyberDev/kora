@@ -150,7 +150,7 @@ function Bell() {
         >
           {(n.data ?? []).length === 0 && (
             <p className="muted">
-              Nothing yet. Kora will tell you here when something needs you.
+              Nothing yet. Krevstudio will tell you here when something needs you.
             </p>
           )}
           {(n.data ?? [])

@@ -1,7 +1,7 @@
 /**
  * Website Studio: Puck edits SiteSpec pages, but does not replace the
  * authoritative SiteSpec renderer or immutable version store.
- * The toolbar's Save Draft button goes through Kora's existing protected
+ * The toolbar's Save Draft button goes through Krevstudio's existing protected
  * /edit endpoint. Site publishing remains a separate owner action.
  */
 import { useEffect, useMemo, useState, type FormEvent } from "react";
@@ -993,7 +993,7 @@ export function WebsiteStudio() {
     <div className="stack">
       <header className="card row between">
         <div>
-          <p className="k-overline">Kora Website Studio</p>
+          <p className="k-overline">Krevstudio Website Studio</p>
           <h1>Visual website editor</h1>
           <p className="muted">
             Edits create a new draft; your published site stays unchanged until
