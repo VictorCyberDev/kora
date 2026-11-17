@@ -5,7 +5,7 @@ import { Async, Notice, errText, useLoad } from "../ui";
 
 type Layer = {
   id: string;
-  type: "rect" | "ellipse" | "line" | "text";
+  type: "rect" | "ellipse" | "line" | "text" | "image";
   x: number;
   y: number;
   width: number;
@@ -21,6 +21,9 @@ type Layer = {
   align?: string;
   radius?: number;
   strokeWidth?: number;
+  src?:string;
+  alt?:string;
+  fit?:"cover"|"contain";
 };
 type Slide = {
   id: string;
@@ -64,6 +67,9 @@ function renderLayer(layer: Layer) {
           fill={layer.fill}
         />
       );
+    case "image":
+      return <image {...common} width={layer.width} height={layer.height}
+        href={layer.src} aria-label={layer.alt} preserveAspectRatio={layer.fit==="contain"?"xMidYMid meet":"xMidYMid slice"}/>;
     case "line":
       return (
         <line
@@ -116,6 +122,8 @@ const PRESETS = [
 ] as const;
 export function KrevCreativeStudio() {
   const { id } = useParams();
+  const assets=useLoad(()=>api<J>("GET",`/api/sites/${id}/studio-assets`),[id]);
+  const [selectedPhoto,setSelectedPhoto]=useState("");
   const list = useLoad(
     () => api<J[]>("GET", `/api/sites/${id}/creative-documents`),
     [id],
@@ -285,6 +293,15 @@ export function KrevCreativeStudio() {
     } finally {
       setBusy(false);
     }
+  };
+  const addPhoto = () => {
+    const picked=(assets.data?.photos??[]).find((p:J)=>p.url===selectedPhoto);
+    if(!picked||!slide)return;
+    const created:Layer={id:uid(),type:"image",x:slide.width*.15,y:slide.height*.18,
+      width:slide.width*.7,height:slide.height*.38,rotation:0,opacity:1,locked:false,
+      fill:"#ffffff",src:picked.url,alt:picked.alt||"Approved customer photo",fit:"cover"};
+    update(next=>{next.slides[slideIndex]!.layers.push(created);});
+    setSelected(created.id);
   };
   const addLayer = (type: Layer["type"]) => {
     if (!slide) return;
@@ -714,6 +731,13 @@ export function KrevCreativeStudio() {
                         ),
                       )}
                     </div>
+                    {(assets.data?.photos??[]).length>0 && <>
+                      <label>Approved photos <select value={selectedPhoto} onChange={e=>setSelectedPhoto(e.target.value)}>
+                        <option value="">Select an approved photo</option>
+                        {(assets.data?.photos??[]).map((p:J)=><option key={p.id} value={p.url}>{p.alt||p.role||"Photo"}</option>)}
+                      </select></label>
+                      <button className="btn sm ghost" disabled={!selectedPhoto} onClick={addPhoto}>+ Image layer</button>
+                    </>}
                     {slide.layers.map((l) => (
                       <button
                         className="btn sm ghost"
@@ -844,6 +868,16 @@ export function KrevCreativeStudio() {
                             }
                           />
                         </label>
+                        {layer.type==="image" && <>
+                          <label>Approved photo <select value={layer.src??""} onChange={e=>{
+                            const photo=(assets.data?.photos??[]).find((p:J)=>p.url===e.target.value);
+                            if(photo)editLayer({src:photo.url,alt:photo.alt||"Approved customer photo"});
+                          }}>
+                            {(assets.data?.photos??[]).map((p:J)=><option key={p.id} value={p.url}>{p.alt||p.role||"Photo"}</option>)}
+                          </select></label>
+                          <label>Image description <input value={layer.alt??""} maxLength={200} onChange={e=>editLayer({alt:e.target.value})}/></label>
+                          <label>Fit <select value={layer.fit||"cover"} onChange={e=>editLayer({fit:e.target.value as "cover"|"contain"})}><option value="cover">Crop to fill</option><option value="contain">Show full photo</option></select></label>
+                        </>}
                         {layer.type === "text" && (
                           <>
                             <label>
