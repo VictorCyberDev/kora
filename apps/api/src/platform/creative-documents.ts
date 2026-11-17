@@ -56,6 +56,7 @@ export const creativeDocumentSchema = z.object({
   ]),
   title: z.string().trim().min(1).max(120),
   brandVersion: z.number().int().min(1).max(100000),
+  approvedLogoId: z.string().uuid().nullable().default(null),
   slides: z.array(slideSchema).min(1).max(10),
   sourcePrompt: z.string().max(1000),
 });
@@ -130,6 +131,7 @@ export function buildCreativeDocument(
   brand: {
     version: number;
     name: string;
+    approvedLogo?: {id:string; source:CreativeDocument} | null;
     colors?: {
       background: string;
       foreground: string;
@@ -165,6 +167,19 @@ export function buildCreativeDocument(
     const header =
       index === 0 ? request.headline : request.description || request.headline;
     const layers: GraphicLayer[] = [];
+    // Only the explicitly owner-approved logo may propagate. Its existing
+    // vector geometry is reused, never hallucinated from the brand name.
+    if(request.kind!=="logo" && brand.approvedLogo?.source.slides[0]){
+      for(const part of brand.approvedLogo.source.slides[0].layers.filter(
+        (l)=>l.type!=="text").slice(0,8)){
+        const factor=.085;
+        layers.push({...part,id:uid(),x:Math.round(55+part.x*factor),
+          y:Math.round(25+part.y*factor),
+          width:Math.round(part.width*factor),
+          height:Math.round(part.height*factor),
+        });
+      }
+    }
     if (request.kind === "logo") {
       // Genuine editable vector composition; no raster logo or embedded text.
       if (variant === 0) {
@@ -275,6 +290,7 @@ export function buildCreativeDocument(
     kind: request.kind,
     title: request.title,
     brandVersion: brand.version,
+    approvedLogoId: brand.approvedLogo?.id ?? null,
     slides,
     sourcePrompt: request.headline,
   });
