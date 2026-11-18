@@ -21,7 +21,7 @@ export function describeChannels(email: EmailProvider) {
       : {
           available: false,
           reason:
-            "Email delivery is not configured on this Kora. Notifications appear in the app.",
+            "Email delivery is not configured for Krevstudio. Notifications appear in the app.",
         },
   };
 }
