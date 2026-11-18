@@ -54,7 +54,11 @@ suite("M3/M4 real authenticated creative document lifecycle", () => {
     );
     expect(before.json.data.revision).toBe(1);
     const updated = structuredClone(before.json.data.source);
-    updated.slides[1].layers[1].text = "Our Saturday launch";
+    const editableText = updated.slides[1].layers.find(
+      (layer: { type: string }) => layer.type === "text",
+    );
+    expect(editableText).toBeDefined();
+    editableText.text = "Our Saturday launch";
     const edit = await h.call(
       "PUT",
       `/api/sites/${site.id}/creative-documents/${id}`,
@@ -73,9 +77,11 @@ suite("M3/M4 real authenticated creative document lifecycle", () => {
       `/api/sites/${site.id}/creative-documents/${id}`,
       { cookie: owner.cookie },
     );
-    expect(reopen.json.data.source.slides[1].layers[1].text).toBe(
-      "Our Saturday launch",
-    );
+    expect(
+      reopen.json.data.source.slides[1].layers.find(
+        (layer: { type: string }) => layer.type === "text",
+      ).text,
+    ).toBe("Our Saturday launch");
     const response = await fetch(
       h.base + `/api/sites/${site.id}/creative-documents/${id}/export/0`,
       { headers: { cookie: owner.cookie } },
