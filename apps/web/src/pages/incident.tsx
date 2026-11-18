@@ -378,7 +378,11 @@ export function IncidentPage() {
                   {v.verification.state === "VERIFYING" && (
                     <Spinner label="Watching for your website to work again" />
                   )}
-                  <p style={{ margin: 0 }}>{v.verification.text}</p>
+                  <p style={{ margin: 0 }}>
+                    {v.verification.state === "RECOVERY_VERIFIED"
+                      ? "Your website is working again and Krevstudio has verified the recovery."
+                      : v.verification.text}
+                  </p>
                   {v.verification.recoverySeconds != null && (
                     <p className="small muted" style={{ margin: 0 }}>
                       Down for about{" "}
