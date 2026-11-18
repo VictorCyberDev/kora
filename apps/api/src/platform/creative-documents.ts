@@ -63,10 +63,16 @@ export const creativeDocumentSchema = z.object({
     "carousel",
     "banner",
     "logo",
+    "ad",
+    "thumbnail",
+    "announcement",
+    "event",
+    "product",
   ]),
   title: z.string().trim().min(1).max(120),
   brandVersion: z.number().int().min(1).max(100000),
   approvedLogoId: z.string().uuid().nullable().default(null),
+  logoForm:z.enum(["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"]).nullable().default(null),
   slides: z.array(slideSchema).min(1).max(10),
   sourcePrompt: z.string().max(1000),
 });
@@ -81,6 +87,8 @@ export const createDocumentSchema = z.object({
   cta: z.string().trim().max(70).default(""),
   direction: z.number().int().min(0).max(2).default(0),
   slides: z.number().int().min(1).max(10).default(1),
+  logoForm:z.enum(["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"]).default("combination"),
+  customSize:z.object({width:z.number().int().min(128).max(4096),height:z.number().int().min(128).max(4096)}).optional(),
 });
 export const editDocumentSchema = z.object({
   revision: z.number().int().min(1),
@@ -166,8 +174,15 @@ export function buildCreativeDocument(
     carousel: [1080, 1080],
     banner: [1600, 900],
     logo: [1000, 1000],
+    ad:[1200,628],
+    thumbnail:[1280,720],
+    announcement:[1080,1350],
+    event:[1080,1350],
+    product:[1080,1080],
   } as const;
-  const [width, height] = dimension[request.kind];
+  const [width, height] = request.customSize
+    ? [request.customSize.width,request.customSize.height]
+    : dimension[request.kind];
   const slideCount = request.kind === "carousel" ? request.slides : 1;
   const slides = Array.from({ length: slideCount }, (_, index) => {
     const variant = (request.direction + index) % 3;
@@ -305,6 +320,7 @@ export function buildCreativeDocument(
     title: request.title,
     brandVersion: brand.version,
     approvedLogoId: brand.approvedLogo?.id ?? null,
+    logoForm:request.kind==="logo"?request.logoForm:null,
     slides,
     sourcePrompt: request.headline,
   });
