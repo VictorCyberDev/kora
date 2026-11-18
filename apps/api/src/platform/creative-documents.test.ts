@@ -126,6 +126,25 @@ describe("Krevstudio editable documents", () => {
       expect(text.y + text.height).toBeLessThanOrEqual(doc.slides[0]!.height);
     }
   });
+  it("honors approved BrandOS typography across generated artwork", () => {
+    const copy = "Custom cakes for celebrations";
+    const serif = buildCreativeDocument(
+      { kind: "poster", title: "Launch", headline: copy },
+      { ...brand, typeVoice: "heritage-serif" },
+    );
+    const technical = buildCreativeDocument(
+      { kind: "poster", title: "Launch", headline: copy },
+      { ...brand, typeVoice: "technical-grotesk" },
+    );
+    const family = (doc: typeof serif) =>
+      doc.slides[0]!.layers.find(
+        (layer) => layer.type === "text" && layer.text.includes(copy),
+      );
+    const serifHeadline = family(serif);
+    const technicalHeadline = family(technical);
+    expect(serifHeadline).toMatchObject({ fontFamily: "serif" });
+    expect(technicalHeadline).toMatchObject({ fontFamily: "monospace" });
+  });
   it("does not fabricate a sale amount or deadline", () => {
     const doc = buildCreativeDocument(
       {
