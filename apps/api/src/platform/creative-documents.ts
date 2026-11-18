@@ -40,6 +40,10 @@ export const graphicLayerSchema = z.discriminatedUnion("type", [
       .regex(/^[MLHVCSQTAZmlhvcsqtaz0-9+.,\s-]+$/),
     stroke: color.default("#242424"),
     strokeWidth: z.number().finite().min(0).max(100).default(2),
+    // SVG path coordinates are not automatically resized with layer bounds.
+    // Optional for backwards compatibility with existing editable sources.
+    viewBoxWidth: z.number().finite().min(1).max(8000).optional(),
+    viewBoxHeight: z.number().finite().min(1).max(8000).optional(),
   }),
   common.extend({
     type: z.literal("line"),
@@ -325,6 +329,12 @@ export function buildCreativeDocument(
         const factor = 0.085;
         layers.push({
           ...part,
+          ...(part.type === "path"
+            ? {
+                viewBoxWidth: part.viewBoxWidth ?? part.width,
+                viewBoxHeight: part.viewBoxHeight ?? part.height,
+              }
+            : {}),
           id: uid(),
           x: Math.round(55 + part.x * factor),
           y: Math.round(25 + part.y * factor),
@@ -701,8 +711,11 @@ export function renderSlideSvg(slide: z.infer<typeof slideSchema>): string {
         return `<rect ${attributes} width="${layer.width}" height="${layer.height}" rx="${layer.radius}" fill="${layer.fill}"/>`;
       if (layer.type === "ellipse")
         return `<ellipse ${attributes} cx="${layer.width / 2}" cy="${layer.height / 2}" rx="${layer.width / 2}" ry="${layer.height / 2}" fill="${layer.fill}"/>`;
-      if (layer.type === "path")
-        return `<path ${attributes} d="${esc(layer.d)}" fill="${layer.fill}" stroke="${layer.stroke}" stroke-width="${layer.strokeWidth}"/>`;
+      if (layer.type === "path") {
+        const scaleX = layer.width / (layer.viewBoxWidth ?? layer.width);
+        const scaleY = layer.height / (layer.viewBoxHeight ?? layer.height);
+        return `<path opacity="${layer.opacity}" transform="${transform} scale(${scaleX} ${scaleY})" d="${esc(layer.d)}" fill="${layer.fill}" stroke="${layer.stroke}" stroke-width="${layer.strokeWidth}"/>`;
+      }
       if (layer.type === "image")
         return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${layer.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet"}"/>`;
       if (layer.type === "line")
