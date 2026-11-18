@@ -260,38 +260,61 @@ export function buildCreativeDocument(
           : brandName.slice(0, 2)
       ).toUpperCase();
       const white = colors.background;
+      // True editable cubic and linear vector silhouettes, not letter tiles.
+      const vectorMark = (d: string, fill: string): GraphicLayer => ({
+        id: uid(),
+        type: "path",
+        x: 0,
+        y: 0,
+        width: 1000,
+        height: 1000,
+        rotation: 0,
+        opacity: 1,
+        locked: false,
+        fill,
+        d,
+        stroke: fill,
+        strokeWidth: 0,
+      });
       const symbol = () => {
         if (variant === 0) {
-          layers.push(rectangle(240, 175, 520, 520, highlight, 100));
-          layers.push({
-            id: uid(),
-            type: "ellipse",
-            x: 340,
-            y: 275,
-            width: 320,
-            height: 320,
-            rotation: 0,
-            opacity: 1,
-            locked: false,
-            fill: white,
-          });
+          // Twin directional ribbons with a purposeful negative-space channel.
+          layers.push(
+            vectorMark(
+              "M 155 675 L 360 205 L 545 675 L 408 675 L 360 505 L 292 675 Z",
+              highlight,
+            ),
+          );
+          layers.push(
+            vectorMark(
+              "M 490 675 L 680 205 L 870 675 L 735 675 L 680 505 L 625 675 Z",
+              highlight,
+            ),
+          );
+          layers.push(rectangle(320, 723, 415, 12, ink, 6));
         } else if (variant === 1) {
-          layers.push({
-            id: uid(),
-            type: "ellipse",
-            x: 230,
-            y: 175,
-            width: 540,
-            height: 540,
-            rotation: 0,
-            opacity: 1,
-            locked: false,
-            fill: highlight,
-          });
-          layers.push(rectangle(470, 240, 75, 410, background, 16));
+          // Open arch with a cut-through opening; reads at monochrome size.
+          layers.push(
+            vectorMark(
+              "M 185 705 C 185 350 315 170 500 170 C 685 170 815 350 815 705 L 685 705 C 685 445 615 315 500 315 C 385 315 315 445 315 705 Z",
+              highlight,
+            ),
+          );
+          layers.push(rectangle(365, 760, 270, 18, ink, 8));
         } else {
-          layers.push(rectangle(235, 180, 530, 530, highlight, 260));
-          layers.push(rectangle(355, 300, 290, 290, background, 90));
+          // Interlocking flowing surfaces; distinct from arches and ribbons.
+          layers.push(
+            vectorMark(
+              "M 180 570 C 285 275 520 180 805 295 C 655 360 515 505 435 770 C 355 665 285 605 180 570 Z",
+              highlight,
+            ),
+          );
+          layers.push(
+            vectorMark(
+              "M 820 575 C 715 775 485 825 230 715 C 380 640 500 525 590 305 C 685 410 755 515 820 575 Z",
+              ink,
+            ),
+          );
         }
       };
       const wordmark = (y: number, size = 84) => {
