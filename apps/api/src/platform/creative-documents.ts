@@ -273,10 +273,7 @@ export function buildCreativeDocument(
       : request.kind === "carousel"
         ? "carousel"
         : "graphic";
-  const skills = loadDesignSkills(
-    { industry: vertical.cluster },
-    designType,
-  );
+  const skills = loadDesignSkills({ industry: vertical.cluster }, designType);
   const typographicDirection = skills.rules.some(
     (rule) => rule.effect === "typography-hierarchy",
   );
@@ -285,10 +282,11 @@ export function buildCreativeDocument(
     typographicDirection &&
     (/serif|fashion|luxury|heritage|roman|craft/.test(typeVoice) ||
       (typeVoice.length === 0 &&
-        ["food", "beauty", "hospitality", "creative"].includes(vertical.cluster)))
+        ["food", "beauty", "hospitality", "creative"].includes(
+          vertical.cluster,
+        )))
       ? "serif"
-      : typographicDirection &&
-          /technical|futurist|utility/.test(typeVoice)
+      : typographicDirection && /technical|futurist|utility/.test(typeVoice)
         ? "monospace"
         : "sans-serif";
   // The user, not an inference model, supplies all factual marketing claims.
