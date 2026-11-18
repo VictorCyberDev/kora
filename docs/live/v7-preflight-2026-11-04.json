@@ -1,0 +1,47 @@
+{
+  "schema": "kora.production-preflight/1",
+  "sourceHead": "e2b62df7d43f58c803d6709d453c90b69e5174aa",
+  "observations": [
+    {
+      "url": "https://kora-api.rumptycloud.app/health",
+      "status": 503,
+      "observedAt": "2026-11-04T14:08:19.979681+00:00",
+      "pageTitle": "This app did not start \u2014 RumptyCloud"
+    },
+    {
+      "url": "https://kora-api.rumptycloud.app/__kora",
+      "status": 503,
+      "observedAt": "2026-11-04T14:08:19.954289+00:00",
+      "pageTitle": "This app did not start \u2014 RumptyCloud"
+    },
+    {
+      "url": "https://kora-site-host.rumptycloud.app/health",
+      "status": 200,
+      "observedAt": "2026-11-04T14:08:19.138022+00:00",
+      "response": {
+        "status": "ok",
+        "database": "ok"
+      }
+    },
+    {
+      "url": "https://kora-site-host.rumptycloud.app/__kora",
+      "status": 200,
+      "observedAt": "2026-11-04T14:08:19.169742+00:00",
+      "response": {
+        "schema": "kora.runtime-claim/v1",
+        "service": "kora-site-host",
+        "environment": "production",
+        "commit": "e2b62df7d43f58c803d6709d453c90b69e5174aa",
+        "commitSource": "build-info",
+        "builtAt": "2026-11-03T16:24:44.269Z",
+        "startedAt": "2026-11-04T14:06:17.763Z",
+        "uptimeSeconds": 121
+      }
+    }
+  ],
+  "status": "EXTERNAL_ACCEPTANCE_PENDING",
+  "console": "Sign-in required; secure authentication request declined. Runtime logs and settings not inspected.",
+  "productionMutations": [],
+  "testsRun": 0,
+  "commissioningPhasesRun": []
+}

@@ -1,0 +1,83 @@
+{
+  "schema": "kora.production-recovery/1",
+  "observedOn": "2026-11-04",
+  "sourceHead": "e2b62df7d43f58c803d6709d453c90b69e5174aa",
+  "status": "EXTERNAL_ACCEPTANCE_PENDING",
+  "authentication": "Authenticated Kora workspace observed after owner sign-in",
+  "startupFailure": {
+    "runId": "01a1a237-d7c4-71ad-af27-ff49f31d1bf3",
+    "code": "ECONNREFUSED",
+    "destination": "10.107.249.99:5432",
+    "node": "22.22.0",
+    "build": "Build completed; application startup failed"
+  },
+  "configuration": {
+    "databaseHost": "pg-c7d6e4.db.rumpty.internal",
+    "database": "kora",
+    "sslmode": "require",
+    "port": 8080,
+    "readiness": "/health",
+    "memoryMB": 512,
+    "startCommand": "sh -c \"node apps/api/dist/db/migrate.js && node apps/api/dist/server.js\"",
+    "creativeEngine": "unset; not changed"
+  },
+  "databaseReadOnly": {
+    "status": "READY",
+    "querySucceeded": true,
+    "tablesObserved": [
+      "brand_os_versions",
+      "owner_media"
+    ],
+    "creativeFeedbackIndexCount": 3,
+    "limitation": "Presence does not prove the full 025-027 constraints, immutability or deployed migration bytes."
+  },
+  "actions": [
+    {
+      "action": "API restart",
+      "requestedAt": "2026-11-04T14:10:07Z",
+      "result": "No running instance observed after restart; service remained FAILED."
+    },
+    {
+      "action": "Database snapshot",
+      "attempts": 3,
+      "result": "No success confirmation; refreshed list showed no snapshots. No backup claimed."
+    }
+  ],
+  "productionChecks": {
+    "apiHealth": 503,
+    "siteHostHealth": 200,
+    "siteHostDatabase": "ok",
+    "siteHostCommit": "e2b62df7d43f58c803d6709d453c90b69e5174aa"
+  },
+  "noApplicationOrDatabaseEdits": true,
+  "commissioningPhasesRun": [],
+  "localTestsRun": 0,
+  "ci": {
+    "head": "9b1caa6a5a6f3b67037634958001433fc8b069ee",
+    "runId": 41844764121,
+    "dockerImage": "success",
+    "quality": "failure",
+    "apiTests": {
+      "passed": 495,
+      "failed": 1,
+      "skipped": 1
+    },
+    "creativeTests": {
+      "passed": 41
+    },
+    "siteSchemaTests": {
+      "passed": 241
+    },
+    "growthTests": {
+      "passed": 149
+    },
+    "failure": "src/ui/ui.integration.test.ts:177 expected 4 decision cards, received 0",
+    "e2e": "in progress at inspection",
+    "limitation": "Not acceptance on a later head."
+  },
+  "remaining": [
+    "Verify database backup before database changes or redeploying the migration start command.",
+    "Resolve API database connectivity/startup; both services must be healthy on main.",
+    "Revalidate v7, repair observed CI failure, run production-image rehearsal, visual review and commissioning phases."
+  ]
+}
