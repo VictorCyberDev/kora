@@ -117,11 +117,11 @@ describe("Krevstudio editable documents", () => {
       );
       expect(text).toBeDefined();
       if (!text || text.type !== "text") continue;
-      expect(text.text.replace(/\\n/g, " ").replace(/\s+/g, " ")).toBe(
+      expect(text.text.replace(/\n/g, " ").replace(/\s+/g, " ")).toBe(
         headline,
       );
-      expect(text.text.split("\\n").length).toBeGreaterThan(1);
-      for (const line of text.text.split("\\n"))
+      expect(text.text.split("\n").length).toBeGreaterThan(1);
+      for (const line of text.text.split("\n"))
         expect(line.length * text.fontSize * 0.63).toBeLessThanOrEqual(
           text.width + 2,
         );
