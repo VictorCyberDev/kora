@@ -1,7 +1,7 @@
+import { createRequire } from "node:module";
 import { createServer, type Server } from "node:http";
 import { mkdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
@@ -31,14 +31,15 @@ let server: Server;
 let base = "";
 const requests: string[] = [];
 test.beforeAll(async () => {
-  const schema = (await import(
-    pathToFileURL(join(root, "packages/site-schema/dist/src/index.js")).href
-  )) as typeof import("../packages/site-schema/src/index.js");
-  const { BRIEFS } = (await import(
-    pathToFileURL(
-      join(root, "packages/site-schema/dist/test/fixtures/briefs.js"),
-    ).href
-  )) as typeof import("../packages/site-schema/test/fixtures/briefs.js");
+  // The Playwright TS loader can misresolve re-exports in compiled workspace
+  // modules. Use Node's native ESM bridge, retaining the production build.
+  const requireCompiled = createRequire(__filename);
+  const schema = requireCompiled(
+    join(root, "packages/site-schema/dist/src/index.js"),
+  ) as typeof import("../packages/site-schema/src/index.js");
+  const { BRIEFS } = requireCompiled(
+    join(root, "packages/site-schema/dist/test/fixtures/briefs.js"),
+  ) as typeof import("../packages/site-schema/test/fixtures/briefs.js");
   sites = Object.entries(BRIEFS).flatMap(([key, brief]) =>
     schema.planDirections(brief).map((d) => ({
       key,
@@ -85,7 +86,7 @@ test.beforeAll(async () => {
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 });
-test.afterAll(() => server.close());
+test.afterAll(() => server?.close());
 
 const shotsDir = process.env.DESIGN_QA_SHOTS;
 
