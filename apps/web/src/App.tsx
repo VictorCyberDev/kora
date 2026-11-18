@@ -66,6 +66,24 @@ function PublicLayout() {
       <header className="top">
         <div className="wrap">
           <Logo />
+          <details className="krev-public-menu">
+            <summary>Menu</summary>
+            <div className="krev-public-menu-panel">
+              <KrevMarketingNav />
+              <nav aria-label="Mobile public navigation">
+                <NavLink to="/audit">Free website check</NavLink>
+                <NavLink to="/pricing">Pricing</NavLink>
+                {user ? (
+                  <Link to="/app">Open Mission Control</Link>
+                ) : (
+                  <>
+                    <Link to="/login">Sign in</Link>
+                    <Link to="/signup">Start creating</Link>
+                  </>
+                )}
+              </nav>
+            </div>
+          </details>
           <KrevMarketingNav />
           <nav className="main" aria-label="Public">
             <NavLink to="/audit">Free website check</NavLink>
