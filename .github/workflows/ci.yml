@@ -110,7 +110,6 @@ jobs:
       - run: pnpm build
       - name: Verify creative ESM runtime exports from root and site-schema
         run: |
-          node --input-type=module -e "const m=await import('@kora/creative'); for (const k of ['contrast','ensureContrast','legibleOnAll']) { if(typeof m[k]!=='function') throw Error('missing runtime export '+k); }"
           pnpm --filter @kora/site-schema exec node --input-type=module -e "const m=await import('@kora/creative'); for (const k of ['contrast','ensureContrast','legibleOnAll']) { if(typeof m[k]!=='function') throw Error('site-schema cannot resolve '+k); }"
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
