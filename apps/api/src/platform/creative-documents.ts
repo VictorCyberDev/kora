@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { loadDesignSkills, resolveVertical } from "@kora/creative";
 
 /** Shared source-of-truth for editable graphics AND vector logos. Never accepts SVG markup from customers. */
 const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
@@ -242,6 +243,7 @@ export function buildCreativeDocument(
   brand: {
     version: number;
     name: string;
+    typeVoice?: string;
     approvedLogo?: { id: string; source: CreativeDocument } | null;
     colors?: {
       background: string;
@@ -259,6 +261,36 @@ export function buildCreativeDocument(
     primary: "#7c3329",
     accent: "#cb8d64",
   };
+  // Use the same pinned first-party adaptation of design guidance as Website
+  // Studio. Industry comes only from owner-supplied text; the approved BrandOS
+  // type voice wins over an inferred category.
+  const vertical = resolveVertical(
+    [brandName, request.headline, request.description].join(" "),
+  );
+  const designType =
+    request.kind === "logo"
+      ? "logo"
+      : request.kind === "carousel"
+        ? "carousel"
+        : "graphic";
+  const skills = loadDesignSkills(
+    { industry: vertical.cluster },
+    designType,
+  );
+  const typographicDirection = skills.rules.some(
+    (rule) => rule.effect === "typography-hierarchy",
+  );
+  const typeVoice = brand.typeVoice ?? "";
+  const displayFamily: "sans-serif" | "serif" | "monospace" =
+    typographicDirection &&
+    (/serif|fashion|luxury|heritage|roman|craft/.test(typeVoice) ||
+      (typeVoice.length === 0 &&
+        ["food", "beauty", "hospitality", "creative"].includes(vertical.cluster)))
+      ? "serif"
+      : typographicDirection &&
+          /technical|futurist|utility/.test(typeVoice)
+        ? "monospace"
+        : "sans-serif";
   // The user, not an inference model, supplies all factual marketing claims.
   const dimension = {
     flyer: [1080, 1350],
@@ -376,7 +408,9 @@ export function buildCreativeDocument(
           30,
           Math.min(size, 820 / (brandName.length * 0.58)),
         );
-        layers.push(textLayer(brandName, 90, y, 820, fit, ink, "700"));
+        const mark = textLayer(brandName, 90, y, 820, fit, ink, "700");
+        mark.fontFamily = displayFamily;
+        layers.push(mark);
       };
       if (form === "wordmark") {
         wordmark(360, 115);
@@ -478,7 +512,7 @@ export function buildCreativeDocument(
           ink,
           "700",
         );
-        headline.fontFamily = "serif";
+        headline.fontFamily = displayFamily;
         layers.push(headline);
         if (request.description && index === 0)
           layers.push(
@@ -544,6 +578,7 @@ export function buildCreativeDocument(
           "900",
         );
         headline.align = "center";
+        headline.fontFamily = displayFamily;
         layers.push(headline);
         if (request.description && index === 0) {
           const description = textLayer(
@@ -606,6 +641,7 @@ export function buildCreativeDocument(
           ink,
           "900",
         );
+        headline.fontFamily = displayFamily;
         layers.push(headline);
         if (request.description && index === 0)
           layers.push(
