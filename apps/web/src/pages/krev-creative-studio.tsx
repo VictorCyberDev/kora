@@ -24,6 +24,8 @@ type Layer = {
   strokeWidth?: number;
   stroke?: string;
   d?: string;
+  viewBoxWidth?: number;
+  viewBoxHeight?: number;
   src?: string;
   alt?: string;
   fit?: "cover" | "contain";
@@ -99,6 +101,9 @@ function renderLayer(layer: Layer) {
       return (
         <path
           {...common}
+          transform={`${transform} scale(${
+            layer.width / (layer.viewBoxWidth ?? layer.width)
+          } ${layer.height / (layer.viewBoxHeight ?? layer.height)})`}
           d={layer.d ?? ""}
           fill={layer.fill}
           stroke={layer.stroke ?? "#242424"}
