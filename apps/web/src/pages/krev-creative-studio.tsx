@@ -1,3 +1,4 @@
+import { bundleSvgZip } from "../creative-zip";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, type J } from "../api";
@@ -684,6 +685,25 @@ export function KrevCreativeStudio() {
       setError(errText(e));
     }
   };
+  const exportAllSlides=async()=>{
+    if(!source||!documentId||dirty)return;
+    setBusy(true);setError("");
+    try{
+      const files:{name:string;bytes:Uint8Array}[]=[];
+      for(let i=0;i<source.slides.length;i++){
+        const res=await fetch(`/api/sites/${id}/creative-documents/${documentId}/export/${i}`,{credentials:"same-origin"});
+        if(!res.ok||!res.headers.get("content-type")?.startsWith("image/svg+xml"))
+          throw new Error("One of the slide exports could not be verified.");
+        const bytes=new Uint8Array(await res.arrayBuffer());
+        files.push({name:`krevstudio-${source.kind}-slide-${i+1}.svg`,bytes});
+      }
+      const bytes=bundleSvgZip(files);
+      const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"application/zip"}));
+      const a=document.createElement("a");a.href=url;a.download=`krevstudio-${source.kind}-${source.slides.length}-slides.zip`;
+      document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),30_000);
+      setNotice("Batch SVG ZIP exported. Some linked photos need their authorized source URLs when opened offline.");
+    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  };
   const svgPoint = (event: React.PointerEvent) => {
     const pt = svg.current?.createSVGPoint();
     if (!pt || !svg.current) return null;
@@ -1082,6 +1102,8 @@ export function KrevCreativeStudio() {
                     >
                       Export SVG
                     </a>
+                    {source.slides.length>1&&<button className="btn sm ghost" type="button" disabled={busy||dirty}
+                      onClick={()=>void exportAllSlides()}>Export all slides (ZIP)</button>}
                   </div>
                 </div>
                 {assessment && (
