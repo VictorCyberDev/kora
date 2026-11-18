@@ -1,0 +1,26 @@
+name: Krevstudio formatter repair
+on:
+  push:
+    branches: [feature/krevstudio-m3-m4-transformation]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: {version: 10.18.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: pnpm}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/web/src/pages/audit.tsx apps/web/src/pages/channels.tsx apps/web/src/pages/creative.tsx apps/web/src/pages/incident.tsx apps/web/src/pages/intel.tsx apps/web/src/pages/krev-creative-studio.tsx apps/web/src/pages/media-library.tsx apps/web/src/pages/presence.tsx apps/web/src/pages/sites.tsx apps/web/src/pages/today.tsx
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/web/src/pages/audit.tsx apps/web/src/pages/channels.tsx apps/web/src/pages/creative.tsx apps/web/src/pages/incident.tsx apps/web/src/pages/intel.tsx apps/web/src/pages/krev-creative-studio.tsx apps/web/src/pages/media-library.tsx apps/web/src/pages/presence.tsx apps/web/src/pages/sites.tsx apps/web/src/pages/today.tsx
+          if ! git diff --cached --quiet; then
+            git commit -m 'style(krevstudio): normalize actual failing formatting files'
+            git push origin HEAD:feature/krevstudio-m3-m4-transformation
+          fi
