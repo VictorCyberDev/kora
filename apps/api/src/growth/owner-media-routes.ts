@@ -337,7 +337,7 @@ export function advice(q: MediaQuality): string[] {
     );
   if (q.flags.includes("BLURRY"))
     out.push(
-      "This picture looks soft or out of focus, so Kora will not use it as your main picture.",
+      "This picture looks soft or out of focus, so Krevstudio will not use it as your main picture.",
     );
   if (q.flags.includes("TOO_DARK"))
     out.push(
@@ -349,6 +349,6 @@ export function advice(q: MediaQuality): string[] {
     out.push(
       "Tall pictures work best in smaller spots; a wider photo suits the top of your site.",
     );
-  if (out.length === 0) out.push("Good picture. Kora can use it prominently.");
+  if (out.length === 0) out.push("Good picture. Krevstudio can use it prominently.");
   return out;
 }
