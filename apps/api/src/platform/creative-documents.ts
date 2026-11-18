@@ -160,6 +160,61 @@ function textLayer(
     align: "left",
   };
 }
+/** Fit owner-supplied copy into a bounded multiline SVG text box without
+ * dropping words, inventing claims or relying on browser-specific line wrapping. */
+function fittedHeadline(
+  copy: string,
+  x: number,
+  y: number,
+  width: number,
+  preferredSize: number,
+  fill: string,
+  weight: "400" | "600" | "700" | "900" = "900",
+): Extract<GraphicLayer, { type: "text" }> {
+  const words = copy.trim().split(/\s+/).filter(Boolean);
+  const wrap = (size: number) => {
+    const maxChars = Math.max(8, Math.floor(width / (size * 0.63)));
+    const lines: string[] = [];
+    let line = "";
+    for (const word of words) {
+      if (line && line.length + 1 + word.length > maxChars) {
+        lines.push(line);
+        line = "";
+      }
+      if (word.length > maxChars) {
+        if (line) lines.push(line);
+        line = "";
+        for (let i = 0; i < word.length; i += maxChars) {
+          const part = word.slice(i, i + maxChars);
+          if (part.length === maxChars) lines.push(part);
+          else line = part;
+        }
+      } else {
+        line = line ? `${line} ${word}` : word;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  };
+  let fontSize = Math.min(100, Math.max(22, preferredSize));
+  let lines = wrap(fontSize);
+  while (lines.length > 3 && fontSize > 22) {
+    fontSize = Math.max(22, fontSize - 4);
+    lines = wrap(fontSize);
+  }
+  const layer = textLayer(
+    lines.join("\n"),
+    x,
+    y,
+    width,
+    fontSize,
+    fill,
+    weight,
+  );
+  layer.height = Math.ceil(fontSize * 1.28 * Math.max(1, lines.length));
+  return layer;
+}
+
 function rectangle(
   x: number,
   y: number,
@@ -414,8 +469,8 @@ export function buildCreativeDocument(
             highlight,
           ),
         );
-        const headline = textLayer(
-          header.slice(0, 120),
+        const headline = fittedHeadline(
+          header,
           margin,
           Math.round(height * 0.29),
           width - margin * 2,
@@ -479,8 +534,8 @@ export function buildCreativeDocument(
         );
         identity.align = "center";
         layers.push(identity);
-        const headline = textLayer(
-          header.slice(0, 120),
+        const headline = fittedHeadline(
+          header,
           margin,
           Math.round(height * 0.32),
           width - margin * 2,
@@ -542,8 +597,8 @@ export function buildCreativeDocument(
           "700",
         );
         layers.push(identity);
-        const headline = textLayer(
-          header.slice(0, 120),
+        const headline = fittedHeadline(
+          header,
           left,
           Math.round(height * 0.32),
           available,
