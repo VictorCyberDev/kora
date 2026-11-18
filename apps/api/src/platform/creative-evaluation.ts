@@ -1,4 +1,4 @@
-import type {CreativeDocument,GraphicLayer} from "./creative-documents.js";
+import type {CreativeDocument} from "./creative-documents.js";
 export type CreativeFinding={
   severity:"BLOCKER"|"WARNING"|"INFO";
   code:string;
