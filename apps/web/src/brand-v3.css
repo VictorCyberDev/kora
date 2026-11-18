@@ -601,6 +601,43 @@ header.top:has(nav[aria-label="Public"]) .logo svg {
     justify-content: center;
   }
 
+  /* The fixed desktop rail must never push the Owner/Proof switch
+     beneath the viewport. Keep it before the long navigation and let the
+     navigation scroll independently on shorter screens. */
+  header.top:has(nav[aria-label="Mission Control"]) .wrap {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  header.top:has(nav[aria-label="Mission Control"]) .logo {
+    order: 0;
+    flex: 0 0 auto;
+  }
+
+  header.top:has(nav[aria-label="Mission Control"]) .seg {
+    order: 1;
+    margin-top: 0;
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  header.top:has(nav[aria-label="Mission Control"]) nav.main {
+    order: 2;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-content: start;
+    scrollbar-width: thin;
+  }
+
+  header.top:has(nav[aria-label="Mission Control"]) .wrap > div:not(.seg) {
+    order: 3;
+    flex: 0 0 auto;
+  }
+
   header.top:has(nav[aria-label="Mission Control"]) ~ main.wrap {
     margin-left: 244px;
     margin-right: 0;
