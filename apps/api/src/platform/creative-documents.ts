@@ -469,15 +469,27 @@ export function renderSlideSvg(slide: z.infer<typeof slideSchema>): string {
         return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${layer.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet"}"/>`;
       if (layer.type === "line")
         return `<line ${attributes} x1="0" y1="0" x2="${layer.width}" y2="${layer.height}" stroke-width="${layer.strokeWidth}" stroke="${layer.fill}"/>`;
+      const anchor =
+        layer.align === "center"
+          ? "middle"
+          : layer.align === "right"
+            ? "end"
+            : "start";
+      const anchorX =
+        layer.align === "center"
+          ? layer.width / 2
+          : layer.align === "right"
+            ? layer.width
+            : 0;
       const lines = layer.text
         .split("\n")
         .slice(0, 12)
         .map(
           (line, i) =>
-            `<tspan x="0" dy="${i === 0 ? layer.fontSize : layer.fontSize * 1.2}">${esc(line)}</tspan>`,
+            `<tspan x="${anchorX}" dy="${i === 0 ? layer.fontSize : layer.fontSize * 1.2}">${esc(line)}</tspan>`,
         )
         .join("");
-      return `<text ${attributes} font-family="${layer.fontFamily}" font-size="${layer.fontSize}" font-weight="${layer.weight}" text-anchor="start" fill="${layer.fill}">${lines}</text>`;
+      return `<text ${attributes} font-family="${layer.fontFamily}" font-size="${layer.fontSize}" font-weight="${layer.weight}" text-anchor="${anchor}" fill="${layer.fill}">${lines}</text>`;
     })
     .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${safe.width} ${safe.height}" width="${safe.width}" height="${safe.height}" role="img"><rect width="100%" height="100%" fill="${safe.background}"/>${contents}</svg>`;
