@@ -138,7 +138,7 @@ describe("Krevstudio editable documents", () => {
     );
     const family = (doc: typeof serif) =>
       doc.slides[0]!.layers.find(
-        (layer) => layer.type === "text" && layer.text.includes(copy),
+        (layer) => layer.type === "text" && layer.text.replace(/\n/g, " ").includes(copy),
       );
     const serifHeadline = family(serif);
     const technicalHeadline = family(technical);
