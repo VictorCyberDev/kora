@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: {node-version: 22, cache: pnpm}
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec prettier --write apps/api/src/platform/creative-documents.ts apps/api/src/platform/creative-document-routes.ts apps/api/src/platform/creative-evaluation.ts apps/api/src/platform/creative-evaluation.test.ts apps/api/src/platform/creative-documents.test.ts apps/web/src/pages/krev-creative-studio.tsx apps/web/src/krev-brand.css
+      - run: pnpm exec prettier --write apps/api/src/platform/creative-documents.ts apps/api/src/platform/creative-document-routes.ts apps/api/src/platform/creative-evaluation.ts apps/api/src/platform/creative-evaluation.test.ts apps/api/src/platform/creative-documents.test.ts apps/web/src/pages/krev-creative-studio.tsx apps/web/src/krev-brand.css .github/workflows/ci.yml .github/workflows/krevstudio-completion-format.yml
       - run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
