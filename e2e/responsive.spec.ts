@@ -367,7 +367,13 @@ for (const w of WIDTHS) {
             return target === button || button.contains(target);
           });
         await expect.poll(hitTest).toBe(true);
+        if (w >= 900) {
+          const rect = await proof.boundingBox();
+          expect(rect).not.toBeNull();
+          expect(rect!.y).toBeLessThan(260);
+        }
         await proof.click();
+        await expect(proof).toHaveAttribute("aria-pressed", "true");
         await page
           .getByText(/Evidence, decisions and Passport/)
           .first()
