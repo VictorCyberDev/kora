@@ -141,7 +141,7 @@ function textLayer(
   fontSize: number,
   fill: string,
   weight: "400" | "600" | "700" | "900" = "600",
-): GraphicLayer {
+): Extract<GraphicLayer, { type: "text" }> {
   return {
     id: uid(),
     type: "text",
