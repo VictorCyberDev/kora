@@ -366,73 +366,138 @@ export function buildCreativeDocument(
         }
       }
     } else {
-      layers.push(
-        rectangle(
-          0,
-          0,
-          variant === 2 ? width * 0.12 : width,
-          variant === 2 ? height : 35,
-          highlight,
-        ),
-      );
-      layers.push(
-        textLayer(
+      // Different editorial systems rather than the same poster recolored.
+      // Every visible word still comes exclusively from the owner brief.
+      const margin = Math.round(width * 0.075);
+      const headlineSize = Math.min(100, Math.round(width * 0.082));
+      if (variant === 0) {
+        // Editorial: generous paper, a large serif declaration and a fine rule.
+        layers.push(rectangle(0, 0, width, 22, highlight));
+        const identity = textLayer(
           brandName.toUpperCase(),
-          80,
-          Math.round(height * 0.08),
-          width - 160,
-          30,
+          margin,
+          Math.round(height * 0.09),
+          width - margin * 2,
+          28,
           ink,
           "700",
-        ),
-      );
-      layers.push(
-        textLayer(
+        );
+        layers.push(identity);
+        layers.push(rectangle(margin, Math.round(height * 0.2), width * 0.18, 6, highlight));
+        const headline = textLayer(
           header.slice(0, 120),
-          80,
-          Math.round(height * 0.3),
-          width - 160,
-          Math.min(90, Math.round(width * 0.08)),
+          margin,
+          Math.round(height * 0.29),
+          width - margin * 2,
+          headlineSize,
+          ink,
+          "700",
+        );
+        headline.fontFamily = "serif";
+        layers.push(headline);
+        if (request.description && index === 0)
+          layers.push(
+            textLayer(
+              request.description,
+              margin,
+              Math.round(height * 0.57),
+              width - margin * 2,
+              32,
+              ink,
+              "400",
+            ),
+          );
+        if (request.cta) {
+          layers.push(rectangle(margin, Math.round(height * 0.79), width * 0.55, 90, highlight, 8));
+          layers.push(textLayer(request.cta, margin + 24, Math.round(height * 0.805), width * 0.5, 30, background, "700"));
+        }
+      } else if (variant === 1) {
+        // Cinematic: dark surround and a centered typographic composition.
+        layers.push(rectangle(0, 0, Math.round(width * 0.018), height, highlight));
+        layers.push(rectangle(width * 0.33, height * 0.19, width * 0.34, 5, highlight));
+        const identity = textLayer(
+          brandName.toUpperCase(),
+          margin,
+          Math.round(height * 0.08),
+          width - margin * 2,
+          26,
+          ink,
+          "600",
+        );
+        identity.align = "center";
+        layers.push(identity);
+        const headline = textLayer(
+          header.slice(0, 120),
+          margin,
+          Math.round(height * 0.32),
+          width - margin * 2,
+          Math.round(headlineSize * 0.92),
           ink,
           "900",
-        ),
-      );
-      if (request.description && index === 0)
-        layers.push(
-          textLayer(
+        );
+        headline.align = "center";
+        layers.push(headline);
+        if (request.description && index === 0) {
+          const description = textLayer(
             request.description,
-            80,
-            Math.round(height * 0.55),
-            width - 160,
-            34,
+            margin * 1.5,
+            Math.round(height * 0.59),
+            width - margin * 3,
+            32,
             ink,
             "400",
-          ),
-        );
-      if (request.cta)
-        layers.push(
-          rectangle(
-            78,
-            Math.round(height * 0.76),
-            width * 0.65,
-            94,
-            highlight,
-            16,
-          ),
-        );
-      if (request.cta)
-        layers.push(
-          textLayer(
+          );
+          description.align = "center";
+          layers.push(description);
+        }
+        if (request.cta) {
+          const action = textLayer(
             request.cta,
-            103,
-            Math.round(height * 0.78),
-            width * 0.6,
+            margin,
+            Math.round(height * 0.82),
+            width - margin * 2,
             31,
-            background,
+            highlight,
             "700",
-          ),
+          );
+          action.align = "center";
+          layers.push(action);
+        }
+      } else {
+        // Asymmetric: a strong color field and a narrow right-hand editorial column.
+        const rail = Math.round(width * 0.26);
+        const gap = Math.round(width * 0.06);
+        const left = rail + gap;
+        const available = width - left - margin;
+        layers.push(rectangle(0, 0, rail, height, highlight));
+        layers.push(rectangle(left, Math.round(height * 0.23), available * 0.24, 6, highlight));
+        const identity = textLayer(
+          brandName.toUpperCase(),
+          left,
+          Math.round(height * 0.09),
+          available,
+          27,
+          ink,
+          "700",
         );
-    }
+        layers.push(identity);
+        const headline = textLayer(
+          header.slice(0, 120),
+          left,
+          Math.round(height * 0.32),
+          available,
+          Math.round(headlineSize * 0.72),
+          ink,
+          "900",
+        );
+        layers.push(headline);
+        if (request.description && index === 0)
+          layers.push(textLayer(request.description, left, Math.round(height * 0.6), available, 30, ink, "400"));
+        if (request.cta) {
+          layers.push(rectangle(left, Math.round(height * 0.81), available, 88, ink, 8));
+          layers.push(textLayer(request.cta, left + 18, Math.round(height * 0.825), available - 36, 27, background, "700"));
+        }
+      }
     return { id: uid(), width, height, background, layers };
   });
   return creativeDocumentSchema.parse({
