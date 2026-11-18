@@ -210,40 +210,48 @@ export function buildCreativeDocument(
       }
     }
     if (request.kind === "logo") {
-      // Genuine editable vector composition; no raster logo or embedded text.
-      if (variant === 0) {
-        layers.push(rectangle(170, 160, 660, 640, highlight, 110));
-        layers.push({
-          id: uid(),
-          type: "ellipse",
-          x: 325,
-          y: 250,
-          width: 350,
-          height: 350,
-          rotation: 0,
-          opacity: 1,
-          locked: false,
-          fill: background,
-        });
-      } else if (variant === 1) {
-        layers.push(rectangle(235, 130, 530, 690, highlight, 25));
-        layers.push(rectangle(340, 230, 320, 490, background, 20));
-      } else {
-        layers.push({
-          id: uid(),
-          type: "ellipse",
-          x: 190,
-          y: 165,
-          width: 620,
-          height: 620,
-          rotation: 0,
-          opacity: 1,
-          locked: false,
-          fill: highlight,
-        });
-        layers.push(rectangle(465, 230, 70, 490, background));
+      const form=request.logoForm;
+      const words=brandName.match(/[A-Za-z0-9]+/g)??[];
+      const initials=(words.length>1?words.slice(0,2).map(w=>w[0]).join(""):brandName.slice(0,2)).toUpperCase();
+      const white=colors.background;
+      const symbol=()=>{
+        if(variant===0){
+          layers.push(rectangle(240,175,520,520,highlight,100));
+          layers.push({id:uid(),type:"ellipse",x:340,y:275,width:320,height:320,rotation:0,opacity:1,locked:false,fill:white});
+        }else if(variant===1){
+          layers.push({id:uid(),type:"ellipse",x:230,y:175,width:540,height:540,rotation:0,opacity:1,locked:false,fill:highlight});
+          layers.push(rectangle(470,240,75,410,background,16));
+        }else{
+          layers.push(rectangle(235,180,530,530,highlight,260));
+          layers.push(rectangle(355,300,290,290,background,90));
+        }
+      };
+      const wordmark=(y:number,size=84)=>{
+        const fit=Math.max(30,Math.min(size,820/(brandName.length*.58)));
+        layers.push(textLayer(brandName,90,y,820,fit,ink,"700"));
+      };
+      if(form==="wordmark"){
+        wordmark(360,115);
+        layers.push(rectangle(92,545,Math.min(800,brandName.length*18),8,highlight,4));
+      }else if(form==="lettermark"){
+        layers.push(textLayer(initials,220,190,570,290,highlight,"900"));
+        layers.push(rectangle(210,640,570,12,ink,5));
+      }else if(form==="monogram"){
+        layers.push(rectangle(170,140,660,660,highlight,95));
+        layers.push(textLayer(initials,260,260,520,250,background,"900"));
+      }else if(form==="emblem"){
+        layers.push({id:uid(),type:"ellipse",x:155,y:115,width:690,height:690,rotation:0,opacity:1,locked:false,fill:highlight});
+        layers.push({id:uid(),type:"ellipse",x:205,y:165,width:590,height:590,rotation:0,opacity:1,locked:false,fill:background});
+        layers.push(textLayer(initials,380,300,400,165,ink,"900"));
+        wordmark(820,52);
+      }else{
+        symbol();
+        if(form==="combination"||form==="geometric")wordmark(825,70);
+        if(form==="abstract"){
+          // Interlocking geometric negative space is editable and distinct.
+          layers.push({id:uid(),type:"ellipse",x:390,y:335,width:210,height:210,rotation:0,opacity:1,locked:false,fill:background});
+        }
       }
-      layers.push(textLayer(brandName, 140, 835, 720, 65, ink, "700"));
     } else {
       layers.push(
         rectangle(
