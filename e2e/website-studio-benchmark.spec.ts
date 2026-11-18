@@ -1,7 +1,7 @@
+import { createRequire } from "node:module";
 import { createServer, type Server } from "node:http";
 import { mkdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 import { expect, test } from "@playwright/test";
 import { observeRenderedScreenshot } from "./visual-observe";
 import { reviewRenderedWithVision } from "./vision-critic";
@@ -151,9 +151,12 @@ let samples: Array<{
 }> = [];
 let studioSchema: typeof import("../packages/site-schema/src/index.js");
 test.beforeAll(async () => {
-  const schema = (await import(
-    pathToFileURL(join(root, "packages/site-schema/dist/src/index.js")).href
-  )) as typeof import("../packages/site-schema/src/index.js");
+  // Use Node's ESM bridge to load the actual compiled renderer without
+  // Playwright's TS import transformer rewriting its package exports.
+  const requireCompiled = createRequire(__filename);
+  const schema = requireCompiled(
+    join(root, "packages/site-schema/dist/src/index.js"),
+  ) as typeof import("../packages/site-schema/src/index.js");
   studioSchema = schema;
   samples = briefs.map(([key, name, description, services]) => {
     const input = {
@@ -212,7 +215,7 @@ test.beforeAll(async () => {
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 });
 test.afterAll(async () => {
-  await new Promise<void>((resolve) => server.close(() => resolve()));
+  if (server) await new Promise<void>((resolve) => server.close(() => resolve()));
 });
 
 test("20 industries have real rendered desktop/mobile screenshots, navigation and layout checks", async ({
