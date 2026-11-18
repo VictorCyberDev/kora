@@ -43,15 +43,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
-      - name: Diagnostic - capture formatter output for edited source
-        if: failure()
-        run: |
-          for file in apps/api/src/platform/creative-documents.ts apps/api/src/platform/creative-documents.test.ts e2e/responsive.spec.ts; do
-            echo "KREV_FORMAT_BEGIN:$file"
-            pnpm exec prettier "$file" | base64 -w0
-            echo
-            echo "KREV_FORMAT_END:$file"
-          done
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
