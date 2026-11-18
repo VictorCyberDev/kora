@@ -318,6 +318,39 @@ describe("Krevstudio editable documents", () => {
       } as (typeof doc.slides)[0]),
     ).toThrow();
   });
+  it("keeps image focal cropping editable and bounded during SVG export", () => {
+    const doc = buildCreativeDocument(
+      { kind: "flyer", title: "Photo flyer", headline: "Fresh pastries" },
+      brand,
+    );
+    const image = {
+      id: crypto.randomUUID(),
+      type: "image" as const,
+      x: 50,
+      y: 90,
+      width: 600,
+      height: 500,
+      rotation: 0,
+      opacity: 1,
+      locked: false,
+      fill: "#ffffff",
+      src: "https://example.com/approved.webp",
+      alt: "Approved bakery photo",
+      fit: "cover" as const,
+      focalX: 1,
+      focalY: 0,
+    };
+    const slide = { ...doc.slides[0]!, layers: [image] };
+    expect(renderSlideSvg(slide)).toContain(
+      'preserveAspectRatio="xMaxYMin slice"',
+    );
+    expect(() =>
+      renderSlideSvg({
+        ...slide,
+        layers: [{ ...image, focalX: 1.5 }],
+      }),
+    ).toThrow();
+  });
   it("rejects unsafe layer data and excessive resource use", () => {
     const doc = buildCreativeDocument(
       {
