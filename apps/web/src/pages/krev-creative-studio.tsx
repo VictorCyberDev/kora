@@ -48,6 +48,18 @@ const uid = () => crypto.randomUUID();
 function renderLayer(layer: Layer) {
   const transform = `translate(${layer.x} ${layer.y}) rotate(${layer.rotation} ${layer.width / 2} ${layer.height / 2})`;
   const common = { transform, opacity: layer.opacity };
+  const textAnchor =
+    layer.align === "center"
+      ? "middle"
+      : layer.align === "right"
+        ? "end"
+        : "start";
+  const textX =
+    layer.align === "center"
+      ? layer.width / 2
+      : layer.align === "right"
+        ? layer.width
+        : 0;
   switch (layer.type) {
     case "rect":
       return (
@@ -112,6 +124,7 @@ function renderLayer(layer: Layer) {
           fontFamily={layer.fontFamily ?? "sans-serif"}
           fontSize={layer.fontSize ?? 38}
           fontWeight={layer.weight ?? "600"}
+          textAnchor={textAnchor}
           fill={layer.fill}
         >
           {(layer.text ?? "")
@@ -120,7 +133,7 @@ function renderLayer(layer: Layer) {
             .map((line, i) => (
               <tspan
                 key={i}
-                x={0}
+                x={textX}
                 dy={
                   i === 0
                     ? (layer.fontSize ?? 38)
@@ -1541,6 +1554,19 @@ export function KrevCreativeStudio() {
                                 <option>sans-serif</option>
                                 <option>serif</option>
                                 <option>monospace</option>
+                              </select>
+                            </label>
+                            <label>
+                              Text alignment{" "}
+                              <select
+                                value={layer.align ?? "left"}
+                                onChange={(e) =>
+                                  editLayer({ align: e.target.value })
+                                }
+                              >
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
                               </select>
                             </label>
                           </>
