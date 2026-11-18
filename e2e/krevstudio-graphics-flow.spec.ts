@@ -84,6 +84,10 @@ test("Krevstudio user creates, edits, saves, reopens and exports an editable vec
     await expect(
       page.getByRole("img", { name: "Editable design canvas" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: /text/i }).first().click();
+    await page.getByLabel("Text alignment").selectOption("center");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText(/Saved as immutable revision/)).toBeVisible();
     await page.screenshot({
       path: "test-results/kora-studio-benchmark/krevstudio-graphics-editor.png",
       fullPage: true,
