@@ -358,7 +358,7 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
         .header("cache-control", "private, max-age=3600")
         .header(
           "content-disposition",
-          `${q.as === "download" ? "attachment" : "inline"}; filename="kora-${assetId.slice(0, 8)}.${ext}"`,
+          `${q.as === "download" ? "attachment" : "inline"}; filename="krevstudio-${assetId.slice(0, 8)}.${ext}"`,
         )
         .send(f.bytes)
     );
