@@ -670,8 +670,10 @@ export function KrevCreativeStudio() {
         "-" +
         (slideIndex + 1) +
         (format === "png" ? ".png" : ".jpg");
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(output);
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(output), 30_000);
     } catch (e) {
       setError(errText(e));
     }
