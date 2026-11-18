@@ -129,6 +129,11 @@ const PRESETS = [
   ["Carousel", "carousel"],
   ["Banner", "banner"],
   ["Vector logo", "logo"],
+  ["Ad creative", "ad"],
+  ["Video thumbnail", "thumbnail"],
+  ["Business announcement", "announcement"],
+  ["Event flyer", "event"],
+  ["Product promotion", "product"],
 ] as const;
 export function KrevCreativeStudio() {
   const { id } = useParams();
@@ -164,6 +169,9 @@ export function KrevCreativeStudio() {
   const [cta, setCta] = useState("");
   const [direction, setDirection] = useState(0);
   const [slideCount, setSlideCount] = useState(4);
+  const [logoForm,setLogoForm]=useState("combination");
+  const [customWidth,setCustomWidth]=useState(0);
+  const [customHeight,setCustomHeight]=useState(0);
   const [previews, setPreviews] = useState<
     Array<{ direction: number; svg: string }>
   >([]);
@@ -254,6 +262,8 @@ export function KrevCreativeStudio() {
           cta,
           slides: createKind === "carousel" ? slideCount : 1,
           direction,
+          logoForm,
+          ...(customWidth>=128&&customHeight>=128?{customSize:{width:customWidth,height:customHeight}}:{}),
         },
       );
       setPreviews(r.directions as Array<{ direction: number; svg: string }>);
@@ -275,6 +285,8 @@ export function KrevCreativeStudio() {
         description,
         cta,
         direction,
+        logoForm,
+        ...(customWidth>=128&&customHeight>=128?{customSize:{width:customWidth,height:customHeight}}:{}),
         slides: createKind === "carousel" ? slideCount : 1,
       });
       list.reload();
@@ -713,6 +725,10 @@ export function KrevCreativeStudio() {
                 ))}
               </select>
             </label>
+            {createKind==="logo"&&<label>Logo style <select value={logoForm} onChange={e=>setLogoForm(e.target.value)}>
+              {["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"].map(t=>
+                <option value={t} key={t}>{t[0]!.toUpperCase()+t.slice(1)}</option>)}
+            </select></label>}
             {createKind === "carousel" && (
               <label>
                 Slides{" "}
@@ -725,6 +741,15 @@ export function KrevCreativeStudio() {
                 />
               </label>
             )}
+          </div>
+          <div className="row">
+            <label>Custom width (px) <input type="number" min={0} max={4096}
+              value={customWidth} onChange={e=>setCustomWidth(Number(e.target.value))}/>
+            </label>
+            <label>Custom height (px) <input type="number" min={0} max={4096}
+              value={customHeight} onChange={e=>setCustomHeight(Number(e.target.value))}/>
+            </label>
+            <span className="small muted">Set both above 127px to override the format preset.</span>
           </div>
           <label>
             Project title{" "}
