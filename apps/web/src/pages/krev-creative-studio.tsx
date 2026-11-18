@@ -704,7 +704,7 @@ export function KrevCreativeStudio() {
           <p className="k-overline">
             Krevstudio · Graphics and vector identity
           </p>
-          <h1>Creative workspace</h1>
+          <h2>Creative workspace</h2>
           <p className="muted">
             Real editable layers, versioned drafts and brand-linked creative
             output.
@@ -983,6 +983,15 @@ export function KrevCreativeStudio() {
                       <strong>{f.severity}: {f.code}</strong> · slide {f.slide} — {f.message}
                     </li>)}</ul>}
                 </section>}
+                <div className="row" role="group" aria-label="Canvas zoom">
+                  <span className="small muted">Zoom preview</span>
+                  <button className="btn sm ghost" type="button" onClick={()=>{
+                    const el=svg.current;if(el)el.style.maxHeight="40vh";
+                  }}>Fit shorter</button>
+                  <button className="btn sm ghost" type="button" onClick={()=>{
+                    const el=svg.current;if(el)el.style.maxHeight="80vh";
+                  }}>Fit taller</button>
+                </div>
                 <div className="row" role="group" aria-label="Slides">
                   {source.slides.map((s, i) => (
                     <button
@@ -1021,16 +1030,7 @@ export function KrevCreativeStudio() {
                     Delete slide
                   </button>
                 </div>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns:
-                      "minmax(150px,220px) minmax(260px,1fr) minmax(180px,260px)",
-                    gap: 12,
-                    overflowX: "auto",
-                    alignItems: "start",
-                  }}
-                >
+                <div className="krev-editor-layout">
                   <aside className="stack" aria-label="Design elements">
                     <h3>Layers</h3>
                     <div className="row">
