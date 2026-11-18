@@ -1,0 +1,26 @@
+name: Krevstudio completion formatter
+on:
+  push:
+    branches: [feature/krevstudio-creative-professionalization]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: {version: 10.18.3}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: pnpm}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/api/src/platform/creative-documents.ts apps/api/src/platform/creative-document-routes.ts apps/api/src/platform/creative-evaluation.ts apps/api/src/platform/creative-evaluation.test.ts apps/api/src/platform/creative-documents.test.ts apps/web/src/pages/krev-creative-studio.tsx apps/web/src/krev-brand.css
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/api/src/platform/creative-documents.ts apps/api/src/platform/creative-document-routes.ts apps/api/src/platform/creative-evaluation.ts apps/api/src/platform/creative-evaluation.test.ts apps/api/src/platform/creative-documents.test.ts apps/web/src/pages/krev-creative-studio.tsx apps/web/src/krev-brand.css
+          if ! git diff --cached --quiet; then
+            git commit -m 'style(krevstudio): normalize professional editor and creative evaluation source'
+            git push origin HEAD:feature/krevstudio-creative-professionalization
+          fi
