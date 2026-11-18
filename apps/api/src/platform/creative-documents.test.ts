@@ -156,6 +156,27 @@ describe("Krevstudio editable documents", () => {
       ),
     ).toThrow();
   });
+  it("preserves left, center and right text alignment in actual SVG output", () => {
+    const doc = buildCreativeDocument(
+      { kind: "flyer", title: "Aligned", headline: "Meridian Bakes" },
+      brand,
+    );
+    const text = doc.slides[0]!.layers.find((layer) => layer.type === "text");
+    expect(text).toBeDefined();
+    for (const [align, anchor, x] of [
+      ["left", "start", 0],
+      ["center", "middle", text!.width / 2],
+      ["right", "end", text!.width],
+    ] as const) {
+      const layer = { ...text!, align };
+      const svg = renderSlideSvg({
+        ...doc.slides[0]!,
+        layers: [layer],
+      });
+      expect(svg).toContain(`text-anchor="${anchor}"`);
+      expect(svg).toContain(`<tspan x="${x}"`);
+    }
+  });
   it("saves vector paths and rejects injected SVG or external references", () => {
     const doc = buildCreativeDocument(
       {
