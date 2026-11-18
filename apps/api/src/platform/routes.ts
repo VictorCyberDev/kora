@@ -324,7 +324,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       throw new HttpError(
         404,
         "user_not_found",
-        "That person needs a Kora account first.",
+        "That person needs a Krevstudio account first.",
       );
     await platform.audit({
       orgId: id,
@@ -769,7 +769,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         throw new HttpError(
           409,
           "creative_engine_disabled",
-          "The new Kora design engine is not switched on for this deployment yet.",
+          "The new Krevstudio design engine is not enabled for this deployment yet.",
         );
       const a = requireUser(req);
       const row = await platform.getVersionRow(site.id, versionId);
