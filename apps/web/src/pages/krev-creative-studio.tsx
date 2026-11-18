@@ -162,6 +162,8 @@ export function KrevCreativeStudio() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [assessment,setAssessment]=useState<{revision:number;findings:Array<{severity:string;code:string;slide:number;message:string}>}|null>(null);
+
   const [createKind, setCreateKind] = useState("flyer");
   const [title, setTitle] = useState("");
   const [headline, setHeadline] = useState("");
@@ -373,6 +375,25 @@ export function KrevCreativeStudio() {
       next.slides[slideIndex]!.layers.push(created);
     });
     setSelected(created.id);
+  };
+  const inspectSource=async()=>{
+    if(!documentId||dirty){setError("Save your draft before evaluating its source.");return;}
+    setBusy(true);setError("");
+    try{
+      const r=await api<J>("GET",`/api/sites/${id}/creative-documents/${documentId}/evaluation`);
+      setAssessment(r as {revision:number;findings:Array<{severity:string;code:string;slide:number;message:string}>});
+      setNotice("Structural checks complete. Screenshot and human review are separate quality gates.");
+    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  };
+  const repairGeometry=async()=>{
+    if(!documentId||dirty){setError("Save your draft before repair.");return;}
+    setBusy(true);setError("");
+    try{
+      const r=await api<J>("POST",`/api/sites/${id}/creative-documents/${documentId}/repair-geometry`,{revision});
+      setRevision(r.revision as number);setSource(r.source as Source);setDirty(false);
+      setAssessment(null);list.reload();doc.reload();
+      setNotice(`Geometric repairs: ${r.changes.length}. No claims or creative wording were changed.`);
+    }catch(e){setError(errText(e));}finally{setBusy(false);}
   };
   const approveCreative = async () => {
     if (!documentId || !source || dirty) return;
@@ -887,6 +908,12 @@ export function KrevCreativeStudio() {
                     >
                       {busy ? "Saving…" : "Save draft"}
                     </button>
+                    <button className="btn sm ghost" disabled={busy||dirty}
+                      onClick={()=>void inspectSource()}>Check design structure</button>
+                    {assessment?.findings.some(f=>f.code==="LAYER_OUTSIDE_CANVAS")&&
+                      <button className="btn sm" onClick={()=>void repairGeometry()} disabled={busy||dirty}>
+                        Repair offscreen geometry
+                      </button>}
                     {source.kind !== "logo" && (
                       <button
                         className="btn sm"
@@ -948,6 +975,14 @@ export function KrevCreativeStudio() {
                     </a>
                   </div>
                 </div>
+                {assessment&&<section className="card stack" aria-label="Source quality report">
+                  <h3>Structural quality report · revision {assessment.revision}</h3>
+                  <p className="small muted">Deterministic source checks only. No model vision or human visual acceptance has been performed.</p>
+                  {assessment.findings.length===0?<p>No source defects found.</p>:
+                    <ul>{assessment.findings.map((f,i)=><li key={i}>
+                      <strong>{f.severity}: {f.code}</strong> · slide {f.slide} — {f.message}
+                    </li>)}</ul>}
+                </section>}
                 <div className="row" role="group" aria-label="Slides">
                   {source.slides.map((s, i) => (
                     <button
