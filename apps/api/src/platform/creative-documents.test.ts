@@ -66,6 +66,44 @@ describe("Krevstudio editable documents", () => {
     expect(svg).not.toContain("<script>");
     expect(svg).toContain("&lt;script&gt;");
   });
+  it("builds structurally distinct editable layouts, not three color swaps", () => {
+    const rendered = [0, 1, 2].map((direction) =>
+      buildCreativeDocument(
+        {
+          kind: "flyer",
+          title: "Launch flyer",
+          headline: "Artisan sourdough and pastries",
+          description: "Made locally",
+          cta: "Contact us",
+          direction,
+        },
+        brand,
+      ),
+    );
+    const signatures = rendered.map((doc) =>
+      doc.slides[0]!.layers.map((layer) => ({
+        type: layer.type,
+        x: layer.x,
+        y: layer.y,
+        width: layer.width,
+        height: layer.height,
+        align: layer.type === "text" ? layer.align : null,
+      })),
+    );
+    expect(new Set(signatures.map((s) => JSON.stringify(s))).size).toBe(3);
+    expect(
+      rendered[1]!.slides[0]!.layers.some(
+        (layer) => layer.type === "text" && layer.align === "center",
+      ),
+    ).toBe(true);
+    expect(
+      rendered[2]!.slides[0]!.layers.some(
+        (layer) =>
+          layer.type === "rect" &&
+          layer.height === rendered[2]!.slides[0]!.height,
+      ),
+    ).toBe(true);
+  });
   it("does not fabricate a sale amount or deadline", () => {
     const doc = buildCreativeDocument(
       {
