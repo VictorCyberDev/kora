@@ -1375,6 +1375,29 @@ export function KrevCreativeStudio() {
                     )}
                   </aside>
                 </div>
+                {source.kind==="logo"&&<section className="stack" aria-label="Real logo usage previews">
+                  <h3>Live brand mark previews</h3>
+                  <p className="small muted">Illustrative usage previews of your actual editable vector source. Check readability at small sizes and against different backgrounds before approval. Trademark clearance is not included.</p>
+                  <div className="krev-logo-previews">
+                    {[
+                      {name:"Light surface",background:"#fffdf8",size:180},
+                      {name:"Dark surface",background:"#16272d",size:180},
+                      {name:"Monochrome",background:"#ffffff",size:180,mono:true},
+                      {name:"Favicon 32 px",background:"#fffdf8",size:32},
+                      {name:"Social avatar",background:"#ece8df",size:96},
+                      {name:"Website header",background:"#ffffff",size:120},
+                    ].map(preview=><figure key={preview.name}>
+                      <div className="krev-logo-preview-surface" style={{background:preview.background}}>
+                        <svg width={preview.size} height={preview.size} viewBox={`0 0 ${slide.width} ${slide.height}`}
+                          role="img" aria-label={`${preview.name} logo preview`}
+                          style={{maxWidth:"100%",filter:preview.mono?"grayscale(1)":"none"}}>
+                          {slide.layers.map(l=><g key={l.id}>{renderLayer(l)}</g>)}
+                        </svg>
+                      </div>
+                      <figcaption className="small muted">{preview.name}</figcaption>
+                    </figure>)}
+                  </div>
+                </section>}
               </section>
             ) : null
           }
