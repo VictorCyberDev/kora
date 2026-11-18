@@ -39,8 +39,8 @@ export function ResultsPage() {
           {(a) =>
             a.summary.links === 0 ? (
               <Empty title="No tracked links yet">
-                Campaign posts include a link Krevstudio can follow. Add one to any
-                post from the Calendar and results appear here.
+                Campaign posts include a link Krevstudio can follow. Add one to
+                any post from the Calendar and results appear here.
               </Empty>
             ) : (
               <>
@@ -98,7 +98,8 @@ export function ResultsPage() {
             a.providers.length === 0 ? (
               <p className="muted">
                 No numbers yet. Connect a channel, then refresh. Some channels
-                do not share results with Krevstudio yet; those are simply left blank.
+                do not share results with Krevstudio yet; those are simply left
+                blank.
               </p>
             ) : (
               <ul className="k-checks">
@@ -178,7 +179,8 @@ export function ReviewsPage() {
               <Notice kind="warn">
                 {v.summary.needsYou} review
                 {v.summary.needsYou === 1 ? " needs" : "s need"} you personally.
-                Krevstudio does not write replies to negative or sensitive reviews.
+                Krevstudio does not write replies to negative or sensitive
+                reviews.
               </Notice>
             )}
             {v.summary.themes.length > 0 && (
@@ -369,8 +371,8 @@ export function MemoryPage() {
         <p className="k-overline">Memory</p>
         <h2>What Krevstudio remembers about your business</h2>
         <p className="muted">
-          Only you and Krevstudio's own records of finished campaigns. Words you ask
-          Krevstudio to avoid are applied to every post it writes or checks.
+          Only you and Krevstudio's own records of finished campaigns. Words you
+          ask Krevstudio to avoid are applied to every post it writes or checks.
         </p>
       </section>
       <form
@@ -404,8 +406,8 @@ export function MemoryPage() {
         {(rows) =>
           rows.length === 0 ? (
             <Empty title="Nothing remembered yet">
-              When a campaign finishes, Krevstudio records what its links brought
-              here.
+              When a campaign finishes, Krevstudio records what its links
+              brought here.
             </Empty>
           ) : (
             <ul className="k-checks">
@@ -416,8 +418,8 @@ export function MemoryPage() {
                       {KIND[m.kind] ?? m.kind}: {m.key}
                     </strong>
                     <span className="muted">
-                      {m.source === "SYSTEM" ? "Recorded by Krevstudio" : "You"} ·{" "}
-                      {when(m.createdAt)}
+                      {m.source === "SYSTEM" ? "Recorded by Krevstudio" : "You"}{" "}
+                      · {when(m.createdAt)}
                     </span>
                   </div>
                   <p>{m.value}</p>

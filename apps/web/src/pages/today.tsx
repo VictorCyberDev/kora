@@ -59,7 +59,8 @@ function TellKrevstudio({ id }: { id: string }) {
       setText(t);
       if (t) void ask(t);
     };
-    r.onerror = () => setErr("Krevstudio could not hear that. You can type instead.");
+    r.onerror = () =>
+      setErr("Krevstudio could not hear that. You can type instead.");
     r.onend = () => setListening(false);
     setListening(true);
     r.start();

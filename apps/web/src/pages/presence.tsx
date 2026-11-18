@@ -33,8 +33,8 @@ export function PresenceEntry() {
           <Navigate to={`/app/sites/${rows[0].id}/presence`} replace />
         ) : (
           <Empty title="No business profile yet">
-            Presence starts with a website. Create one and Krevstudio will read your
-            details from it.
+            Presence starts with a website. Create one and Krevstudio will read
+            your details from it.
             <p>
               <Link className="btn" to="/app/sites/new">
                 Create my website
@@ -151,8 +151,8 @@ function ProfileForm({
     >
       <h2>Your business details</h2>
       <p className="muted">
-        Krevstudio uses only what you write here for your website, posts and replies.
-        Nothing is guessed.
+        Krevstudio uses only what you write here for your website, posts and
+        replies. Nothing is guessed.
       </p>
       <label>
         Business name
@@ -279,8 +279,8 @@ export function PresencePage() {
       {(v) =>
         !v.profile ? (
           <Empty title="Tell Krevstudio about your business">
-            Krevstudio can read your name, contact details and hours from your website
-            so you do not have to type them again.
+            Krevstudio can read your name, contact details and hours from your
+            website so you do not have to type them again.
             <p>
               <button
                 className="btn"

@@ -513,8 +513,8 @@ export function NewSite() {
           placeholder="We repair fridges, washing machines and cookers in Ikeja."
         />
         <span className="field-hint">
-          Two lines is enough. Krevstudio only uses what you write here. It will not
-          invent services, prices or reviews.
+          Two lines is enough. Krevstudio only uses what you write here. It will
+          not invent services, prices or reviews.
         </span>
       </label>
       <div className="grid">

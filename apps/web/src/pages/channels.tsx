@@ -110,7 +110,8 @@ function ChannelCard({
       )}
       {notSetUp && (
         <Notice kind="info">
-          The Krevstudio operator has not added the {c.label} app credentials yet
+          The Krevstudio operator has not added the {c.label} app credentials
+          yet
           {c.runtime.missing.length ? ` (${c.runtime.missing.join(", ")})` : ""}
           . Nothing is faked: this channel stays unavailable until they do.
         </Notice>
@@ -185,8 +186,9 @@ export function ChannelsPage() {
         <p className="k-overline">Channels</p>
         <h2>Where your business shows up</h2>
         <p className="muted">
-          Connect the accounts you already use. Krevstudio only reads and posts what
-          you allow, and shows you exactly what each channel can and cannot do.
+          Connect the accounts you already use. Krevstudio only reads and posts
+          what you allow, and shows you exactly what each channel can and cannot
+          do.
         </p>
         {q.get("connected") && <Notice kind="ok">Connected.</Notice>}
         {q.get("problem") && <Notice kind="bad">{q.get("problem")}</Notice>}

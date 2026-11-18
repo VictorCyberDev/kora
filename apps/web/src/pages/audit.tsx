@@ -66,9 +66,9 @@ export function PublicAuditPage() {
     <div className="wrap stack" style={{ padding: "40px 20px", maxWidth: 760 }}>
       <h1>How does your website look to a customer?</h1>
       <p className="lead">
-        Paste your website address. Krevstudio reads the public page and tells you, in
-        plain words, what helps customers find and contact you and what does
-        not. Nothing is changed and no login is needed.
+        Paste your website address. Krevstudio reads the public page and tells
+        you, in plain words, what helps customers find and contact you and what
+        does not. Nothing is changed and no login is needed.
       </p>
       <form className="row" onSubmit={go}>
         <input

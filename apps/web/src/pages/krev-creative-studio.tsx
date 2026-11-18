@@ -503,13 +503,16 @@ export function KrevCreativeStudio() {
     a.click();
     URL.revokeObjectURL(url);
   };
-  const exportPng = async (format:"png"|"jpeg"="png",transparent=false) => {
+  const exportPng = async (
+    format: "png" | "jpeg" = "png",
+    transparent = false,
+  ) => {
     if (!svg || !slide || !svg.current) return;
     setError("");
     try {
       const snapshot = svg.current.cloneNode(true) as SVGSVGElement;
-      if(transparent && source?.kind==="logo"){
-        snapshot.style.background="transparent";
+      if (transparent && source?.kind === "logo") {
+        snapshot.style.background = "transparent";
         snapshot.querySelector(":scope > rect")?.remove();
       }
       let budget = 24 * 1024 * 1024;
@@ -560,23 +563,27 @@ export function KrevCreativeStudio() {
       canvas.height = slide.height;
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Canvas unavailable.");
-      if(format==="jpeg"){
-        ctx.fillStyle=slide.background;
-        ctx.fillRect(0,0,slide.width,slide.height);
+      if (format === "jpeg") {
+        ctx.fillStyle = slide.background;
+        ctx.fillRect(0, 0, slide.width, slide.height);
       }
       ctx.drawImage(image, 0, 0, slide.width, slide.height);
       URL.revokeObjectURL(url);
       const blob = await new Promise<Blob>((resolve, reject) =>
         canvas.toBlob(
           (b) => (b ? resolve(b) : reject(new Error("PNG export failed"))),
-          format==="png"?"image/png":"image/jpeg",
+          format === "png" ? "image/png" : "image/jpeg",
         ),
       );
       const output = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = output;
       a.download =
-        "krevstudio-" + source?.kind + "-" + (slideIndex + 1) + (format==="png"?".png":".jpg");
+        "krevstudio-" +
+        source?.kind +
+        "-" +
+        (slideIndex + 1) +
+        (format === "png" ? ".png" : ".jpg");
       a.click();
       URL.revokeObjectURL(output);
     } catch (e) {
@@ -891,8 +898,22 @@ export function KrevCreativeStudio() {
                     >
                       Export PNG
                     </button>
-                    <button className="btn sm ghost" type="button" onClick={()=>void exportPng("jpeg")}>Export JPG</button>
-                    {source.kind === "logo" && (<button className="btn sm ghost" type="button" onClick={() => void exportPng("png", true)}>Transparent PNG</button>)}
+                    <button
+                      className="btn sm ghost"
+                      type="button"
+                      onClick={() => void exportPng("jpeg")}
+                    >
+                      Export JPG
+                    </button>
+                    {source.kind === "logo" && (
+                      <button
+                        className="btn sm ghost"
+                        type="button"
+                        onClick={() => void exportPng("png", true)}
+                      >
+                        Transparent PNG
+                      </button>
+                    )}
                     <a
                       className="btn sm ghost"
                       href={`/api/sites/${id}/creative-documents/${documentId}/export/${slideIndex}`}

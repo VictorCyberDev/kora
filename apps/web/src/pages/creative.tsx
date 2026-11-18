@@ -137,8 +137,8 @@ export function ImagesPage() {
           Pictures made by AI
         </h2>
         <p className="muted">
-          Made with open-source models. Krevstudio only pictures things you have told
-          it you sell, adds no people or text, and labels every picture as
+          Made with open-source models. Krevstudio only pictures things you have
+          told it you sell, adds no people or text, and labels every picture as
           AI-made. You approve each one before it is used.
         </p>
         <Async state={status}>

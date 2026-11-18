@@ -207,8 +207,8 @@ export function IncidentPage() {
                     </h2>
                     {v.whatChanged.length === 0 ? (
                       <p className="muted">
-                        Krevstudio recorded no change in the minutes before the first
-                        failure.
+                        Krevstudio recorded no change in the minutes before the
+                        first failure.
                       </p>
                     ) : (
                       <ol className="timeline">
@@ -297,8 +297,8 @@ export function IncidentPage() {
                       )}
                       {a.state === "DENIED" && (
                         <Notice kind="warn">
-                          Krevstudio cannot do this itself. It may need a manual step
-                          with your hosting provider.
+                          Krevstudio cannot do this itself. It may need a manual
+                          step with your hosting provider.
                         </Notice>
                       )}
                     </>
@@ -306,8 +306,8 @@ export function IncidentPage() {
                   {a?.state === "AWAITING_APPROVAL" ? (
                     <div className="stack">
                       <Notice kind="warn">
-                        This changes what your customers see. Krevstudio will not do
-                        it without your approval
+                        This changes what your customers see. Krevstudio will
+                        not do it without your approval
                         {a.approvalExpiresAt
                           ? ` (request expires ${when(a.approvalExpiresAt)})`
                           : ""}
