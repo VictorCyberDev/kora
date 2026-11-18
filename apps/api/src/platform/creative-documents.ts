@@ -145,7 +145,7 @@ function rectangle(
   };
 }
 export function buildCreativeDocument(
-  request: z.infer<typeof createDocumentSchema>,
+  rawRequest: z.input<typeof createDocumentSchema>,
   brand: {
     version: number;
     name: string;
@@ -158,6 +158,7 @@ export function buildCreativeDocument(
     };
   },
 ): CreativeDocument {
+  const request=createDocumentSchema.parse(rawRequest);
   const brandName = brand.name.slice(0, 80);
   const colors = brand.colors ?? {
     background: "#faf7f2",
