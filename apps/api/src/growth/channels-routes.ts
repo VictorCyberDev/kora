@@ -136,7 +136,7 @@ export function registerChannelRoutes(app: FastifyInstance, d: ChannelDeps) {
         "not_configured",
         CHANNEL_MATRIX[provider].availability === "planned"
           ? `${CHANNEL_MATRIX[provider].label} is not available yet.`
-          : `${CHANNEL_MATRIX[provider].label} is not set up on this Kora yet. Missing: ${[...rt.missing, ...(config.KORA_SECRETS_KEY ? [] : ["KORA_SECRETS_KEY"])].join(", ")}.`,
+          : `${CHANNEL_MATRIX[provider].label} is not set up in Krevstudio yet. Missing: ${[...rt.missing, ...(config.KORA_SECRETS_KEY ? [] : ["KORA_SECRETS_KEY"])].join(", ")}.`,
       );
     }
     const a = requireUser(req);
@@ -183,7 +183,7 @@ export function registerChannelRoutes(app: FastifyInstance, d: ChannelDeps) {
     const adapter = providers.adapter(st.provider);
     if (!adapter || !secrets)
       return reply.redirect(
-        `${back}?problem=${encodeURIComponent("This channel is not set up on this Kora.")}`,
+        `${back}?problem=${encodeURIComponent("This channel is not set up in Krevstudio.")}`,
       );
     try {
       const ex = await adapter.exchange({
@@ -198,7 +198,7 @@ export function registerChannelRoutes(app: FastifyInstance, d: ChannelDeps) {
       if (taken && taken.siteId !== st.siteId)
         throw new ProviderError(
           409,
-          "That account is already connected to another Kora business.",
+          "That account is already connected to another Krevstudio business.",
         );
       const rec = await channels.upsert({
         siteId: st.siteId,
@@ -269,7 +269,7 @@ export function registerChannelRoutes(app: FastifyInstance, d: ChannelDeps) {
     if (!adapter || !tokens || !secrets) {
       await channels.setHealth(site.id, provider, {
         state: "DEGRADED",
-        lastError: "This channel is not set up on this Kora.",
+        lastError: "This channel is not set up in Krevstudio.",
       });
       return { data: { state: "DEGRADED" } };
     }
