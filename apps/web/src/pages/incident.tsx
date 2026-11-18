@@ -104,6 +104,10 @@ export function IncidentPage() {
           const a = v.recommendedAction;
           const resolved = Boolean(v.incident.resolvedAt);
           const stage = stageOf(v, a);
+          const ownerSummary = String(v.whatHappened).replace(
+            /\bKora\b/g,
+            "Krevstudio",
+          );
           return (
             <>
               <div
@@ -135,7 +139,7 @@ export function IncidentPage() {
                             ? "Resolved"
                             : "Needs attention"}
                 </Status>
-                <div className="big">{v.whatHappened}</div>
+                <div className="big">{ownerSummary}</div>
               </div>
 
               <ol className="track" aria-label="Where this incident is">
@@ -157,7 +161,7 @@ export function IncidentPage() {
                     <h2 id="q-story" style={{ fontSize: "1.5rem", margin: 0 }}>
                       What happened
                     </h2>
-                    <p>{v.whatHappened}</p>
+                    <p>{ownerSummary}</p>
                     {v.explanation.text !== v.whatHappened && (
                       <p className="small muted">
                         {v.explanation.text}{" "}
