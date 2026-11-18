@@ -54,6 +54,8 @@ export const graphicLayerSchema = z.discriminatedUnion("type", [
       .refine((value) => value.startsWith("https://")),
     alt: z.string().min(1).max(200),
     fit: z.enum(["cover", "contain"]).default("cover"),
+    focalX: z.number().finite().min(0).max(1).default(0.5),
+    focalY: z.number().finite().min(0).max(1).default(0.5),
   }),
 ]);
 export type GraphicLayer = z.infer<typeof graphicLayerSchema>;
@@ -703,8 +705,11 @@ export function renderSlideSvg(slide: z.infer<typeof slideSchema>): string {
         return `<ellipse ${attributes} cx="${layer.width / 2}" cy="${layer.height / 2}" rx="${layer.width / 2}" ry="${layer.height / 2}" fill="${layer.fill}"/>`;
       if (layer.type === "path")
         return `<path ${attributes} d="${esc(layer.d)}" fill="${layer.fill}" stroke="${layer.stroke}" stroke-width="${layer.strokeWidth}"/>`;
-      if (layer.type === "image")
-        return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${layer.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet"}"/>`;
+      if (layer.type === "image") {
+        const x = layer.focalX < 1 / 3 ? "xMin" : layer.focalX > 2 / 3 ? "xMax" : "xMid";
+        const y = layer.focalY < 1 / 3 ? "YMin" : layer.focalY > 2 / 3 ? "YMax" : "YMid";
+        return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${x}${y} ${layer.fit === "cover" ? "slice" : "meet"}"/>`;
+      }
       if (layer.type === "line")
         return `<line ${attributes} x1="0" y1="0" x2="${layer.width}" y2="${layer.height}" stroke-width="${layer.strokeWidth}" stroke="${layer.fill}"/>`;
       const anchor =
