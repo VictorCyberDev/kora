@@ -155,7 +155,7 @@ export function Build() {
           <div className="tabs" role="tablist" aria-label="Editor">
             {(
               [
-                ["chat", "Ask Kora"],
+                ["chat", "Ask Krevstudio"],
                 ["design", "Design"],
                 ["sections", "Sections"],
                 ["versions", "Versions"],
@@ -227,7 +227,7 @@ export function Build() {
                     disabled={busy}
                     onClick={tryNew}
                   >
-                    Try a new Kora design
+                    Try a new Krevstudio design
                   </button>{" "}
                   <span className="muted">
                     A new draft from the newest design engine, built from the
@@ -356,7 +356,7 @@ export function Build() {
               <Notice>
                 {spec?.version === 3
                   ? "This website uses Kora's newest design system. Change how it looks from Brand (more premium, bolder, calmer), or ask Kora in plain words."
-                  : "Design controls are available on the updated design. Open the Ask Kora tab to upgrade this version."}
+                  : "Design controls are available on the updated design. Open the Ask Krevstudio tab to upgrade this version."}
               </Notice>
             ))}
 
