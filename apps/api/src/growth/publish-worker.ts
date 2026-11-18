@@ -52,7 +52,7 @@ export class PublishWorker {
         `publish worker error: ${e instanceof Error ? e.message : "unknown"}`,
       );
       await this.d.calendar.fail(job, {
-        message: "Kora could not complete this post.",
+        message: "Krevstudio could not complete this post.",
         cls: "UNCERTAIN",
       });
     }
