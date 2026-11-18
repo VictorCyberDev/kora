@@ -539,6 +539,11 @@ function fromPuck(data: Data, ownerPhotos: J[], knownMedia: J[]): J[] {
         if (p.buttonHref) section.button.href = p.buttonHref;
         break;
     }
+    if (p.imageUrl === "" && section.media) {
+      // An explicit empty selection removes the photo; it must not silently
+      // retain a previous image while claiming the user chose "no image".
+      delete section.media;
+    }
     if (p.imageUrl && p.imageUrl !== section.media?.url) {
       const owner = ownerPhotos.find((x) => x.url === p.imageUrl);
       const existing = knownMedia.find((media) => media.url === p.imageUrl);
@@ -613,7 +618,7 @@ function createWebsiteConfig(
     type: "select" as const,
     label: "Image from approved library",
     options: [
-      { label: "No change / no image", value: "" },
+      { label: "Remove image / leave empty", value: "" },
       ...[...sources].map(([value, label]) => ({
         value,
         label: label.slice(0, 85),
