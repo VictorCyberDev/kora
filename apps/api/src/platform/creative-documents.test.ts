@@ -238,6 +238,48 @@ describe("Krevstudio editable documents", () => {
     });
     expect(new Set(designs).size).toBe(3);
   });
+  it("scales approved vector path coordinates to a small campaign logo", () => {
+    const logo = buildCreativeDocument(
+      {
+        kind: "logo",
+        title: "Logo",
+        headline: "Meridian Bakes",
+        logoForm: "abstract",
+        direction: 0,
+      },
+      brand,
+    );
+    const sourcePath = logo.slides[0]!.layers.find(
+      (layer) => layer.type === "path",
+    );
+    expect(sourcePath).toBeDefined();
+    const campaign = buildCreativeDocument(
+      {
+        kind: "flyer",
+        title: "Campaign",
+        headline: "Artisan sourdough",
+        direction: 0,
+      },
+      {
+        ...brand,
+        approvedLogo: { id: crypto.randomUUID(), source: logo },
+      },
+    );
+    const reused = campaign.slides[0]!.layers.find(
+      (layer) => layer.type === "path",
+    );
+    expect(reused).toBeDefined();
+    expect(reused!.width).toBeLessThan(sourcePath!.width);
+    if (reused?.type !== "path" || sourcePath?.type !== "path") {
+      throw new Error("Expected an editable vector path");
+    }
+    expect(reused.viewBoxWidth).toBe(sourcePath.width);
+    expect(reused.viewBoxHeight).toBe(sourcePath.height);
+    const svg = renderSlideSvg(campaign.slides[0]!);
+    expect(svg).toContain(
+      `scale(${reused.width / sourcePath.width} ${reused.height / sourcePath.height})`,
+    );
+  });
   it("honors bounded custom sizes without exceeding source schema", () => {
     const doc = buildCreativeDocument(
       {
