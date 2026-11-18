@@ -3,28 +3,49 @@ import { useState } from "react";
 import { api, type J } from "../api";
 import { Async, Notice, errText, useLoad } from "../ui";
 
-const htmlSafe=(value:unknown)=>String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
-function exportBrandGuidelines(cur:J){
-  const brand=cur.brandOs;
-  const palette=Object.entries(brand.visual.palette as Record<string,string>);
-  const paletteMarkup=palette.map(([name,hex])=>{
-    const color=/^#[0-9a-fA-F]{6}$/.test(String(hex))?String(hex):"#eeeeee";
-    return `<figure><div class="swatch" style="background:${color}"></div><figcaption><strong>${htmlSafe(name)}</strong><code>${htmlSafe(color)}</code></figcaption></figure>`;
-  }).join("");
-  const items=(values:string[])=>values.map(x=>`<li>${htmlSafe(x)}</li>`).join("");
-  const body=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+const htmlSafe = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+function exportBrandGuidelines(cur: J) {
+  const brand = cur.brandOs;
+  const palette = Object.entries(
+    brand.visual.palette as Record<string, string>,
+  );
+  const paletteMarkup = palette
+    .map(([name, hex]) => {
+      const color = /^#[0-9a-fA-F]{6}$/.test(String(hex))
+        ? String(hex)
+        : "#eeeeee";
+      return `<figure><div class="swatch" style="background:${color}"></div><figcaption><strong>${htmlSafe(name)}</strong><code>${htmlSafe(color)}</code></figcaption></figure>`;
+    })
+    .join("");
+  const items = (values: string[]) =>
+    values.map((x) => `<li>${htmlSafe(x)}</li>`).join("");
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${htmlSafe(brand.name)} Brand Guidelines v${cur.version}</title>
 <style>body{font:16px/1.6 system-ui,Arial,sans-serif;color:#1d292e;background:#faf8f4;margin:0;padding:2rem}article{max-width:960px;margin:auto}header{border-bottom:3px solid #1d292e;padding:3rem 0}h1{font-size:clamp(2rem,6vw,4.8rem);line-height:1.1}h2{margin-top:3rem;font-size:1.6rem}p{max-width:75ch}section{break-inside:avoid}figure{margin:0;background:white;border:1px solid #ddd;border-radius:9px;overflow:hidden}figcaption{display:flex;justify-content:space-between;padding:1rem;gap:1rem}.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem}.swatch{height:125px}.eyebrow{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase}.aside{background:#eee9df;padding:1.5rem;border-radius:8px}footer{margin:4rem 0 2rem;border-top:1px solid #bbb;padding-top:1rem;font-size:.82rem}@media print{body{background:white;padding:0}.swatch{-webkit-print-color-adjust:exact;print-color-adjust:exact}h2{break-after:avoid}}</style></head>
 <body><article><header><p class="eyebrow">Krevstudio · Versioned Brand Identity Guide</p><h1>${htmlSafe(brand.name)}</h1><p>${htmlSafe(brand.strategy.positioning)}</p></header>
 <section><h2>Identity strategy</h2><p><strong>Brand essence:</strong> ${htmlSafe(brand.strategy.brandEssence)}</p><p><strong>Visual tension:</strong> ${htmlSafe(brand.strategy.visualTension)}</p><p><strong>Voice:</strong> ${htmlSafe(brand.voice.tone)}</p></section>
 <section><h2>Approved palette</h2><div class="swatches">${paletteMarkup}</div><p>Use these colors consistently. Verify contrast against the actual delivery surfaces before publishing.</p></section>
 <section><h2>Typography & visual expression</h2><p><strong>Type direction:</strong> ${htmlSafe(brand.visual.typeVoice)}</p><p><strong>Visual motif:</strong> ${htmlSafe(brand.visual.signatureMotif)}</p><p><strong>Logo clear space:</strong> Preserve at least the height of one symbol stroke around the mark; manually verify each usage.</p><p><strong>Small-size review:</strong> Test at 32px and smaller before use; this is a recommendation, not certified legibility.</p></section>
-<section><h2>Approved logo</h2><p>${brand.visual.logoAssetId?`Approved vector document ID: <code>${htmlSafe(brand.visual.logoAssetId)}</code>`:"No logo has been approved. This identity guide is provisional until approval."}</p><p>SVG, PNG and monochrome variants should be exported from the approved source. Do not redraw or stretch the mark.</p></section>
+<section><h2>Approved logo</h2><p>${brand.visual.logoAssetId ? `Approved vector document ID: <code>${htmlSafe(brand.visual.logoAssetId)}</code>` : "No logo has been approved. This identity guide is provisional until approval."}</p><p>SVG, PNG and monochrome variants should be exported from the approved source. Do not redraw or stretch the mark.</p></section>
 <section><h2>Usage principles</h2><div class="aside"><h3>Do</h3><ul>${items(brand.rules.dos)}</ul><h3>Do not</h3><ul>${items(brand.rules.donts)}</ul></div></section>
 <section><h2>Photography and templates</h2><p>Use approved, licensed imagery that fits the recorded visual direction. Keep layout, tone and typography consistent across websites, flyers, posters and social campaigns. Any new direction must be explicitly approved.</p></section>
 <footer>Generated from saved Brand OS version ${cur.version}. Export is a portable HTML reference; no legal trademark clearance, commercial print certification or independent visual approval is implied.</footer></article></body></html>`;
-  const url=URL.createObjectURL(new Blob([body],{type:"text/html;charset=utf-8"}));
-  const a=document.createElement("a");a.href=url;a.download="krevstudio-brand-guidelines-v"+cur.version+".html";document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),30_000);
+  const url = URL.createObjectURL(
+    new Blob([body], { type: "text/html;charset=utf-8" }),
+  );
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "krevstudio-brand-guidelines-v" + cur.version + ".html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
 const FORMAT_LABEL: Record<string, string> = {
@@ -193,7 +214,10 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
               >
                 Export versioned Brand Kit JSON
               </button>
-              <button className="btn sm ghost" onClick={()=>exportBrandGuidelines(cur)}>
+              <button
+                className="btn sm ghost"
+                onClick={() => exportBrandGuidelines(cur)}
+              >
                 Export editable brand guidelines (HTML)
               </button>
               <Link

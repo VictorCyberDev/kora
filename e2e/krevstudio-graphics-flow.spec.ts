@@ -96,18 +96,20 @@ test("Krevstudio user creates, edits, saves, reopens and exports an editable vec
     );
     const exportPng = page.waitForEvent("download");
     await page.getByRole("button", { name: "Export PNG" }).click();
-    const pngDownload=await exportPng;
+    const pngDownload = await exportPng;
     expect(pngDownload.suggestedFilename()).toContain(".png");
-    const pngBuffer=await readFile(await pngDownload.path());
-    expect([...pngBuffer.subarray(0,8)]).toEqual([137,80,78,71,13,10,26,10]);
+    const pngBuffer = await readFile(await pngDownload.path());
+    expect([...pngBuffer.subarray(0, 8)]).toEqual([
+      137, 80, 78, 71, 13, 10, 26, 10,
+    ]);
     expect(pngBuffer.readUInt32BE(16)).toBe(1080);
     expect(pngBuffer.readUInt32BE(20)).toBe(1350);
-    const exportJpg=page.waitForEvent("download");
-    await page.getByRole("button",{name:"Export JPG"}).click();
-    const jpgDownload=await exportJpg;
+    const exportJpg = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export JPG" }).click();
+    const jpgDownload = await exportJpg;
     expect(jpgDownload.suggestedFilename()).toContain(".jpg");
-    const jpgBuffer=await readFile(await jpgDownload.path());
-    expect([...jpgBuffer.subarray(0,3)]).toEqual([255,216,255]);
+    const jpgBuffer = await readFile(await jpgDownload.path());
+    expect([...jpgBuffer.subarray(0, 3)]).toEqual([255, 216, 255]);
     const current = await ctx.request.get(
       `/api/sites/${siteId}/creative-documents`,
     );
