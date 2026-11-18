@@ -72,7 +72,19 @@ export const creativeDocumentSchema = z.object({
   title: z.string().trim().min(1).max(120),
   brandVersion: z.number().int().min(1).max(100000),
   approvedLogoId: z.string().uuid().nullable().default(null),
-  logoForm:z.enum(["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"]).nullable().default(null),
+  logoForm: z
+    .enum([
+      "wordmark",
+      "lettermark",
+      "monogram",
+      "geometric",
+      "abstract",
+      "combination",
+      "emblem",
+      "icon",
+    ])
+    .nullable()
+    .default(null),
   slides: z.array(slideSchema).min(1).max(10),
   sourcePrompt: z.string().max(1000),
 });
@@ -87,8 +99,24 @@ export const createDocumentSchema = z.object({
   cta: z.string().trim().max(70).default(""),
   direction: z.number().int().min(0).max(2).default(0),
   slides: z.number().int().min(1).max(10).default(1),
-  logoForm:z.enum(["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"]).default("combination"),
-  customSize:z.object({width:z.number().int().min(128).max(4096),height:z.number().int().min(128).max(4096)}).optional(),
+  logoForm: z
+    .enum([
+      "wordmark",
+      "lettermark",
+      "monogram",
+      "geometric",
+      "abstract",
+      "combination",
+      "emblem",
+      "icon",
+    ])
+    .default("combination"),
+  customSize: z
+    .object({
+      width: z.number().int().min(128).max(4096),
+      height: z.number().int().min(128).max(4096),
+    })
+    .optional(),
 });
 export const editDocumentSchema = z.object({
   revision: z.number().int().min(1),
@@ -158,7 +186,7 @@ export function buildCreativeDocument(
     };
   },
 ): CreativeDocument {
-  const request=createDocumentSchema.parse(rawRequest);
+  const request = createDocumentSchema.parse(rawRequest);
   const brandName = brand.name.slice(0, 80);
   const colors = brand.colors ?? {
     background: "#faf7f2",
@@ -175,14 +203,14 @@ export function buildCreativeDocument(
     carousel: [1080, 1080],
     banner: [1600, 900],
     logo: [1000, 1000],
-    ad:[1200,628],
-    thumbnail:[1280,720],
-    announcement:[1080,1350],
-    event:[1080,1350],
-    product:[1080,1080],
+    ad: [1200, 628],
+    thumbnail: [1280, 720],
+    announcement: [1080, 1350],
+    event: [1080, 1350],
+    product: [1080, 1080],
   } as const;
   const [width, height] = request.customSize
-    ? [request.customSize.width,request.customSize.height]
+    ? [request.customSize.width, request.customSize.height]
     : dimension[request.kind];
   const slideCount = request.kind === "carousel" ? request.slides : 1;
   const slides = Array.from({ length: slideCount }, (_, index) => {
@@ -211,46 +239,120 @@ export function buildCreativeDocument(
       }
     }
     if (request.kind === "logo") {
-      const form=request.logoForm;
-      const words=brandName.match(/[A-Za-z0-9]+/g)??[];
-      const initials=(words.length>1?words.slice(0,2).map(w=>w[0]).join(""):brandName.slice(0,2)).toUpperCase();
-      const white=colors.background;
-      const symbol=()=>{
-        if(variant===0){
-          layers.push(rectangle(240,175,520,520,highlight,100));
-          layers.push({id:uid(),type:"ellipse",x:340,y:275,width:320,height:320,rotation:0,opacity:1,locked:false,fill:white});
-        }else if(variant===1){
-          layers.push({id:uid(),type:"ellipse",x:230,y:175,width:540,height:540,rotation:0,opacity:1,locked:false,fill:highlight});
-          layers.push(rectangle(470,240,75,410,background,16));
-        }else{
-          layers.push(rectangle(235,180,530,530,highlight,260));
-          layers.push(rectangle(355,300,290,290,background,90));
+      const form = request.logoForm;
+      const words = brandName.match(/[A-Za-z0-9]+/g) ?? [];
+      const initials = (
+        words.length > 1
+          ? words
+              .slice(0, 2)
+              .map((w) => w[0])
+              .join("")
+          : brandName.slice(0, 2)
+      ).toUpperCase();
+      const white = colors.background;
+      const symbol = () => {
+        if (variant === 0) {
+          layers.push(rectangle(240, 175, 520, 520, highlight, 100));
+          layers.push({
+            id: uid(),
+            type: "ellipse",
+            x: 340,
+            y: 275,
+            width: 320,
+            height: 320,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            fill: white,
+          });
+        } else if (variant === 1) {
+          layers.push({
+            id: uid(),
+            type: "ellipse",
+            x: 230,
+            y: 175,
+            width: 540,
+            height: 540,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            fill: highlight,
+          });
+          layers.push(rectangle(470, 240, 75, 410, background, 16));
+        } else {
+          layers.push(rectangle(235, 180, 530, 530, highlight, 260));
+          layers.push(rectangle(355, 300, 290, 290, background, 90));
         }
       };
-      const wordmark=(y:number,size=84)=>{
-        const fit=Math.max(30,Math.min(size,820/(brandName.length*.58)));
-        layers.push(textLayer(brandName,90,y,820,fit,ink,"700"));
+      const wordmark = (y: number, size = 84) => {
+        const fit = Math.max(
+          30,
+          Math.min(size, 820 / (brandName.length * 0.58)),
+        );
+        layers.push(textLayer(brandName, 90, y, 820, fit, ink, "700"));
       };
-      if(form==="wordmark"){
-        wordmark(360,115);
-        layers.push(rectangle(92,545,Math.min(800,brandName.length*18),8,highlight,4));
-      }else if(form==="lettermark"){
-        layers.push(textLayer(initials,220,190,570,290,highlight,"900"));
-        layers.push(rectangle(210,640,570,12,ink,5));
-      }else if(form==="monogram"){
-        layers.push(rectangle(170,140,660,660,highlight,95));
-        layers.push(textLayer(initials,260,260,520,250,background,"900"));
-      }else if(form==="emblem"){
-        layers.push({id:uid(),type:"ellipse",x:155,y:115,width:690,height:690,rotation:0,opacity:1,locked:false,fill:highlight});
-        layers.push({id:uid(),type:"ellipse",x:205,y:165,width:590,height:590,rotation:0,opacity:1,locked:false,fill:background});
-        layers.push(textLayer(initials,380,300,400,165,ink,"900"));
-        wordmark(820,52);
-      }else{
+      if (form === "wordmark") {
+        wordmark(360, 115);
+        layers.push(
+          rectangle(
+            92,
+            545,
+            Math.min(800, brandName.length * 18),
+            8,
+            highlight,
+            4,
+          ),
+        );
+      } else if (form === "lettermark") {
+        layers.push(textLayer(initials, 220, 190, 570, 290, highlight, "900"));
+        layers.push(rectangle(210, 640, 570, 12, ink, 5));
+      } else if (form === "monogram") {
+        layers.push(rectangle(170, 140, 660, 660, highlight, 95));
+        layers.push(textLayer(initials, 260, 260, 520, 250, background, "900"));
+      } else if (form === "emblem") {
+        layers.push({
+          id: uid(),
+          type: "ellipse",
+          x: 155,
+          y: 115,
+          width: 690,
+          height: 690,
+          rotation: 0,
+          opacity: 1,
+          locked: false,
+          fill: highlight,
+        });
+        layers.push({
+          id: uid(),
+          type: "ellipse",
+          x: 205,
+          y: 165,
+          width: 590,
+          height: 590,
+          rotation: 0,
+          opacity: 1,
+          locked: false,
+          fill: background,
+        });
+        layers.push(textLayer(initials, 380, 300, 400, 165, ink, "900"));
+        wordmark(820, 52);
+      } else {
         symbol();
-        if(form==="combination"||form==="geometric")wordmark(825,70);
-        if(form==="abstract"){
+        if (form === "combination" || form === "geometric") wordmark(825, 70);
+        if (form === "abstract") {
           // Interlocking geometric negative space is editable and distinct.
-          layers.push({id:uid(),type:"ellipse",x:390,y:335,width:210,height:210,rotation:0,opacity:1,locked:false,fill:background});
+          layers.push({
+            id: uid(),
+            type: "ellipse",
+            x: 390,
+            y: 335,
+            width: 210,
+            height: 210,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            fill: background,
+          });
         }
       }
     } else {
@@ -329,7 +431,7 @@ export function buildCreativeDocument(
     title: request.title,
     brandVersion: brand.version,
     approvedLogoId: brand.approvedLogo?.id ?? null,
-    logoForm:request.kind==="logo"?request.logoForm:null,
+    logoForm: request.kind === "logo" ? request.logoForm : null,
     slides,
     sourcePrompt: request.headline,
   });

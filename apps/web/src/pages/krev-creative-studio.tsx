@@ -162,7 +162,15 @@ export function KrevCreativeStudio() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [assessment,setAssessment]=useState<{revision:number;findings:Array<{severity:string;code:string;slide:number;message:string}>}|null>(null);
+  const [assessment, setAssessment] = useState<{
+    revision: number;
+    findings: Array<{
+      severity: string;
+      code: string;
+      slide: number;
+      message: string;
+    }>;
+  } | null>(null);
 
   const [createKind, setCreateKind] = useState("flyer");
   const [title, setTitle] = useState("");
@@ -171,9 +179,9 @@ export function KrevCreativeStudio() {
   const [cta, setCta] = useState("");
   const [direction, setDirection] = useState(0);
   const [slideCount, setSlideCount] = useState(4);
-  const [logoForm,setLogoForm]=useState("combination");
-  const [customWidth,setCustomWidth]=useState(0);
-  const [customHeight,setCustomHeight]=useState(0);
+  const [logoForm, setLogoForm] = useState("combination");
+  const [customWidth, setCustomWidth] = useState(0);
+  const [customHeight, setCustomHeight] = useState(0);
   const [previews, setPreviews] = useState<
     Array<{ direction: number; svg: string }>
   >([]);
@@ -265,7 +273,9 @@ export function KrevCreativeStudio() {
           slides: createKind === "carousel" ? slideCount : 1,
           direction,
           logoForm,
-          ...(customWidth>=128&&customHeight>=128?{customSize:{width:customWidth,height:customHeight}}:{}),
+          ...(customWidth >= 128 && customHeight >= 128
+            ? { customSize: { width: customWidth, height: customHeight } }
+            : {}),
         },
       );
       setPreviews(r.directions as Array<{ direction: number; svg: string }>);
@@ -288,7 +298,9 @@ export function KrevCreativeStudio() {
         cta,
         direction,
         logoForm,
-        ...(customWidth>=128&&customHeight>=128?{customSize:{width:customWidth,height:customHeight}}:{}),
+        ...(customWidth >= 128 && customHeight >= 128
+          ? { customSize: { width: customWidth, height: customHeight } }
+          : {}),
         slides: createKind === "carousel" ? slideCount : 1,
       });
       list.reload();
@@ -376,24 +388,65 @@ export function KrevCreativeStudio() {
     });
     setSelected(created.id);
   };
-  const inspectSource=async()=>{
-    if(!documentId||dirty){setError("Save your draft before evaluating its source.");return;}
-    setBusy(true);setError("");
-    try{
-      const r=await api<J>("GET",`/api/sites/${id}/creative-documents/${documentId}/evaluation`);
-      setAssessment(r as {revision:number;findings:Array<{severity:string;code:string;slide:number;message:string}>});
-      setNotice("Structural checks complete. Screenshot and human review are separate quality gates.");
-    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  const inspectSource = async () => {
+    if (!documentId || dirty) {
+      setError("Save your draft before evaluating its source.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "GET",
+        `/api/sites/${id}/creative-documents/${documentId}/evaluation`,
+      );
+      setAssessment(
+        r as {
+          revision: number;
+          findings: Array<{
+            severity: string;
+            code: string;
+            slide: number;
+            message: string;
+          }>;
+        },
+      );
+      setNotice(
+        "Structural checks complete. Screenshot and human review are separate quality gates.",
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
   };
-  const repairGeometry=async()=>{
-    if(!documentId||dirty){setError("Save your draft before repair.");return;}
-    setBusy(true);setError("");
-    try{
-      const r=await api<J>("POST",`/api/sites/${id}/creative-documents/${documentId}/repair-geometry`,{revision});
-      setRevision(r.revision as number);setSource(r.source as Source);setDirty(false);
-      setAssessment(null);list.reload();doc.reload();
-      setNotice(`Geometric repairs: ${r.changes.length}. No claims or creative wording were changed.`);
-    }catch(e){setError(errText(e));}finally{setBusy(false);}
+  const repairGeometry = async () => {
+    if (!documentId || dirty) {
+      setError("Save your draft before repair.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/repair-geometry`,
+        { revision },
+      );
+      setRevision(r.revision as number);
+      setSource(r.source as Source);
+      setDirty(false);
+      setAssessment(null);
+      list.reload();
+      doc.reload();
+      setNotice(
+        `Geometric repairs: ${r.changes.length}. No claims or creative wording were changed.`,
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
   };
   const approveCreative = async () => {
     if (!documentId || !source || dirty) return;
@@ -746,10 +799,30 @@ export function KrevCreativeStudio() {
                 ))}
               </select>
             </label>
-            {createKind==="logo"&&<label>Logo style <select value={logoForm} onChange={e=>setLogoForm(e.target.value)}>
-              {["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"].map(t=>
-                <option value={t} key={t}>{t[0]!.toUpperCase()+t.slice(1)}</option>)}
-            </select></label>}
+            {createKind === "logo" && (
+              <label>
+                Logo style{" "}
+                <select
+                  value={logoForm}
+                  onChange={(e) => setLogoForm(e.target.value)}
+                >
+                  {[
+                    "wordmark",
+                    "lettermark",
+                    "monogram",
+                    "geometric",
+                    "abstract",
+                    "combination",
+                    "emblem",
+                    "icon",
+                  ].map((t) => (
+                    <option value={t} key={t}>
+                      {t[0]!.toUpperCase() + t.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             {createKind === "carousel" && (
               <label>
                 Slides{" "}
@@ -764,13 +837,29 @@ export function KrevCreativeStudio() {
             )}
           </div>
           <div className="row">
-            <label>Custom width (px) <input type="number" min={0} max={4096}
-              value={customWidth} onChange={e=>setCustomWidth(Number(e.target.value))}/>
+            <label>
+              Custom width (px){" "}
+              <input
+                type="number"
+                min={0}
+                max={4096}
+                value={customWidth}
+                onChange={(e) => setCustomWidth(Number(e.target.value))}
+              />
             </label>
-            <label>Custom height (px) <input type="number" min={0} max={4096}
-              value={customHeight} onChange={e=>setCustomHeight(Number(e.target.value))}/>
+            <label>
+              Custom height (px){" "}
+              <input
+                type="number"
+                min={0}
+                max={4096}
+                value={customHeight}
+                onChange={(e) => setCustomHeight(Number(e.target.value))}
+              />
             </label>
-            <span className="small muted">Set both above 127px to override the format preset.</span>
+            <span className="small muted">
+              Set both above 127px to override the format preset.
+            </span>
           </div>
           <label>
             Project title{" "}
@@ -908,12 +997,24 @@ export function KrevCreativeStudio() {
                     >
                       {busy ? "Saving…" : "Save draft"}
                     </button>
-                    <button className="btn sm ghost" disabled={busy||dirty}
-                      onClick={()=>void inspectSource()}>Check design structure</button>
-                    {assessment?.findings.some(f=>f.code==="LAYER_OUTSIDE_CANVAS")&&
-                      <button className="btn sm" onClick={()=>void repairGeometry()} disabled={busy||dirty}>
+                    <button
+                      className="btn sm ghost"
+                      disabled={busy || dirty}
+                      onClick={() => void inspectSource()}
+                    >
+                      Check design structure
+                    </button>
+                    {assessment?.findings.some(
+                      (f) => f.code === "LAYER_OUTSIDE_CANVAS",
+                    ) && (
+                      <button
+                        className="btn sm"
+                        onClick={() => void repairGeometry()}
+                        disabled={busy || dirty}
+                      >
                         Repair offscreen geometry
-                      </button>}
+                      </button>
+                    )}
                     {source.kind !== "logo" && (
                       <button
                         className="btn sm"
@@ -975,22 +1076,56 @@ export function KrevCreativeStudio() {
                     </a>
                   </div>
                 </div>
-                {assessment&&<section className="card stack" aria-label="Source quality report">
-                  <h3>Structural quality report · revision {assessment.revision}</h3>
-                  <p className="small muted">Deterministic source checks only. No model vision or human visual acceptance has been performed.</p>
-                  {assessment.findings.length===0?<p>No source defects found.</p>:
-                    <ul>{assessment.findings.map((f,i)=><li key={i}>
-                      <strong>{f.severity}: {f.code}</strong> · slide {f.slide} — {f.message}
-                    </li>)}</ul>}
-                </section>}
+                {assessment && (
+                  <section
+                    className="card stack"
+                    aria-label="Source quality report"
+                  >
+                    <h3>
+                      Structural quality report · revision {assessment.revision}
+                    </h3>
+                    <p className="small muted">
+                      Deterministic source checks only. No model vision or human
+                      visual acceptance has been performed.
+                    </p>
+                    {assessment.findings.length === 0 ? (
+                      <p>No source defects found.</p>
+                    ) : (
+                      <ul>
+                        {assessment.findings.map((f, i) => (
+                          <li key={i}>
+                            <strong>
+                              {f.severity}: {f.code}
+                            </strong>{" "}
+                            · slide {f.slide} — {f.message}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )}
                 <div className="row" role="group" aria-label="Canvas zoom">
                   <span className="small muted">Zoom preview</span>
-                  <button className="btn sm ghost" type="button" onClick={()=>{
-                    const el=svg.current;if(el)el.style.maxHeight="40vh";
-                  }}>Fit shorter</button>
-                  <button className="btn sm ghost" type="button" onClick={()=>{
-                    const el=svg.current;if(el)el.style.maxHeight="80vh";
-                  }}>Fit taller</button>
+                  <button
+                    className="btn sm ghost"
+                    type="button"
+                    onClick={() => {
+                      const el = svg.current;
+                      if (el) el.style.maxHeight = "40vh";
+                    }}
+                  >
+                    Fit shorter
+                  </button>
+                  <button
+                    className="btn sm ghost"
+                    type="button"
+                    onClick={() => {
+                      const el = svg.current;
+                      if (el) el.style.maxHeight = "80vh";
+                    }}
+                  >
+                    Fit taller
+                  </button>
                 </div>
                 <div className="row" role="group" aria-label="Slides">
                   {source.slides.map((s, i) => (
@@ -1375,29 +1510,81 @@ export function KrevCreativeStudio() {
                     )}
                   </aside>
                 </div>
-                {source.kind==="logo"&&<section className="stack" aria-label="Real logo usage previews">
-                  <h3>Live brand mark previews</h3>
-                  <p className="small muted">Illustrative usage previews of your actual editable vector source. Check readability at small sizes and against different backgrounds before approval. Trademark clearance is not included.</p>
-                  <div className="krev-logo-previews">
-                    {[
-                      {name:"Light surface",background:"#fffdf8",size:180},
-                      {name:"Dark surface",background:"#16272d",size:180},
-                      {name:"Monochrome",background:"#ffffff",size:180,mono:true},
-                      {name:"Favicon 32 px",background:"#fffdf8",size:32},
-                      {name:"Social avatar",background:"#ece8df",size:96},
-                      {name:"Website header",background:"#ffffff",size:120},
-                    ].map(preview=><figure key={preview.name}>
-                      <div className="krev-logo-preview-surface" style={{background:preview.background}}>
-                        <svg width={preview.size} height={preview.size} viewBox={`0 0 ${slide.width} ${slide.height}`}
-                          role="img" aria-label={`${preview.name} logo preview`}
-                          style={{maxWidth:"100%",filter:preview.mono?"grayscale(1)":"none"}}>
-                          {slide.layers.map(l=><g key={l.id}>{renderLayer(l)}</g>)}
-                        </svg>
-                      </div>
-                      <figcaption className="small muted">{preview.name}</figcaption>
-                    </figure>)}
-                  </div>
-                </section>}
+                {source.kind === "logo" && (
+                  <section
+                    className="stack"
+                    aria-label="Real logo usage previews"
+                  >
+                    <h3>Live brand mark previews</h3>
+                    <p className="small muted">
+                      Illustrative usage previews of your actual editable vector
+                      source. Check readability at small sizes and against
+                      different backgrounds before approval. Trademark clearance
+                      is not included.
+                    </p>
+                    <div className="krev-logo-previews">
+                      {[
+                        {
+                          name: "Light surface",
+                          background: "#fffdf8",
+                          size: 180,
+                        },
+                        {
+                          name: "Dark surface",
+                          background: "#16272d",
+                          size: 180,
+                        },
+                        {
+                          name: "Monochrome",
+                          background: "#ffffff",
+                          size: 180,
+                          mono: true,
+                        },
+                        {
+                          name: "Favicon 32 px",
+                          background: "#fffdf8",
+                          size: 32,
+                        },
+                        {
+                          name: "Social avatar",
+                          background: "#ece8df",
+                          size: 96,
+                        },
+                        {
+                          name: "Website header",
+                          background: "#ffffff",
+                          size: 120,
+                        },
+                      ].map((preview) => (
+                        <figure key={preview.name}>
+                          <div
+                            className="krev-logo-preview-surface"
+                            style={{ background: preview.background }}
+                          >
+                            <svg
+                              width={preview.size}
+                              height={preview.size}
+                              viewBox={`0 0 ${slide.width} ${slide.height}`}
+                              role="img"
+                              aria-label={`${preview.name} logo preview`}
+                              style={{
+                                maxWidth: "100%",
+                                filter: preview.mono ? "grayscale(1)" : "none",
+                              }}
+                            >
+                              {slide.layers.map((l) => (
+                                <g key={l.id}>{renderLayer(l)}</g>
+                              ))}
+                            </svg>
+                          </div>
+                          <figcaption className="small muted">
+                            {preview.name}
+                          </figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </section>
             ) : null
           }

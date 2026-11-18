@@ -325,18 +325,68 @@
 }
 
 /* The same real editor becomes a stacked mobile workspace, not a clipped desktop mock. */
-.krev-editor-layout{display:grid;grid-template-columns:minmax(150px,220px) minmax(260px,1fr) minmax(180px,260px);gap:12px;align-items:start;min-width:0}
-.krev-editor-layout>aside{min-width:0;max-height:78vh;overflow-y:auto;overscroll-behavior:contain}
-.krev-editor-layout>div{min-width:0;max-width:100%}
-@media(max-width:1000px){
- .krev-editor-layout{grid-template-columns:minmax(0,1fr)}
- .krev-editor-layout>aside{max-height:none}
- .krev-editor-layout>div{order:-1;max-width:100%;overflow-x:auto}
+.krev-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) minmax(260px, 1fr) minmax(
+      180px,
+      260px
+    );
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+.krev-editor-layout > aside {
+  min-width: 0;
+  max-height: 78vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.krev-editor-layout > div {
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 1000px) {
+  .krev-editor-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .krev-editor-layout > aside {
+    max-height: none;
+  }
+  .krev-editor-layout > div {
+    order: -1;
+    max-width: 100%;
+    overflow-x: auto;
+  }
 }
 
-.krev-logo-previews{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.krev-logo-previews figure{margin:0;min-width:0;border:1px solid var(--krev-rule);border-radius:8px;overflow:hidden}
-.krev-logo-preview-surface{min-height:195px;padding:15px;display:grid;place-items:center}
-.krev-logo-previews figcaption{padding:10px 14px}
-@media(max-width:800px){.krev-logo-previews{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:450px){.krev-logo-previews{grid-template-columns:minmax(0,1fr)}}
+.krev-logo-previews {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.krev-logo-previews figure {
+  margin: 0;
+  min-width: 0;
+  border: 1px solid var(--krev-rule);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.krev-logo-preview-surface {
+  min-height: 195px;
+  padding: 15px;
+  display: grid;
+  place-items: center;
+}
+.krev-logo-previews figcaption {
+  padding: 10px 14px;
+}
+@media (max-width: 800px) {
+  .krev-logo-previews {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 450px) {
+  .krev-logo-previews {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,4 +1,7 @@
-import {assessCreativeSource,repairCreativeGeometry} from "./creative-evaluation.js";
+import {
+  assessCreativeSource,
+  repairCreativeGeometry,
+} from "./creative-evaluation.js";
 import type { BillingService } from "./billing.js";
 import { mediaBase, loadOwnerMedia } from "./owner-media-loader.js";
 import { brandOsHash } from "@kora/creative";
@@ -267,34 +270,76 @@ export function registerCreativeDocumentRoutes(
     });
     return { data: { id: documentId, revision: next, source } };
   });
-  app.get("/api/sites/:id/creative-documents/:documentId/evaluation",async(req)=>{
-    const {id,documentId}=routeIds.parse(req.params);
-    const {row}=await docFor(req,id,documentId);
-    const source=creativeDocumentSchema.parse(row.source);
-    return {data:{revision:Number(row.revision),findings:assessCreativeSource(source),
-      evaluationType:"DETERMINISTIC_SOURCE_ONLY",visualModelExecuted:false,screenshotsReviewed:false}};
-  });
-  app.post("/api/sites/:id/creative-documents/:documentId/repair-geometry",async(req)=>{
-    const {id,documentId}=routeIds.parse(req.params);
-    const {site,row}=await docFor(req,id,documentId,"MEMBER");
-    const {revision}=z.object({revision:z.number().int().positive()}).parse(req.body);
-    if(Number(row.revision)!==revision)throw new HttpError(409,"version_conflict","Reload the latest document before repairing.");
-    const fixed=repairCreativeGeometry(creativeDocumentSchema.parse(row.source));
-    if(!fixed.changes.length)return {data:{revision,changes:[],source:fixed.source}};
-    const owner=requireUser(req).userId;
-    const nextRevision=await platform.inTransaction(async(tx)=>{
-      const updated=await tx.sql`UPDATE creative_documents SET source=${tx.sql.json(json(fixed.source))},revision=revision+1,status='DRAFT',updated_at=now()
+  app.get(
+    "/api/sites/:id/creative-documents/:documentId/evaluation",
+    async (req) => {
+      const { id, documentId } = routeIds.parse(req.params);
+      const { row } = await docFor(req, id, documentId);
+      const source = creativeDocumentSchema.parse(row.source);
+      return {
+        data: {
+          revision: Number(row.revision),
+          findings: assessCreativeSource(source),
+          evaluationType: "DETERMINISTIC_SOURCE_ONLY",
+          visualModelExecuted: false,
+          screenshotsReviewed: false,
+        },
+      };
+    },
+  );
+  app.post(
+    "/api/sites/:id/creative-documents/:documentId/repair-geometry",
+    async (req) => {
+      const { id, documentId } = routeIds.parse(req.params);
+      const { site, row } = await docFor(req, id, documentId, "MEMBER");
+      const { revision } = z
+        .object({ revision: z.number().int().positive() })
+        .parse(req.body);
+      if (Number(row.revision) !== revision)
+        throw new HttpError(
+          409,
+          "version_conflict",
+          "Reload the latest document before repairing.",
+        );
+      const fixed = repairCreativeGeometry(
+        creativeDocumentSchema.parse(row.source),
+      );
+      if (!fixed.changes.length)
+        return { data: { revision, changes: [], source: fixed.source } };
+      const owner = requireUser(req).userId;
+      const nextRevision = await platform.inTransaction(async (tx) => {
+        const updated =
+          await tx.sql`UPDATE creative_documents SET source=${tx.sql.json(json(fixed.source))},revision=revision+1,status='DRAFT',updated_at=now()
         WHERE id=${documentId} AND site_id=${site.id} AND org_id=${site.orgId} AND revision=${revision} RETURNING revision`;
-      if(!updated.length)throw new HttpError(409,"version_conflict","Reload the latest document before repairing.");
-      const next=Number(updated[0]!.revision);
-      await tx.sql`INSERT INTO creative_document_revisions(document_id,revision,source,brand_version,created_by)
+        if (!updated.length)
+          throw new HttpError(
+            409,
+            "version_conflict",
+            "Reload the latest document before repairing.",
+          );
+        const next = Number(updated[0]!.revision);
+        await tx.sql`INSERT INTO creative_document_revisions(document_id,revision,source,brand_version,created_by)
         VALUES(${documentId},${next},${tx.sql.json(json(fixed.source))},${fixed.source.brandVersion},${owner})`;
-      return next;
-    });
-    await platform.audit({orgId:site.orgId,actorUserId:owner,action:"creative_document.geometry_repaired",
-      objectType:"creative_document",objectId:documentId,requestId:req.id,metadata:{changes:fixed.changes.length}});
-    return {data:{revision:nextRevision,changes:fixed.changes,source:fixed.source}};
-  });
+        return next;
+      });
+      await platform.audit({
+        orgId: site.orgId,
+        actorUserId: owner,
+        action: "creative_document.geometry_repaired",
+        objectType: "creative_document",
+        objectId: documentId,
+        requestId: req.id,
+        metadata: { changes: fixed.changes.length },
+      });
+      return {
+        data: {
+          revision: nextRevision,
+          changes: fixed.changes,
+          source: fixed.source,
+        },
+      };
+    },
+  );
   app.get(
     "/api/sites/:id/creative-documents/:documentId/history",
     async (req) => {
@@ -352,11 +397,16 @@ export function registerCreativeDocumentRoutes(
     async (req) => {
       const { id, documentId } = routeIds.parse(req.params);
       const { site, row } = await docFor(req, id, documentId, "ADMIN");
-      const latestSource=creativeDocumentSchema.parse(row.source);
-      await validateDocumentMedia(site.id,latestSource);
-      if(assessCreativeSource(latestSource).some(f=>f.severity==="BLOCKER"))
-        throw new HttpError(422,"creative_quality_blocker",
-          "Resolve the blocked layers before approving this document.");
+      const latestSource = creativeDocumentSchema.parse(row.source);
+      await validateDocumentMedia(site.id, latestSource);
+      if (
+        assessCreativeSource(latestSource).some((f) => f.severity === "BLOCKER")
+      )
+        throw new HttpError(
+          422,
+          "creative_quality_blocker",
+          "Resolve the blocked layers before approving this document.",
+        );
       const revision = z
         .object({ revision: z.number().int().positive() })
         .parse(req.body).revision;
