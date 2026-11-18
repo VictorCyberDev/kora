@@ -23,6 +23,11 @@ describe("Krevstudio editable documents", () => {
     "carousel",
     "banner",
     "logo",
+    "ad",
+    "thumbnail",
+    "announcement",
+    "event",
+    "product",
   ] as const)("produces a schema-valid brand-bound %s", (kind) => {
     const doc = buildCreativeDocument(
       {
@@ -94,15 +99,22 @@ describe("Krevstudio editable documents", () => {
     const a = create(0),
       b = create(1),
       c = create(2);
-    expect(
-      [a, b, c].map((x) => JSON.stringify(x.layers.map((l) => l.type))),
-    ).toEqual([
-      JSON.stringify(["rect", "ellipse", "text"]),
-      JSON.stringify(["rect", "rect", "text"]),
-      JSON.stringify(["ellipse", "rect", "text"]),
-    ]);
+    expect(new Set([a,b,c].map(x=>JSON.stringify(x.layers.map(l=>[l.type,l.x,l.y,l.width,l.height])))).size).toBe(3);
+    for(const form of ["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"] as const){
+      const result=buildCreativeDocument({kind:"logo",title:"Identity",headline:"Meridian Bakes",logoForm:form},brand);
+      expect(result.logoForm).toBe(form);
+      expect(renderSlideSvg(result.slides[0]!)).toContain("<svg");
+      expect(result.slides[0]!.layers.length).toBeGreaterThan(0);
+    }
+
   });
-  it("rejects unsafe layer data and excessive resource use", () => {
+  it("honors bounded custom sizes without exceeding source schema",()=>{
+    const doc=buildCreativeDocument({kind:"ad",title:"Offer",headline:"Our custom ad",customSize:{width:1400,height:760}},brand);
+    expect(doc.slides[0]!.width).toBe(1400);
+    expect(doc.slides[0]!.height).toBe(760);
+    expect(()=>buildCreativeDocument({kind:"ad",title:"Bad",headline:"Oversize",customSize:{width:90000,height:760}},brand)).toThrow();
+  });
+    it("rejects unsafe layer data and excessive resource use", () => {
     const doc = buildCreativeDocument(
       {
         kind: "social",
