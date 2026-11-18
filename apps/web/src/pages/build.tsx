@@ -355,7 +355,7 @@ export function Build() {
             ) : (
               <Notice>
                 {spec?.version === 3
-                  ? "This website uses Kora's newest design system. Change how it looks from Brand (more premium, bolder, calmer), or ask Kora in plain words."
+                  ? "This website uses Krevstudio's current design system. Change its appearance from Brand (more premium, bolder, calmer), or ask Krevstudio in plain words."
                   : "Design controls are available on the updated design. Open the Ask Krevstudio tab to upgrade this version."}
               </Notice>
             ))}
