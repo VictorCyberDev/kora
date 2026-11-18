@@ -259,7 +259,6 @@ export function buildCreativeDocument(
               .join("")
           : brandName.slice(0, 2)
       ).toUpperCase();
-      const white = colors.background;
       // True editable cubic and linear vector silhouettes, not letter tiles.
       const vectorMark = (d: string, fill: string): GraphicLayer => ({
         id: uid(),
