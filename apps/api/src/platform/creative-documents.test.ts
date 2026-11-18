@@ -170,6 +170,31 @@ describe("Krevstudio editable documents", () => {
       expect(result.slides[0]!.layers.length).toBeGreaterThan(0);
     }
   });
+  it("renders vector-first abstract marks with distinct paths across directions", () => {
+    const sources = [0, 1, 2].map((direction) =>
+      buildCreativeDocument(
+        {
+          kind: "logo",
+          title: "Brand identity",
+          headline: "Meridian Bakes",
+          logoForm: "abstract",
+          direction,
+        },
+        brand,
+      ),
+    );
+    const designs = sources.map((doc) => {
+      const paths = doc.slides[0]!.layers.filter(
+        (layer) => layer.type === "path",
+      );
+      expect(paths.length).toBeGreaterThan(0);
+      const svg = renderSlideSvg(doc.slides[0]!);
+      expect(svg).toContain("<path");
+      expect(svg).not.toContain("<script>");
+      return paths.map((layer) => layer.d).join(" ");
+    });
+    expect(new Set(designs).size).toBe(3);
+  });
   it("honors bounded custom sizes without exceeding source schema", () => {
     const doc = buildCreativeDocument(
       {
