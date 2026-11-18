@@ -1,3 +1,10 @@
+import { KrevWorkspaceEntry } from "./pages/krev-workspace-entry";
+import {
+  KrevLanding as Landing,
+  KrevMarketingPage,
+  KrevMarketingNav,
+} from "./pages/krev-marketing";
+import { KrevCreativeStudio } from "./pages/krev-creative-studio";
 import { IdentityPage } from "./pages/identity";
 import { ImagesPage } from "./pages/creative";
 import { PublicAuditPage, SharedAuditPage } from "./pages/audit";
@@ -15,14 +22,7 @@ import {
 import { api } from "./api";
 import { useAuth } from "./auth";
 import { Logo, Spinner, useLoad } from "./ui";
-import {
-  Landing,
-  Login,
-  Pricing,
-  Privacy,
-  Signup,
-  Terms,
-} from "./pages/public";
+import { Login, Pricing, Privacy, Signup, Terms } from "./pages/public";
 import { SitesList } from "./pages/sites";
 import { NewSiteV6 } from "./pages/new-site-v6";
 import { Dashboard } from "./pages/dashboard-v3";
@@ -66,6 +66,7 @@ function PublicLayout() {
       <header className="top">
         <div className="wrap">
           <Logo />
+          <KrevMarketingNav />
           <nav className="main" aria-label="Public">
             <NavLink to="/audit">Free website check</NavLink>
             <NavLink to="/pricing">Pricing</NavLink>
@@ -80,7 +81,7 @@ function PublicLayout() {
                 Sign in
               </Link>
               <Link className="btn sm" to="/signup">
-                Build my website
+                Start creating
               </Link>
             </>
           )}
@@ -91,7 +92,9 @@ function PublicLayout() {
       </main>
       <footer className="site">
         <div className="wrap row between">
-          <span>© Kora. Build it. Launch it. Keep it running.</span>
+          <span>
+            © Krevstudio. Create your brand and everything that follows.
+          </span>
           <span className="row">
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
@@ -147,7 +150,8 @@ function Bell() {
         >
           {(n.data ?? []).length === 0 && (
             <p className="muted">
-              Nothing yet. Kora will tell you here when something needs you.
+              Nothing yet. Krevstudio will tell you here when something needs
+              you.
             </p>
           )}
           {(n.data ?? [])
@@ -235,9 +239,14 @@ function AppLayout() {
             <NavLink to="/app" end>
               Home
             </NavLink>
-            <NavLink to="/app/presence">Presence</NavLink>
+            <NavLink to="/app/create">Create</NavLink>
+            <NavLink to="/app/sites">Websites</NavLink>
+            <NavLink to="/app/designs">Designs</NavLink>
+            <NavLink to="/app/brand">Logo & Brand</NavLink>
+            <NavLink to="/app/assets">Assets</NavLink>
             <NavLink to="/app/customers">Customers</NavLink>
-            <NavLink to="/app/marketing">Marketing</NavLink>
+            <NavLink to="/app/campaigns">Campaigns</NavLink>
+            <NavLink to="/app/publish">Publish</NavLink>
             <NavLink to="/app/operations">Health</NavLink>
             <NavLink
               to="/app/more"
@@ -332,6 +341,7 @@ export function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Landing />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/product/:topic" element={<KrevMarketingPage />} />
         <Route path="/audit" element={<PublicAuditPage />} />
         <Route path="/audit/shared" element={<SharedAuditPage />} />
         <Route path="/login" element={<Login />} />
@@ -341,6 +351,11 @@ export function App() {
       </Route>
       <Route path="/app" element={<AppLayout />}>
         <Route index element={<Dashboard />} />
+        <Route path="create" element={<KrevWorkspaceEntry mode="create" />} />
+        <Route path="designs" element={<KrevWorkspaceEntry mode="designs" />} />
+        <Route path="brand" element={<KrevWorkspaceEntry mode="brand" />} />
+        <Route path="assets" element={<KrevWorkspaceEntry mode="assets" />} />
+        <Route path="publish" element={<KrevWorkspaceEntry mode="publish" />} />
         <Route path="sites" element={<SitesList />} />
         <Route path="sites/new" element={<NewSiteV6 />} />
         <Route path="sites/:id" element={<SiteShell />}>
@@ -360,6 +375,7 @@ export function App() {
           <Route path="customers" element={<CustomersPage />} />
           <Route path="build" element={<Build />} />
           <Route path="website-studio" element={<WebsiteStudio />} />
+          <Route path="creative-studio" element={<KrevCreativeStudio />} />
           <Route path="deployments" element={<DeploymentsPage />} />
           <Route path="incidents" element={<IncidentsList />} />
           <Route path="incidents/:incidentId" element={<IncidentPage />} />

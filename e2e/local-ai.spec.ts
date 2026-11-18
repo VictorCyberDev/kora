@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 /**
  * Chrome's built-in Prompt API is not available in CI's Chromium, so this stubs the documented
- * surface (LanguageModel.availability/create/prompt) and proves Kora's side end to end: the
+ * surface (LanguageModel.availability/create/prompt) and proves Krevstudio's side end to end: the
  * checkbox appears only when the API reports it, the answer is sent to the server, validated,
  * and shapes the real generated site. Without the stub the flow must work with no AI at all.
  */
@@ -35,7 +35,7 @@ async function signUpAndDescribe(page: import("@playwright/test").Page) {
   await page.getByLabel("Password").fill("correct horse battery");
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(
-    page.getByRole("heading", { name: /Tell Kora about your business/ }),
+    page.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
   ).toBeVisible();
   await page.getByLabel("Business name").fill("Ada Laundry");
   await page
@@ -49,7 +49,7 @@ async function signUpAndDescribe(page: import("@playwright/test").Page) {
   ).toBeVisible({ timeout: 20_000 });
 }
 
-test("on-device AI (stubbed Prompt API) shapes the site; Kora validates it", async ({
+test("on-device AI (stubbed Prompt API) shapes the site; Krevstudio validates it", async ({
   page,
 }) => {
   await page.addInitScript(STUB);
@@ -57,7 +57,7 @@ test("on-device AI (stubbed Prompt API) shapes the site; Kora validates it", asy
   const box = page.getByLabel(/Use AI on this device/);
   await expect(box).toBeChecked();
   await page.getByRole("button", { name: "Choose for me" }).click();
-  await expect(page.getByRole("tab", { name: "Ask Kora" })).toBeVisible({
+  await expect(page.getByRole("tab", { name: "Ask Krevstudio" })).toBeVisible({
     timeout: 30_000,
   });
   const calls = await page.evaluate(
@@ -86,7 +86,7 @@ test("with no on-device AI the same flow works and offers no AI option", async (
   await signUpAndDescribe(page);
   await expect(page.getByLabel(/Use AI on this device/)).toHaveCount(0);
   await page.getByRole("button", { name: "Choose for me" }).click();
-  await expect(page.getByRole("tab", { name: "Ask Kora" })).toBeVisible({
+  await expect(page.getByRole("tab", { name: "Ask Krevstudio" })).toBeVisible({
     timeout: 30_000,
   });
 });

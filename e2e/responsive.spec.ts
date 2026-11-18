@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Kora's own product UI (landing, auth, Mission Control, builder, incident) at the widths people
+ * Krevstudio's own product UI (landing, auth, Mission Control, builder, incident) at the widths people
  * actually use: small phones through desktop. Rules a user would feel: no sideways scrolling, no
  * control or text pushed off-screen, a header that does not eat the screen, touch-sized controls.
  */
@@ -191,7 +191,7 @@ test.beforeAll(async ({ browser }) => {
   await sp.getByLabel("Password").fill("correct horse battery");
   await sp.getByRole("button", { name: "Create account" }).click();
   await expect(
-    sp.getByRole("heading", { name: /Tell Kora about your business/ }),
+    sp.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
   ).toBeVisible();
   const api = seed.request;
   const H = { "x-requested-with": "kora" };
@@ -267,7 +267,7 @@ test.beforeAll(async ({ browser }) => {
 });
 
 for (const w of WIDTHS) {
-  test(`Kora's own UI works at ${w}px`, async ({ browser }) => {
+  test(`Krevstudio's own UI works at ${w}px`, async ({ browser }) => {
     test.setTimeout(240_000);
     const problems: string[] = [];
     const ctx = await browser.newContext({
@@ -315,7 +315,12 @@ for (const w of WIDTHS) {
     for (const [label, url] of pages) {
       await page.goto(url);
       if (label === "builder")
-        for (const tab of ["Ask Kora", "Design", "Sections", "Versions"]) {
+        for (const tab of [
+          "Ask Krevstudio",
+          "Design",
+          "Sections",
+          "Versions",
+        ]) {
           await page.getByRole("tab", { name: tab }).click();
           await check(page, `builder/${tab}`, w, problems);
         }

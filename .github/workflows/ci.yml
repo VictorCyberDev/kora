@@ -1,9 +1,13 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches: [main, feature/krevstudio-m3-m4-transformation]
   pull_request:
     branches: [main]
+
+concurrency:
+  group: krevm3m4-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:

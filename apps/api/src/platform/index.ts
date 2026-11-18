@@ -1,3 +1,4 @@
+import { registerCreativeDocumentRoutes } from "./creative-document-routes.js";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -279,7 +280,7 @@ export const defaultWebDir = () =>
   process.env.KORA_WEB_DIR ??
   fileURLToPath(new URL("../../../web/dist", import.meta.url));
 const APP_CSP =
-  "default-src 'self'; img-src 'self' data: https:; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'; form-action 'self'";
+  "default-src 'self'; img-src 'self' data: blob: https:; frame-src 'self'; frame-ancestors 'self'; base-uri 'none'; object-src 'none'; form-action 'self'";
 
 export function registerPlatform(
   app: FastifyInstance,
@@ -341,6 +342,12 @@ export function registerPlatform(
     }
   });
 
+  registerCreativeDocumentRoutes(
+    app,
+    platform,
+    config.KORA_PUBLIC_URL,
+    rt.billing,
+  );
   registerRoutes(app, {
     platform,
     ops: rt.ops,

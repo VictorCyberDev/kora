@@ -84,6 +84,8 @@ export function SiteShell() {
             items: [
               [`${base}/create`, "Create"],
               [`${base}/images`, "Images"],
+              [`${base}/creative-studio`, "Graphics & logos"],
+              [`${base}/website-studio`, "Website editor"],
               [`${base}/build`, "Build"],
             ],
           },
@@ -132,7 +134,8 @@ export function SiteOverview() {
           {(r: J[]) =>
             r.length === 0 ? (
               <p className="muted">
-                None. Kora opens an incident only after repeated failed checks.
+                None. Krevstudio opens an incident only after repeated failed
+                checks.
               </p>
             ) : (
               <ul>
@@ -157,8 +160,8 @@ export function SiteOverview() {
           </div>
           <p className="muted">
             Makes the <em>live version</em> of this website fail on purpose, for
-            real, so you can watch Kora detect it, explain it, propose a fix and
-            verify recovery. Use it only on a test website.
+            real, so you can watch Krevstudio detect it, explain it, propose a
+            fix and verify recovery. Use it only on a test website.
           </p>
           {err && <Notice kind="bad">{err}</Notice>}
           {st.data.controlledTest ? (
@@ -248,8 +251,8 @@ export function DeploymentsPage() {
           <div className="card">
             <h3>What changed</h3>
             <p className="small muted">
-              Kora records changes so it can tell you what happened around the
-              time of a problem. Timing is not proof of cause.
+              Krevstudio records changes so it can tell you what happened around
+              the time of a problem. Timing is not proof of cause.
             </p>
             <ul className="timeline">
               {x.changes.map((c: J) => (
@@ -520,7 +523,7 @@ export function OperationsPage() {
     <div className="stack">
       <h1 style={{ fontSize: "2rem" }}>Operations</h1>
       <div className="card">
-        <h3>How Kora operates</h3>
+        <h3>How Krevstudio operates</h3>
         <p>
           Observe → detect → explain → propose → <strong>policy decides</strong>{" "}
           → you approve if needed → act →{" "}
@@ -659,8 +662,8 @@ export function BillingPage() {
             )}
             {!s.paymentsConfigured && (
               <Notice>
-                Online payments are not configured on this Kora, so plans can't
-                be bought here yet.
+                Online payments are not configured on this Krevstudio, so plans
+                can't be bought here yet.
               </Notice>
             )}
             <h4>Usage this month</h4>
@@ -785,7 +788,7 @@ export function SettingsPage() {
         {["OWNER", "ADMIN"].includes(org?.role) && (
           <form className="row" onSubmit={add}>
             <label className="grow">
-              Email of an existing Kora user
+              Email of an existing Krevstudio user
               <input name="email" type="email" required />
             </label>
             <label>

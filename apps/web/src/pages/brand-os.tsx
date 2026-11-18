@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { api, type J } from "../api";
 import { Async, Notice, errText, useLoad } from "../ui";
@@ -24,7 +25,7 @@ const NUDGES: Array<[string, string]> = [
   ["minimal", "More minimal"],
 ];
 
-/** The owner-facing Brand OS: "this is how Kora represents my business". Advanced fields stay hidden. */
+/** The owner-facing Brand OS: "this is how Krevstudio represents my business". Advanced fields stay hidden. */
 export function BrandOsPanel({ siteId }: { siteId: string }) {
   const os = useLoad(
     () => api<J>("GET", `/api/sites/${siteId}/brand-os`),
@@ -57,7 +58,7 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
       await api("POST", `/api/sites/${siteId}/brand-os/backfill`, {});
       setMsg({
         ok: true,
-        text: "Done. This is what Kora worked out from your website. Nothing was published or changed.",
+        text: "Done. This is what Krevstudio worked out from your website. Nothing was published or changed.",
       });
       os.reload();
     } catch (x) {
@@ -75,14 +76,15 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
             <section className="card stack" aria-labelledby="bos-h">
               <h2 id="bos-h">Your brand system</h2>
               <p className="muted">
-                Kora builds a full brand system when you create a website with
-                the new design engine: strategy, colours, type, voice and rules
-                that every flyer, post and story will follow.
+                Krevstudio builds a full brand system when you create a website
+                with the new design engine: strategy, colours, type, voice and
+                rules that every flyer, post and story will follow.
               </p>
               <p className="muted">
-                Already have a website made earlier? Kora can read its colours
-                and type and write them down as your brand system. It is marked
-                as worked out from your site, and your website is not changed.
+                Already have a website made earlier? Krevstudio can read its
+                colours and type and write them down as your brand system. It is
+                marked as worked out from your site, and your website is not
+                changed.
               </p>
               <div className="row">
                 <button
@@ -103,9 +105,10 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
             <p className="k-overline">Brand system · version {cur.version}</p>
             {b.provenance?.createdBy === "inferred-from-site" && (
               <Notice kind="info">
-                Worked out from your earlier website, not chosen by you. Kora
-                could not know: {b.provenance.inferred?.unknown.join("; ")}.
-                Change anything below to make it yours.
+                Worked out from your earlier website, not chosen by you.
+                Krevstudio could not know:{" "}
+                {b.provenance.inferred?.unknown.join("; ")}. Change anything
+                below to make it yours.
               </Notice>
             )}
             <h2 id="bos-h">
@@ -130,6 +133,56 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
                 </li>
               ))}
             </ul>
+            <div className="row" aria-label="Brand kit export and logos">
+              <button
+                className="btn sm"
+                onClick={() => {
+                  const kit = {
+                    schemaVersion: 1,
+                    source: "Krevstudio Brand OS",
+                    exportedAt: new Date().toISOString(),
+                    version: cur.version,
+                    hash: cur.hash,
+                    brand: b,
+                    guidelines: {
+                      minimumLogoSize: 32,
+                      logoClearSpace:
+                        "At least the height of one symbol stroke",
+                      palette: p,
+                      typography: b.visual.typeVoice,
+                      tone: b.voice.tone,
+                      approvedLogoDocumentId: b.visual.logoAssetId,
+                      dos: b.rules.dos,
+                      donts: b.rules.donts,
+                    },
+                  };
+                  const blob = new Blob([JSON.stringify(kit, null, 2)], {
+                    type: "application/json",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "krevstudio-brand-kit-v" + cur.version + ".json";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export versioned Brand Kit JSON
+              </button>
+              <Link
+                className="btn sm ghost"
+                to={`/app/sites/${siteId}/creative-studio`}
+              >
+                {b.visual.logoAssetId
+                  ? "Edit approved logo"
+                  : "Create a vector logo"}
+              </Link>
+              {b.visual.logoAssetId && (
+                <span className="small muted">
+                  Approved logo linked to Brand OS version {cur.version}
+                </span>
+              )}
+            </div>
             <p className="small">
               Type: <strong>{b.visual.typeVoice.replace(/-/g, " ")}</strong> ·
               Signature device:{" "}
@@ -301,8 +354,8 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
       {out && (
         <div className="stack">
           <p className="small muted">
-            Created, not posted. Kora cannot post for you yet: download each one
-            and post it yourself, or send it through the calendar.
+            Created, not posted. Krevstudio cannot post for you yet: download
+            each one and post it yourself, or send it through the calendar.
           </p>
           <div className="row" style={{ alignItems: "flex-start", gap: 12 }}>
             {out.results.map((r: J) =>
@@ -330,7 +383,7 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
   );
 }
 
-/** "I need more birthday cake orders next week": Kora proposes a coordinated set; nothing is made until the owner says so. */
+/** "I need more birthday cake orders next week": Krevstudio proposes a coordinated set; nothing is made until the owner says so. */
 export function CampaignAskPanel({ siteId }: { siteId: string }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -377,7 +430,7 @@ export function CampaignAskPanel({ siteId }: { siteId: string }) {
   };
   return (
     <section className="card stack" aria-labelledby="ask-h">
-      <h2 id="ask-h">Tell Kora what you need</h2>
+      <h2 id="ask-h">Tell Krevstudio what you need</h2>
       <form className="row" onSubmit={(e) => void ask(e)}>
         <label className="grow">
           <span className="small muted">
@@ -413,7 +466,7 @@ export function CampaignAskPanel({ siteId }: { siteId: string }) {
             ))}
           </ol>
           <div>
-            <p className="small">Kora still needs from you:</p>
+            <p className="small">Krevstudio still needs from you:</p>
             <ul className="small">
               {(proposal.needsFromOwner as string[]).map((n) => (
                 <li key={n}>{n}</li>

@@ -17,7 +17,7 @@ export function IncidentsList() {
         {(r: J[]) =>
           r.length === 0 ? (
             <Empty title="No incidents">
-              Kora will open one only after repeated failed checks.
+              Krevstudio will open one only after repeated failed checks.
             </Empty>
           ) : (
             <table tabIndex={0}>
@@ -203,12 +203,12 @@ export function IncidentPage() {
                       id="q-changed"
                       style={{ fontSize: "1.25rem", margin: 0 }}
                     >
-                      What Kora observed and what changed
+                      What Krevstudio observed and what changed
                     </h2>
                     {v.whatChanged.length === 0 ? (
                       <p className="muted">
-                        Kora recorded no change in the minutes before the first
-                        failure.
+                        Krevstudio recorded no change in the minutes before the
+                        first failure.
                       </p>
                     ) : (
                       <ol className="timeline">
@@ -225,7 +225,7 @@ export function IncidentPage() {
                         id="q-know"
                         style={{ fontSize: "1.15rem", margin: "0 0 8px" }}
                       >
-                        What Kora knows
+                        What Krevstudio knows
                       </h2>
                       <ul>
                         {v.whatWeKnow.length ? (
@@ -240,7 +240,7 @@ export function IncidentPage() {
                         id="q-unknown"
                         style={{ fontSize: "1.15rem", margin: "0 0 8px" }}
                       >
-                        What Kora does not know
+                        What Krevstudio does not know
                       </h2>
                       <ul>
                         {v.whatWeDoNotKnow.map((k: string) => (
@@ -272,7 +272,7 @@ export function IncidentPage() {
                     <p className="muted">
                       {resolved
                         ? "No action is needed."
-                        : "Kora has no safe action to recommend yet."}
+                        : "Krevstudio has no safe action to recommend yet."}
                     </p>
                   ) : (
                     <>
@@ -297,8 +297,8 @@ export function IncidentPage() {
                       )}
                       {a.state === "DENIED" && (
                         <Notice kind="warn">
-                          Kora cannot do this itself. It may need a manual step
-                          with your hosting provider.
+                          Krevstudio cannot do this itself. It may need a manual
+                          step with your hosting provider.
                         </Notice>
                       )}
                     </>
@@ -306,8 +306,8 @@ export function IncidentPage() {
                   {a?.state === "AWAITING_APPROVAL" ? (
                     <div className="stack">
                       <Notice kind="warn">
-                        This changes what your customers see. Kora will not do
-                        it without your approval
+                        This changes what your customers see. Krevstudio will
+                        not do it without your approval
                         {a.approvalExpiresAt
                           ? ` (request expires ${when(a.approvalExpiresAt)})`
                           : ""}
@@ -368,7 +368,7 @@ export function IncidentPage() {
                         )
                       }
                     >
-                      Ask Kora to re-check the evidence
+                      Ask Krevstudio to re-check the evidence
                     </button>
                   )}
                   <hr />
