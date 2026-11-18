@@ -383,7 +383,15 @@ export function buildCreativeDocument(
           "700",
         );
         layers.push(identity);
-        layers.push(rectangle(margin, Math.round(height * 0.2), width * 0.18, 6, highlight));
+        layers.push(
+          rectangle(
+            margin,
+            Math.round(height * 0.2),
+            width * 0.18,
+            6,
+            highlight,
+          ),
+        );
         const headline = textLayer(
           header.slice(0, 120),
           margin,
@@ -408,13 +416,36 @@ export function buildCreativeDocument(
             ),
           );
         if (request.cta) {
-          layers.push(rectangle(margin, Math.round(height * 0.79), width * 0.55, 90, highlight, 8));
-          layers.push(textLayer(request.cta, margin + 24, Math.round(height * 0.805), width * 0.5, 30, background, "700"));
+          layers.push(
+            rectangle(
+              margin,
+              Math.round(height * 0.79),
+              width * 0.55,
+              90,
+              highlight,
+              8,
+            ),
+          );
+          layers.push(
+            textLayer(
+              request.cta,
+              margin + 24,
+              Math.round(height * 0.805),
+              width * 0.5,
+              30,
+              background,
+              "700",
+            ),
+          );
         }
       } else if (variant === 1) {
         // Cinematic: dark surround and a centered typographic composition.
-        layers.push(rectangle(0, 0, Math.round(width * 0.018), height, highlight));
-        layers.push(rectangle(width * 0.33, height * 0.19, width * 0.34, 5, highlight));
+        layers.push(
+          rectangle(0, 0, Math.round(width * 0.018), height, highlight),
+        );
+        layers.push(
+          rectangle(width * 0.33, height * 0.19, width * 0.34, 5, highlight),
+        );
         const identity = textLayer(
           brandName.toUpperCase(),
           margin,
@@ -470,7 +501,15 @@ export function buildCreativeDocument(
         const left = rail + gap;
         const available = width - left - margin;
         layers.push(rectangle(0, 0, rail, height, highlight));
-        layers.push(rectangle(left, Math.round(height * 0.23), available * 0.24, 6, highlight));
+        layers.push(
+          rectangle(
+            left,
+            Math.round(height * 0.23),
+            available * 0.24,
+            6,
+            highlight,
+          ),
+        );
         const identity = textLayer(
           brandName.toUpperCase(),
           left,
@@ -492,10 +531,32 @@ export function buildCreativeDocument(
         );
         layers.push(headline);
         if (request.description && index === 0)
-          layers.push(textLayer(request.description, left, Math.round(height * 0.6), available, 30, ink, "400"));
+          layers.push(
+            textLayer(
+              request.description,
+              left,
+              Math.round(height * 0.6),
+              available,
+              30,
+              ink,
+              "400",
+            ),
+          );
         if (request.cta) {
-          layers.push(rectangle(left, Math.round(height * 0.81), available, 88, ink, 8));
-          layers.push(textLayer(request.cta, left + 18, Math.round(height * 0.825), available - 36, 27, background, "700"));
+          layers.push(
+            rectangle(left, Math.round(height * 0.81), available, 88, ink, 8),
+          );
+          layers.push(
+            textLayer(
+              request.cta,
+              left + 18,
+              Math.round(height * 0.825),
+              available - 36,
+              27,
+              background,
+              "700",
+            ),
+          );
         }
       }
     }
