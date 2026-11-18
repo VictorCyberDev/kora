@@ -1,5 +1,5 @@
 /**
- * Data-only, pinned design skill registry for Kora's website generator.
+ * Data-only, pinned design skill registry for Krevstudio's connected creative generators.
  * Third-party scripts/markdown are never fetched or executed at runtime.
  * All executions are first-party, typed rules with deterministic precedence.
  */
@@ -50,7 +50,17 @@ export const SkillRegistrySchema = z.object({
   conflicts: z.array(z.string()).default([]),
   activation: z.object({ industries: z.array(z.string()).min(1) }),
   supportedDesignTypes: z
-    .array(z.enum(["site", "landing-page", "storefront", "portfolio"]))
+    .array(
+      z.enum([
+        "site",
+        "landing-page",
+        "storefront",
+        "portfolio",
+        "graphic",
+        "carousel",
+        "logo",
+      ]),
+    )
     .min(1),
   evaluationCriteria: z.array(z.string().min(10)).min(1),
   status: z.enum(["active", "disabled"]),
@@ -111,7 +121,15 @@ export const INSTALLED_DESIGN_SKILLS: readonly SkillRegistryEntry[] = z
       dependencies: [],
       conflicts: rule.incompatibleWith,
       activation: { industries: rule.industries },
-      supportedDesignTypes: ["site", "landing-page", "storefront", "portfolio"],
+      supportedDesignTypes: [
+        "site",
+        "landing-page",
+        "storefront",
+        "portfolio",
+        "graphic",
+        "carousel",
+        "logo",
+      ],
       evaluationCriteria: [rule.instruction],
       status: "active",
     })),
