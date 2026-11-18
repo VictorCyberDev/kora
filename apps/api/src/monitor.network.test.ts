@@ -83,19 +83,21 @@ describe("health check classification against real local failures", () => {
   });
   it("classifies a closed 127.0.0.1 port as CONNECTION_REFUSED", async () => {
     const o = await observeOnce(`http://127.0.0.1:${closedPort}/health`);
-    expect(
-      o.failureCategory,
-      o.failureReason ?? "no diagnostic reason",
-    ).toBe("CONNECTION_REFUSED");
+    console.info("monitor closed-port classification", {
+      failureCategory: o.failureCategory,
+      failureReason: o.failureReason,
+    });
+    expect(o.failureCategory).toBe("CONNECTION_REFUSED");
     expectMeaningful(o.failureReason);
     expect(o.failureReason).toContain("ECONNREFUSED");
   });
   it("classifies a closed localhost port as CONNECTION_REFUSED", async () => {
     const o = await observeOnce(`http://localhost:${closedPort}/health`);
-    expect(
-      o.failureCategory,
-      o.failureReason ?? "no diagnostic reason",
-    ).toBe("CONNECTION_REFUSED");
+    console.info("monitor closed-port classification", {
+      failureCategory: o.failureCategory,
+      failureReason: o.failureReason,
+    });
+    expect(o.failureCategory).toBe("CONNECTION_REFUSED");
     expectMeaningful(o.failureReason);
   });
   it("classifies a server that accepts but never answers as TIMEOUT", async () => {
