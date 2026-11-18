@@ -111,6 +111,7 @@ jobs:
       - name: Verify creative ESM runtime exports from root and site-schema
         run: |
           pnpm --filter @kora/site-schema exec node --input-type=module -e "const m=await import('@kora/creative'); for (const k of ['contrast','ensureContrast','legibleOnAll']) { if(typeof m[k]!=='function') throw Error('site-schema cannot resolve '+k); }"
+          node --input-type=module -e "const s=await import('./packages/site-schema/dist/src/index.js'); for (const k of ['planDirectionsV3','renderSiteV3','planDirections']) { if(typeof s[k]!=='function') throw Error('compiled site-schema missing '+k); }"
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
       - uses: actions/upload-artifact@v4
