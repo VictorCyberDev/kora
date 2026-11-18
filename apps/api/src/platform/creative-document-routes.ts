@@ -118,7 +118,12 @@ export function registerCreativeDocumentRoutes(
     const identity = {
       version: brand?.version ?? 1,
       name: brand?.brandOs.name ?? site.name,
-      ...(brand ? { colors: brand.brandOs.visual.palette } : {}),
+      ...(brand
+        ? {
+            colors: brand.brandOs.visual.palette,
+            typeVoice: brand.brandOs.visual.typeVoice,
+          }
+        : {}),
       approvedLogo: logo
         ? {
             id: String(logo.id),
@@ -178,7 +183,12 @@ export function registerCreativeDocumentRoutes(
       version,
       approvedLogo,
       name: brand?.brandOs.name ?? site.name,
-      ...(brand ? { colors: brand.brandOs.visual.palette } : {}),
+      ...(brand
+        ? {
+            colors: brand.brandOs.visual.palette,
+            typeVoice: brand.brandOs.visual.typeVoice,
+          }
+        : {}),
     });
     const documentId = randomUUID();
     await platform.inTransaction(async (tx) => {
