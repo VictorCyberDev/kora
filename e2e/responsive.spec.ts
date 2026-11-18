@@ -357,11 +357,16 @@ for (const w of WIDTHS) {
       if (label === "incident") {
         const proof = page.getByRole("button", { name: "Proof", exact: true });
         await proof.scrollIntoViewIfNeeded();
-        await expect.poll(async () => proof.evaluate((button) => {
-          const rect = button.getBoundingClientRect();
-          const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-          return target === button || button.contains(target);
-        })).toBe(true);
+        const hitTest = async () =>
+          proof.evaluate((button) => {
+            const rect = button.getBoundingClientRect();
+            const target = document.elementFromPoint(
+              rect.left + rect.width / 2,
+              rect.top + rect.height / 2,
+            );
+            return target === button || button.contains(target);
+          });
+        await expect.poll(hitTest).toBe(true);
         await proof.click();
         await page
           .getByText(/Evidence, decisions and Passport/)
