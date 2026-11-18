@@ -314,6 +314,23 @@ for (const w of WIDTHS) {
     ];
     for (const [label, url] of pages) {
       await page.goto(url);
+      if (label === "landing" && w <= 430) {
+        const menu = page.locator(".krev-public-menu");
+        const trigger = menu.locator("summary");
+        await expect(trigger).toBeVisible();
+        await trigger.focus();
+        await page.keyboard.press("Enter");
+        await expect(menu).toHaveAttribute("open", "");
+        await expect(
+          menu.getByRole("link", { name: "Start creating" }),
+        ).toBeVisible();
+        await expect(
+          menu.getByRole("link", { name: "Sign in" }),
+        ).toBeVisible();
+        await check(page, "landing/open-menu", w, problems);
+        await trigger.click();
+        await expect(menu).not.toHaveAttribute("open", "");
+      }
       if (label === "builder")
         for (const tab of [
           "Ask Krevstudio",
