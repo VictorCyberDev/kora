@@ -117,17 +117,13 @@ describe("Krevstudio editable documents", () => {
       );
       expect(text).toBeDefined();
       if (!text || text.type !== "text") continue;
-      expect(text.text.replace(/\n/g, " ").replace(/\s+/g, " ")).toBe(
-        headline,
-      );
+      expect(text.text.replace(/\n/g, " ").replace(/\s+/g, " ")).toBe(headline);
       expect(text.text.split("\n").length).toBeGreaterThan(1);
       for (const line of text.text.split("\n"))
         expect(line.length * text.fontSize * 0.63).toBeLessThanOrEqual(
           text.width + 2,
         );
-      expect(text.y + text.height).toBeLessThanOrEqual(
-        doc.slides[0]!.height,
-      );
+      expect(text.y + text.height).toBeLessThanOrEqual(doc.slides[0]!.height);
     }
   });
   it("does not fabricate a sale amount or deadline", () => {
