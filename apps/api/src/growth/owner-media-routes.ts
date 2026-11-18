@@ -349,6 +349,7 @@ export function advice(q: MediaQuality): string[] {
     out.push(
       "Tall pictures work best in smaller spots; a wider photo suits the top of your site.",
     );
-  if (out.length === 0) out.push("Good picture. Krevstudio can use it prominently.");
+  if (out.length === 0)
+    out.push("Good picture. Krevstudio can use it prominently.");
   return out;
 }
