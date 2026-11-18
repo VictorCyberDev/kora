@@ -892,7 +892,7 @@ export function KrevCreativeStudio() {
                       Export PNG
                     </button>
                     <button className="btn sm ghost" type="button" onClick={()=>void exportPng("jpeg")}>Export JPG</button>
-                    {source.kind==="logo"&&<button className="btn sm ghost" type="button" onClick={()=>void exportPng("png",true)}>Transparent PNG</button>
+                    {source.kind === "logo" && (<button className="btn sm ghost" type="button" onClick={() => void exportPng("png", true)}>Transparent PNG</button>)}
                     <a
                       className="btn sm ghost"
                       href={`/api/sites/${id}/creative-documents/${documentId}/export/${slideIndex}`}
