@@ -462,7 +462,7 @@ export function registerCalendarRoutes(app: FastifyInstance, d: CalendarDeps) {
       throw new HttpError(
         409,
         "uncertain",
-        `Kora cannot tell whether ${r.uncertain.join(", ")} was posted. Check the channel; if it is not there, retry with confirmation.`,
+        `Krevstudio cannot tell whether ${r.uncertain.join(", ")} was posted. Check the channel; if it is not there, retry with confirmation.`,
       );
     const res = await guard(() =>
       calendar.transition(site.id, item.id, { type: "retry" }),
