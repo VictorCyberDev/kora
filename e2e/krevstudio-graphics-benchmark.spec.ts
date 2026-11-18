@@ -20,7 +20,7 @@ const colors=[
  ["#fbf6eb","#272020","#775a50","#c29c86"],
  ["#edf5f0","#183b35","#27735f","#9fd3b8"],
 ] as const;
-test("45 authentic graphic and vector sources render for ten industries; five connected brand systems retain logo provenance",async({browser})=>{
+test("55 authentic graphic and vector sources render for ten industries; five connected brand systems retain logo provenance",async({browser})=>{
  test.setTimeout(240_000);
  mkdirSync("test-results/kora-studio-benchmark",{recursive:true});
  const ctx=await browser.newContext({viewport:{width:600,height:900},reducedMotion:"reduce"});
@@ -34,7 +34,9 @@ test("45 authentic graphic and vector sources render for ten industries; five co
    const logo=buildCreativeDocument({kind:"logo",title:`${name} identity`,headline:name,logoForm:(["wordmark","lettermark","monogram","geometric","abstract","combination","emblem","icon"] as const)[i%8]!,direction:i%3},brandBase);
    const logoId=crypto.randomUUID();
    const brand={...brandBase,approvedLogo:{id:logoId,source:logo}};
-   for(const kind of ["logo","flyer","poster","social","ad",...(i<5?["carousel"]:[])] as const){
+   const kinds:Array<"logo"|"flyer"|"poster"|"social"|"ad"|"carousel">=["logo","flyer","poster","social","ad"];
+   if(i<5)kinds.push("carousel");
+   for(const kind of kinds){
     const doc=kind==="logo"?logo:buildCreativeDocument({
       kind,title:`${name} ${kind}`,headline:description.slice(0,90),
       description:`Created for ${name}.`,cta:"Contact us",
