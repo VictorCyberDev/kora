@@ -192,7 +192,7 @@ export function KrevLanding() {
             </span>
             <h2>Different businesses. Different identities.</h2>
             <p>
-              These are previously generated Kora website examples for fictional
+              These are earlier-generation website examples for fictional
               businesses, retained as genuine product demonstrations—not artwork
               fabricated for this landing page.
             </p>
