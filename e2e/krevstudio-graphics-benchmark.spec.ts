@@ -9,8 +9,7 @@ const briefs = [
   [
     "bakery",
     "Meridian Bakes",
-    "Artisan sourdough,
-    pastries and celebration cakes",
+    "Artisan sourdough, pastries and celebration cakes",
   ],
   ["beauty", "Velvet Studio", "Hair styling, makeup and nail care"],
   ["fashion", "Atelier Nova", "Tailored clothing and accessories"],
@@ -19,29 +18,12 @@ const briefs = [
     "Northline Homes",
     "Property viewings and residential listings",
   ],
-  [
-    "creative",
-    "Kochab Works",
-    "Motion graphics and digital branding",
-  ],
-  [
-    "education",
-    "Bright Path",
-    "Workshops,
-    tutoring and small-group learning",
-  ],
+  ["creative", "Kochab Works", "Motion graphics and digital branding"],
+  ["education", "Bright Path", "Workshops, tutoring and small-group learning"],
   ["fitness", "Pulse Movement", "Movement classes, strength and training"],
   ["technology", "Meridian Cloud", "Web applications, APIs and integrations"],
-  [
-    "photography",
-    "Luma Portraits",
-    "Brand photography and event portraits",
-  ],
-  [
-    "restaurant",
-    "Terrace Table",
-    "Freshly prepared lunch and dinner",
-  ],
+  ["photography", "Luma Portraits", "Brand photography and event portraits"],
+  ["restaurant", "Terrace Table", "Freshly prepared lunch and dinner"],
 ] as const;
 const colors = [
   ["#fcf4e8", "#272421", "#945e3c", "#e1aa82"],
