@@ -498,6 +498,7 @@ export function buildCreativeDocument(
           layers.push(textLayer(request.cta, left + 18, Math.round(height * 0.825), available - 36, 27, background, "700"));
         }
       }
+    }
     return { id: uid(), width, height, background, layers };
   });
   return creativeDocumentSchema.parse({
