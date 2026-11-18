@@ -5,7 +5,7 @@ import { Async, Notice, errText, useLoad } from "../ui";
 
 type Layer = {
   id: string;
-  type: "rect" | "ellipse" | "line" | "text" | "image";
+  type: "rect" | "ellipse" | "line" | "text" | "image" | "path";
   x: number;
   y: number;
   width: number;
@@ -21,6 +21,8 @@ type Layer = {
   align?: string;
   radius?: number;
   strokeWidth?: number;
+  stroke?: string;
+  d?: string;
   src?: string;
   alt?: string;
   fit?: "cover" | "contain";
@@ -80,6 +82,9 @@ function renderLayer(layer: Layer) {
           }
         />
       );
+    case "path":
+      return <path {...common} d={layer.d ?? ""} fill={layer.fill}
+        stroke={layer.stroke ?? "#242424"} strokeWidth={layer.strokeWidth ?? 2}/>;
     case "line":
       return (
         <line
@@ -511,6 +516,7 @@ export function KrevCreativeStudio() {
         : {}),
       ...(type === "rect" ? { radius: 0 } : {}),
       ...(type === "line" ? { strokeWidth: 4 } : {}),
+      ...(type === "path" ? {d:"M 0 80 C 80 -35 165 195 280 80 L 350 130 Z",stroke:"#242424",strokeWidth:2,height:180} : {}),
     };
     update((next) => {
       next.slides[slideIndex]!.layers.push(created);
@@ -1171,7 +1177,7 @@ export function KrevCreativeStudio() {
                   <aside className="stack" aria-label="Design elements">
                     <h3>Layers</h3>
                     <div className="row">
-                      {(["text", "rect", "ellipse", "line"] as const).map(
+                      {(["text", "rect", "ellipse", "line", "path"] as const).map(
                         (type) => (
                           <button
                             className="btn sm ghost"
@@ -1472,6 +1478,21 @@ export function KrevCreativeStudio() {
                             </label>
                           </>
                         )}
+                        {layer.type==="path"&&<>
+                          <label>Vector path commands
+                            <textarea value={layer.d??""} maxLength={5000} rows={4}
+                              onChange={e=>editLayer({d:e.target.value})}/>
+                          </label>
+                          <p className="small muted">Editable M, L, C, Q, A and Z SVG path geometry. Scripts and external resources are rejected on save.</p>
+                          <label>Stroke
+                            <input type="color" value={layer.stroke??"#242424"}
+                              onChange={e=>editLayer({stroke:e.target.value})}/>
+                          </label>
+                          <label>Stroke width
+                            <input type="number" min={0} max={100} step={0.5} value={layer.strokeWidth??2}
+                              onChange={e=>editLayer({strokeWidth:makeValue(e.target.value)})}/>
+                          </label>
+                        </>}
                         {(
                           [
                             "x",
