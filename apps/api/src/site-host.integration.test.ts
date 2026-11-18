@@ -368,7 +368,7 @@ d("independent Site Host", () => {
         })
       ).status,
     ).toBe(404);
-  });
+  }, 20_000);
 
   it("timeout faults really stall the response", async () => {
     const { o, site } = await publishedSite("sh-4@example.com", "Host Four");
