@@ -322,11 +322,9 @@ for (const w of WIDTHS) {
         await page.keyboard.press("Enter");
         await expect(menu).toHaveAttribute("open", "");
         await expect(
-          menu.getByRole("link", { name: "Start creating" }),
+          menu.getByRole("link", { name: "Open Mission Control" }),
         ).toBeVisible();
-        await expect(
-          menu.getByRole("link", { name: "Sign in" }),
-        ).toBeVisible();
+        await expect(menu.getByRole("link", { name: "Pricing" })).toBeVisible();
         await check(page, "landing/open-menu", w, problems);
         await trigger.click();
         await expect(menu).not.toHaveAttribute("open", "");
