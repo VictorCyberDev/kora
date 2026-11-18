@@ -32,7 +32,7 @@ export const graphicLayerSchema = z.discriminatedUnion("type", [
   common.extend({ type: z.literal("ellipse") }),
   common.extend({
     type: z.literal("path"),
-    d: z.string().min(1).max(5000).regex(/^[MLHVCSQTAZmlhvcsqtaz0-9+.,\\-\\s]+$/),
+    d: z.string().min(1).max(5000).regex(/^[MLHVCSQTAZmlhvcsqtaz0-9+.,\s-]+$/),
     stroke: color.default("#242424"),
     strokeWidth: z.number().finite().min(0).max(100).default(2),
   }),
