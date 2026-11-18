@@ -215,7 +215,8 @@ test.beforeAll(async () => {
   origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 });
 test.afterAll(async () => {
-  if (server) await new Promise<void>((resolve) => server.close(() => resolve()));
+  if (server)
+    await new Promise<void>((resolve) => server.close(() => resolve()));
 });
 
 test("20 industries have real rendered desktop/mobile screenshots, navigation and layout checks", async ({
