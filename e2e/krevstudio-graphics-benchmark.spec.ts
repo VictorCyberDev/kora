@@ -6,16 +6,42 @@ import {
 } from "../apps/api/src/platform/creative-documents";
 
 const briefs = [
-  ["bakery", "Meridian Bakes", "Artisan sourdough, pastries and celebration cakes"],
+  [
+    "bakery",
+    "Meridian Bakes",
+    "Artisan sourdough,
+    pastries and celebration cakes",
+  ],
   ["beauty", "Velvet Studio", "Hair styling, makeup and nail care"],
   ["fashion", "Atelier Nova", "Tailored clothing and accessories"],
-  ["realestate", "Northline Homes", "Property viewings and residential listings"],
-  ["creative", "Kochab Works", "Motion graphics and digital branding"],
-  ["education", "Bright Path", "Workshops, tutoring and small-group learning"],
+  [
+    "realestate",
+    "Northline Homes",
+    "Property viewings and residential listings",
+  ],
+  [
+    "creative",
+    "Kochab Works",
+    "Motion graphics and digital branding",
+  ],
+  [
+    "education",
+    "Bright Path",
+    "Workshops,
+    tutoring and small-group learning",
+  ],
   ["fitness", "Pulse Movement", "Movement classes, strength and training"],
   ["technology", "Meridian Cloud", "Web applications, APIs and integrations"],
-  ["photography", "Luma Portraits", "Brand photography and event portraits"],
-  ["restaurant", "Terrace Table", "Freshly prepared lunch and dinner"],
+  [
+    "photography",
+    "Luma Portraits",
+    "Brand photography and event portraits",
+  ],
+  [
+    "restaurant",
+    "Terrace Table",
+    "Freshly prepared lunch and dinner",
+  ],
 ] as const;
 const colors = [
   ["#fcf4e8", "#272421", "#945e3c", "#e1aa82"],
@@ -25,9 +51,9 @@ const colors = [
   ["#edf5f0", "#183b35", "#27735f", "#9fd3b8"],
 ] as const;
 
-test("55 authentic graphic and vector sources render for ten industries; five connected brand systems retain logo provenance", async ({
-  browser,
-}) => {
+test(
+  "55 authentic graphic and vector sources render for ten industries; five connected brand systems retain logo provenance",
+  async ({ browser }) => {
   test.setTimeout(240_000);
   mkdirSync("test-results/kora-studio-benchmark", { recursive: true });
   const ctx = await browser.newContext({
@@ -165,4 +191,5 @@ test("55 authentic graphic and vector sources render for ten industries; five co
       2,
     ),
   );
-});
+  },
+);
