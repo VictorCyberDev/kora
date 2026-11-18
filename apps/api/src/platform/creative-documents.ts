@@ -144,7 +144,7 @@ function textLayer(
     locked: false,
     fill,
     text,
-    fontSize,
+    fontSize: Math.max(6, Math.min(380, Math.round(fontSize))),
     fontFamily: "sans-serif",
     weight,
     align: "left",
