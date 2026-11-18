@@ -156,6 +156,15 @@ describe("Krevstudio editable documents", () => {
       ),
     ).toThrow();
   });
+  it("saves vector paths and rejects injected SVG or external references",()=>{
+    const doc=buildCreativeDocument({kind:"logo",title:"Icon",headline:"Meridian Bakes",logoForm:"icon"},brand);
+    const layer=doc.slides[0]!.layers[0]!;
+    const path={...layer,type:"path",d:"M 0 20 C 40 0 90 100 130 20 Z",stroke:"#202020",strokeWidth:3};
+    const slide={...doc.slides[0]!,layers:[path]};
+    expect(renderSlideSvg(slide as typeof doc.slides[0])).toContain('d="M 0 20 C 40 0 90 100 130 20 Z"');
+    expect(()=>renderSlideSvg({...slide,layers:[{...path,d:'M 0 0 <script>alert(1)</script>'}]} as typeof doc.slides[0])).toThrow();
+    expect(()=>renderSlideSvg({...slide,layers:[{...path,d:'M 0 0 url(https://example.com/x)'}]} as typeof doc.slides[0])).toThrow();
+  });
   it("rejects unsafe layer data and excessive resource use", () => {
     const doc = buildCreativeDocument(
       {

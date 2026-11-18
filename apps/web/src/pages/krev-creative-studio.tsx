@@ -1,3 +1,4 @@
+import { bundleSvgZip } from "../creative-zip";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api, type J } from "../api";
@@ -5,7 +6,7 @@ import { Async, Notice, errText, useLoad } from "../ui";
 
 type Layer = {
   id: string;
-  type: "rect" | "ellipse" | "line" | "text" | "image";
+  type: "rect" | "ellipse" | "line" | "text" | "image" | "path";
   x: number;
   y: number;
   width: number;
@@ -21,6 +22,8 @@ type Layer = {
   align?: string;
   radius?: number;
   strokeWidth?: number;
+  stroke?: string;
+  d?: string;
   src?: string;
   alt?: string;
   fit?: "cover" | "contain";
@@ -80,6 +83,9 @@ function renderLayer(layer: Layer) {
           }
         />
       );
+    case "path":
+      return <path {...common} d={layer.d ?? ""} fill={layer.fill}
+        stroke={layer.stroke ?? "#242424"} strokeWidth={layer.strokeWidth ?? 2}/>;
     case "line":
       return (
         <line
@@ -511,6 +517,7 @@ export function KrevCreativeStudio() {
         : {}),
       ...(type === "rect" ? { radius: 0 } : {}),
       ...(type === "line" ? { strokeWidth: 4 } : {}),
+      ...(type === "path" ? {d:"M 0 80 C 80 -35 165 195 280 80 L 350 130 Z",stroke:"#242424",strokeWidth:2,height:180} : {}),
     };
     update((next) => {
       next.slides[slideIndex]!.layers.push(created);
@@ -677,6 +684,25 @@ export function KrevCreativeStudio() {
     } catch (e) {
       setError(errText(e));
     }
+  };
+  const exportAllSlides=async()=>{
+    if(!source||!documentId||dirty)return;
+    setBusy(true);setError("");
+    try{
+      const files:{name:string;bytes:Uint8Array}[]=[];
+      for(let i=0;i<source.slides.length;i++){
+        const res=await fetch(`/api/sites/${id}/creative-documents/${documentId}/export/${i}`,{credentials:"same-origin"});
+        if(!res.ok||!res.headers.get("content-type")?.startsWith("image/svg+xml"))
+          throw new Error("One of the slide exports could not be verified.");
+        const bytes=new Uint8Array(await res.arrayBuffer());
+        files.push({name:`krevstudio-${source.kind}-slide-${i+1}.svg`,bytes});
+      }
+      const bytes=bundleSvgZip(files);
+      const url=URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:"application/zip"}));
+      const a=document.createElement("a");a.href=url;a.download=`krevstudio-${source.kind}-${source.slides.length}-slides.zip`;
+      document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),30_000);
+      setNotice("Batch SVG ZIP exported. Some linked photos need their authorized source URLs when opened offline.");
+    }catch(e){setError(errText(e));}finally{setBusy(false);}
   };
   const svgPoint = (event: React.PointerEvent) => {
     const pt = svg.current?.createSVGPoint();
@@ -1076,6 +1102,8 @@ export function KrevCreativeStudio() {
                     >
                       Export SVG
                     </a>
+                    {source.slides.length>1&&<button className="btn sm ghost" type="button" disabled={busy||dirty}
+                      onClick={()=>void exportAllSlides()}>Export all slides (ZIP)</button>}
                   </div>
                 </div>
                 {assessment && (
@@ -1171,7 +1199,7 @@ export function KrevCreativeStudio() {
                   <aside className="stack" aria-label="Design elements">
                     <h3>Layers</h3>
                     <div className="row">
-                      {(["text", "rect", "ellipse", "line"] as const).map(
+                      {(["text", "rect", "ellipse", "line", "path"] as const).map(
                         (type) => (
                           <button
                             className="btn sm ghost"
@@ -1472,6 +1500,21 @@ export function KrevCreativeStudio() {
                             </label>
                           </>
                         )}
+                        {layer.type==="path"&&<>
+                          <label>Vector path commands
+                            <textarea value={layer.d??""} maxLength={5000} rows={4}
+                              onChange={e=>editLayer({d:e.target.value})}/>
+                          </label>
+                          <p className="small muted">Editable M, L, C, Q, A and Z SVG path geometry. Scripts and external resources are rejected on save.</p>
+                          <label>Stroke
+                            <input type="color" value={layer.stroke??"#242424"}
+                              onChange={e=>editLayer({stroke:e.target.value})}/>
+                          </label>
+                          <label>Stroke width
+                            <input type="number" min={0} max={100} step={0.5} value={layer.strokeWidth??2}
+                              onChange={e=>editLayer({strokeWidth:makeValue(e.target.value)})}/>
+                          </label>
+                        </>}
                         {(
                           [
                             "x",

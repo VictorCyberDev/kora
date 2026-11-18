@@ -27,7 +27,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
-      name: /A brand, a website and the campaigns to match/,
+      name: /Create a brand that goes everywhere/,
     }),
   ).toBeVisible();
   await shot(page, "01-landing");

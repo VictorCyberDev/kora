@@ -31,6 +31,12 @@ export const graphicLayerSchema = z.discriminatedUnion("type", [
   }),
   common.extend({ type: z.literal("ellipse") }),
   common.extend({
+    type: z.literal("path"),
+    d: z.string().min(1).max(5000).regex(/^[MLHVCSQTAZmlhvcsqtaz0-9+.,\s-]+$/),
+    stroke: color.default("#242424"),
+    strokeWidth: z.number().finite().min(0).max(100).default(2),
+  }),
+  common.extend({
     type: z.literal("line"),
     strokeWidth: z.number().min(0.5).max(100).default(4),
   }),
@@ -144,7 +150,7 @@ function textLayer(
     locked: false,
     fill,
     text,
-    fontSize,
+    fontSize: Math.max(6, Math.min(380, Math.round(fontSize))),
     fontFamily: "sans-serif",
     weight,
     align: "left",
@@ -453,6 +459,8 @@ export function renderSlideSvg(slide: z.infer<typeof slideSchema>): string {
         return `<rect ${attributes} width="${layer.width}" height="${layer.height}" rx="${layer.radius}" fill="${layer.fill}"/>`;
       if (layer.type === "ellipse")
         return `<ellipse ${attributes} cx="${layer.width / 2}" cy="${layer.height / 2}" rx="${layer.width / 2}" ry="${layer.height / 2}" fill="${layer.fill}"/>`;
+      if (layer.type === "path")
+        return `<path ${attributes} d="${esc(layer.d)}" fill="${layer.fill}" stroke="${layer.stroke}" stroke-width="${layer.strokeWidth}"/>`;
       if (layer.type === "image")
         return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${layer.fit === "cover" ? "xMidYMid slice" : "xMidYMid meet"}"/>`;
       if (layer.type === "line")
