@@ -24,11 +24,6 @@ CREATE TABLE IF NOT EXISTS creative_document_revisions (
   created_at timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (document_id,revision)
 );
-DO $
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'creative_document_revisions_immutable') THEN
-    CREATE TRIGGER creative_document_revisions_immutable
-      BEFORE UPDATE ON creative_document_revisions
-      FOR EACH ROW EXECUTE FUNCTION kora_immutable_rows();
-  END IF;
-END $;
+CREATE OR REPLACE TRIGGER creative_document_revisions_immutable
+BEFORE UPDATE ON creative_document_revisions
+FOR EACH ROW EXECUTE FUNCTION kora_immutable_rows();
