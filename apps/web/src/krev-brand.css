@@ -323,3 +323,13 @@
     transition: none !important;
   }
 }
+
+/* The same real editor becomes a stacked mobile workspace, not a clipped desktop mock. */
+.krev-editor-layout{display:grid;grid-template-columns:minmax(150px,220px) minmax(260px,1fr) minmax(180px,260px);gap:12px;align-items:start;min-width:0}
+.krev-editor-layout>aside{min-width:0;max-height:78vh;overflow-y:auto;overscroll-behavior:contain}
+.krev-editor-layout>div{min-width:0;max-width:100%}
+@media(max-width:1000px){
+ .krev-editor-layout{grid-template-columns:minmax(0,1fr)}
+ .krev-editor-layout>aside{max-height:none}
+ .krev-editor-layout>div{order:-1;max-width:100%;overflow-x:auto}
+}
