@@ -1512,6 +1512,44 @@ details[open] > summary::before {
   margin-bottom: 8px;
 }
 
+/* Keep authenticated navigation in its own bounded scroll lane. Without this,
+   the long link row can paint over the Owner/Proof switch at 1024–1280px
+   even when Playwright reports that the switch is visible. */
+header.top .wrap:has(nav[aria-label="Mission Control"]) {
+  gap: 12px;
+}
+header.top nav.main[aria-label="Mission Control"] {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+header.top nav.main[aria-label="Mission Control"] > * {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+header.top .wrap:has(nav[aria-label="Mission Control"]) > .seg {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+}
+header.top .wrap:has(nav[aria-label="Mission Control"]) > .signout {
+  display: none;
+}
+@media (max-width: 720px) {
+  header.top .wrap:has(nav[aria-label="Mission Control"]) {
+    gap: 6px 10px;
+  }
+  header.top nav.main[aria-label="Mission Control"] {
+    grid-area: nav;
+    width: 100%;
+    padding-block: 0 8px;
+    overflow-x: auto;
+  }
+}
+
 /* Public header: one reachable disclosure at narrow widths, not an overflowing row. */
 .krev-public-menu {
   display: none;
