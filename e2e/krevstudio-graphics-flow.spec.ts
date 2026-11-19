@@ -163,7 +163,9 @@ test("Meridian Bakes creates a brand logo, flyer, poster, social post and editab
     await page.getByLabel("Format").selectOption("carousel");
     await page.getByLabel("Project title").fill("Meridian story carousel");
     await page.getByLabel("Headline or wordmark").fill("Our baking process");
-    await page.getByRole("spinbutton", { name: "Slides" }).fill("4");
+    await page
+      .getByRole("spinbutton", { name: "Slides" })
+      .fill("4");
     const carouselResponse = page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
