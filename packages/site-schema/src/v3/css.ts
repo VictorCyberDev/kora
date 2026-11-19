@@ -198,6 +198,14 @@ ${tones}
 .ft{background:var(--bg);color:var(--fg);padding-block:clamp(40px,7vw,88px) 28px;border-top:var(--bw) solid var(--bd)}
 .ft h4{font:600 .74rem/1 var(--fl);letter-spacing:.14em;text-transform:uppercase;color:var(--ac);margin:0 0 14px}
 .ft ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}.ft a{text-decoration:none}.ft a:hover{text-decoration:underline}
+/* Actual mobile browser audit found undersized footer and brand links in all
+   twenty sample industries. Increase their interactive geometry, not just font. */
+@media(max-width:859px){
+  .ft a{display:inline-flex;align-items:center;min-width:24px;min-height:36px;padding-block:7px}
+  .ft .brand{min-height:44px}
+  .hd .brand{min-height:44px}
+  .ft .fg{gap:22px}
+}
 .ft .fg{display:grid;gap:32px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}.ft .legal{margin:36px 0 0;color:var(--mf);font-size:.88rem}
 .ft .big{font:var(--hw) clamp(2.6rem,12vw,10rem)/.9 var(--fd);letter-spacing:var(--tr);overflow-wrap:anywhere;margin-bottom:clamp(24px,5vw,56px)}
 .ft.fs-local-card .lc{${cardSurface};padding:clamp(20px,3vw,36px);border-radius:var(--r)}

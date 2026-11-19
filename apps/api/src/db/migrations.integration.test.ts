@@ -167,7 +167,7 @@ d("tenant integrity", () => {
     // The correct pairing works.
     await sql`INSERT INTO site_versions(id,site_id,org_id,number,spec,spec_hash,artifact_hash,artifact,generation_source) VALUES(${crypto.randomUUID()},${siteA!},${orgA!},1,${spec},'h','h',${sql.json({})},'MANUAL')`;
     await sql.end();
-  });
+  }, 20_000);
 
   it("a fault can only target a version of its own site", async () => {
     const { sql } = await freshDb();

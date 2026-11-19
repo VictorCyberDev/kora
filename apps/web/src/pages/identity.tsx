@@ -4,14 +4,14 @@ import { api, type J } from "../api";
 import { Async, Empty, Notice, errText, useLoad } from "../ui";
 
 const SOURCE: Record<string, string> = {
-  OWNER_STATED: "You told Kora",
+  OWNER_STATED: "You told Krevstudio",
   OWNER_UPLOADED: "You uploaded",
   VERIFIED: "Confirmed",
   SCRAPED: "Read from the web",
-  INFERRED: "Kora's guess",
+  INFERRED: "Krevstudio's guess",
 };
 
-/** Business Identity Snapshot: what Kora knows (with where it came from), and what it still needs to ask. */
+/** Business Identity Snapshot: what Krevstudio knows (with where it came from), and what it still needs to ask. */
 export function IdentityPage() {
   const { id } = useParams();
   const truth = useLoad(() => api<J>("GET", `/api/sites/${id}/truth`), [id]);
@@ -51,11 +51,11 @@ export function IdentityPage() {
       <section className="card stack" aria-labelledby="known-h">
         <p className="k-overline">Business identity</p>
         <h2 id="known-h" style={{ margin: 0 }}>
-          What Kora knows
+          What Krevstudio knows
         </h2>
         <p className="muted">
-          Kora only writes about things on this list. Anything missing, it asks
-          you instead of guessing.
+          Krevstudio only writes about things on this list. Anything missing, it
+          asks you instead of guessing.
         </p>
         <Async state={truth}>
           {(t: J) =>
@@ -93,7 +93,7 @@ export function IdentityPage() {
             <>
               {g.gaps.length > 0 && (
                 <div>
-                  <p className="muted">Kora would like to know:</p>
+                  <p className="muted">Krevstudio would like to know:</p>
                   <ul>
                     {g.gaps.map((q: string) => (
                       <li key={q}>{q}</li>

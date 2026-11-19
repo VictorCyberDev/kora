@@ -32,6 +32,8 @@ import { fatigueAvoid, tasteSignals } from "@kora/creative";
 import { designContext } from "./design-context.js";
 import type { DirectionTrace } from "./author.js";
 import { loadOwnerMedia, mediaBase } from "./owner-media-loader.js";
+import { mediaUrls, unapprovedMediaUrls } from "./studio-media-guard.js";
+import { findUnsplashStock, trackUnsplashSelection } from "./unsplash-stock.js";
 import { EditNotUnderstood, type SiteAuthor } from "./author.js";
 import type { PlatformConfig } from "./config.js";
 import { sendArtifact } from "./hosting.js";
@@ -322,7 +324,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       throw new HttpError(
         404,
         "user_not_found",
-        "That person needs a Kora account first.",
+        "That person needs a Krevstudio account first.",
       );
     await platform.audit({
       orgId: id,
@@ -431,10 +433,27 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     config.KORA_MEDIA_PUBLIC_URL ?? config.KORA_PUBLIC_URL,
   );
   /** The owner's good pictures and logo, in the planner's terms. Empty when no https media origin is configured. */
-  const ownerPlan = async (siteId: string, orgId: string) => {
+  const ownerPlan = async (
+    siteId: string,
+    orgId: string,
+    industry?: string,
+  ) => {
     const m = await loadOwnerMedia(platform.sql, siteId, mediaBaseUrl);
     const ctx = await designContext(brandOs, orgId);
+    const stock =
+      m.photos.length || !industry
+        ? []
+        : await findUnsplashStock(
+            industry,
+            process.env.KORA_UNSPLASH_ACCESS_KEY,
+          );
     return {
+      stockPhotos: stock.map((photo) => photo.media),
+      trackStock: (urls: string[]) =>
+        trackUnsplashSelection(
+          stock.filter((photo) => urls.includes(photo.media.url)),
+          process.env.KORA_UNSPLASH_ACCESS_KEY,
+        ),
       ownerPhotos: m.photos,
       ...(m.logo ? { ownerLogo: m.logo } : {}),
       ...ctx,
@@ -540,7 +559,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
           .generateV3(
             { ...brief, ...designBriefSchema.partial().parse(req.body ?? {}) },
             extra.direction ?? 0,
-            await ownerPlan(site.id, site.orgId),
+            await ownerPlan(site.id, site.orgId, brief.industry),
             config.KORA_COPY_ASSIST,
           )
           .then((r) => {
@@ -667,7 +686,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     const { directions: planned, recommended } = previewDirections(
       config.KORA_CREATIVE_ENGINE,
       brief,
-      await ownerPlan(site.id, site.orgId),
+      await ownerPlan(site.id, site.orgId, brief.industry),
     );
     const token = randomBytes(16).toString("hex");
     for (const [k, v] of directionPreviews)
@@ -750,7 +769,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
         throw new HttpError(
           409,
           "creative_engine_disabled",
-          "The new Kora design engine is not switched on for this deployment yet.",
+          "The new Krevstudio design engine is not enabled for this deployment yet.",
         );
       const a = requireUser(req);
       const row = await platform.getVersionRow(site.id, versionId);
@@ -801,7 +820,7 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       const authored = await author.generateV3(
         brief,
         parsed.direction ?? 0,
-        await ownerPlan(site.id, site.orgId),
+        await ownerPlan(site.id, site.orgId, brief.industry),
       );
       const version = await buildVersion(
         site,
@@ -1015,6 +1034,19 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       data: { version, carried: result.carried, notCarried: result.notCarried },
     });
   });
+  // Approved studio assets come from the site's own upload library.
+  // The editor never needs cloud credentials or an arbitrary image URL proxy.
+  app.get("/api/sites/:id/studio-assets", async (req) => {
+    const { site } = await siteFor(req, idParam.parse(req.params).id);
+    const media = await loadOwnerMedia(platform.sql, site.id, mediaBaseUrl);
+    return {
+      data: {
+        photos: media.photos,
+        logo: media.logo ?? null,
+        enabled: Boolean(mediaBaseUrl),
+      },
+    };
+  });
   app.post("/api/sites/:id/edit", async (req, reply) => {
     const { site } = await siteFor(req, idParam.parse(req.params).id, "MEMBER");
     await entitled(site.orgId, "canGenerate");
@@ -1040,6 +1072,30 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
       );
     try {
       const authored = await author.edit(base.spec as AnySiteSpec, body);
+      // Validate the resulting canonical spec, not just one Puck mutation type:
+      // this protects insert-section, replace-section, create-page, natural
+      // language changes and future edit contracts from foreign asset URLs.
+      const prior = mediaUrls(base.spec);
+      const proposed = mediaUrls(authored.spec);
+      if ([...proposed].some((url) => !prior.has(url))) {
+        const uploads = await loadOwnerMedia(
+          platform.sql,
+          site.id,
+          mediaBaseUrl,
+        );
+        const invalid = unapprovedMediaUrls(
+          base.spec,
+          authored.spec,
+          uploads.photos,
+          uploads.logo,
+        );
+        if (invalid.length)
+          throw new HttpError(
+            422,
+            "unapproved_studio_asset",
+            "Choose an image from this site's approved media library.",
+          );
+      }
       const version = await buildVersion(
         site,
         authored.spec,

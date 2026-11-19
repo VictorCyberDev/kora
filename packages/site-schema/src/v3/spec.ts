@@ -95,6 +95,9 @@ export const mediaV3Schema = z.object({
       provider: text(80).optional(),
       license: text(120).optional(),
       attribution: text(200).optional(),
+      photographer: text(100).optional(),
+      photographerUrl: z.string().url().max(500).optional(),
+      sourceUrl: z.string().url().max(500).optional(),
       reviewStatus: z
         .enum(["owner-approved", "unreviewed", "kora-curated"])
         .default("unreviewed"),
@@ -354,13 +357,16 @@ export const siteSpecV3Schema = z
           slug,
           title: line(80),
           nav: text(30).optional(),
+          navHidden: z.boolean().default(false),
+          seoTitle: text(70).optional(),
+          seoDescription: text(180).optional(),
           purpose: z.enum(PAGE_PURPOSES),
           conversionGoal: z.enum(INTENTS),
           sections: z.array(sectionV3Schema).min(1).max(16),
         }),
       )
       .min(1)
-      .max(8),
+      .max(8), // Read compatibility for existing 8-page v3 sites; generator/editor enforce 7.
     footer: z.object({
       text: text(200).default(""),
       links: z.array(link).max(6).default([]),
@@ -371,6 +377,7 @@ export const siteSpecV3Schema = z
       generator: z
         .enum(["deterministic", "model", "edit"])
         .default("deterministic"),
+      appliedDesignRules: z.array(z.string().max(80)).max(24).default([]),
     }),
   })
   .superRefine((spec, ctx) => {

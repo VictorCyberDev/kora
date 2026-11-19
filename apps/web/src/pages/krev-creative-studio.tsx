@@ -1,0 +1,1789 @@
+import { bundleSvgZip } from "../creative-zip";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link, useParams } from "react-router-dom";
+import { api, type J } from "../api";
+import { Async, Notice, errText, useLoad } from "../ui";
+
+type Layer = {
+  id: string;
+  type: "rect" | "ellipse" | "line" | "text" | "image" | "path";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number;
+  opacity: number;
+  locked: boolean;
+  fill: string;
+  text?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  weight?: string;
+  align?: string;
+  radius?: number;
+  strokeWidth?: number;
+  stroke?: string;
+  d?: string;
+  viewBoxWidth?: number;
+  viewBoxHeight?: number;
+  src?: string;
+  alt?: string;
+  fit?: "cover" | "contain";
+  focalX?: number;
+  focalY?: number;
+};
+type Slide = {
+  id: string;
+  width: number;
+  height: number;
+  background: string;
+  layers: Layer[];
+};
+type Source = {
+  schemaVersion: 1;
+  kind: string;
+  title: string;
+  brandVersion: number;
+  sourcePrompt: string;
+  slides: Slide[];
+};
+const clone = (s: Source): Source => structuredClone(s);
+const uid = () => crypto.randomUUID();
+function renderLayer(layer: Layer) {
+  const transform = `translate(${layer.x} ${layer.y}) rotate(${layer.rotation} ${layer.width / 2} ${layer.height / 2})`;
+  const common = { transform, opacity: layer.opacity };
+  const textAnchor =
+    layer.align === "center"
+      ? "middle"
+      : layer.align === "right"
+        ? "end"
+        : "start";
+  const textX =
+    layer.align === "center"
+      ? layer.width / 2
+      : layer.align === "right"
+        ? layer.width
+        : 0;
+  switch (layer.type) {
+    case "rect":
+      return (
+        <rect
+          {...common}
+          width={layer.width}
+          height={layer.height}
+          rx={layer.radius ?? 0}
+          fill={layer.fill}
+        />
+      );
+    case "ellipse":
+      return (
+        <ellipse
+          {...common}
+          cx={layer.width / 2}
+          cy={layer.height / 2}
+          rx={layer.width / 2}
+          ry={layer.height / 2}
+          fill={layer.fill}
+        />
+      );
+    case "image":
+      return (
+        <image
+          {...common}
+          width={layer.width}
+          height={layer.height}
+          href={layer.src}
+          aria-label={layer.alt}
+          preserveAspectRatio={[
+            (layer.focalX ?? 0.5) < 1 / 3
+              ? "xMin"
+              : (layer.focalX ?? 0.5) > 2 / 3
+                ? "xMax"
+                : "xMid",
+            (layer.focalY ?? 0.5) < 1 / 3
+              ? "YMin"
+              : (layer.focalY ?? 0.5) > 2 / 3
+                ? "YMax"
+                : "YMid",
+            layer.fit === "contain" ? " meet" : " slice",
+          ].join("")}
+        />
+      );
+    case "path":
+      return (
+        <path
+          {...common}
+          transform={`${transform} scale(${
+            layer.width / (layer.viewBoxWidth ?? layer.width)
+          } ${layer.height / (layer.viewBoxHeight ?? layer.height)})`}
+          d={layer.d ?? ""}
+          fill={layer.fill}
+          stroke={layer.stroke ?? "#242424"}
+          strokeWidth={layer.strokeWidth ?? 2}
+        />
+      );
+    case "line":
+      return (
+        <line
+          {...common}
+          x1={0}
+          y1={0}
+          x2={layer.width}
+          y2={layer.height}
+          strokeWidth={layer.strokeWidth ?? 4}
+          stroke={layer.fill}
+        />
+      );
+    default:
+      return (
+        <text
+          {...common}
+          fontFamily={layer.fontFamily ?? "sans-serif"}
+          fontSize={layer.fontSize ?? 38}
+          fontWeight={layer.weight ?? "600"}
+          textAnchor={textAnchor}
+          fill={layer.fill}
+        >
+          {(layer.text ?? "")
+            .split("\n")
+            .slice(0, 12)
+            .map((line, i) => (
+              <tspan
+                key={i}
+                x={textX}
+                dy={
+                  i === 0
+                    ? (layer.fontSize ?? 38)
+                    : (layer.fontSize ?? 38) * 1.2
+                }
+              >
+                {line}
+              </tspan>
+            ))}
+        </text>
+      );
+  }
+}
+const PRESETS = [
+  ["Flyer", "flyer"],
+  ["Poster", "poster"],
+  ["Social post", "social"],
+  ["Story", "story"],
+  ["Carousel", "carousel"],
+  ["Banner", "banner"],
+  ["Vector logo", "logo"],
+  ["Ad creative", "ad"],
+  ["Video thumbnail", "thumbnail"],
+  ["Business announcement", "announcement"],
+  ["Event flyer", "event"],
+  ["Product promotion", "product"],
+] as const;
+export function KrevCreativeStudio() {
+  const { id } = useParams();
+  const assets = useLoad(
+    () => api<J>("GET", `/api/sites/${id}/studio-assets`),
+    [id],
+  );
+  const [selectedPhoto, setSelectedPhoto] = useState("");
+  const list = useLoad(
+    () => api<J[]>("GET", `/api/sites/${id}/creative-documents`),
+    [id],
+  );
+  const [documentId, setDocumentId] = useState<string | null>(null);
+  const doc = useLoad(
+    () =>
+      documentId
+        ? api<J>("GET", `/api/sites/${id}/creative-documents/${documentId}`)
+        : Promise.resolve(null),
+    [id, documentId],
+  );
+  const [source, setSource] = useState<Source | null>(null);
+  const [revision, setRevision] = useState(0);
+  const [dirty, setDirty] = useState(false);
+  const [slideIndex, setSlideIndex] = useState(0);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [assessment, setAssessment] = useState<{
+    revision: number;
+    findings: Array<{
+      severity: string;
+      code: string;
+      slide: number;
+      message: string;
+    }>;
+  } | null>(null);
+
+  const [createKind, setCreateKind] = useState("flyer");
+  const [title, setTitle] = useState("");
+  const [headline, setHeadline] = useState("");
+  const [description, setDescription] = useState("");
+  const [cta, setCta] = useState("");
+  const [direction, setDirection] = useState(0);
+  const [slideCount, setSlideCount] = useState(4);
+  const [logoForm, setLogoForm] = useState("combination");
+  const [customWidth, setCustomWidth] = useState(0);
+  const [customHeight, setCustomHeight] = useState(0);
+  const [previews, setPreviews] = useState<
+    Array<{ direction: number; svg: string }>
+  >([]);
+  const history = useRef<Source[]>([]);
+  const future = useRef<Source[]>([]);
+  const dragging = useRef<{
+    x: number;
+    y: number;
+    layerX: number;
+    layerY: number;
+    layerWidth: number;
+    layerHeight: number;
+    kind: "move" | "resize";
+    id: string;
+  } | null>(null);
+  const svg = useRef<SVGSVGElement>(null);
+  useEffect(() => {
+    if (!doc.data) return;
+    setSource(doc.data.source as Source);
+    setRevision(doc.data.revision as number);
+    setDirty(false);
+    setSelected(null);
+    setSlideIndex(0);
+    history.current = [];
+    future.current = [];
+  }, [doc.data]);
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (dirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [dirty]);
+  const slide = source?.slides[slideIndex];
+  const layer = slide?.layers.find((x) => x.id === selected);
+  const update = (fn: (next: Source) => void, checkpoint = true) => {
+    if (!source) return;
+    if (checkpoint) {
+      history.current.push(clone(source));
+      history.current = history.current.slice(-60);
+      future.current = [];
+    }
+    const next = clone(source);
+    fn(next);
+    setSource(next);
+    setDirty(true);
+  };
+  const undo = () => {
+    if (!source || !history.current.length) return;
+    future.current.push(clone(source));
+    setSource(history.current.pop()!);
+    setDirty(true);
+  };
+  const redo = () => {
+    if (!source || !future.current.length) return;
+    history.current.push(clone(source));
+    setSource(future.current.pop()!);
+    setDirty(true);
+  };
+  const editLayer = (patch: Partial<Layer>, checkpoint = true) =>
+    update((next) => {
+      const target = next.slides[slideIndex]?.layers.find(
+        (x) => x.id === selected,
+      );
+      if (target) Object.assign(target, patch);
+    }, checkpoint);
+  const selectDocument = (docId: string) => {
+    if (dirty && !window.confirm("Discard unsaved changes?")) return;
+    setDocumentId(docId);
+    setError("");
+    setNotice("");
+  };
+  const previewDirections = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/preview`,
+        {
+          kind: createKind,
+          title,
+          headline,
+          description,
+          cta,
+          slides: createKind === "carousel" ? slideCount : 1,
+          direction,
+          logoForm,
+          ...(customWidth >= 128 && customHeight >= 128
+            ? { customSize: { width: customWidth, height: customHeight } }
+            : {}),
+        },
+      );
+      setPreviews(r.directions as Array<{ direction: number; svg: string }>);
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const create = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>("POST", `/api/sites/${id}/creative-documents`, {
+        kind: createKind,
+        title,
+        headline,
+        description,
+        cta,
+        direction,
+        logoForm,
+        ...(customWidth >= 128 && customHeight >= 128
+          ? { customSize: { width: customWidth, height: customHeight } }
+          : {}),
+        slides: createKind === "carousel" ? slideCount : 1,
+      });
+      list.reload();
+      setDocumentId(r.id as string);
+      setNotice("Editable draft created.");
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const save = async () => {
+    if (!source || !documentId) return;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const r = await api<J>(
+        "PUT",
+        `/api/sites/${id}/creative-documents/${documentId}`,
+        { revision, source },
+      );
+      setRevision(r.revision as number);
+      setDirty(false);
+      history.current = [];
+      future.current = [];
+      setNotice("Saved as immutable revision " + r.revision);
+      list.reload();
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const approveLogo = async () => {
+    if (!documentId || !source || source.kind !== "logo" || dirty) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/approve`,
+        { revision },
+      );
+      const result = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/activate-logo`,
+        {},
+      );
+      setNotice(
+        "Approved logo added to Brand OS version " +
+          result.version +
+          ". New graphics will reuse it.",
+      );
+      list.reload();
+      doc.reload();
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const addPhoto = () => {
+    const picked = (assets.data?.photos ?? []).find(
+      (p: J) => p.url === selectedPhoto,
+    );
+    if (!picked || !slide) return;
+    const created: Layer = {
+      id: uid(),
+      type: "image",
+      x: slide.width * 0.15,
+      y: slide.height * 0.18,
+      width: slide.width * 0.7,
+      height: slide.height * 0.38,
+      rotation: 0,
+      opacity: 1,
+      locked: false,
+      fill: "#ffffff",
+      src: picked.url,
+      alt: picked.alt || "Approved customer photo",
+      fit: "cover",
+    };
+    update((next) => {
+      next.slides[slideIndex]!.layers.push(created);
+    });
+    setSelected(created.id);
+  };
+  const inspectSource = async () => {
+    if (!documentId || dirty) {
+      setError("Save your draft before evaluating its source.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "GET",
+        `/api/sites/${id}/creative-documents/${documentId}/evaluation`,
+      );
+      setAssessment(
+        r as {
+          revision: number;
+          findings: Array<{
+            severity: string;
+            code: string;
+            slide: number;
+            message: string;
+          }>;
+        },
+      );
+      setNotice(
+        "Structural checks complete. Screenshot and human review are separate quality gates.",
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const repairGeometry = async () => {
+    if (!documentId || dirty) {
+      setError("Save your draft before repair.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/repair-geometry`,
+        { revision },
+      );
+      setRevision(r.revision as number);
+      setSource(r.source as Source);
+      setDirty(false);
+      setAssessment(null);
+      list.reload();
+      doc.reload();
+      setNotice(
+        `Geometric repairs: ${r.changes.length}. No claims or creative wording were changed.`,
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const approveCreative = async () => {
+    if (!documentId || !source || dirty) return;
+    setBusy(true);
+    setError("");
+    try {
+      await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/${documentId}/approve`,
+        { revision },
+      );
+      setNotice("Design version approved. It is not published or scheduled.");
+      doc.reload();
+      list.reload();
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const preparePackage = async () => {
+    if (!documentId) return;
+    setBusy(true);
+    setError("");
+    try {
+      const packageInfo = await api<J>(
+        "GET",
+        `/api/sites/${id}/creative-documents/${documentId}/publishing-package`,
+      );
+      setNotice(
+        "Publishing package ready: " +
+          packageInfo.media.length +
+          " SVG slide(s), caption and alt text. No channel post has been made.",
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const addLayer = (type: Layer["type"]) => {
+    if (!slide) return;
+    const created: Layer = {
+      id: uid(),
+      type,
+      x: slide.width * 0.2,
+      y: slide.height * 0.35,
+      width: slide.width * 0.4,
+      height: 120,
+      rotation: 0,
+      opacity: 1,
+      locked: false,
+      fill: "#242424",
+      ...(type === "text"
+        ? {
+            text: "Edit this text",
+            fontSize: 56,
+            fontFamily: "sans-serif",
+            weight: "600",
+            align: "left",
+          }
+        : {}),
+      ...(type === "rect" ? { radius: 0 } : {}),
+      ...(type === "line" ? { strokeWidth: 4 } : {}),
+      ...(type === "path"
+        ? {
+            d: "M 0 80 C 80 -35 165 195 280 80 L 350 130 Z",
+            stroke: "#242424",
+            strokeWidth: 2,
+            height: 180,
+          }
+        : {}),
+    };
+    update((next) => {
+      next.slides[slideIndex]!.layers.push(created);
+    });
+    setSelected(created.id);
+  };
+  const duplicateLayer = () => {
+    if (!layer) return;
+    const copy = { ...layer, id: uid(), x: layer.x + 24, y: layer.y + 24 };
+    update((next) => {
+      next.slides[slideIndex]!.layers.push(copy);
+    });
+    setSelected(copy.id);
+  };
+  const removeLayer = () => {
+    if (!layer) return;
+    update((next) => {
+      next.slides[slideIndex]!.layers = next.slides[slideIndex]!.layers.filter(
+        (x) => x.id !== selected,
+      );
+    });
+    setSelected(null);
+  };
+  const shiftLayer = (direction: number) => {
+    if (!layer) return;
+    update((next) => {
+      const ls = next.slides[slideIndex]!.layers;
+      const from = ls.findIndex((x) => x.id === selected);
+      const to = Math.max(0, Math.min(ls.length - 1, from + direction));
+      if (from === to) return;
+      const [v] = ls.splice(from, 1);
+      ls.splice(to, 0, v!);
+    });
+  };
+  const addSlide = () => {
+    if (!source || source.slides.length >= 10) return;
+    const original = source.slides[slideIndex]!;
+    const next = {
+      ...structuredClone(original),
+      id: uid(),
+      layers: original.layers.map((l) => ({ ...l, id: uid() })),
+    };
+    update((s) => {
+      s.slides.splice(slideIndex + 1, 0, next);
+    });
+    setSlideIndex(slideIndex + 1);
+    setSelected(null);
+  };
+  const moveSlide = (delta: number) => {
+    if (!source) return;
+    const to = slideIndex + delta;
+    if (to < 0 || to >= source.slides.length) return;
+    update((s) => {
+      const [v] = s.slides.splice(slideIndex, 1);
+      s.slides.splice(to, 0, v!);
+    });
+    setSlideIndex(to);
+  };
+  const removeSlide = () => {
+    if (!source || source.slides.length <= 1) return;
+    update((s) => {
+      s.slides.splice(slideIndex, 1);
+    });
+    setSlideIndex(Math.max(0, slideIndex - 1));
+    setSelected(null);
+  };
+  const exportSource = () => {
+    if (!source) return;
+    const blob = new Blob([JSON.stringify(source, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "krevstudio-" + source.kind + ".json";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+  const exportPng = async (
+    format: "png" | "jpeg" = "png",
+    transparent = false,
+  ) => {
+    if (!svg || !slide || !svg.current) return;
+    setError("");
+    try {
+      const snapshot = svg.current.cloneNode(true) as SVGSVGElement;
+      if (transparent && source?.kind === "logo") {
+        snapshot.style.background = "transparent";
+        snapshot.querySelector(":scope > rect")?.remove();
+      }
+      let budget = 24 * 1024 * 1024;
+      for (const element of snapshot.querySelectorAll("image")) {
+        const src = element.getAttribute("href");
+        if (!src) continue;
+        // Fetch through the browser's normal CORS policy; no arbitrary
+        // cross-tenant image proxy or opaque canvas reads.
+        const response = await fetch(src, {
+          mode: "cors",
+          credentials: "omit",
+        });
+        if (!response.ok)
+          throw new Error("Approved image could not be loaded for PNG export.");
+        const size = Number(response.headers.get("content-length") ?? 0);
+        if (size > budget)
+          throw new Error("PNG export exceeds its image memory budget.");
+        const blob = await response.blob();
+        if (!["image/png", "image/jpeg", "image/webp"].includes(blob.type))
+          throw new Error(
+            "PNG export supports PNG, JPEG and WebP photo sources.",
+          );
+        budget -= blob.size;
+        if (budget < 0)
+          throw new Error("PNG export exceeds its 24 MB image budget.");
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () =>
+            reject(new Error("Photo export encoding failed."));
+          reader.readAsDataURL(blob);
+        });
+        element.setAttribute("href", dataUrl);
+      }
+      const content = new XMLSerializer().serializeToString(snapshot);
+      const image = new Image();
+      const url = URL.createObjectURL(
+        new Blob([content], { type: "image/svg+xml" }),
+      );
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () =>
+          reject(new Error("Unable to render the vector canvas."));
+        image.src = url;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = slide.width;
+      canvas.height = slide.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas unavailable.");
+      if (format === "jpeg") {
+        ctx.fillStyle = slide.background;
+        ctx.fillRect(0, 0, slide.width, slide.height);
+      }
+      ctx.drawImage(image, 0, 0, slide.width, slide.height);
+      URL.revokeObjectURL(url);
+      const blob = await new Promise<Blob>((resolve, reject) =>
+        canvas.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("PNG export failed"))),
+          format === "png" ? "image/png" : "image/jpeg",
+        ),
+      );
+      const output = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = output;
+      a.download =
+        "krevstudio-" +
+        source?.kind +
+        "-" +
+        (slideIndex + 1) +
+        (format === "png" ? ".png" : ".jpg");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(output), 30_000);
+    } catch (e) {
+      setError(errText(e));
+    }
+  };
+  const exportAllSlides = async () => {
+    if (!source || !documentId || dirty) return;
+    setBusy(true);
+    setError("");
+    try {
+      const files: { name: string; bytes: Uint8Array }[] = [];
+      for (let i = 0; i < source.slides.length; i++) {
+        const res = await fetch(
+          `/api/sites/${id}/creative-documents/${documentId}/export/${i}`,
+          { credentials: "same-origin" },
+        );
+        if (
+          !res.ok ||
+          !res.headers.get("content-type")?.startsWith("image/svg+xml")
+        )
+          throw new Error("One of the slide exports could not be verified.");
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        files.push({
+          name: `krevstudio-${source.kind}-slide-${i + 1}.svg`,
+          bytes,
+        });
+      }
+      const bytes = bundleSvgZip(files);
+      const url = URL.createObjectURL(
+        new Blob([new Uint8Array(bytes)], { type: "application/zip" }),
+      );
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `krevstudio-${source.kind}-${source.slides.length}-slides.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      setNotice(
+        "Batch SVG ZIP exported. Some linked photos need their authorized source URLs when opened offline.",
+      );
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const svgPoint = (event: React.PointerEvent) => {
+    const pt = svg.current?.createSVGPoint();
+    if (!pt || !svg.current) return null;
+    pt.x = event.clientX;
+    pt.y = event.clientY;
+    const matrix = svg.current.getScreenCTM()?.inverse();
+    return matrix ? pt.matrixTransform(matrix) : null;
+  };
+  const startDrag = (e: React.PointerEvent, item: Layer) => {
+    e.stopPropagation();
+    setSelected(item.id);
+    if (item.locked || !source) return;
+    const pt = svgPoint(e);
+    if (!pt) return;
+    history.current.push(clone(source));
+    future.current = [];
+    dragging.current = {
+      id: item.id,
+      x: pt.x,
+      y: pt.y,
+      layerX: item.x,
+      layerY: item.y,
+      layerWidth: item.width,
+      layerHeight: item.height,
+      kind: "move",
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const startResize = (event: React.PointerEvent) => {
+    if (!layer || layer.locked || !source) return;
+    event.stopPropagation();
+    const p = svgPoint(event);
+    if (!p) return;
+    history.current.push(clone(source));
+    future.current = [];
+    dragging.current = {
+      id: layer.id,
+      x: p.x,
+      y: p.y,
+      layerX: layer.x,
+      layerY: layer.y,
+      layerWidth: layer.width,
+      layerHeight: layer.height,
+      kind: "resize",
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const draggingMove = (e: React.PointerEvent) => {
+    const d = dragging.current;
+    if (!d || !source) return;
+    const p = svgPoint(e);
+    if (!p) return;
+    update((next) => {
+      const item = next.slides[slideIndex]?.layers.find((l) => l.id === d.id);
+      if (item) {
+        if (d.kind === "resize") {
+          item.width = Math.max(
+            1,
+            Math.min(8000, Math.round(d.layerWidth + p.x - d.x)),
+          );
+          item.height = Math.max(
+            1,
+            Math.min(8000, Math.round(d.layerHeight + p.y - d.y)),
+          );
+        } else {
+          // Eight-point snap improves alignment without replacing deliberate
+          // manual x/y edits in the right-side panel.
+          item.x = Math.round((d.layerX + p.x - d.x) / 8) * 8;
+          item.y = Math.round((d.layerY + p.y - d.y) / 8) * 8;
+        }
+      }
+    }, false);
+  };
+  const makeValue = (v: string) => (Number.isFinite(Number(v)) ? Number(v) : 0);
+  return (
+    <div className="stack" style={{ maxWidth: "100%" }}>
+      <header className="card row between">
+        <div>
+          <p className="k-overline">
+            Krevstudio · Graphics and vector identity
+          </p>
+          <h2>Creative workspace</h2>
+          <p className="muted">
+            Real editable layers, versioned drafts and brand-linked creative
+            output.
+          </p>
+        </div>
+        <Link className="btn sm ghost" to={`/app/sites/${id}/brand`}>
+          Brand DNA
+        </Link>
+      </header>
+      {error && <Notice kind="bad">{error}</Notice>}
+      {notice && <Notice kind="ok">{notice}</Notice>}
+      <section className="card stack">
+        <h2>Create from your brand</h2>
+        <form className="stack" onSubmit={(e) => void create(e)}>
+          <div className="row">
+            <label>
+              Format{" "}
+              <select
+                value={createKind}
+                onChange={(e) => setCreateKind(e.target.value)}
+              >
+                {PRESETS.map(([label, value]) => (
+                  <option value={value} key={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Direction{" "}
+              <select
+                value={direction}
+                onChange={(e) => setDirection(Number(e.target.value))}
+              >
+                {[0, 1, 2].map((n) => (
+                  <option key={n} value={n}>
+                    Concept {n + 1}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {createKind === "logo" && (
+              <label>
+                Logo style{" "}
+                <select
+                  value={logoForm}
+                  onChange={(e) => setLogoForm(e.target.value)}
+                >
+                  {[
+                    "wordmark",
+                    "lettermark",
+                    "monogram",
+                    "geometric",
+                    "abstract",
+                    "combination",
+                    "emblem",
+                    "icon",
+                  ].map((t) => (
+                    <option value={t} key={t}>
+                      {t[0]!.toUpperCase() + t.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {createKind === "carousel" && (
+              <label>
+                Slides{" "}
+                <input
+                  type="number"
+                  value={slideCount}
+                  min={2}
+                  max={10}
+                  onChange={(e) => setSlideCount(Number(e.target.value))}
+                />
+              </label>
+            )}
+          </div>
+          <div className="row">
+            <label>
+              Custom width (px){" "}
+              <input
+                type="number"
+                min={0}
+                max={4096}
+                value={customWidth}
+                onChange={(e) => setCustomWidth(Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Custom height (px){" "}
+              <input
+                type="number"
+                min={0}
+                max={4096}
+                value={customHeight}
+                onChange={(e) => setCustomHeight(Number(e.target.value))}
+              />
+            </label>
+            <span className="small muted">
+              Set both above 127px to override the format preset.
+            </span>
+          </div>
+          <label>
+            Project title{" "}
+            <input
+              required
+              maxLength={120}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Spring launch"
+            />
+          </label>
+          <label>
+            Headline or wordmark{" "}
+            <input
+              required
+              maxLength={120}
+              value={headline}
+              onChange={(e) => setHeadline(e.target.value)}
+              placeholder="Freshly made for you"
+            />
+          </label>
+          <label>
+            Supporting copy{" "}
+            <textarea
+              maxLength={600}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Only business facts you have provided"
+            />
+          </label>
+          <label>
+            Call to action{" "}
+            <input
+              maxLength={70}
+              value={cta}
+              onChange={(e) => setCta(e.target.value)}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn ghost"
+            disabled={busy || !title.trim() || !headline.trim()}
+            onClick={() => void previewDirections()}
+          >
+            Explore three real directions
+          </button>
+          {previews.length > 0 && (
+            <div
+              className="grid"
+              role="group"
+              aria-label="Real creative direction previews"
+            >
+              {previews.map((p) => (
+                <button
+                  type="button"
+                  className="card stack"
+                  key={p.direction}
+                  aria-pressed={direction === p.direction}
+                  onClick={() => setDirection(p.direction)}
+                >
+                  <img
+                    alt={`Rendered concept ${p.direction + 1}`}
+                    loading="lazy"
+                    style={{
+                      width: "100%",
+                      maxHeight: 260,
+                      objectFit: "contain",
+                    }}
+                    src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(p.svg)}`}
+                  />
+                  <strong>
+                    Concept {p.direction + 1}{" "}
+                    {direction === p.direction ? "— Selected" : ""}
+                  </strong>
+                </button>
+              ))}
+            </div>
+          )}
+          <button className="btn" disabled={busy}>
+            Generate editable design
+          </button>
+        </form>
+      </section>
+      <section className="card stack">
+        <h2>Saved projects</h2>
+        <Async state={list}>
+          {(items: J[]) => (
+            <div className="row">
+              {items.map((item) => (
+                <button
+                  className="btn sm ghost"
+                  key={item.id}
+                  aria-pressed={documentId === item.id}
+                  onClick={() => selectDocument(item.id as string)}
+                >
+                  {item.title} · {item.kind} v{item.revision}
+                </button>
+              ))}
+            </div>
+          )}
+        </Async>
+      </section>
+      {documentId && (
+        <Async state={doc}>
+          {() =>
+            source && slide ? (
+              <section className="card stack">
+                <div className="row between">
+                  <div>
+                    <h2 style={{ margin: 0 }}>{source.title}</h2>
+                    <p className="muted">
+                      {source.kind} · Brand v{source.brandVersion} · revision{" "}
+                      {revision} · {dirty ? "Unsaved changes" : "Saved"}
+                    </p>
+                  </div>
+                  <div className="row">
+                    <button
+                      className="btn sm ghost"
+                      disabled={!history.current.length}
+                      onClick={undo}
+                    >
+                      Undo
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      disabled={!future.current.length}
+                      onClick={redo}
+                    >
+                      Redo
+                    </button>
+                    <button
+                      className="btn sm"
+                      disabled={!dirty || busy}
+                      onClick={() => void save()}
+                    >
+                      {busy ? "Saving…" : "Save draft"}
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      disabled={busy || dirty}
+                      onClick={() => void inspectSource()}
+                    >
+                      Check design structure
+                    </button>
+                    {assessment?.findings.some(
+                      (f) => f.code === "LAYER_OUTSIDE_CANVAS",
+                    ) && (
+                      <button
+                        className="btn sm"
+                        onClick={() => void repairGeometry()}
+                        disabled={busy || dirty}
+                      >
+                        Repair offscreen geometry
+                      </button>
+                    )}
+                    {source.kind !== "logo" && (
+                      <button
+                        className="btn sm"
+                        disabled={dirty || busy}
+                        onClick={() => void approveCreative()}
+                      >
+                        Approve design
+                      </button>
+                    )}
+                    {doc.data?.status === "APPROVED" &&
+                      source.kind !== "logo" && (
+                        <button
+                          className="btn sm ghost"
+                          onClick={() => void preparePackage()}
+                        >
+                          Prepare social publishing package
+                        </button>
+                      )}
+                    {source.kind === "logo" && (
+                      <button
+                        className="btn sm"
+                        disabled={dirty || busy}
+                        onClick={() => void approveLogo()}
+                      >
+                        Approve and use as brand logo
+                      </button>
+                    )}
+                    <button className="btn sm ghost" onClick={exportSource}>
+                      Export editable JSON
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      onClick={() => void exportPng()}
+                    >
+                      Export PNG
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      type="button"
+                      onClick={() => void exportPng("jpeg")}
+                    >
+                      Export JPG
+                    </button>
+                    {source.kind === "logo" && (
+                      <button
+                        className="btn sm ghost"
+                        type="button"
+                        onClick={() => void exportPng("png", true)}
+                      >
+                        Transparent PNG
+                      </button>
+                    )}
+                    <a
+                      className="btn sm ghost"
+                      href={`/api/sites/${id}/creative-documents/${documentId}/export/${slideIndex}`}
+                      download
+                    >
+                      Export SVG
+                    </a>
+                    {source.slides.length > 1 && (
+                      <button
+                        className="btn sm ghost"
+                        type="button"
+                        disabled={busy || dirty}
+                        onClick={() => void exportAllSlides()}
+                      >
+                        Export all slides (ZIP)
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {assessment && (
+                  <section
+                    className="card stack"
+                    aria-label="Source quality report"
+                  >
+                    <h3>
+                      Structural quality report · revision {assessment.revision}
+                    </h3>
+                    <p className="small muted">
+                      Deterministic source checks only. No model vision or human
+                      visual acceptance has been performed.
+                    </p>
+                    {assessment.findings.length === 0 ? (
+                      <p>No source defects found.</p>
+                    ) : (
+                      <ul>
+                        {assessment.findings.map((f, i) => (
+                          <li key={i}>
+                            <strong>
+                              {f.severity}: {f.code}
+                            </strong>{" "}
+                            · slide {f.slide} — {f.message}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+                )}
+                <div className="row" role="group" aria-label="Canvas zoom">
+                  <span className="small muted">Zoom preview</span>
+                  <button
+                    className="btn sm ghost"
+                    type="button"
+                    onClick={() => {
+                      const el = svg.current;
+                      if (el) el.style.maxHeight = "40vh";
+                    }}
+                  >
+                    Fit shorter
+                  </button>
+                  <button
+                    className="btn sm ghost"
+                    type="button"
+                    onClick={() => {
+                      const el = svg.current;
+                      if (el) el.style.maxHeight = "80vh";
+                    }}
+                  >
+                    Fit taller
+                  </button>
+                </div>
+                <div className="row" role="group" aria-label="Slides">
+                  {source.slides.map((s, i) => (
+                    <button
+                      key={s.id}
+                      className="btn sm ghost"
+                      aria-pressed={slideIndex === i}
+                      onClick={() => {
+                        setSlideIndex(i);
+                        setSelected(null);
+                      }}
+                    >
+                      Slide {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    className="btn sm ghost"
+                    disabled={source.slides.length >= 10}
+                    onClick={addSlide}
+                  >
+                    Add slide
+                  </button>
+                  <button
+                    className="btn sm ghost"
+                    onClick={() => moveSlide(-1)}
+                  >
+                    Move earlier
+                  </button>
+                  <button className="btn sm ghost" onClick={() => moveSlide(1)}>
+                    Move later
+                  </button>
+                  <button
+                    className="btn sm ghost"
+                    disabled={source.slides.length <= 1}
+                    onClick={removeSlide}
+                  >
+                    Delete slide
+                  </button>
+                </div>
+                <div className="krev-editor-layout">
+                  <aside className="stack" aria-label="Design elements">
+                    <h3>Layers</h3>
+                    <div className="row">
+                      {(
+                        ["text", "rect", "ellipse", "line", "path"] as const
+                      ).map((type) => (
+                        <button
+                          className="btn sm ghost"
+                          key={type}
+                          onClick={() => addLayer(type)}
+                        >
+                          + {type}
+                        </button>
+                      ))}
+                    </div>
+                    {(assets.data?.photos ?? []).length > 0 && (
+                      <>
+                        <label>
+                          Approved photos{" "}
+                          <select
+                            value={selectedPhoto}
+                            onChange={(e) => setSelectedPhoto(e.target.value)}
+                          >
+                            <option value="">Select an approved photo</option>
+                            {(assets.data?.photos ?? []).map((p: J) => (
+                              <option key={p.id} value={p.url}>
+                                {p.alt || p.role || "Photo"}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button
+                          className="btn sm ghost"
+                          disabled={!selectedPhoto}
+                          onClick={addPhoto}
+                        >
+                          + Image layer
+                        </button>
+                      </>
+                    )}
+                    {slide.layers.map((l) => (
+                      <button
+                        className="btn sm ghost"
+                        key={l.id}
+                        aria-pressed={selected === l.id}
+                        style={{ textAlign: "left", overflowWrap: "anywhere" }}
+                        onClick={() => setSelected(l.id)}
+                      >
+                        {l.locked ? "🔒 " : ""}
+                        {l.type === "text"
+                          ? (l.text ?? "").slice(0, 22)
+                          : l.type}
+                      </button>
+                    ))}
+                    <button
+                      className="btn sm ghost"
+                      disabled={!layer}
+                      onClick={duplicateLayer}
+                    >
+                      Duplicate layer
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      disabled={!layer}
+                      onClick={removeLayer}
+                    >
+                      Delete layer
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      disabled={!layer}
+                      onClick={() => shiftLayer(1)}
+                    >
+                      Bring forward
+                    </button>
+                    <button
+                      className="btn sm ghost"
+                      disabled={!layer}
+                      onClick={() => shiftLayer(-1)}
+                    >
+                      Send backward
+                    </button>
+                  </aside>
+                  <div
+                    style={{
+                      minWidth: 300,
+                      background: "#dfdfe2",
+                      padding: 18,
+                      display: "grid",
+                      placeItems: "center",
+                      overflow: "auto",
+                    }}
+                  >
+                    <svg
+                      ref={svg}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox={`0 0 ${slide.width} ${slide.height}`}
+                      width="100%"
+                      style={{
+                        maxWidth: slide.width,
+                        maxHeight: "65vh",
+                        background: slide.background,
+                        boxShadow: "0 15px 40px #0003",
+                        touchAction: "none",
+                      }}
+                      role="img"
+                      aria-label="Editable design canvas"
+                      onPointerMove={draggingMove}
+                      onPointerUp={() => (dragging.current = null)}
+                    >
+                      <rect
+                        width={slide.width}
+                        height={slide.height}
+                        fill={slide.background}
+                        onPointerDown={() => setSelected(null)}
+                      />
+                      {slide.layers.map((l) => (
+                        <g
+                          key={l.id}
+                          onPointerDown={(e) => startDrag(e, l)}
+                          style={{ cursor: l.locked ? "not-allowed" : "move" }}
+                        >
+                          {renderLayer(l)}
+                          {selected === l.id && (
+                            <rect
+                              x={l.x - 5}
+                              y={l.y - 5}
+                              width={l.width + 10}
+                              height={l.height + 10}
+                              fill="none"
+                              stroke="#2869e3"
+                              strokeWidth={3}
+                              strokeDasharray="10 7"
+                              pointerEvents="none"
+                            />
+                          )}
+                        </g>
+                      ))}
+                      {layer && !layer.locked && (
+                        <rect
+                          x={layer.x + layer.width - 11}
+                          y={layer.y + layer.height - 11}
+                          width={23}
+                          height={23}
+                          rx={4}
+                          fill="#2869e3"
+                          stroke="#ffffff"
+                          strokeWidth={2}
+                          style={{ cursor: "nwse-resize" }}
+                          onPointerDown={startResize}
+                          aria-label="Drag to resize selected layer"
+                          role="button"
+                        />
+                      )}
+                    </svg>
+                  </div>
+                  <aside className="stack" aria-label="Layer properties">
+                    <h3>Properties</h3>
+                    <label>
+                      Background{" "}
+                      <input
+                        type="color"
+                        value={slide.background}
+                        onChange={(e) =>
+                          update((next) => {
+                            next.slides[slideIndex]!.background =
+                              e.target.value;
+                          })
+                        }
+                      />
+                    </label>
+                    {layer ? (
+                      <>
+                        <label>
+                          Layer <strong>{layer.type}</strong>
+                        </label>
+                        <label>
+                          Locked{" "}
+                          <input
+                            type="checkbox"
+                            checked={layer.locked}
+                            onChange={(e) =>
+                              editLayer({ locked: e.target.checked })
+                            }
+                          />
+                        </label>
+                        {layer.type === "image" && (
+                          <>
+                            <label>
+                              Approved photo{" "}
+                              <select
+                                value={layer.src ?? ""}
+                                onChange={(e) => {
+                                  const photo = (
+                                    assets.data?.photos ?? []
+                                  ).find((p: J) => p.url === e.target.value);
+                                  if (photo)
+                                    editLayer({
+                                      src: photo.url,
+                                      alt:
+                                        photo.alt || "Approved customer photo",
+                                    });
+                                }}
+                              >
+                                {(assets.data?.photos ?? []).map((p: J) => (
+                                  <option key={p.id} value={p.url}>
+                                    {p.alt || p.role || "Photo"}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label>
+                              Image description{" "}
+                              <input
+                                value={layer.alt ?? ""}
+                                maxLength={200}
+                                onChange={(e) =>
+                                  editLayer({ alt: e.target.value })
+                                }
+                              />
+                            </label>
+                            <label>
+                              Fit{" "}
+                              <select
+                                value={layer.fit || "cover"}
+                                onChange={(e) =>
+                                  editLayer({
+                                    fit: e.target.value as "cover" | "contain",
+                                  })
+                                }
+                              >
+                                <option value="cover">Crop to fill</option>
+                                <option value="contain">Show full photo</option>
+                              </select>
+                            </label>
+                            <label>
+                              Image focal position{" "}
+                              <select
+                                value={[
+                                  layer.focalX ?? 0.5,
+                                  layer.focalY ?? 0.5,
+                                ].join(",")}
+                                onChange={(e) => {
+                                  const [focalX, focalY] = e.target.value
+                                    .split(",")
+                                    .map(Number);
+                                  editLayer({ focalX, focalY });
+                                }}
+                              >
+                                {[
+                                  ["Top left", "0,0"],
+                                  ["Top center", "0.5,0"],
+                                  ["Top right", "1,0"],
+                                  ["Middle left", "0,0.5"],
+                                  ["Center", "0.5,0.5"],
+                                  ["Middle right", "1,0.5"],
+                                  ["Bottom left", "0,1"],
+                                  ["Bottom center", "0.5,1"],
+                                  ["Bottom right", "1,1"],
+                                ].map(([name, value]) => (
+                                  <option value={value} key={value}>
+                                    {name}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          </>
+                        )}
+                        <div className="row" aria-label="Align selected layer">
+                          <button
+                            className="btn sm ghost"
+                            disabled={layer.locked}
+                            onClick={() =>
+                              editLayer({
+                                x: Math.round((slide.width - layer.width) / 2),
+                              })
+                            }
+                          >
+                            Center horizontally
+                          </button>
+                          <button
+                            className="btn sm ghost"
+                            disabled={layer.locked}
+                            onClick={() =>
+                              editLayer({
+                                y: Math.round(
+                                  (slide.height - layer.height) / 2,
+                                ),
+                              })
+                            }
+                          >
+                            Center vertically
+                          </button>
+                        </div>
+                        {layer.type === "text" && (
+                          <>
+                            <label>
+                              Text{" "}
+                              <textarea
+                                value={layer.text ?? ""}
+                                onChange={(e) =>
+                                  editLayer({ text: e.target.value })
+                                }
+                                maxLength={700}
+                              />
+                            </label>
+                            <label>
+                              Font size{" "}
+                              <input
+                                type="number"
+                                min={6}
+                                max={380}
+                                value={layer.fontSize ?? 38}
+                                onChange={(e) =>
+                                  editLayer({
+                                    fontSize: makeValue(e.target.value),
+                                  })
+                                }
+                              />
+                            </label>
+                            <label>
+                              Font{" "}
+                              <select
+                                value={layer.fontFamily}
+                                onChange={(e) =>
+                                  editLayer({ fontFamily: e.target.value })
+                                }
+                              >
+                                <option>sans-serif</option>
+                                <option>serif</option>
+                                <option>monospace</option>
+                              </select>
+                            </label>
+                            <label>
+                              Text alignment{" "}
+                              <select
+                                value={layer.align ?? "left"}
+                                onChange={(e) =>
+                                  editLayer({ align: e.target.value })
+                                }
+                              >
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                              </select>
+                            </label>
+                          </>
+                        )}
+                        {layer.type === "path" && (
+                          <>
+                            <label>
+                              Vector path commands
+                              <textarea
+                                value={layer.d ?? ""}
+                                maxLength={5000}
+                                rows={4}
+                                onChange={(e) =>
+                                  editLayer({ d: e.target.value })
+                                }
+                              />
+                            </label>
+                            <p className="small muted">
+                              Editable M, L, C, Q, A and Z SVG path geometry.
+                              Scripts and external resources are rejected on
+                              save.
+                            </p>
+                            <label>
+                              Stroke
+                              <input
+                                type="color"
+                                value={layer.stroke ?? "#242424"}
+                                onChange={(e) =>
+                                  editLayer({ stroke: e.target.value })
+                                }
+                              />
+                            </label>
+                            <label>
+                              Stroke width
+                              <input
+                                type="number"
+                                min={0}
+                                max={100}
+                                step={0.5}
+                                value={layer.strokeWidth ?? 2}
+                                onChange={(e) =>
+                                  editLayer({
+                                    strokeWidth: makeValue(e.target.value),
+                                  })
+                                }
+                              />
+                            </label>
+                          </>
+                        )}
+                        {(
+                          [
+                            "x",
+                            "y",
+                            "width",
+                            "height",
+                            "rotation",
+                            "opacity",
+                          ] as const
+                        ).map((k) => (
+                          <label key={k}>
+                            {k}{" "}
+                            <input
+                              type="number"
+                              step={k === "opacity" ? 0.05 : 1}
+                              value={layer[k]}
+                              onChange={(e) =>
+                                editLayer({ [k]: makeValue(e.target.value) })
+                              }
+                            />
+                          </label>
+                        ))}
+                        <label>
+                          Fill{" "}
+                          <input
+                            type="color"
+                            value={layer.fill}
+                            onChange={(e) =>
+                              editLayer({ fill: e.target.value })
+                            }
+                          />
+                        </label>
+                      </>
+                    ) : (
+                      <p className="muted">
+                        Select or drag any layer on the canvas.
+                      </p>
+                    )}
+                  </aside>
+                </div>
+                {source.kind === "logo" && (
+                  <section
+                    className="stack"
+                    aria-label="Real logo usage previews"
+                  >
+                    <h3>Live brand mark previews</h3>
+                    <p className="small muted">
+                      Illustrative usage previews of your actual editable vector
+                      source. Check readability at small sizes and against
+                      different backgrounds before approval. Trademark clearance
+                      is not included.
+                    </p>
+                    <div className="krev-logo-previews">
+                      {[
+                        {
+                          name: "Light surface",
+                          background: "#fffdf8",
+                          size: 180,
+                        },
+                        {
+                          name: "Dark surface",
+                          background: "#16272d",
+                          size: 180,
+                        },
+                        {
+                          name: "Monochrome",
+                          background: "#ffffff",
+                          size: 180,
+                          mono: true,
+                        },
+                        {
+                          name: "Favicon 32 px",
+                          background: "#fffdf8",
+                          size: 32,
+                        },
+                        {
+                          name: "Social avatar",
+                          background: "#ece8df",
+                          size: 96,
+                        },
+                        {
+                          name: "Website header",
+                          background: "#ffffff",
+                          size: 120,
+                        },
+                      ].map((preview) => (
+                        <figure key={preview.name}>
+                          <div
+                            className="krev-logo-preview-surface"
+                            style={{ background: preview.background }}
+                          >
+                            <svg
+                              width={preview.size}
+                              height={preview.size}
+                              viewBox={`0 0 ${slide.width} ${slide.height}`}
+                              role="img"
+                              aria-label={`${preview.name} logo preview`}
+                              style={{
+                                maxWidth: "100%",
+                                filter: preview.mono ? "grayscale(1)" : "none",
+                              }}
+                            >
+                              {slide.layers.map((l) => (
+                                <g key={l.id}>{renderLayer(l)}</g>
+                              ))}
+                            </svg>
+                          </div>
+                          <figcaption className="small muted">
+                            {preview.name}
+                          </figcaption>
+                        </figure>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </section>
+            ) : null
+          }
+        </Async>
+      )}
+    </div>
+  );
+}

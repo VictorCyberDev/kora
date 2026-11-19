@@ -1,0 +1,223 @@
+import { readFile } from "node:fs/promises";
+import { expect, test } from "@playwright/test";
+const BASE = `http://127.0.0.1:${process.env.E2E_V3_PORT ?? "3212"}`;
+test.use({ baseURL: BASE });
+test("Meridian Bakes creates a brand logo, flyer, poster, social post and editable carousel with real exports", async ({
+  browser,
+}) => {
+  test.setTimeout(200_000);
+  const ctx = await browser.newContext({
+    baseURL: BASE,
+    acceptDownloads: true,
+  });
+  const page = await ctx.newPage();
+  try {
+    await page.goto("/signup");
+    const token = Date.now().toString(36);
+    await page.getByLabel("Your name").fill("Krevstudio Test Owner");
+    await page.getByLabel("Business name").fill("Meridian Bakes");
+    await page.getByLabel("Email").fill(`krev-e2e-${token}@example.com`);
+    await page.getByLabel("Password").fill("correct horse battery");
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(
+      page.getByRole("heading", {
+        name: /Tell Krevstudio about your business/,
+      }),
+    ).toBeVisible();
+    const me = (await (await ctx.request.get("/api/auth/me")).json()).data;
+    const created = await ctx.request.post("/api/sites", {
+      headers: { "x-requested-with": "kora" },
+      data: { orgId: me.orgs[0].id, name: "Meridian Bakes" },
+    });
+    expect(created.status()).toBe(201);
+    const siteId = (await created.json()).data.id;
+    const made = await ctx.request.post(`/api/sites/${siteId}/generate`, {
+      headers: { "x-requested-with": "kora" },
+      data: {
+        name: "Meridian Bakes",
+        description: "Artisan sourdough bread, pastries and custom cakes.",
+        industry: "bakery",
+        services: ["Sourdough", "Pastries", "Custom cakes"],
+        whatsapp: "+2348012345678",
+      },
+    });
+    expect(made.status()).toBe(201);
+    await page.goto(`/app/sites/${siteId}/creative-studio`);
+    await expect(
+      page.getByRole("heading", { name: "Creative workspace" }),
+    ).toBeVisible();
+    await page.getByLabel("Format").selectOption("logo");
+    await page.getByLabel("Project title").fill("Meridian identity");
+    await page.getByLabel("Headline or wordmark").fill("Meridian Bakes");
+    await page
+      .getByRole("button", { name: "Generate editable design" })
+      .click();
+    await expect(
+      page.getByRole("img", { name: "Editable design canvas" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: /text/i }).first().click();
+    await expect(
+      page.getByRole("button", { name: "Save draft" }),
+    ).toBeEnabled();
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText(/Saved as immutable revision/)).toBeVisible();
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: /Meridian identity/ }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: /Meridian identity/ }).click();
+    await expect(
+      page.getByRole("img", { name: "Editable design canvas" }),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: "Approve and use as brand logo" })
+      .click();
+    await expect(page.getByText(/New graphics will reuse it/)).toBeVisible();
+    await page.getByLabel("Format").selectOption("flyer");
+    await page.getByLabel("Project title").fill("Bakery launch flyer");
+    await page
+      .getByLabel("Headline or wordmark")
+      .fill("Artisan sourdough and pastries");
+    await page
+      .getByRole("button", { name: "Generate editable design" })
+      .click();
+    await expect(
+      page.getByRole("img", { name: "Editable design canvas" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: /text/i }).first().click();
+    await page.getByLabel("Text alignment").selectOption("center");
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText(/Saved as immutable revision/)).toBeVisible();
+    await page.screenshot({
+      path: "test-results/kora-studio-benchmark/krevstudio-graphics-editor.png",
+      fullPage: true,
+      animations: "disabled",
+    });
+    const exportJson = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export editable JSON" }).click();
+    expect((await exportJson).suggestedFilename()).toContain(
+      "krevstudio-flyer",
+    );
+    const exportPng = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export PNG" }).click();
+    const pngDownload = await exportPng;
+    expect(pngDownload.suggestedFilename()).toContain(".png");
+    const pngBuffer = await readFile(await pngDownload.path());
+    expect([...pngBuffer.subarray(0, 8)]).toEqual([
+      137, 80, 78, 71, 13, 10, 26, 10,
+    ]);
+    expect(pngBuffer.readUInt32BE(16)).toBe(1080);
+    expect(pngBuffer.readUInt32BE(20)).toBe(1350);
+    const exportJpg = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export JPG" }).click();
+    const jpgDownload = await exportJpg;
+    expect(jpgDownload.suggestedFilename()).toContain(".jpg");
+    const jpgBuffer = await readFile(await jpgDownload.path());
+    expect([...jpgBuffer.subarray(0, 3)]).toEqual([255, 216, 255]);
+
+    // Continue the same real customer journey through every campaign format.
+    // Await the actual API response so the next click cannot race the prior save.
+    for (const [kind, project] of [
+      ["poster", "Bakery launch poster"],
+      ["social", "Bakery social announcement"],
+    ] as const) {
+      await page.getByLabel("Format").selectOption(kind);
+      await page.getByLabel("Project title").fill(project);
+      await page
+        .getByLabel("Headline or wordmark")
+        .fill("Artisan sourdough and celebration cakes");
+      const createdResponse = page.waitForResponse(
+        (response) =>
+          response.request().method() === "POST" &&
+          new URL(response.url()).pathname ===
+            `/api/sites/${siteId}/creative-documents`,
+      );
+      await page
+        .getByRole("button", { name: "Generate editable design" })
+        .click();
+      expect((await createdResponse).status()).toBe(201);
+      await expect(
+        page.getByRole("img", { name: "Editable design canvas" }),
+      ).toBeVisible();
+      const svgResult = await ctx.request.get(
+        `/api/sites/${siteId}/creative-documents`,
+      );
+      const all = (await svgResult.json()).data as Array<{
+        id: string;
+        kind: string;
+      }>;
+      const id = all.find((item) => item.kind === kind)?.id;
+      expect(id).toBeDefined();
+      const svgExport = await ctx.request.get(
+        `/api/sites/${siteId}/creative-documents/${id}/export/0`,
+      );
+      expect(svgExport.status()).toBe(200);
+      expect(svgExport.headers()["content-type"]).toContain("image/svg+xml");
+      expect(await svgExport.text()).toContain("<svg");
+      await page.screenshot({
+        path: `test-results/kora-studio-benchmark/meridian-${kind}-editor.png`,
+        animations: "disabled",
+      });
+    }
+
+    await page.getByLabel("Format").selectOption("carousel");
+    await page.getByLabel("Project title").fill("Meridian story carousel");
+    await page.getByLabel("Headline or wordmark").fill("Our baking process");
+    await page.getByRole("spinbutton", { name: "Slides" }).fill("4");
+    const carouselResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        new URL(response.url()).pathname ===
+          `/api/sites/${siteId}/creative-documents`,
+    );
+    await page
+      .getByRole("button", { name: "Generate editable design" })
+      .click();
+    expect((await carouselResponse).status()).toBe(201);
+    const slideControls = page.getByRole("group", { name: "Slides" });
+    await expect(
+      slideControls.getByRole("button", { name: "Slide 4" }),
+    ).toBeVisible();
+    await slideControls.getByRole("button", { name: "Slide 2" }).click();
+    await slideControls.getByRole("button", { name: "Move later" }).click();
+    await page.getByRole("button", { name: "Save draft" }).click();
+    await expect(page.getByText(/Saved as immutable revision/)).toBeVisible();
+    const zipEvent = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export all slides (ZIP)" }).click();
+    const zipDownload = await zipEvent;
+    expect(zipDownload.suggestedFilename()).toContain("4-slides.zip");
+    const zipBytes = await readFile(await zipDownload.path());
+    expect(zipBytes.subarray(0, 4).toString("hex")).toBe("504b0304");
+    for (let slide = 1; slide <= 4; slide++)
+      expect(zipBytes.includes(Buffer.from(`slide-${slide}.svg`))).toBe(true);
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: /Meridian story carousel/ }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: /Meridian story carousel/ }).click();
+    await expect(
+      page.getByRole("group", { name: "Slides" }).getByRole("button", {
+        name: "Slide 4",
+      }),
+    ).toBeVisible();
+
+    const current = await ctx.request.get(
+      `/api/sites/${siteId}/creative-documents`,
+    );
+    expect(current.status()).toBe(200);
+    const docs = (await current.json()).data;
+    expect(docs.length).toBeGreaterThanOrEqual(5);
+    const flyer = docs.find((d: { kind: string }) => d.kind === "flyer");
+    const logo = docs.find((d: { kind: string }) => d.kind === "logo");
+    const flyerDetail = (
+      await (
+        await ctx.request.get(
+          `/api/sites/${siteId}/creative-documents/${flyer.id}`,
+        )
+      ).json()
+    ).data;
+    expect(flyerDetail.source.approvedLogoId).toBe(logo.id);
+  } finally {
+    await ctx.close();
+  }
+});

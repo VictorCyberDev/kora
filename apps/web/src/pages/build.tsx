@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { api, ApiError, when, type J } from "../api";
 import {
   BUTTONS,
@@ -40,6 +40,7 @@ export function Build() {
   );
   const spec: J | null = detail.data?.spec ?? null;
   const isV2 = spec?.version === 2;
+  const isV3 = spec?.version === 3;
 
   const say = (who: "me" | "kora", text: string) =>
     setLog((l) => [...l, { who, text }]);
@@ -142,12 +143,19 @@ export function Build() {
 
   return (
     <div className="studio">
+      {isV3 && (
+        <div className="card">
+          <Link className="btn" to={`/app/sites/${id}/website-studio`}>
+            Open visual website editor
+          </Link>
+        </div>
+      )}
       <div className="studio-side">
         <div className="card">
           <div className="tabs" role="tablist" aria-label="Editor">
             {(
               [
-                ["chat", "Ask Kora"],
+                ["chat", "Ask Krevstudio"],
                 ["design", "Design"],
                 ["sections", "Sections"],
                 ["versions", "Versions"],
@@ -219,7 +227,7 @@ export function Build() {
                     disabled={busy}
                     onClick={tryNew}
                   >
-                    Try a new Kora design
+                    Try a new Krevstudio design
                   </button>{" "}
                   <span className="muted">
                     A new draft from the newest design engine, built from the
@@ -347,8 +355,8 @@ export function Build() {
             ) : (
               <Notice>
                 {spec?.version === 3
-                  ? "This website uses Kora's newest design system. Change how it looks from Brand (more premium, bolder, calmer), or ask Kora in plain words."
-                  : "Design controls are available on the updated design. Open the Ask Kora tab to upgrade this version."}
+                  ? "This website uses Krevstudio's current design system. Change its appearance from Brand (more premium, bolder, calmer), or ask Krevstudio in plain words."
+                  : "Design controls are available on the updated design. Open the Ask Krevstudio tab to upgrade this version."}
               </Notice>
             ))}
 

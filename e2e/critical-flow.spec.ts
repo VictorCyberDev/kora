@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /** Screenshots are captured only when asked for (E2E_SCREENSHOTS=dir). */
-/** Viewport (not full-page) captures used for the Kora homepage; written only when E2E_PRODUCT_SHOTS=dir. */
+/** Viewport (not full-page) captures used for the Krevstudio homepage; written only when E2E_PRODUCT_SHOTS=dir. */
 const productShot = async (page: Page, name: string) => {
   if (!process.env.E2E_PRODUCT_SHOTS) return;
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -27,20 +27,20 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
-      name: /A brand, a website and the campaigns to match/,
+      name: /Create a brand that goes everywhere/,
     }),
   ).toBeVisible();
   await shot(page, "01-landing");
-  await page.getByRole("link", { name: "Build my website" }).first().click();
+  await page.getByRole("link", { name: "Start creating" }).first().click();
   await page.getByLabel("Your name").fill("Victor");
   await page.getByLabel("Business name").fill("Victor Laundry");
   await page.getByLabel("Email").fill(`victor+${Date.now()}@example.com`);
   await page.getByLabel("Password").fill("correct horse battery");
   await page.getByRole("button", { name: "Create account" }).click();
 
-  // 2. Describe the business; Kora builds a first version.
+  // 2. Describe the business; Krevstudio builds a first version.
   await expect(
-    page.getByRole("heading", { name: /Tell Kora about your business/ }),
+    page.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
   ).toBeVisible();
   await page.getByLabel("Business name").fill("Victor Laundry");
   await page
@@ -92,20 +92,20 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   expect(siteResponse.status()).toBe(200);
   expect(await siteResponse.text()).toContain("Victor Laundry");
 
-  // 5. Kora watches it: the overview says Online.
+  // 5. Krevstudio watches it: the overview says Online.
   await page.getByRole("link", { name: "Today", exact: true }).click();
   await expect(page.getByText("Healthy", { exact: true }).first()).toBeVisible({
     timeout: 30_000,
   });
 
-  // 5b. Business identity: Kora shows what it knows and what it still needs to ask.
+  // 5b. Business identity: Krevstudio shows what it knows and what it still needs to ask.
   await page
     .getByRole("link", { name: "Presence", exact: true })
     .first()
     .click();
   await page.getByRole("link", { name: "Identity", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "What Kora knows" }),
+    page.getByRole("heading", { name: "What Krevstudio knows" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Your brand in your words" }),
@@ -119,7 +119,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   await expect(page.getByText("Not set up yet")).toBeVisible();
   await page.getByRole("link", { name: "Today", exact: true }).click();
 
-  // 6. Controlled test: the live version fails for real; Kora notices.
+  // 6. Controlled test: the live version fails for real; Krevstudio notices.
   await shot(page, "03-online");
   await expect(page.getByText("Controlled test").first()).toBeVisible();
   await page.getByRole("button", { name: "Start HTTP 500 test" }).click();
@@ -139,7 +139,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
       .first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "What Kora does not know" }),
+    page.getByRole("heading", { name: "What Krevstudio does not know" }),
   ).toBeVisible();
   await expect(page.getByText(/does not prove/).first()).toBeVisible();
   await expect(
@@ -165,7 +165,7 @@ test("a business owner builds, publishes, survives a bad release, and sees verif
   await expect(
     page
       .getByText(
-        /Your website is working again and Kora has verified the recovery/,
+        /Your website is working again and Krevstudio has verified the recovery/,
       )
       .first(),
   ).toBeVisible();

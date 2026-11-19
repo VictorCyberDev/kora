@@ -1,7 +1,7 @@
+import { createRequire } from "node:module";
 import { createServer, type Server } from "node:http";
 import { mkdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { extname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
@@ -31,14 +31,15 @@ let server: Server;
 let base = "";
 const requests: string[] = [];
 test.beforeAll(async () => {
-  const schema = (await import(
-    pathToFileURL(join(root, "packages/site-schema/dist/src/index.js")).href
-  )) as typeof import("../packages/site-schema/src/index.js");
-  const { BRIEFS } = (await import(
-    pathToFileURL(
-      join(root, "packages/site-schema/dist/test/fixtures/briefs.js"),
-    ).href
-  )) as typeof import("../packages/site-schema/test/fixtures/briefs.js");
+  // The Playwright TS loader can misresolve re-exports in compiled workspace
+  // modules. Use Node's native ESM bridge, retaining the production build.
+  const requireCompiled = createRequire(__filename);
+  const schema = requireCompiled(
+    join(root, "packages/site-schema/dist/src/index.js"),
+  ) as typeof import("../packages/site-schema/src/index.js");
+  const { BRIEFS } = requireCompiled(
+    join(root, "packages/site-schema/dist/test/fixtures/briefs.js"),
+  ) as typeof import("../packages/site-schema/test/fixtures/briefs.js");
   sites = Object.entries(BRIEFS).flatMap(([key, brief]) =>
     schema.planDirections(brief).map((d) => ({
       key,
@@ -85,7 +86,7 @@ test.beforeAll(async () => {
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
 });
-test.afterAll(() => server.close());
+test.afterAll(() => server?.close());
 
 const shotsDir = process.env.DESIGN_QA_SHOTS;
 
@@ -95,24 +96,27 @@ test.describe("generated sites in a real browser", () => {
   test("no horizontal overflow, one h1, readable landmarks, bundled fonts load at every width", async ({
     browser,
   }) => {
+    const ctx = await browser.newContext({ reducedMotion: "reduce" });
+    const page = await ctx.newPage();
+    let failed: string[] = [];
+    let consoleErrors: string[] = [];
+    page.on("requestfailed", (request) => failed.push(request.url()));
+    page.on(
+      "console",
+      (message) =>
+        message.type() === "error" && consoleErrors.push(message.text()),
+    );
+    page.on(
+      "response",
+      (response) =>
+        response.status() >= 400 &&
+        failed.push(`${response.status()} ${response.url()}`),
+    );
     for (const s of sites) {
       for (const w of s.dir === 0 ? [...WIDTHS, ...EXTRA_WIDTHS] : WIDTHS) {
-        const ctx = await browser.newContext({
-          viewport: { width: w, height: 900 },
-          reducedMotion: "reduce",
-        });
-        const page = await ctx.newPage();
-        const failed: string[] = [];
-        const consoleErrors: string[] = [];
-        page.on("requestfailed", (r) => failed.push(r.url()));
-        page.on(
-          "console",
-          (m) => m.type() === "error" && consoleErrors.push(m.text()),
-        );
-        page.on(
-          "response",
-          (r) => r.status() >= 400 && failed.push(`${r.status()} ${r.url()}`),
-        );
+        failed = [];
+        consoleErrors = [];
+        await page.setViewportSize({ width: w, height: 900 });
         await page.goto(`${base}/${s.key}/${s.dir}/`, {
           waitUntil: "networkidle",
         });
@@ -143,9 +147,9 @@ test.describe("generated sites in a real browser", () => {
             fullPage: true,
           });
         }
-        await ctx.close();
       }
     }
+    await ctx.close();
   });
 
   test("passes automated accessibility checks (WCAG 2.1 A/AA) on every generated site", async ({

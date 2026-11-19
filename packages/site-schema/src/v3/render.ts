@@ -508,7 +508,7 @@ function toneFor(spec: SiteSpecV3, sections: SectionV3[], i: number): Tone {
 
 function navItems(spec: SiteSpecV3, from: string) {
   return spec.pages
-    .filter((p) => p.slug !== "home")
+    .filter((p) => p.slug !== "home" && !p.navHidden)
     .map((p) => ({
       label: p.nav ?? p.title,
       href: relFrom(from, p.slug),
@@ -582,8 +582,49 @@ function footer(spec: SiteSpecV3, from: string, c: Ctx): string {
   else if (g.footerStyle === "columns")
     body = `<div class="fg">${brand}${exp}${reach}${hours}</div>${legal}`;
   else body = `<div class="fg">${brand}${exp}${reach}</div>${legal}`;
+  // Unsplash API images must credit the photographer, link to the profile,
+  // and visibly attribute Unsplash with referral parameters.
+  const by = new Map<string, { name: string; url: string }>();
+  const page = spec.pages.find((p) => p.slug === from);
+  const addCredit = (media: unknown) => {
+    if (!media || typeof media !== "object" || !("provenance" in media)) return;
+    const provenance = media.provenance;
+    if (
+      !provenance ||
+      typeof provenance !== "object" ||
+      !("provider" in provenance) ||
+      provenance.provider !== "Unsplash" ||
+      !("photographerUrl" in provenance) ||
+      typeof provenance.photographerUrl !== "string" ||
+      !("photographer" in provenance) ||
+      typeof provenance.photographer !== "string"
+    )
+      return;
+    by.set(provenance.photographerUrl, {
+      name: provenance.photographer,
+      url: provenance.photographerUrl,
+    });
+  };
+  for (const section of page?.sections ?? []) {
+    if ("media" in section) addCredit(section.media);
+    if ("items" in section && Array.isArray(section.items)) {
+      for (const item of section.items)
+        if (item && typeof item === "object" && "media" in item)
+          addCredit(item.media);
+    }
+  }
+  const photoCredits = by.size
+    ? `<aside class="photo-credits" aria-label="Photo credits"><small>${[
+        ...by.values(),
+      ]
+        .map((p) => {
+          const sep = p.url.includes("?") ? "&" : "?";
+          return `Photo by <a rel="noopener noreferrer" href="${esc(p.url + sep + "utm_source=kora&utm_medium=referral")}">${esc(p.name)}</a> on <a rel="noopener noreferrer" href="https://unsplash.com/?utm_source=kora&utm_medium=referral">Unsplash</a>`;
+        })
+        .join(" · ")}</small></aside>`
+    : "";
   void c;
-  return `<footer class="ft t-${g.paletteBehavior === "dark-field" ? "dark" : "light"} fs-${g.footerStyle}"><div class="w">${body}</div></footer>`;
+  return `<footer class="ft t-${g.paletteBehavior === "dark-field" ? "dark" : "light"} fs-${g.footerStyle}"><div class="w">${body}${photoCredits}</div></footer>`;
 }
 function dock(spec: SiteSpecV3): string {
   const g = spec.design.genome;
@@ -648,7 +689,10 @@ export function renderPageV3(
   const page = spec.pages.find((p) => p.slug === slug)!;
   const root = slug === "home" ? "" : "../";
   const title =
-    slug === "home" ? spec.seo.title : `${page.title} | ${spec.business.name}`;
+    page.seoTitle ||
+    (slug === "home"
+      ? spec.seo.title
+      : `${page.title} | ${spec.business.name}`);
   const fo = origin(rc.formEndpoint);
   const csp = `default-src 'none'; img-src 'self' https: data:; font-src 'self'; style-src 'self'; script-src 'self'; connect-src ${fo}; form-action ${fo}; base-uri 'none'`;
   const c: Ctx = {
@@ -687,7 +731,7 @@ export function renderPageV3(
         `<link rel="preload" href="/_kora/fonts/${f}" as="font" type="font/woff2" crossorigin>`,
     )
     .join("\n");
-  const desc = spec.seo.description;
+  const desc = page.seoDescription || spec.seo.description;
   const canon = spec.seo.canonicalOrigin
     ? `${spec.seo.canonicalOrigin}${slug === "home" ? "/" : `/${slug}/`}`
     : "";

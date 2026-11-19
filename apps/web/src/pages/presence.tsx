@@ -18,8 +18,8 @@ const WORD: Record<string, string> = {
   UNKNOWN: "Not connected",
 };
 const CAN: Record<string, string> = {
-  yes: "Kora can fix this for you.",
-  with_approval: "Kora can fix this once you approve.",
+  yes: "Krevstudio can fix this for you.",
+  with_approval: "Krevstudio can fix this once you approve.",
   no: "This needs you.",
 };
 
@@ -33,8 +33,8 @@ export function PresenceEntry() {
           <Navigate to={`/app/sites/${rows[0].id}/presence`} replace />
         ) : (
           <Empty title="No business profile yet">
-            Presence starts with a website. Create one and Kora will read your
-            details from it.
+            Presence starts with a website. Create one and Krevstudio will read
+            your details from it.
             <p>
               <Link className="btn" to="/app/sites/new">
                 Create my website
@@ -151,8 +151,8 @@ function ProfileForm({
     >
       <h2>Your business details</h2>
       <p className="muted">
-        Kora uses only what you write here for your website, posts and replies.
-        Nothing is guessed.
+        Krevstudio uses only what you write here for your website, posts and
+        replies. Nothing is guessed.
       </p>
       <label>
         Business name
@@ -278,9 +278,9 @@ export function PresencePage() {
     <Async state={view}>
       {(v) =>
         !v.profile ? (
-          <Empty title="Tell Kora about your business">
-            Kora can read your name, contact details and hours from your website
-            so you do not have to type them again.
+          <Empty title="Tell Krevstudio about your business">
+            Krevstudio can read your name, contact details and hours from your
+            website so you do not have to type them again.
             <p>
               <button
                 className="btn"
@@ -346,7 +346,7 @@ export function PresencePage() {
               </section>
             )}
             <section aria-labelledby="all-checks">
-              <h2 id="all-checks">Everything Kora checked</h2>
+              <h2 id="all-checks">Everything Krevstudio checked</h2>
               <ul className="k-checks">
                 {v.health.checks
                   .filter((c: J) => c.status === "OK" || c.status === "UNKNOWN")
@@ -397,7 +397,7 @@ export function BrandPage() {
         if (!kit)
           return (
             <Empty title="No brand yet">
-              Create a website first. Kora builds your Brand Kit from its
+              Create a website first. Krevstudio builds your Brand Kit from its
               design.
             </Empty>
           );

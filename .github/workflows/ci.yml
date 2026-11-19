@@ -1,9 +1,16 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feature/krevstudio-m3-m4-transformation
+      - feature/krevstudio-creative-professionalization
   pull_request:
     branches: [main]
+
+concurrency:
+  group: krevm3m4-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
@@ -101,6 +108,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Verify creative ESM runtime exports from root and site-schema
+        run: |
+          pnpm --filter @kora/site-schema exec node --input-type=module -e "const m=await import('@kora/creative'); for (const k of ['contrast','ensureContrast','legibleOnAll']) { if(typeof m[k]!=='function') throw Error('site-schema cannot resolve '+k); }"
+          node --input-type=module -e "const s=await import('./packages/site-schema/dist/src/index.js'); for (const k of ['planDirectionsV3','renderSiteV3','planDirections']) { if(typeof s[k]!=='function') throw Error('compiled site-schema missing '+k); }"
+          node -e "const s=require('./packages/site-schema/dist/src/index.js'); for (const k of ['planDirectionsV3','renderSiteV3','planDirections']) { if(typeof s[k]!=='function') throw Error('compiled site-schema CJS bridge missing '+k); }"
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
       - uses: actions/upload-artifact@v4
@@ -108,6 +120,14 @@ jobs:
         with:
           name: playwright-traces
           path: test-results/
+      - name: Preserve ten-industry website studio screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kora-studio-benchmark-screenshots
+          path: test-results/kora-studio-benchmark/
+          retention-days: 7
+          if-no-files-found: warn
 
   docker-image:
     name: docker image (build, no push)

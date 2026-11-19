@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Kora's own product UI (landing, auth, Mission Control, builder, incident) at the widths people
+ * Krevstudio's own product UI (landing, auth, Mission Control, builder, incident) at the widths people
  * actually use: small phones through desktop. Rules a user would feel: no sideways scrolling, no
  * control or text pushed off-screen, a header that does not eat the screen, touch-sized controls.
  */
@@ -191,7 +191,7 @@ test.beforeAll(async ({ browser }) => {
   await sp.getByLabel("Password").fill("correct horse battery");
   await sp.getByRole("button", { name: "Create account" }).click();
   await expect(
-    sp.getByRole("heading", { name: /Tell Kora about your business/ }),
+    sp.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
   ).toBeVisible();
   const api = seed.request;
   const H = { "x-requested-with": "kora" };
@@ -267,7 +267,7 @@ test.beforeAll(async ({ browser }) => {
 });
 
 for (const w of WIDTHS) {
-  test(`Kora's own UI works at ${w}px`, async ({ browser }) => {
+  test(`Krevstudio's own UI works at ${w}px`, async ({ browser }) => {
     test.setTimeout(240_000);
     const problems: string[] = [];
     const ctx = await browser.newContext({
@@ -314,8 +314,28 @@ for (const w of WIDTHS) {
     ];
     for (const [label, url] of pages) {
       await page.goto(url);
+      if (label === "landing" && w <= 430) {
+        const menu = page.locator(".krev-public-menu");
+        const trigger = menu.locator("summary");
+        await expect(trigger).toBeVisible();
+        await trigger.focus();
+        await page.keyboard.press("Enter");
+        await expect(menu).toHaveAttribute("open", "");
+        await expect(
+          menu.getByRole("link", { name: "Open Mission Control" }),
+        ).toBeVisible();
+        await expect(menu.getByRole("link", { name: "Pricing" })).toBeVisible();
+        await check(page, "landing/open-menu", w, problems);
+        await trigger.click();
+        await expect(menu).not.toHaveAttribute("open", "");
+      }
       if (label === "builder")
-        for (const tab of ["Ask Kora", "Design", "Sections", "Versions"]) {
+        for (const tab of [
+          "Ask Krevstudio",
+          "Design",
+          "Sections",
+          "Versions",
+        ]) {
           await page.getByRole("tab", { name: tab }).click();
           await check(page, `builder/${tab}`, w, problems);
         }
@@ -335,7 +355,25 @@ for (const w of WIDTHS) {
         await check(page, "customers/open-lead", w, problems);
       }
       if (label === "incident") {
-        await page.getByRole("button", { name: "Proof", exact: true }).click();
+        const proof = page.getByRole("button", { name: "Proof", exact: true });
+        await proof.scrollIntoViewIfNeeded();
+        const hitTest = async () =>
+          proof.evaluate((button) => {
+            const rect = button.getBoundingClientRect();
+            const target = document.elementFromPoint(
+              rect.left + rect.width / 2,
+              rect.top + rect.height / 2,
+            );
+            return target === button || button.contains(target);
+          });
+        await expect.poll(hitTest).toBe(true);
+        if (w >= 900) {
+          const rect = await proof.boundingBox();
+          expect(rect).not.toBeNull();
+          expect(rect!.y).toBeLessThan(260);
+        }
+        await proof.click();
+        await expect(proof).toHaveAttribute("aria-pressed", "true");
         await page
           .getByText(/Evidence, decisions and Passport/)
           .first()

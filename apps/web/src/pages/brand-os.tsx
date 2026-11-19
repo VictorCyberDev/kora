@@ -1,6 +1,52 @@
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { api, type J } from "../api";
 import { Async, Notice, errText, useLoad } from "../ui";
+
+const htmlSafe = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+function exportBrandGuidelines(cur: J) {
+  const brand = cur.brandOs;
+  const palette = Object.entries(
+    brand.visual.palette as Record<string, string>,
+  );
+  const paletteMarkup = palette
+    .map(([name, hex]) => {
+      const color = /^#[0-9a-fA-F]{6}$/.test(String(hex))
+        ? String(hex)
+        : "#eeeeee";
+      return `<figure><div class="swatch" style="background:${color}"></div><figcaption><strong>${htmlSafe(name)}</strong><code>${htmlSafe(color)}</code></figcaption></figure>`;
+    })
+    .join("");
+  const items = (values: string[]) =>
+    values.map((x) => `<li>${htmlSafe(x)}</li>`).join("");
+  const body = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${htmlSafe(brand.name)} Brand Guidelines v${cur.version}</title>
+<style>body{font:16px/1.6 system-ui,Arial,sans-serif;color:#1d292e;background:#faf8f4;margin:0;padding:2rem}article{max-width:960px;margin:auto}header{border-bottom:3px solid #1d292e;padding:3rem 0}h1{font-size:clamp(2rem,6vw,4.8rem);line-height:1.1}h2{margin-top:3rem;font-size:1.6rem}p{max-width:75ch}section{break-inside:avoid}figure{margin:0;background:white;border:1px solid #ddd;border-radius:9px;overflow:hidden}figcaption{display:flex;justify-content:space-between;padding:1rem;gap:1rem}.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem}.swatch{height:125px}.eyebrow{font-size:.85rem;letter-spacing:.14em;text-transform:uppercase}.aside{background:#eee9df;padding:1.5rem;border-radius:8px}footer{margin:4rem 0 2rem;border-top:1px solid #bbb;padding-top:1rem;font-size:.82rem}@media print{body{background:white;padding:0}.swatch{-webkit-print-color-adjust:exact;print-color-adjust:exact}h2{break-after:avoid}}</style></head>
+<body><article><header><p class="eyebrow">Krevstudio · Versioned Brand Identity Guide</p><h1>${htmlSafe(brand.name)}</h1><p>${htmlSafe(brand.strategy.positioning)}</p></header>
+<section><h2>Identity strategy</h2><p><strong>Brand essence:</strong> ${htmlSafe(brand.strategy.brandEssence)}</p><p><strong>Visual tension:</strong> ${htmlSafe(brand.strategy.visualTension)}</p><p><strong>Voice:</strong> ${htmlSafe(brand.voice.tone)}</p></section>
+<section><h2>Approved palette</h2><div class="swatches">${paletteMarkup}</div><p>Use these colors consistently. Verify contrast against the actual delivery surfaces before publishing.</p></section>
+<section><h2>Typography & visual expression</h2><p><strong>Type direction:</strong> ${htmlSafe(brand.visual.typeVoice)}</p><p><strong>Visual motif:</strong> ${htmlSafe(brand.visual.signatureMotif)}</p><p><strong>Logo clear space:</strong> Preserve at least the height of one symbol stroke around the mark; manually verify each usage.</p><p><strong>Small-size review:</strong> Test at 32px and smaller before use; this is a recommendation, not certified legibility.</p></section>
+<section><h2>Approved logo</h2><p>${brand.visual.logoAssetId ? `Approved vector document ID: <code>${htmlSafe(brand.visual.logoAssetId)}</code>` : "No logo has been approved. This identity guide is provisional until approval."}</p><p>SVG, PNG and monochrome variants should be exported from the approved source. Do not redraw or stretch the mark.</p></section>
+<section><h2>Usage principles</h2><div class="aside"><h3>Do</h3><ul>${items(brand.rules.dos)}</ul><h3>Do not</h3><ul>${items(brand.rules.donts)}</ul></div></section>
+<section><h2>Photography and templates</h2><p>Use approved, licensed imagery that fits the recorded visual direction. Keep layout, tone and typography consistent across websites, flyers, posters and social campaigns. Any new direction must be explicitly approved.</p></section>
+<footer>Generated from saved Brand OS version ${cur.version}. Export is a portable HTML reference; no legal trademark clearance, commercial print certification or independent visual approval is implied.</footer></article></body></html>`;
+  const url = URL.createObjectURL(
+    new Blob([body], { type: "text/html;charset=utf-8" }),
+  );
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "krevstudio-brand-guidelines-v" + cur.version + ".html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+}
 
 const FORMAT_LABEL: Record<string, string> = {
   "social-square": "Square post",
@@ -24,7 +70,7 @@ const NUDGES: Array<[string, string]> = [
   ["minimal", "More minimal"],
 ];
 
-/** The owner-facing Brand OS: "this is how Kora represents my business". Advanced fields stay hidden. */
+/** The owner-facing Brand OS: "this is how Krevstudio represents my business". Advanced fields stay hidden. */
 export function BrandOsPanel({ siteId }: { siteId: string }) {
   const os = useLoad(
     () => api<J>("GET", `/api/sites/${siteId}/brand-os`),
@@ -57,7 +103,7 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
       await api("POST", `/api/sites/${siteId}/brand-os/backfill`, {});
       setMsg({
         ok: true,
-        text: "Done. This is what Kora worked out from your website. Nothing was published or changed.",
+        text: "Done. This is what Krevstudio worked out from your website. Nothing was published or changed.",
       });
       os.reload();
     } catch (x) {
@@ -75,14 +121,15 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
             <section className="card stack" aria-labelledby="bos-h">
               <h2 id="bos-h">Your brand system</h2>
               <p className="muted">
-                Kora builds a full brand system when you create a website with
-                the new design engine: strategy, colours, type, voice and rules
-                that every flyer, post and story will follow.
+                Krevstudio builds a full brand system when you create a website
+                with the new design engine: strategy, colours, type, voice and
+                rules that every flyer, post and story will follow.
               </p>
               <p className="muted">
-                Already have a website made earlier? Kora can read its colours
-                and type and write them down as your brand system. It is marked
-                as worked out from your site, and your website is not changed.
+                Already have a website made earlier? Krevstudio can read its
+                colours and type and write them down as your brand system. It is
+                marked as worked out from your site, and your website is not
+                changed.
               </p>
               <div className="row">
                 <button
@@ -103,9 +150,10 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
             <p className="k-overline">Brand system · version {cur.version}</p>
             {b.provenance?.createdBy === "inferred-from-site" && (
               <Notice kind="info">
-                Worked out from your earlier website, not chosen by you. Kora
-                could not know: {b.provenance.inferred?.unknown.join("; ")}.
-                Change anything below to make it yours.
+                Worked out from your earlier website, not chosen by you.
+                Krevstudio could not know:{" "}
+                {b.provenance.inferred?.unknown.join("; ")}. Change anything
+                below to make it yours.
               </Notice>
             )}
             <h2 id="bos-h">
@@ -130,6 +178,62 @@ export function BrandOsPanel({ siteId }: { siteId: string }) {
                 </li>
               ))}
             </ul>
+            <div className="row" aria-label="Brand kit export and logos">
+              <button
+                className="btn sm"
+                onClick={() => {
+                  const kit = {
+                    schemaVersion: 1,
+                    source: "Krevstudio Brand OS",
+                    exportedAt: new Date().toISOString(),
+                    version: cur.version,
+                    hash: cur.hash,
+                    brand: b,
+                    guidelines: {
+                      minimumLogoSize: 32,
+                      logoClearSpace:
+                        "At least the height of one symbol stroke",
+                      palette: p,
+                      typography: b.visual.typeVoice,
+                      tone: b.voice.tone,
+                      approvedLogoDocumentId: b.visual.logoAssetId,
+                      dos: b.rules.dos,
+                      donts: b.rules.donts,
+                    },
+                  };
+                  const blob = new Blob([JSON.stringify(kit, null, 2)], {
+                    type: "application/json",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "krevstudio-brand-kit-v" + cur.version + ".json";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export versioned Brand Kit JSON
+              </button>
+              <button
+                className="btn sm ghost"
+                onClick={() => exportBrandGuidelines(cur)}
+              >
+                Export editable brand guidelines (HTML)
+              </button>
+              <Link
+                className="btn sm ghost"
+                to={`/app/sites/${siteId}/creative-studio`}
+              >
+                {b.visual.logoAssetId
+                  ? "Edit approved logo"
+                  : "Create a vector logo"}
+              </Link>
+              {b.visual.logoAssetId && (
+                <span className="small muted">
+                  Approved logo linked to Brand OS version {cur.version}
+                </span>
+              )}
+            </div>
             <p className="small">
               Type: <strong>{b.visual.typeVoice.replace(/-/g, " ")}</strong> ·
               Signature device:{" "}
@@ -301,8 +405,8 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
       {out && (
         <div className="stack">
           <p className="small muted">
-            Created, not posted. Kora cannot post for you yet: download each one
-            and post it yourself, or send it through the calendar.
+            Created, not posted. Krevstudio cannot post for you yet: download
+            each one and post it yourself, or send it through the calendar.
           </p>
           <div className="row" style={{ alignItems: "flex-start", gap: 12 }}>
             {out.results.map((r: J) =>
@@ -330,7 +434,7 @@ export function CreativeSetPanel({ siteId }: { siteId: string }) {
   );
 }
 
-/** "I need more birthday cake orders next week": Kora proposes a coordinated set; nothing is made until the owner says so. */
+/** "I need more birthday cake orders next week": Krevstudio proposes a coordinated set; nothing is made until the owner says so. */
 export function CampaignAskPanel({ siteId }: { siteId: string }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -377,7 +481,7 @@ export function CampaignAskPanel({ siteId }: { siteId: string }) {
   };
   return (
     <section className="card stack" aria-labelledby="ask-h">
-      <h2 id="ask-h">Tell Kora what you need</h2>
+      <h2 id="ask-h">Tell Krevstudio what you need</h2>
       <form className="row" onSubmit={(e) => void ask(e)}>
         <label className="grow">
           <span className="small muted">
@@ -413,7 +517,7 @@ export function CampaignAskPanel({ siteId }: { siteId: string }) {
             ))}
           </ol>
           <div>
-            <p className="small">Kora still needs from you:</p>
+            <p className="small">Krevstudio still needs from you:</p>
             <ul className="small">
               {(proposal.needsFromOwner as string[]).map((n) => (
                 <li key={n}>{n}</li>

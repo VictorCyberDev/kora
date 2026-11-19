@@ -1,6 +1,8 @@
 import {
   applySitePatch,
   applyStructuredEditV3,
+  editPagesV3,
+  pageEditSchema,
   ruleBasedEditV3,
   applyIntelligence,
   applyStructuredEditV2,
@@ -24,6 +26,9 @@ import {
   type SiteSpecV3,
   type StructuredEdit,
   assistCopy,
+  criticV3,
+  repairV3,
+  parseSiteSpecV3,
 } from "@kora/site-schema";
 import type { BrandOS, CreativeDirection } from "@kora/creative";
 
@@ -293,6 +298,51 @@ export class SiteAuthor {
           ". The opening headline was suggested by the AI and checked against what you told us.";
       }
     }
+    // Run the real deterministic creative critic as part of customer website
+    // generation, not only as a separate report in the QA endpoint.
+    // Repairs are fact-preserving, schema-checked and capped at two attempts.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const before = criticV3(spec);
+      const proposal = repairV3(spec);
+      if (!proposal.applied.length) break;
+      const candidate = parseSiteSpecV3(proposal.spec);
+      const after = criticV3(candidate);
+      const blockers = (issues: typeof before) =>
+        issues.filter((issue) => issue.severity === "block").length;
+      if (blockers(after) > blockers(before)) break;
+      spec = candidate;
+      note += ". Validated repair: " + proposal.applied.join(", ");
+    }
+    if (o.stockPhotos?.length && o.trackStock) {
+      const urls = new Set<string>();
+      for (const page of spec.pages)
+        for (const section of page.sections) {
+          if ("media" in section && section.media?.url)
+            urls.add(section.media.url);
+          if ("items" in section && Array.isArray(section.items))
+            for (const item of section.items)
+              if (
+                item &&
+                typeof item === "object" &&
+                "media" in item &&
+                item.media &&
+                typeof item.media === "object" &&
+                "url" in item.media &&
+                typeof item.media.url === "string"
+              )
+                urls.add(item.media.url);
+        }
+      const chosen = o.stockPhotos
+        .filter((photo) => urls.has(photo.url))
+        .map((photo) => photo.url);
+      if (chosen.length && !(await o.trackStock(chosen))) {
+        // Tracking must succeed before Unsplash images enter a generated site.
+        // Retry once with Kora's curated licensed local catalog instead.
+        const safeOptions: PlanV3Options = { ...o, stockPhotos: [] };
+        delete safeOptions.trackStock;
+        return this.generateV3(rawBrief, direction, safeOptions, assist);
+      }
+    }
     return {
       spec,
       source,
@@ -451,11 +501,19 @@ export class SiteAuthor {
       note,
     });
     try {
-      if (input.designEdit)
-        return done(applyStructuredEditV3(spec, input.designEdit), null);
+      if (input.designEdit) {
+        const pageOperation = pageEditSchema.safeParse(input.designEdit);
+        return done(
+          pageOperation.success
+            ? editPagesV3(spec, pageOperation.data)
+            : applyStructuredEditV3(spec, input.designEdit),
+          null,
+        );
+      }
     } catch (e) {
       throw new EditNotUnderstood(
-        e instanceof Error && e.name === "EditV3Error"
+        e instanceof Error &&
+          (e.name === "EditV3Error" || e.name === "PageEditError")
           ? e.message
           : "That change is not available. Nothing was changed.",
       );

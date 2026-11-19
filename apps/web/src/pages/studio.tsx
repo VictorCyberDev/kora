@@ -18,7 +18,7 @@ export function MarketingEntry() {
           <Navigate to={`/app/sites/${rows[0].id}/today`} replace />
         ) : (
           <Empty title="Nothing to market yet">
-            Create your website first, then Kora can help you promote it.
+            Create your website first, then Krevstudio can help you promote it.
             <p>
               <Link className="btn" to="/app/sites/new">
                 Create my website
@@ -55,8 +55,8 @@ export function StudioPage() {
         <p className="k-overline">Create</p>
         <h2>Posts, images and video in your brand</h2>
         <p className="muted">
-          Everything is made from your business details and Brand Kit. Kora
-          never invents a price, time or phone number.
+          Everything is made from your business details and Brand Kit.
+          Krevstudio never invents a price, time or phone number.
         </p>
         <div className="chips" role="group" aria-label="What to make">
           {TABS.map(([v, t]) => (
@@ -75,7 +75,7 @@ export function StudioPage() {
         {(p) =>
           !p.profile ? (
             <Empty title="Add your business details first">
-              Kora writes only from facts you have confirmed.
+              Krevstudio writes only from facts you have confirmed.
               <p>
                 <Link className="btn" to={`/app/sites/${id}/presence`}>
                   Go to Presence
@@ -403,9 +403,9 @@ function ImagesTab({ id, facts, o }: { id: string; facts: J; o: J }) {
           </span>
         </div>
         <p className="muted">
-          Kora retrieves a business-specific direction, then maps it to the real
-          layouts, colors and sizes supported by your live renderer. Pick a
-          direction and the editable preview below updates immediately.
+          Krevstudio retrieves a business-specific direction, then maps it to
+          the real layouts, colors and sizes supported by your live renderer.
+          Pick a direction and the editable preview below updates immediately.
         </p>
         <div className="k-campaign-filters">
           <label>
@@ -465,8 +465,8 @@ function ImagesTab({ id, facts, o }: { id: string; facts: J; o: J }) {
         </div>
         <p className="muted k-atlas-note">
           The Atlas stores compositional intelligence, not copied marketplace
-          files. Your final asset remains an original Kora render using your
-          Brand Kit and confirmed business facts.
+          files. Your final asset remains an original Krevstudio render using
+          your Brand Kit and confirmed business facts.
         </p>
       </section>
       <div className="k-studio">

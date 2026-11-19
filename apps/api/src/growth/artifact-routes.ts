@@ -149,7 +149,7 @@ export function registerArtifactRoutes(
         throw new HttpError(
           422,
           "media_not_approved",
-          "Approve this picture first. Kora never uses a generated picture you have not reviewed.",
+          "Approve this picture first. Krevstudio never uses a generated picture you have not reviewed.",
         );
       const mime = String(g.mime);
       if (!/^image\/(png|jpeg|webp)$/.test(mime))
@@ -190,7 +190,7 @@ export function registerArtifactRoutes(
       throw new HttpError(
         409,
         "needs_brand_os",
-        "Create a new Kora design for this business first, so every creative can share one brand.",
+        "Create a new Krevstudio design for this business first, so every creative can share one brand.",
       );
     const row = site.currentVersionId
       ? await platform.getVersionRow(site.id, site.currentVersionId)

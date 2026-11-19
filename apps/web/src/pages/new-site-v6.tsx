@@ -111,7 +111,7 @@ export function NewSiteV6() {
 
     if (!orgId) {
       setErr(
-        "Kora could not find your business workspace. Sign out and back in, then try again.",
+        "Krevstudio could not find your business workspace. Sign out and back in, then try again.",
       );
       return;
     }
@@ -290,7 +290,7 @@ export function NewSiteV6() {
                     <strong>{direction.name}</strong>
                     {direction.recommended && (
                       <span className="chip" style={{ marginLeft: 8 }}>
-                        Kora recommends this
+                        Krevstudio recommends this
                       </span>
                     )}
                     <div className="small muted">{direction.summary}</div>
@@ -384,10 +384,11 @@ export function NewSiteV6() {
       onSubmit={describe}
     >
       <p className="k-overline">New website</p>
-      <h1 style={{ fontSize: "2rem" }}>Tell Kora about your business</h1>
+      <h1 style={{ fontSize: "2rem" }}>Tell Krevstudio about your business</h1>
       <p className="muted">
-        First compare three directions. Kora only creates the website after you
-        choose one, so previewing can never trap you in a create-site loop.
+        First compare three directions. Krevstudio only creates the website
+        after you choose one, so previewing can never trap you in a create-site
+        loop.
       </p>
       <label>
         Business name
@@ -408,8 +409,8 @@ export function NewSiteV6() {
           placeholder="We repair fridges, washing machines and cookers in Ikeja."
         />
         <span className="field-hint">
-          Two lines is enough. Kora only uses what you write here. It will not
-          invent services, prices or reviews.
+          Two lines is enough. Krevstudio only uses what you write here. It will
+          not invent services, prices or reviews.
         </span>
       </label>
       <div className="grid">
@@ -466,7 +467,7 @@ export function NewSiteV6() {
       </details>
       {questions.length > 0 && (
         <Notice kind="warn">
-          <strong>Kora needs a little more:</strong>
+          <strong>Krevstudio needs a little more:</strong>
           <ul>
             {questions.map((question) => (
               <li key={question}>{question}</li>

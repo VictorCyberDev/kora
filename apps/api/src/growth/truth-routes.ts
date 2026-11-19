@@ -81,7 +81,7 @@ export function registerTruthRoutes(
       throw new HttpError(
         409,
         "no_profile",
-        "Tell Kora about the business first.",
+        "Tell Krevstudio about the business first.",
       );
     const facts = factsFromBusiness(profile.facts, now().toISOString());
     const ledger = buildLedger(

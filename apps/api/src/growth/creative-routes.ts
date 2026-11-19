@@ -150,7 +150,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       throw new HttpError(
         422,
         "direction_blocked",
-        "That direction needs facts Kora does not have yet.",
+        "That direction needs facts Krevstudio does not have yet.",
       );
     await sql`UPDATE campaign_briefs SET chosen_angle=${angle} WHERE id=${briefId} AND site_id=${site.id}`;
     return { data: { id: briefId, chosenAngle: angle } };
@@ -254,7 +254,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       throw new HttpError(
         409,
         "no_profile",
-        "Tell Kora about the business first.",
+        "Tell Krevstudio about the business first.",
       );
     return {
       data: {
@@ -319,7 +319,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       throw new HttpError(
         422,
         "cannot_audit",
-        "Kora could not open that website.",
+        "Krevstudio could not open that website.",
       );
     }
     const result = auditHtml(page.html, page.finalUrl);
@@ -327,7 +327,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     const stored = {
       ...result,
       truncated: page.truncated,
-      note: "Checked one public page. Kora read only what the page itself says.",
+      note: "Checked one public page. Krevstudio read only what the page itself says.",
     };
     await sql`INSERT INTO public_audits (id, url, final_url, result)
       VALUES (${id}, ${withScheme}, ${page.finalUrl}, ${sql.json(toJson(stored))})`;

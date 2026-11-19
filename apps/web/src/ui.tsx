@@ -76,20 +76,22 @@ export const kindFor = (s: string): Kind =>
 
 export function Logo() {
   return (
-    <Link to="/" className="logo" aria-label="Kora home">
-      <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="14" fill="var(--brand)" />
-        <circle
-          cx="32"
-          cy="32"
-          r="14"
-          fill="none"
-          stroke="var(--brand-ink)"
-          strokeWidth="5"
+    <Link to="/" className="logo krev-wordmark" aria-label="Krevstudio home">
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 64 64"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <rect x="0" y="0" width="64" height="64" rx="13" fill="#17242A" />
+        <path
+          d="M16 12h10v17l17-17h13L35 33l22 19H43L26 37v15H16z"
+          fill="#F3EDE0"
         />
-        <circle cx="32" cy="32" r="4.5" fill="var(--brand-ink)" />
+        <rect x="46" y="12" width="10" height="10" rx="2" fill="#E37C5C" />
       </svg>
-      kora
+      <span>Krevstudio</span>
     </Link>
   );
 }

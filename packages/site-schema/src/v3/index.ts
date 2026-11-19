@@ -9,3 +9,7 @@ export * from "./brand.js";
 export * from "./edit.js";
 export * from "./backfill.js";
 export * from "./copy-assist.js";
+
+export * from "./page-edit.js";
+
+export * from "./visual-qa.js";

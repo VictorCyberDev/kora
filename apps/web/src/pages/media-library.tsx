@@ -16,7 +16,13 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 /** Owner-facing media library: logo and photos in plain words. No technical metadata is shown. */
-export function MediaLibraryPanel({ siteId }: { siteId: string }) {
+export function MediaLibraryPanel({
+  siteId,
+  onUpdated,
+}: {
+  siteId: string;
+  onUpdated?: () => void;
+}) {
   const lib = useLoad(
     () => api<J>("GET", `/api/sites/${siteId}/media-library`),
     [siteId],
@@ -33,6 +39,7 @@ export function MediaLibraryPanel({ siteId }: { siteId: string }) {
       await fn();
       setMsg({ ok: true, text: ok });
       lib.reload();
+      onUpdated?.();
     } catch (x) {
       setMsg({ ok: false, text: errText(x) });
     } finally {
@@ -85,7 +92,7 @@ export function MediaLibraryPanel({ siteId }: { siteId: string }) {
       <h2 id="ml-h">Your logo and photos</h2>
       <p className="muted">
         Real pictures make your website and posters look like yours. Add them
-        any time: Kora starts without them and gets stronger with them.
+        any time: Krevstudio starts without them and gets stronger with them.
       </p>
       <Async state={lib}>
         {(d) => {
@@ -95,8 +102,8 @@ export function MediaLibraryPanel({ siteId }: { siteId: string }) {
             <div className="stack">
               {!d.designsCanUse && (
                 <Notice kind="info">
-                  Pictures are saved, but this Kora is not set up to show them
-                  on published sites yet.
+                  Pictures are saved, but this Krevstudio is not set up to show
+                  them on published sites yet.
                 </Notice>
               )}
               <div className="row" style={{ alignItems: "center", gap: 16 }}>
@@ -287,8 +294,8 @@ export function MediaLibraryPanel({ siteId }: { siteId: string }) {
               )}
               {photos.length > 0 && (
                 <p className="small muted">
-                  Click a picture to mark the part that matters most. Kora keeps
-                  it in view on phones, posters and stories.
+                  Click a picture to mark the part that matters most. Krevstudio
+                  keeps it in view on phones, posters and stories.
                 </p>
               )}
             </div>
