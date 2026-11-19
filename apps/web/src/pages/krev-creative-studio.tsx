@@ -29,6 +29,8 @@ type Layer = {
   src?: string;
   alt?: string;
   fit?: "cover" | "contain";
+  focalX?: number;
+  focalY?: number;
 };
 type Slide = {
   id: string;
@@ -92,9 +94,19 @@ function renderLayer(layer: Layer) {
           height={layer.height}
           href={layer.src}
           aria-label={layer.alt}
-          preserveAspectRatio={
-            layer.fit === "contain" ? "xMidYMid meet" : "xMidYMid slice"
-          }
+          preserveAspectRatio={[
+            (layer.focalX ?? 0.5) < 1 / 3
+              ? "xMin"
+              : (layer.focalX ?? 0.5) > 2 / 3
+                ? "xMax"
+                : "xMid",
+            (layer.focalY ?? 0.5) < 1 / 3
+              ? "YMin"
+              : (layer.focalY ?? 0.5) > 2 / 3
+                ? "YMax"
+                : "YMid",
+            layer.fit === "contain" ? " meet" : " slice",
+          ].join("")}
         />
       );
     case "path":
@@ -1492,6 +1504,37 @@ export function KrevCreativeStudio() {
                               >
                                 <option value="cover">Crop to fill</option>
                                 <option value="contain">Show full photo</option>
+                              </select>
+                            </label>
+                            <label>
+                              Image focal position{" "}
+                              <select
+                                value={[
+                                  layer.focalX ?? 0.5,
+                                  layer.focalY ?? 0.5,
+                                ].join(",")}
+                                onChange={(e) => {
+                                  const [focalX, focalY] = e.target.value
+                                    .split(",")
+                                    .map(Number);
+                                  editLayer({ focalX, focalY });
+                                }}
+                              >
+                                {[
+                                  ["Top left", "0,0"],
+                                  ["Top center", "0.5,0"],
+                                  ["Top right", "1,0"],
+                                  ["Middle left", "0,0.5"],
+                                  ["Center", "0.5,0.5"],
+                                  ["Middle right", "1,0.5"],
+                                  ["Bottom left", "0,1"],
+                                  ["Bottom center", "0.5,1"],
+                                  ["Bottom right", "1,1"],
+                                ].map(([name, value]) => (
+                                  <option value={value} key={value}>
+                                    {name}
+                                  </option>
+                                ))}
                               </select>
                             </label>
                           </>
