@@ -15,6 +15,7 @@ export const MOTION_FORMATS = {
   story: { label: "9:16 Story / Reel", width: 1080, height: 1920 },
   square: { label: "1:1 Square", width: 1080, height: 1080 },
   portrait: { label: "4:5 Portrait", width: 1080, height: 1350 },
+  landscape: { label: "16:9 Landscape", width: 1920, height: 1080 },
 } as const;
 export type MotionFormat = keyof typeof MOTION_FORMATS;
 export const MOTION_TEMPLATES = [
@@ -82,7 +83,7 @@ export function motionStyleFromGenome(g: {
 export const MotionSpecSchema = z
   .object({
     template: z.enum(MOTION_TEMPLATES),
-    format: z.enum(["story", "square", "portrait"]),
+    format: z.enum(["story", "square", "portrait", "landscape"]),
     colorway: z.enum(COLORWAYS).default("primary"),
     headline: line(60).min(1),
     subline: line(120).default(""),
