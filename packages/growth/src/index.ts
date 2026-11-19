@@ -9,6 +9,7 @@ export * from "./leads.js";
 export * from "./content.js";
 export * from "./assets.js";
 export * from "./motion.js";
+export * from "./motion-timeline.js";
 export * from "./calendar.js";
 export * from "./agent.js";
 export * from "./brief.js";
