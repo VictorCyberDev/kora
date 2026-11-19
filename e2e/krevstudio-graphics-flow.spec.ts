@@ -163,9 +163,7 @@ test("Meridian Bakes creates a brand logo, flyer, poster, social post and editab
     await page.getByLabel("Format").selectOption("carousel");
     await page.getByLabel("Project title").fill("Meridian story carousel");
     await page.getByLabel("Headline or wordmark").fill("Our baking process");
-    await page
-      .getByRole("spinbutton", { name: "Slides" })
-      .fill("4");
+    await page.getByRole("spinbutton", { name: "Slides" }).fill("4");
     const carouselResponse = page.waitForResponse(
       (response) =>
         response.request().method() === "POST" &&
@@ -185,9 +183,7 @@ test("Meridian Bakes creates a brand logo, flyer, poster, social post and editab
     await page.getByRole("button", { name: "Save draft" }).click();
     await expect(page.getByText(/Saved as immutable revision/)).toBeVisible();
     const zipEvent = page.waitForEvent("download");
-    await page
-      .getByRole("button", { name: "Export all slides (ZIP)" })
-      .click();
+    await page.getByRole("button", { name: "Export all slides (ZIP)" }).click();
     const zipDownload = await zipEvent;
     expect(zipDownload.suggestedFilename()).toContain("4-slides.zip");
     const zipBytes = await readFile(await zipDownload.path());
@@ -198,9 +194,7 @@ test("Meridian Bakes creates a brand logo, flyer, poster, social post and editab
     await expect(
       page.getByRole("button", { name: /Meridian story carousel/ }),
     ).toBeVisible();
-    await page
-      .getByRole("button", { name: /Meridian story carousel/ })
-      .click();
+    await page.getByRole("button", { name: /Meridian story carousel/ }).click();
     await expect(
       page.getByRole("group", { name: "Slides" }).getByRole("button", {
         name: "Slide 4",
