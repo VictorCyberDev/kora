@@ -719,8 +719,18 @@ export function renderSlideSvg(slide: z.infer<typeof slideSchema>): string {
         return `<path opacity="${layer.opacity}" transform="${transform} scale(${scaleX} ${scaleY})" d="${esc(layer.d)}" fill="${layer.fill}" stroke="${layer.stroke}" stroke-width="${layer.strokeWidth}"/>`;
       }
       if (layer.type === "image") {
-        const x = layer.focalX < 1 / 3 ? "xMin" : layer.focalX > 2 / 3 ? "xMax" : "xMid";
-        const y = layer.focalY < 1 / 3 ? "YMin" : layer.focalY > 2 / 3 ? "YMax" : "YMid";
+        const x =
+          layer.focalX < 1 / 3
+            ? "xMin"
+            : layer.focalX > 2 / 3
+              ? "xMax"
+              : "xMid";
+        const y =
+          layer.focalY < 1 / 3
+            ? "YMin"
+            : layer.focalY > 2 / 3
+              ? "YMax"
+              : "YMid";
         return `<image ${attributes} width="${layer.width}" height="${layer.height}" href="${esc(layer.src)}" preserveAspectRatio="${x}${y} ${layer.fit === "cover" ? "slice" : "meet"}"/>`;
       }
       if (layer.type === "line")
