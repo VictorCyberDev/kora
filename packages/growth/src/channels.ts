@@ -51,7 +51,7 @@ export const CHANNEL_MATRIX: Record<ChannelProvider, ChannelSpec> = {
     label: "Instagram",
     family: "meta",
     capabilities: caps({
-      publish: "supported",
+      publish: "limited",
       schedule: "limited",
       analytics: "supported",
       messages: "limited",
@@ -59,6 +59,7 @@ export const CHANNEL_MATRIX: Record<ChannelProvider, ChannelSpec> = {
     }),
     notes: [
       "Needs an Instagram professional account linked to a Facebook Page.",
+      "Connection and account verification are implemented; live media posting remains manual until Krevstudio can provide Meta with an approved public media URL and app review is complete.",
       "Instagram has no native scheduling here: Kora holds the post and publishes it at the time you chose.",
       "Stories and reels follow Instagram's own format rules.",
     ],
@@ -79,6 +80,7 @@ export const CHANNEL_MATRIX: Record<ChannelProvider, ChannelSpec> = {
     }),
     notes: [
       "Works with Facebook Pages, not personal profiles.",
+      "Single PNG and JPEG Page posts use Meta's official Page Photos API after the owner selects a Page they manage.",
       "Reading reviews is supported; replying is limited by Meta.",
     ],
     requiredEnv: META_ENV,

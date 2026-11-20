@@ -8,6 +8,8 @@ import type { PlatformConfig } from "../platform/config.js";
 export interface TokenSet {
   accessToken: string;
   refreshToken?: string;
+  /** Provider account selected and verified during OAuth. Stored encrypted. */
+  accountId?: string;
   expiresAt: string | null;
   scopes: string[];
 }
@@ -56,6 +58,7 @@ export interface RawReview {
 export interface PublishInput {
   text: string;
   media: { bytes: Buffer; mime: string } | null;
+  accountId: string;
   /** Stable per (item, channel); providers that support it should use it to deduplicate. */
   idempotencyKey: string;
 }
@@ -79,9 +82,9 @@ interface OAuthSpec {
 }
 
 const META = {
-  authUrl: "https://www.facebook.com/v21.0/dialog/oauth",
-  tokenUrl: "https://graph.facebook.com/v21.0/oauth/access_token",
-  accountUrl: "https://graph.facebook.com/v21.0/me?fields=id,name",
+  authUrl: "https://www.facebook.com/v27.0/dialog/oauth",
+  tokenUrl: "https://graph.facebook.com/v27.0/oauth/access_token",
+  accountUrl: "https://graph.facebook.com/v27.0/me?fields=id,name",
   accountFrom: (j: Record<string, unknown>) =>
     typeof j.id === "string"
       ? { externalId: j.id, name: str(j.name) ?? j.id }
@@ -230,7 +233,7 @@ class OAuthAdapter implements ProviderAdapter {
     redirectUri: string;
     externalAccountId?: string;
   }) {
-    const tokens = await this.token({
+    let tokens = await this.token({
       grant_type: "authorization_code",
       code: p.code,
       redirect_uri: p.redirectUri,
@@ -245,6 +248,52 @@ class OAuthAdapter implements ProviderAdapter {
         r.status,
         "Could not read the connected account.",
       );
+    if (
+      (this.provider === "facebook" || this.provider === "instagram") &&
+      p.externalAccountId
+    ) {
+      const pages = await this.f(
+        "https://graph.facebook.com/v27.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username}",
+        { headers: { authorization: `Bearer ${tokens.accessToken}` } },
+      );
+      const payload = (await pages.json().catch(() => ({}))) as {
+        data?: Array<{
+          id?: string;
+          name?: string;
+          access_token?: string;
+          instagram_business_account?: { id?: string; username?: string };
+        }>;
+      };
+      const page = payload.data?.find((candidate) =>
+        this.provider === "facebook"
+          ? candidate.id === p.externalAccountId
+          : candidate.instagram_business_account?.id === p.externalAccountId,
+      );
+      if (!pages.ok || !page?.access_token)
+        throw new ProviderError(
+          403,
+          "Your sign-in cannot manage that Page or Instagram professional account.",
+        );
+      const selected =
+        this.provider === "facebook"
+          ? { externalId: page.id!, name: page.name ?? page.id! }
+          : {
+              externalId: page.instagram_business_account!.id!,
+              name:
+                page.instagram_business_account!.username ??
+                page.instagram_business_account!.id!,
+            };
+      // Page tokens perform Page and linked professional-account operations.
+      // The user token is retained only inside the encrypted token envelope so
+      // it can renew and re-resolve this exact selected account.
+      tokens = {
+        ...tokens,
+        accessToken: page.access_token,
+        refreshToken: tokens.accessToken,
+        accountId: selected.externalId,
+      };
+      account = selected;
+    }
     if (this.provider === "whatsapp" && p.externalAccountId) {
       // Webhooks are routed by this id, so the signed-in user must prove they can read that exact number.
       if (!/^\d{5,30}$/.test(p.externalAccountId))
@@ -269,10 +318,48 @@ class OAuthAdapter implements ProviderAdapter {
           str(vj.display_phone_number) ??
           p.externalAccountId,
       };
+      tokens = { ...tokens, accountId: p.externalAccountId };
     }
     return { tokens, account };
   }
   async refresh(t: TokenSet) {
+    if (
+      (this.provider === "facebook" || this.provider === "instagram") &&
+      t.refreshToken &&
+      t.accountId
+    ) {
+      const renewed = await this.token({
+        grant_type: "fb_exchange_token",
+        fb_exchange_token: t.refreshToken,
+      });
+      const pages = await this.f(
+        "https://graph.facebook.com/v27.0/me/accounts?fields=id,access_token,instagram_business_account{id}",
+        { headers: { authorization: `Bearer ${renewed.accessToken}` } },
+      );
+      const payload = (await pages.json().catch(() => ({}))) as {
+        data?: Array<{
+          id?: string;
+          access_token?: string;
+          instagram_business_account?: { id?: string };
+        }>;
+      };
+      const page = payload.data?.find((candidate) =>
+        this.provider === "facebook"
+          ? candidate.id === t.accountId
+          : candidate.instagram_business_account?.id === t.accountId,
+      );
+      if (!pages.ok || !page?.access_token)
+        throw new ProviderError(
+          403,
+          "The selected publishing account is no longer available.",
+        );
+      return {
+        ...renewed,
+        accessToken: page.access_token,
+        refreshToken: renewed.accessToken,
+        accountId: t.accountId,
+      };
+    }
     if (!t.refreshToken) {
       // Meta long-lived tokens are renewed by exchanging the current one.
       return this.token({
@@ -295,6 +382,51 @@ class OAuthAdapter implements ProviderAdapter {
     } catch {
       return { ok: false, httpStatus: 503 };
     }
+  }
+
+  async publish(t: TokenSet, post: PublishInput): Promise<PublishResult> {
+    if (this.provider !== "facebook")
+      throw new ProviderError(
+        501,
+        "This provider requires manual handoff in the current deployment.",
+      );
+    if (!/^\d{5,30}$/.test(post.accountId) || t.accountId !== post.accountId)
+      throw new ProviderError(403, "The selected Page does not match OAuth.");
+    if (!post.media || !["image/png", "image/jpeg"].includes(post.media.mime))
+      throw new ProviderError(415, "Facebook Page posts need a PNG or JPEG.");
+    if (post.media.bytes.length > 10 * 1024 * 1024)
+      throw new ProviderError(413, "The Facebook image is larger than 10 MB.");
+    const form = new FormData();
+    form.set("message", post.text.slice(0, 63206));
+    form.set("published", "true");
+    form.set(
+      "source",
+      new Blob([Uint8Array.from(post.media.bytes)], { type: post.media.mime }),
+      post.media.mime === "image/jpeg" ? "post.jpg" : "post.png",
+    );
+    const response = await this.f(
+      `https://graph.facebook.com/v27.0/${post.accountId}/photos`,
+      {
+        method: "POST",
+        headers: { authorization: `Bearer ${t.accessToken}` },
+        body: form,
+      },
+    );
+    const payload = (await response.json().catch(() => ({}))) as {
+      id?: string;
+      post_id?: string;
+      error?: { message?: string };
+    };
+    const externalId = payload.post_id ?? payload.id;
+    if (!response.ok || !externalId)
+      throw new ProviderError(
+        response.status,
+        payload.error?.message ?? "Facebook rejected the Page post.",
+      );
+    return {
+      externalId,
+      url: `https://www.facebook.com/${externalId.replace("_", "/posts/")}`,
+    };
   }
 }
 
@@ -403,7 +535,13 @@ export class ProviderRegistry {
     const s = SPECS[provider];
     const creds = s?.creds(this.config);
     if (!s || !creds || !this.config.KORA_SECRETS_KEY) return null;
-    return new OAuthAdapter(provider, s, creds, this.f);
+    const adapter = new OAuthAdapter(provider, s, creds, this.f);
+    // A live OAuth connection is not proof of posting support. Only the
+    // Facebook Page flow below is commissioned; every other provider remains
+    // handoff-only until its provider-specific media contract is implemented.
+    if (provider !== "facebook")
+      Object.defineProperty(adapter, "publish", { value: undefined });
+    return adapter;
   }
   /** Environment names visible to runtimeStatus; never values. */
   env(): Record<string, string | undefined> {
