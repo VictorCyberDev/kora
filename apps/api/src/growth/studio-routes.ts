@@ -13,12 +13,14 @@ import {
   CONTENT_GOALS,
   MOTION_FORMATS,
   MOTION_TEMPLATES,
+  MotionTimelineSchema,
   MotionSpecSchema,
   NotEnoughFacts,
   buildContentContext,
   buildPresenceGraph,
   generateContent,
   motionFrameSvg,
+  motionTimelineFrameSvg,
   motionStyleFromGenome,
   previewTimes,
   renderAssetSvg,
@@ -26,6 +28,7 @@ import {
   validateAssetSpec,
   validateDraft,
   type ContentModel,
+  type MotionTimeline,
 } from "@kora/growth";
 import {
   HttpError,
@@ -42,6 +45,7 @@ import { BrandOsStore } from "../platform/brand-os-store.js";
 import type { Rasterizer } from "./rasterizer.js";
 import { requireFeature } from "./entitlements.js";
 import type { createGatherer } from "./gather.js";
+import { MotionProjectStore } from "./motion-project-store.js";
 
 export interface StudioDeps {
   platform: PlatformStore;
@@ -99,6 +103,7 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
     return site;
   };
   const brandOs = new BrandOsStore(platform.sql);
+  const motionProjects = new MotionProjectStore(platform.sql);
   /** How this brand moves, from its Brand OS genome. Absent for sites that have no Brand OS (older designs). */
   const brandMotion = async (siteId: string) => {
     const latest = await brandOs.latest(siteId);
@@ -134,9 +139,78 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
     phone?: string | undefined;
     whatsapp?: string | undefined;
   }) => [c.phone, c.whatsapp].filter((x): x is string => Boolean(x));
+  const validateTimeline = async (
+    site: Awaited<ReturnType<typeof siteFor>>,
+    input: unknown,
+  ): Promise<MotionTimeline> => {
+    const timeline = MotionTimelineSchema.parse(input);
+    await base(site);
+    const kit = await growth.getBrandKit(site.id, timeline.brand.kitVersion);
+    const referencedBrandOs = timeline.brand.brandOsVersion
+      ? await brandOs.get(site.id, timeline.brand.brandOsVersion)
+      : null;
+    if (!kit)
+      throw new HttpError(
+        409,
+        "motion_brand_missing",
+        "The Brand Kit version referenced by this motion project is unavailable.",
+      );
+    if (
+      (timeline.brand.brandOsVersion === null) !==
+        (timeline.brand.brandOsHash === null) ||
+      (timeline.brand.brandOsVersion !== null &&
+        referencedBrandOs?.hash !== timeline.brand.brandOsHash)
+    )
+      throw new HttpError(
+        409,
+        "motion_brand_os_missing",
+        "The BrandOS version referenced by this motion project is unavailable.",
+      );
+    const imageLayers = timeline.scenes.flatMap((scene) =>
+      scene.layers.filter((layer) => layer.type === "image"),
+    );
+    const ids = [...new Set(imageLayers.map((layer) => layer.assetId))];
+    if (ids.length) {
+      const owned = await platform.sql`
+        SELECT id, removed_at FROM owner_media
+        WHERE site_id=${site.id} AND id = ANY(${ids}::uuid[])`;
+      const found = new Map(
+        owned.map((row) => [
+          String(row.id),
+          row.removed_at === null ? "active" : "removed",
+        ]),
+      );
+      for (const layer of imageLayers) {
+        const state = found.get(layer.assetId);
+        if (!state && layer.missingAsset === "fail")
+          throw new HttpError(
+            422,
+            "motion_asset_missing",
+            "A required image is unavailable in this business's media library.",
+          );
+        if (state === "removed" && layer.missingAsset === "fail")
+          throw new HttpError(
+            422,
+            "motion_asset_removed",
+            "A required image was removed. Replace it before saving.",
+          );
+      }
+    }
+    if (timeline.audio)
+      throw new HttpError(
+        422,
+        "motion_audio_unavailable",
+        "Upload and licensed-audio storage is not configured for this workspace yet.",
+      );
+    return timeline;
+  };
 
   app.get("/api/sites/:id/studio/options", async (req) => {
-    await siteFor(req);
+    const site = await siteFor(req);
+    const [kit, motionBrand] = await Promise.all([
+      growth.latestBrandKit(site.id),
+      brandMotion(site.id),
+    ]);
     return {
       data: {
         content: {
@@ -162,6 +236,13 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
           templates: MOTION_TEMPLATES,
           // Video export needs an encoder on this server; previews work regardless.
           exportAvailable: await d.ffmpeg(),
+          brand: kit
+            ? {
+                kitVersion: kit.version,
+                brandOsVersion: motionBrand?.brandOs.version ?? null,
+                brandOsHash: motionBrand?.brandOs.hash ?? null,
+              }
+            : null,
         },
       },
     };
@@ -362,6 +443,282 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
         )
         .send(f.bytes)
     );
+  });
+
+  // ---- Editable Motion Projects --------------------------------------------
+  const projectParams = z.object({ id: uuid, projectId: uuid });
+  const projectBody = z
+    .object({
+      name: z.string().trim().min(1).max(120),
+      timeline: z.unknown(),
+    })
+    .strict();
+
+  app.post("/api/sites/:id/motion/projects", async (req, reply) => {
+    const site = await siteFor(req, "MEMBER");
+    await requireFeature(billing, site.orgId, "motion.studio");
+    const body = projectBody.parse(req.body);
+    const timeline = await validateTimeline(site, body.timeline);
+    const user = requireUser(req);
+    const project = await motionProjects.create({
+      siteId: site.id,
+      orgId: site.orgId,
+      ownerId: user.userId,
+      name: body.name,
+      timeline,
+    });
+    await platform.audit({
+      orgId: site.orgId,
+      actorUserId: user.userId,
+      action: "motion.project_created",
+      objectType: "motion_project",
+      objectId: project.id,
+      requestId: req.id,
+      metadata: { revision: 1, timelineVersion: timeline.version },
+    });
+    return reply.code(201).send({ data: project });
+  });
+
+  app.post("/api/sites/:id/motion/timeline/preview", async (req) => {
+    const site = await siteFor(req);
+    const timeline = await validateTimeline(site, req.body);
+    const [{ kit }, graphData, assets] = await Promise.all([
+      growth.getBrandKit(site.id, timeline.brand.kitVersion).then((record) => {
+        if (!record) throw notFound();
+        return record;
+      }),
+      base(site),
+      studio.timelineAssets(
+        site.id,
+        timeline.scenes.flatMap((scene) =>
+          scene.layers
+            .filter((layer) => layer.type === "image")
+            .map((layer) => layer.assetId),
+        ),
+      ),
+    ]);
+    const times = [
+      0,
+      Math.max(0, timeline.durationSec / 2),
+      Math.max(0, timeline.durationSec - 1 / 24),
+    ];
+    return {
+      data: {
+        frames: times.map((time) => ({
+          time,
+          ...motionTimelineFrameSvg(
+            timeline,
+            kit,
+            graphData.graph.identity.name,
+            time,
+            assets,
+          ),
+        })),
+      },
+    };
+  });
+
+  app.get("/api/sites/:id/motion/projects", async (req) => ({
+    data: await motionProjects.list((await siteFor(req)).id),
+  }));
+
+  app.get("/api/sites/:id/motion/projects/:projectId", async (req) => {
+    const site = await siteFor(req);
+    const { projectId } = projectParams.parse(req.params);
+    const project = await motionProjects.get(site.id, projectId);
+    if (!project) throw notFound();
+    return { data: project };
+  });
+
+  app.put("/api/sites/:id/motion/projects/:projectId", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    await requireFeature(billing, site.orgId, "motion.studio");
+    const { projectId } = projectParams.parse(req.params);
+    const body = projectBody
+      .extend({ expectedRevision: z.number().int().positive() })
+      .parse(req.body);
+    const timeline = await validateTimeline(site, body.timeline);
+    const user = requireUser(req);
+    const saved = await motionProjects.save({
+      siteId: site.id,
+      id: projectId,
+      expectedRevision: body.expectedRevision,
+      name: body.name,
+      timeline,
+      userId: user.userId,
+    });
+    if (!saved) throw notFound();
+    if (saved === "STALE")
+      throw new HttpError(
+        409,
+        "motion_revision_conflict",
+        "This project changed in another session. Reload it before saving.",
+      );
+    await platform.audit({
+      orgId: site.orgId,
+      actorUserId: user.userId,
+      action: "motion.project_saved",
+      objectType: "motion_project",
+      objectId: saved.id,
+      requestId: req.id,
+      metadata: { revision: saved.revision },
+    });
+    return { data: saved };
+  });
+
+  app.get(
+    "/api/sites/:id/motion/projects/:projectId/revisions",
+    async (req) => {
+      const site = await siteFor(req);
+      const { projectId } = projectParams.parse(req.params);
+      if (!(await motionProjects.get(site.id, projectId))) throw notFound();
+      return { data: await motionProjects.revisions(site.id, projectId) };
+    },
+  );
+
+  app.post("/api/sites/:id/motion/projects/:projectId/restore", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    await requireFeature(billing, site.orgId, "motion.studio");
+    const { projectId } = projectParams.parse(req.params);
+    const body = z
+      .object({
+        revision: z.number().int().positive(),
+        expectedRevision: z.number().int().positive(),
+      })
+      .strict()
+      .parse(req.body);
+    const [project, historical] = await Promise.all([
+      motionProjects.get(site.id, projectId),
+      motionProjects.revision(site.id, projectId, body.revision),
+    ]);
+    if (!project || !historical) throw notFound();
+    const timeline = await validateTimeline(site, historical.timeline);
+    const user = requireUser(req);
+    const restored = await motionProjects.save({
+      siteId: site.id,
+      id: projectId,
+      expectedRevision: body.expectedRevision,
+      name: project.name,
+      timeline,
+      userId: user.userId,
+    });
+    if (!restored) throw notFound();
+    if (restored === "STALE")
+      throw new HttpError(
+        409,
+        "motion_revision_conflict",
+        "This project changed in another session. Reload it before restoring.",
+      );
+    await platform.audit({
+      orgId: site.orgId,
+      actorUserId: user.userId,
+      action: "motion.project_restored",
+      objectType: "motion_project",
+      objectId: projectId,
+      requestId: req.id,
+      metadata: {
+        restoredFrom: body.revision,
+        revision: restored.revision,
+      },
+    });
+    return { data: restored };
+  });
+
+  app.post(
+    "/api/sites/:id/motion/projects/:projectId/duplicate",
+    async (req, reply) => {
+      const site = await siteFor(req, "MEMBER");
+      await requireFeature(billing, site.orgId, "motion.studio");
+      const { projectId } = projectParams.parse(req.params);
+      const body = z
+        .object({ name: z.string().trim().min(1).max(120).optional() })
+        .strict()
+        .parse(req.body ?? {});
+      const copy = await motionProjects.duplicate({
+        siteId: site.id,
+        id: projectId,
+        ownerId: requireUser(req).userId,
+        ...(body.name ? { name: body.name } : {}),
+      });
+      if (!copy) throw notFound();
+      return reply.code(201).send({ data: copy });
+    },
+  );
+
+  app.post(
+    "/api/sites/:id/motion/projects/:projectId/render",
+    async (req, reply) => {
+      const site = await siteFor(req, "MEMBER");
+      await requireFeature(billing, site.orgId, "motion.studio");
+      if (!(await d.ffmpeg()))
+        throw new HttpError(
+          409,
+          "not_configured",
+          "Video export is not available on this server yet. Timeline preview remains available.",
+        );
+      const { projectId } = projectParams.parse(req.params);
+      const body = z
+        .object({ expectedRevision: z.number().int().positive() })
+        .strict()
+        .parse(req.body);
+      const project = await motionProjects.get(site.id, projectId);
+      if (!project) throw notFound();
+      if (project.revision !== body.expectedRevision)
+        throw new HttpError(
+          409,
+          "motion_revision_conflict",
+          "Save or reload the latest project revision before exporting.",
+        );
+      const timeline = await validateTimeline(site, project.timeline);
+      const { graph } = await base(site);
+      const user = requireUser(req);
+      const job = await studio.enqueueTimeline({
+        siteId: site.id,
+        orgId: site.orgId,
+        projectId,
+        projectRevision: project.revision,
+        spec: {
+          kind: "timeline-v2",
+          projectId,
+          projectRevision: project.revision,
+          timeline,
+        },
+        brandVersion: timeline.brand.kitVersion,
+        businessName: graph.identity.name,
+        userId: user.userId,
+      });
+      await platform.audit({
+        orgId: site.orgId,
+        actorUserId: user.userId,
+        action: "motion.timeline_queued",
+        objectType: "motion_render",
+        objectId: job.id,
+        requestId: req.id,
+        metadata: {
+          projectId,
+          projectRevision: project.revision,
+          durationSec: timeline.durationSec,
+          format: timeline.format,
+        },
+      });
+      return reply.code(202).send({ data: job });
+    },
+  );
+
+  app.delete("/api/sites/:id/motion/projects/:projectId", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    const { projectId } = projectParams.parse(req.params);
+    if (!(await motionProjects.remove(site.id, projectId))) throw notFound();
+    await platform.audit({
+      orgId: site.orgId,
+      actorUserId: requireUser(req).userId,
+      action: "motion.project_deleted",
+      objectType: "motion_project",
+      objectId: projectId,
+      requestId: req.id,
+      metadata: {},
+    });
+    return { data: { deleted: true } };
   });
 
   // ---- Motion Studio --------------------------------------------------------

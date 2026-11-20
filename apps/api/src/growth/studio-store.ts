@@ -67,6 +67,8 @@ export interface RenderJob {
   attempts: number;
   error: string | null;
   assetId: string | null;
+  projectId: string | null;
+  projectRevision: number | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -81,6 +83,11 @@ const mapJob = (r: Row): RenderJob => ({
   attempts: Number(r.attempts),
   error: (r.error as string | null) ?? null,
   assetId: (r.asset_id as string | null) ?? null,
+  projectId: (r.project_id as string | null) ?? null,
+  projectRevision:
+    r.project_revision === null || r.project_revision === undefined
+      ? null
+      : Number(r.project_revision),
   createdAt: iso(r.created_at),
   updatedAt: iso(r.updated_at),
 });
@@ -196,12 +203,61 @@ export class StudioStore {
     brandVersion: number;
     businessName: string;
     userId: string;
+    projectId?: string;
+    projectRevision?: number;
   }) {
     const r = (
       await this
-        .sql`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,business_name,created_by) VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},${this.sql.json(i.spec as postgres.JSONValue)},${i.brandVersion},${i.businessName},${i.userId}) RETURNING *`
+        .sql`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,business_name,created_by,project_id,project_revision) VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},${this.sql.json(i.spec as postgres.JSONValue)},${i.brandVersion},${i.businessName},${i.userId},${i.projectId ?? null},${i.projectRevision ?? null}) RETURNING *`
     )[0]!;
     return mapJob(r);
+  }
+  async enqueueTimeline(i: {
+    siteId: string;
+    orgId: string;
+    projectId: string;
+    projectRevision: number;
+    spec: unknown;
+    brandVersion: number;
+    businessName: string;
+    userId: string;
+  }) {
+    return this.sql.begin(async (tx) => {
+      const job = (
+        await tx`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,business_name,created_by,project_id,project_revision)
+          VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},${tx.json(i.spec as postgres.JSONValue)},${i.brandVersion},${i.businessName},${i.userId},${i.projectId},${i.projectRevision}) RETURNING *`
+      )[0]!;
+      const jobId = String(job.id);
+      await tx`INSERT INTO motion_exports(id,project_id,site_id,org_id,project_revision,render_id,status,created_by)
+        VALUES(${crypto.randomUUID()},${i.projectId},${i.siteId},${i.orgId},${i.projectRevision},${jobId},'QUEUED',${i.userId})`;
+      await tx`UPDATE motion_projects SET render_status='QUEUED',updated_at=now()
+        WHERE id=${i.projectId} AND site_id=${i.siteId}`;
+      return mapJob(job);
+    });
+  }
+
+  async timelineAssets(siteId: string, ids: string[]) {
+    if (!ids.length) return new Map();
+    const rows = await this.sql`
+      SELECT id,kind,width,height,v1920,v1280,logo_png
+      FROM owner_media WHERE site_id=${siteId} AND id=ANY(${ids}::uuid[])`;
+    return new Map(
+      rows.map((row) => {
+        const bytes = (
+          row.kind === "logo" ? row.logo_png : (row.v1920 ?? row.v1280)
+        ) as Buffer;
+        const mime = row.kind === "logo" ? "image/png" : "image/webp";
+        return [
+          String(row.id),
+          {
+            id: String(row.id),
+            dataUri: `data:${mime};base64,${bytes.toString("base64")}`,
+            width: Number(row.width),
+            height: Number(row.height),
+          },
+        ];
+      }),
+    );
   }
   async listJobs(siteId: string) {
     return (
@@ -218,31 +274,73 @@ export class StudioStore {
   }
   /** Only a FAILED render can be retried; rendering is deterministic and has no external effects, so retry is always safe. */
   async retry(siteId: string, id: string) {
-    return (
-      (
-        await this
-          .sql`UPDATE motion_renders SET status='QUEUED',attempts=0,error=NULL,updated_at=now() WHERE site_id=${siteId} AND id=${id} AND status='FAILED' RETURNING id`
-      ).length > 0
-    );
+    return this.sql.begin(async (tx) => {
+      const row = (
+        await tx`UPDATE motion_renders SET status='QUEUED',attempts=0,error=NULL,updated_at=now() WHERE site_id=${siteId} AND id=${id} AND status='FAILED' RETURNING id,project_id`
+      )[0];
+      if (!row) return false;
+      if (row.project_id) {
+        const projectId = String(row.project_id);
+        await tx`UPDATE motion_exports SET status='QUEUED',error=NULL,updated_at=now() WHERE render_id=${id}`;
+        await tx`UPDATE motion_projects SET render_status='QUEUED',updated_at=now() WHERE id=${projectId} AND site_id=${siteId}`;
+      }
+      return true;
+    });
   }
   /** Claims one job. Jobs stuck in RENDERING for 5+ minutes (a crashed worker) become claimable again. */
   async claim(): Promise<RenderJob | null> {
-    await this
-      .sql`UPDATE motion_renders SET status='FAILED',error='Rendering did not finish after several attempts.',updated_at=now() WHERE status='RENDERING' AND started_at < now() - interval '5 minutes' AND attempts >= ${MAX_ATTEMPTS}`;
+    const expired = await this
+      .sql`UPDATE motion_renders SET status='FAILED',error='Rendering did not finish after several attempts.',updated_at=now() WHERE status='RENDERING' AND started_at < now() - interval '5 minutes' AND attempts >= ${MAX_ATTEMPTS} RETURNING id,project_id,site_id`;
+    for (const row of expired) {
+      if (!row.project_id) continue;
+      const renderId = String(row.id);
+      const projectId = String(row.project_id);
+      const siteId = String(row.site_id);
+      await this
+        .sql`UPDATE motion_exports SET status='FAILED',error='Rendering did not finish after several attempts.',updated_at=now() WHERE render_id=${renderId}`;
+      await this
+        .sql`UPDATE motion_projects SET render_status='FAILED',updated_at=now() WHERE id=${projectId} AND site_id=${siteId}`;
+    }
     const r = (
       await this
         .sql`UPDATE motion_renders SET status='RENDERING',attempts=attempts+1,started_at=now(),updated_at=now()
         WHERE id = (SELECT id FROM motion_renders WHERE (status='QUEUED' OR (status='RENDERING' AND started_at < now() - interval '5 minutes')) AND attempts < ${MAX_ATTEMPTS} ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1)
         RETURNING *`
     )[0];
+    if (r?.project_id) {
+      const renderId = String(r.id);
+      const projectId = String(r.project_id);
+      const siteId = String(r.site_id);
+      await this
+        .sql`UPDATE motion_exports SET status='RENDERING',updated_at=now() WHERE render_id=${renderId}`;
+      await this
+        .sql`UPDATE motion_projects SET render_status='RENDERING',updated_at=now() WHERE id=${projectId} AND site_id=${siteId}`;
+    }
     return r ? mapJob(r) : null;
   }
   async finish(id: string, assetId: string) {
-    await this
-      .sql`UPDATE motion_renders SET status='READY',asset_id=${assetId},error=NULL,updated_at=now() WHERE id=${id}`;
+    await this.sql.begin(async (tx) => {
+      const job = (
+        await tx`UPDATE motion_renders SET status='READY',asset_id=${assetId},error=NULL,updated_at=now() WHERE id=${id} RETURNING project_id,site_id`
+      )[0];
+      if (!job?.project_id) return;
+      const projectId = String(job.project_id);
+      const siteId = String(job.site_id);
+      await tx`UPDATE motion_exports SET status='READY',asset_id=${assetId},error=NULL,updated_at=now() WHERE render_id=${id}`;
+      await tx`UPDATE motion_projects SET render_status='READY',updated_at=now() WHERE id=${projectId} AND site_id=${siteId}`;
+    });
   }
   async fail(id: string, attempts: number, message: string) {
-    await this
-      .sql`UPDATE motion_renders SET status=${attempts >= MAX_ATTEMPTS ? "FAILED" : "QUEUED"},error=${message.slice(0, 300)},updated_at=now() WHERE id=${id}`;
+    const status = attempts >= MAX_ATTEMPTS ? "FAILED" : "QUEUED";
+    await this.sql.begin(async (tx) => {
+      const job = (
+        await tx`UPDATE motion_renders SET status=${status},error=${message.slice(0, 300)},updated_at=now() WHERE id=${id} RETURNING project_id,site_id`
+      )[0];
+      if (!job?.project_id) return;
+      const projectId = String(job.project_id);
+      const siteId = String(job.site_id);
+      await tx`UPDATE motion_exports SET status=${status},error=${message.slice(0, 300)},updated_at=now() WHERE render_id=${id}`;
+      await tx`UPDATE motion_projects SET render_status=${status},updated_at=now() WHERE id=${projectId} AND site_id=${siteId}`;
+    });
   }
 }

@@ -8,8 +8,11 @@ import {
   frameCount,
   FPS,
   motionFrameSvg,
+  motionTimelineFrameSvg,
   type BrandKit,
+  type MotionTimeline,
   type MotionSpec,
+  type ResolvedTimelineAsset,
 } from "@kora/growth";
 
 /** SVG → PNG with the bundled brand fonts only. System fonts are never used, so renders match on every machine. */
@@ -114,6 +117,94 @@ export async function renderMp4(opts: {
       width: first.width,
       height: first.height,
       durationMs: Math.round(opts.spec.durationSec * 1000),
+    };
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
+/** Timeline-aware H.264 renderer. Legacy MotionSpec jobs continue through renderMp4 above. */
+export async function renderTimelineMp4(opts: {
+  timeline: MotionTimeline;
+  kit: BrandKit;
+  business: string;
+  assets: ReadonlyMap<string, ResolvedTimelineAsset>;
+  raster: Rasterizer;
+  bin: string;
+}): Promise<{
+  mp4: Buffer;
+  width: number;
+  height: number;
+  durationMs: number;
+}> {
+  const dir = await mkdtemp(join(tmpdir(), "kora-motion-timeline-"));
+  const out = join(dir, "out.mp4");
+  try {
+    const first = motionTimelineFrameSvg(
+      opts.timeline,
+      opts.kit,
+      opts.business,
+      0,
+      opts.assets,
+    );
+    const ff = spawn(
+      opts.bin,
+      [
+        "-y",
+        "-loglevel",
+        "error",
+        "-f",
+        "image2pipe",
+        "-framerate",
+        String(FPS),
+        "-i",
+        "-",
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-crf",
+        "24",
+        "-preset",
+        "veryfast",
+        "-movflags",
+        "+faststart",
+        out,
+      ],
+      { stdio: ["pipe", "ignore", "pipe"] },
+    );
+    let err = "";
+    ff.stderr.on("data", (data: Buffer) => {
+      err += data.toString().slice(0, 500);
+    });
+    const done = new Promise<void>((resolve, reject) => {
+      ff.on("error", reject);
+      ff.on("exit", (code) =>
+        code === 0
+          ? resolve()
+          : reject(new Error(`ffmpeg exited ${code}: ${err.slice(0, 200)}`)),
+      );
+    });
+    const count = Math.round(opts.timeline.durationSec * FPS);
+    for (let index = 0; index < count; index++) {
+      const frame = motionTimelineFrameSvg(
+        opts.timeline,
+        opts.kit,
+        opts.business,
+        index / FPS,
+        opts.assets,
+      );
+      const png = opts.raster.png(frame.svg, frame.width);
+      if (!ff.stdin.write(png))
+        await new Promise((resolve) => ff.stdin.once("drain", resolve));
+    }
+    ff.stdin.end();
+    await done;
+    return {
+      mp4: await readFile(out),
+      width: first.width,
+      height: first.height,
+      durationMs: Math.round(opts.timeline.durationSec * 1000),
     };
   } finally {
     await rm(dir, { recursive: true, force: true });
