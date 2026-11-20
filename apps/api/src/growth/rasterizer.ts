@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Resvg } from "@resvg/resvg-js";
@@ -47,6 +47,44 @@ export function ffmpegAvailable(bin: string): Promise<boolean> {
     const p = spawn(bin, ["-version"], { stdio: "ignore" });
     p.on("error", () => resolve(false));
     p.on("exit", (c) => resolve(c === 0));
+  });
+}
+
+/** Fully decodes the first second so magic-byte polyglots and corrupt audio are rejected before storage. */
+export function validateAudioBytes(
+  bytes: Buffer,
+  bin: string,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const process = spawn(
+      bin,
+      [
+        "-hide_banner",
+        "-v",
+        "error",
+        "-i",
+        "pipe:0",
+        "-t",
+        "1",
+        "-f",
+        "null",
+        "-",
+      ],
+      { stdio: ["pipe", "ignore", "ignore"] },
+    );
+    const timer = setTimeout(() => {
+      process.kill("SIGKILL");
+      resolve(false);
+    }, 10_000);
+    process.on("error", () => {
+      clearTimeout(timer);
+      resolve(false);
+    });
+    process.on("exit", (code) => {
+      clearTimeout(timer);
+      resolve(code === 0);
+    });
+    process.stdin.end(bytes);
   });
 }
 
@@ -129,6 +167,7 @@ export async function renderTimelineMp4(opts: {
   kit: BrandKit;
   business: string;
   assets: ReadonlyMap<string, ResolvedTimelineAsset>;
+  audio?: { bytes: Buffer; mime: string; volume: number } | null;
   raster: Rasterizer;
   bin: string;
 }): Promise<{
@@ -138,6 +177,7 @@ export async function renderTimelineMp4(opts: {
   durationMs: number;
 }> {
   const dir = await mkdtemp(join(tmpdir(), "kora-motion-timeline-"));
+  const silent = join(dir, "silent.mp4");
   const out = join(dir, "out.mp4");
   try {
     const first = motionTimelineFrameSvg(
@@ -169,7 +209,7 @@ export async function renderTimelineMp4(opts: {
         "veryfast",
         "-movflags",
         "+faststart",
-        out,
+        silent,
       ],
       { stdio: ["pipe", "ignore", "pipe"] },
     );
@@ -200,6 +240,67 @@ export async function renderTimelineMp4(opts: {
     }
     ff.stdin.end();
     await done;
+    if (opts.audio) {
+      const extension =
+        opts.audio.mime === "audio/wav"
+          ? "wav"
+          : opts.audio.mime === "audio/ogg"
+            ? "ogg"
+            : "mp3";
+      const audioFile = join(dir, `audio.${extension}`);
+      await writeFile(audioFile, opts.audio.bytes);
+      const mux = spawn(
+        opts.bin,
+        [
+          "-y",
+          "-loglevel",
+          "error",
+          "-i",
+          silent,
+          "-stream_loop",
+          "-1",
+          "-i",
+          audioFile,
+          "-map",
+          "0:v:0",
+          "-map",
+          "1:a:0",
+          "-t",
+          String(opts.timeline.durationSec),
+          "-c:v",
+          "copy",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "128k",
+          "-filter:a",
+          `volume=${opts.audio.volume.toFixed(3)}`,
+          "-movflags",
+          "+faststart",
+          out,
+        ],
+        { stdio: ["ignore", "ignore", "pipe"] },
+      );
+      let muxError = "";
+      mux.stderr.on(
+        "data",
+        (data: Buffer) => (muxError += data.toString().slice(0, 500)),
+      );
+      await new Promise<void>((resolve, reject) => {
+        mux.on("error", reject);
+        mux.on("exit", (code) =>
+          code === 0
+            ? resolve()
+            : reject(
+                new Error(
+                  `ffmpeg audio mux exited ${code}: ${muxError.slice(0, 200)}`,
+                ),
+              ),
+        );
+      });
+    } else {
+      await writeFile(out, await readFile(silent));
+    }
     return {
       mp4: await readFile(out),
       width: first.width,

@@ -106,6 +106,31 @@ const timeline: MotionTimeline = {
   audio: null,
 };
 
+const wavTone = () => {
+  const sampleRate = 8_000;
+  const samples = sampleRate / 2;
+  const dataSize = samples * 2;
+  const out = Buffer.alloc(44 + dataSize);
+  out.write("RIFF", 0);
+  out.writeUInt32LE(36 + dataSize, 4);
+  out.write("WAVEfmt ", 8);
+  out.writeUInt32LE(16, 16);
+  out.writeUInt16LE(1, 20);
+  out.writeUInt16LE(1, 22);
+  out.writeUInt32LE(sampleRate, 24);
+  out.writeUInt32LE(sampleRate * 2, 28);
+  out.writeUInt16LE(2, 32);
+  out.writeUInt16LE(16, 34);
+  out.write("data", 36);
+  out.writeUInt32LE(dataSize, 40);
+  for (let index = 0; index < samples; index++)
+    out.writeInt16LE(
+      Math.round(Math.sin((index / sampleRate) * Math.PI * 2 * 440) * 2_000),
+      44 + index * 2,
+    );
+  return out;
+};
+
 describe("timeline MP4 renderer", () => {
   it("encodes a playable H.264 MP4 with exact dimensions and duration metadata", async () => {
     if (!(await ffmpegAvailable("ffmpeg"))) return;
@@ -114,11 +139,13 @@ describe("timeline MP4 renderer", () => {
       kit,
       business: "Meridian Bakes",
       assets: new Map(),
+      audio: { bytes: wavTone(), mime: "audio/wav", volume: 0.25 },
       raster: await Rasterizer.create(),
       bin: "ffmpeg",
     });
     expect(rendered.mp4.subarray(4, 8).toString()).toBe("ftyp");
     expect(rendered.mp4.length).toBeGreaterThan(10_000);
+    expect(rendered.mp4.includes(Buffer.from("mp4a"))).toBe(true);
     expect(rendered).toMatchObject({
       width: 1080,
       height: 1080,

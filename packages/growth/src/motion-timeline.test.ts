@@ -8,7 +8,10 @@ import {
   timelineDimensions,
   type MotionTimeline,
 } from "./motion-timeline.js";
-import { motionTimelineFrameSvg } from "./motion-timeline-renderer.js";
+import {
+  motionTimelineCaptionsSrt,
+  motionTimelineFrameSvg,
+} from "./motion-timeline-renderer.js";
 
 const timeline: MotionTimeline = {
   version: 2,
@@ -266,5 +269,8 @@ describe("Creative M5 motion timeline", () => {
         1,
       ).svg,
     ).toBe(frame.svg);
+    expect(motionTimelineCaptionsSrt(timeline)).toContain(
+      "00:00:00,000 --> 00:00:03,000",
+    );
   });
 });

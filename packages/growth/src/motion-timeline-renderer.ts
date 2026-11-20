@@ -186,3 +186,27 @@ export function motionTimelineFrameSvg(
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="${width}" height="${height}" fill="${token(kit, scene.backgroundToken)}"/><g opacity="${transitionProgress.toFixed(3)}" transform="translate(0 ${translate.toFixed(2)}) scale(${scale.toFixed(4)})">${layerSvg}</g>${captions}</svg>`,
   };
 }
+
+const srtTime = (seconds: number) => {
+  const milliseconds = Math.round(seconds * 1000);
+  const hours = Math.floor(milliseconds / 3_600_000);
+  const minutes = Math.floor((milliseconds % 3_600_000) / 60_000);
+  const secs = Math.floor((milliseconds % 60_000) / 1000);
+  const millis = milliseconds % 1000;
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${secs.toString().padStart(2, "0")},${millis
+    .toString()
+    .padStart(3, "0")}`;
+};
+
+export function motionTimelineCaptionsSrt(timeline: MotionTimeline): string {
+  return timeline.captions
+    .slice()
+    .sort((a, b) => a.startSec - b.startSec)
+    .map(
+      (cue, index) =>
+        `${index + 1}\n${srtTime(cue.startSec)} --> ${srtTime(cue.endSec)}\n${cue.text.replace(/[\r\n]+/g, " ")}\n`,
+    )
+    .join("\n");
+}

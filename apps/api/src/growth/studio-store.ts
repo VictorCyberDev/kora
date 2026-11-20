@@ -259,6 +259,14 @@ export class StudioStore {
       }),
     );
   }
+  async timelineAudio(siteId: string, id: string) {
+    const row = (
+      await this.sql`
+        SELECT mime,bytes FROM motion_audio
+        WHERE site_id=${siteId} AND id=${id} AND removed_at IS NULL`
+    )[0];
+    return row ? { mime: String(row.mime), bytes: row.bytes as Buffer } : null;
+  }
   async listJobs(siteId: string) {
     return (
       await this

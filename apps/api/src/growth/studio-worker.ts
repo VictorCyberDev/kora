@@ -79,11 +79,28 @@ export class StudioWorker {
               throw new Error(
                 "A required timeline image is no longer available.",
               );
+            const storedAudio = timeline.audio
+              ? await this.d.studio.timelineAudio(
+                  job.siteId,
+                  timeline.audio.assetId,
+                )
+              : null;
+            if (timeline.audio && !storedAudio)
+              throw new Error(
+                "The licensed timeline audio is no longer available.",
+              );
             return renderTimelineMp4({
               timeline,
               kit,
               business: job.businessName,
               assets,
+              audio:
+                timeline.audio && storedAudio
+                  ? {
+                      ...storedAudio,
+                      volume: timeline.audio.volume,
+                    }
+                  : null,
               raster,
               bin: this.d.bin,
             });

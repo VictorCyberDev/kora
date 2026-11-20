@@ -195,6 +195,10 @@ export function MotionTimelineEditor({
     () => api("GET", `/api/sites/${siteId}/media-library`),
     [siteId],
   );
+  const audio = useLoad<J[]>(
+    () => api("GET", `/api/sites/${siteId}/motion/audio`),
+    [siteId],
+  );
   const [brief, setBrief] = useState("");
   const [format, setFormat] = useState("story");
   const [directions, setDirections] = useState<J[]>([]);
@@ -208,6 +212,11 @@ export function MotionTimelineEditor({
   const [playing, setPlaying] = useState(false);
   const [frameIndex, setFrameIndex] = useState(0);
   const [revisions, setRevisions] = useState<J[]>([]);
+  const [audioKind, setAudioKind] = useState<"user-supplied" | "licensed">(
+    "user-supplied",
+  );
+  const [audioSource, setAudioSource] = useState("Uploaded by owner");
+  const [audioConfirmed, setAudioConfirmed] = useState(false);
   const [message, setMessage] = useState<{
     ok: boolean;
     text: string;
@@ -912,9 +921,147 @@ export function MotionTimelineEditor({
                 />
               </label>
             ))}
+            <h3>Licensed audio</h3>
+            <div className="grid2">
+              <label>
+                Rights basis
+                <select
+                  value={audioKind}
+                  onChange={(event) =>
+                    setAudioKind(
+                      event.target.value as "user-supplied" | "licensed",
+                    )
+                  }
+                >
+                  <option value="user-supplied">I own or created it</option>
+                  <option value="licensed">Licensed for this use</option>
+                </select>
+              </label>
+              <label>
+                Source or license reference
+                <input
+                  value={audioSource}
+                  maxLength={120}
+                  onChange={(event) => setAudioSource(event.target.value)}
+                />
+              </label>
+            </div>
+            <label className="row">
+              <input
+                type="checkbox"
+                checked={audioConfirmed}
+                onChange={(event) => setAudioConfirmed(event.target.checked)}
+              />
+              I confirm I have the rights to use this audio.
+            </label>
+            <label>
+              Upload MP3, WAV or Ogg (20 MB maximum)
+              <input
+                type="file"
+                accept=".mp3,.wav,.ogg,audio/mpeg,audio/wav,audio/ogg"
+                disabled={!audioConfirmed || !audioSource.trim()}
+                onChange={async (event) => {
+                  const file = event.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const confirmedAt = new Date().toISOString();
+                    const response = await fetch(
+                      `/api/sites/${siteId}/motion/audio?licenseKind=${audioKind}&rightsConfirmedAt=${encodeURIComponent(confirmedAt)}&source=${encodeURIComponent(audioSource.trim())}`,
+                      {
+                        method: "POST",
+                        credentials: "same-origin",
+                        headers: {
+                          "x-requested-with": "kora",
+                          "content-type":
+                            file.type || "application/octet-stream",
+                        },
+                        body: file,
+                      },
+                    );
+                    const payload = await response.json();
+                    if (!response.ok)
+                      throw new Error(
+                        payload?.message ?? "The audio could not be uploaded.",
+                      );
+                    const saved = payload.data;
+                    update((current) => ({
+                      ...current,
+                      audio: {
+                        assetId: saved.id,
+                        license: saved.license,
+                        volume: 0.7,
+                      },
+                    }));
+                    audio.reload();
+                    setMessage({ ok: true, text: "Licensed audio added." });
+                  } catch (error) {
+                    setMessage({
+                      ok: false,
+                      text:
+                        error instanceof Error
+                          ? error.message
+                          : "The audio could not be uploaded.",
+                    });
+                  } finally {
+                    event.target.value = "";
+                  }
+                }}
+              />
+            </label>
+            {(audio.data ?? []).length > 0 && (
+              <label>
+                Audio track
+                <select
+                  value={timeline.audio?.assetId ?? ""}
+                  onChange={(event) => {
+                    const selected = (audio.data ?? []).find(
+                      (item: J) => item.id === event.target.value,
+                    );
+                    update((current) => ({
+                      ...current,
+                      audio: selected
+                        ? {
+                            assetId: selected.id,
+                            license: selected.license,
+                            volume: current.audio?.volume ?? 0.7,
+                          }
+                        : null,
+                    }));
+                  }}
+                >
+                  <option value="">No audio</option>
+                  {(audio.data ?? []).map((item: J) => (
+                    <option key={item.id} value={item.id}>
+                      {item.license.source}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {timeline.audio && (
+              <label>
+                Audio volume
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={timeline.audio.volume}
+                  onChange={(event) =>
+                    update((current) => ({
+                      ...current,
+                      audio: {
+                        ...current.audio,
+                        volume: Number(event.target.value),
+                      },
+                    }))
+                  }
+                />
+              </label>
+            )}
             <Notice kind="info">
-              Audio is accepted only after owned or licensed audio storage is
-              commissioned. Krevstudio will not embed unlicensed music.
+              Only audio you own or are licensed to use is accepted. License
+              provenance stays attached to the project.
             </Notice>
           </div>
 
@@ -958,6 +1105,24 @@ export function MotionTimelineEditor({
               >
                 Export MP4
               </button>
+              {project && (
+                <>
+                  <a
+                    className="btn ghost"
+                    href={`/api/sites/${siteId}/motion/projects/${project.id}/cover`}
+                    download
+                  >
+                    Download cover
+                  </a>
+                  <a
+                    className="btn ghost"
+                    href={`/api/sites/${siteId}/motion/projects/${project.id}/captions`}
+                    download
+                  >
+                    Download captions
+                  </a>
+                </>
+              )}
             </div>
             {frames[frameIndex] && (
               <img

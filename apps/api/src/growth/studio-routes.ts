@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { z } from "zod";
 import {
@@ -20,6 +21,7 @@ import {
   buildPresenceGraph,
   generateContent,
   motionFrameSvg,
+  motionTimelineCaptionsSrt,
   motionTimelineFrameSvg,
   motionStyleFromGenome,
   previewTimes,
@@ -42,7 +44,11 @@ import type { BillingService } from "../platform/billing.js";
 import type { GrowthStore } from "./store.js";
 import type { StudioStore } from "./studio-store.js";
 import { BrandOsStore } from "../platform/brand-os-store.js";
-import type { Rasterizer } from "./rasterizer.js";
+import {
+  ffmpegBin,
+  validateAudioBytes,
+  type Rasterizer,
+} from "./rasterizer.js";
 import { requireFeature } from "./entitlements.js";
 import type { createGatherer } from "./gather.js";
 import { MotionProjectStore } from "./motion-project-store.js";
@@ -58,6 +64,23 @@ export interface StudioDeps {
   contentModel: ContentModel | null;
 }
 const uuid = z.string().uuid();
+const MAX_MOTION_AUDIO_BYTES = 20 * 1024 * 1024;
+const audioMime = (bytes: Buffer) => {
+  if (
+    bytes.length >= 12 &&
+    bytes.subarray(0, 4).toString("latin1") === "RIFF" &&
+    bytes.subarray(8, 12).toString("latin1") === "WAVE"
+  )
+    return "audio/wav" as const;
+  if (bytes.length >= 4 && bytes.subarray(0, 4).toString("latin1") === "OggS")
+    return "audio/ogg" as const;
+  if (
+    (bytes.length >= 3 && bytes.subarray(0, 3).toString("latin1") === "ID3") ||
+    (bytes.length >= 2 && bytes[0] === 0xff && (bytes[1]! & 0xe0) === 0xe0)
+  )
+    return "audio/mpeg" as const;
+  return null;
+};
 
 /** The static-asset gate reads the brand as a genome-shaped object; a kit is enough to build one. */
 const gateFor = (
@@ -196,12 +219,32 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
           );
       }
     }
-    if (timeline.audio)
-      throw new HttpError(
-        422,
-        "motion_audio_unavailable",
-        "Upload and licensed-audio storage is not configured for this workspace yet.",
-      );
+    if (timeline.audio) {
+      const audio = (
+        await platform.sql`
+          SELECT license_kind,rights_confirmed_at,source
+          FROM motion_audio
+          WHERE id=${timeline.audio.assetId} AND site_id=${site.id}
+            AND removed_at IS NULL`
+      )[0];
+      if (!audio)
+        throw new HttpError(
+          422,
+          "motion_audio_missing",
+          "The selected audio is unavailable in this business's audio library.",
+        );
+      if (
+        String(audio.license_kind) !== timeline.audio.license.kind ||
+        String(audio.source) !== timeline.audio.license.source ||
+        new Date(audio.rights_confirmed_at as string).toISOString() !==
+          new Date(timeline.audio.license.rightsConfirmedAt).toISOString()
+      )
+        throw new HttpError(
+          422,
+          "motion_audio_license_mismatch",
+          "The audio license confirmation does not match the stored provenance.",
+        );
+    }
     return timeline;
   };
 
@@ -445,6 +488,174 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
     );
   });
 
+  // ---- Licensed Motion Audio -----------------------------------------------
+  void app.register((scope) => {
+    scope.addContentTypeParser(
+      [
+        "audio/mpeg",
+        "audio/wav",
+        "audio/x-wav",
+        "audio/ogg",
+        "application/octet-stream",
+      ],
+      { parseAs: "buffer", bodyLimit: MAX_MOTION_AUDIO_BYTES + 1024 },
+      (
+        _request: FastifyRequest,
+        body: Buffer,
+        done: (error: Error | null, value?: unknown) => void,
+      ) => done(null, body),
+    );
+    scope.post(
+      "/api/sites/:id/motion/audio",
+      { bodyLimit: MAX_MOTION_AUDIO_BYTES + 1024 },
+      async (req, reply) => {
+        const site = await siteFor(req, "MEMBER");
+        await requireFeature(billing, site.orgId, "motion.studio");
+        const query = z
+          .object({
+            licenseKind: z.enum(["user-supplied", "licensed"]),
+            rightsConfirmedAt: z.string().datetime({ offset: true }),
+            source: z.string().trim().min(1).max(120),
+          })
+          .strict()
+          .parse(req.query);
+        if (!Buffer.isBuffer(req.body))
+          throw new HttpError(
+            415,
+            "motion_audio_type",
+            "Upload an MP3, WAV or Ogg audio file.",
+          );
+        if (!req.body.length || req.body.length > MAX_MOTION_AUDIO_BYTES)
+          throw new HttpError(
+            413,
+            "motion_audio_size",
+            "Audio must be between 1 byte and 20 MB.",
+          );
+        const mime = audioMime(req.body);
+        if (!mime)
+          throw new HttpError(
+            415,
+            "motion_audio_type",
+            "The file is not a supported MP3, WAV or Ogg audio file.",
+          );
+        if (
+          !(await d.ffmpeg()) ||
+          !(await validateAudioBytes(req.body, ffmpegBin(process.env)))
+        )
+          throw new HttpError(
+            422,
+            "motion_audio_corrupt",
+            "The audio could not be decoded safely. Try a valid MP3, WAV or Ogg file.",
+          );
+        const confirmed = new Date(query.rightsConfirmedAt);
+        if (confirmed.getTime() > Date.now() + 5 * 60_000)
+          throw new HttpError(
+            422,
+            "motion_audio_license_date",
+            "License confirmation cannot be in the future.",
+          );
+        const sha256 = createHash("sha256").update(req.body).digest("hex");
+        const duplicate = (
+          await platform.sql`
+            SELECT id FROM motion_audio
+            WHERE site_id=${site.id} AND sha256=${sha256} AND removed_at IS NULL`
+        )[0];
+        if (duplicate)
+          throw new HttpError(
+            409,
+            "motion_audio_duplicate",
+            "That audio file is already in this workspace.",
+          );
+        const audioId = crypto.randomUUID();
+        const user = requireUser(req);
+        await platform.sql`
+          INSERT INTO motion_audio
+            (id,site_id,org_id,mime,bytes,byte_size,sha256,license_kind,
+             rights_confirmed_at,source,created_by)
+          VALUES
+            (${audioId},${site.id},${site.orgId},${mime},${req.body},
+             ${req.body.length},${sha256},${query.licenseKind},
+             ${confirmed.toISOString()},${query.source},${user.userId})`;
+        await platform.audit({
+          orgId: site.orgId,
+          actorUserId: user.userId,
+          action: "motion.audio_uploaded",
+          objectType: "motion_audio",
+          objectId: audioId,
+          requestId: req.id,
+          metadata: {
+            mime,
+            bytes: req.body.length,
+            licenseKind: query.licenseKind,
+          },
+        });
+        return reply.code(201).send({
+          data: {
+            id: audioId,
+            mime,
+            byteSize: req.body.length,
+            license: {
+              kind: query.licenseKind,
+              rightsConfirmedAt: confirmed.toISOString(),
+              source: query.source,
+            },
+          },
+        });
+      },
+    );
+  });
+
+  app.get("/api/sites/:id/motion/audio", async (req) => {
+    const site = await siteFor(req);
+    const rows = await platform.sql`
+      SELECT id,mime,byte_size,license_kind,rights_confirmed_at,source,created_at
+      FROM motion_audio WHERE site_id=${site.id} AND removed_at IS NULL
+      ORDER BY created_at DESC LIMIT 100`;
+    return {
+      data: rows.map((row) => ({
+        id: String(row.id),
+        mime: String(row.mime),
+        byteSize: Number(row.byte_size),
+        license: {
+          kind: String(row.license_kind),
+          rightsConfirmedAt: new Date(
+            row.rights_confirmed_at as string,
+          ).toISOString(),
+          source: String(row.source),
+        },
+        createdAt: new Date(row.created_at as string).toISOString(),
+      })),
+    };
+  });
+
+  app.get("/api/sites/:id/motion/audio/:audioId/file", async (req, reply) => {
+    const site = await siteFor(req);
+    const { audioId } = z.object({ audioId: uuid }).parse(req.params);
+    const row = (
+      await platform.sql`
+        SELECT mime,bytes FROM motion_audio
+        WHERE site_id=${site.id} AND id=${audioId} AND removed_at IS NULL`
+    )[0];
+    if (!row) throw notFound();
+    return reply
+      .header("content-type", String(row.mime))
+      .header("x-content-type-options", "nosniff")
+      .header("cache-control", "private, max-age=300")
+      .header("content-security-policy", "default-src 'none'; sandbox")
+      .send(row.bytes as Buffer);
+  });
+
+  app.delete("/api/sites/:id/motion/audio/:audioId", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    const { audioId } = z.object({ audioId: uuid }).parse(req.params);
+    const removed = await platform.sql`
+      UPDATE motion_audio SET removed_at=now()
+      WHERE site_id=${site.id} AND id=${audioId} AND removed_at IS NULL
+      RETURNING id`;
+    if (!removed.length) throw notFound();
+    return { data: { deleted: true } };
+  });
+
   // ---- Editable Motion Projects --------------------------------------------
   const projectParams = z.object({ id: uuid, projectId: uuid });
   const projectBody = z
@@ -642,6 +853,64 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
       });
       if (!copy) throw notFound();
       return reply.code(201).send({ data: copy });
+    },
+  );
+
+  app.get(
+    "/api/sites/:id/motion/projects/:projectId/cover",
+    async (req, reply) => {
+      const site = await siteFor(req);
+      const { projectId } = projectParams.parse(req.params);
+      const project = await motionProjects.get(site.id, projectId);
+      if (!project) throw notFound();
+      const timeline = await validateTimeline(site, project.timeline);
+      const [kitRecord, graphData, assets] = await Promise.all([
+        growth.getBrandKit(site.id, timeline.brand.kitVersion),
+        base(site),
+        studio.timelineAssets(
+          site.id,
+          timeline.scenes.flatMap((scene) =>
+            scene.layers
+              .filter((layer) => layer.type === "image")
+              .map((layer) => layer.assetId),
+          ),
+        ),
+      ]);
+      if (!kitRecord) throw notFound();
+      const frame = motionTimelineFrameSvg(
+        timeline,
+        kitRecord.kit,
+        graphData.graph.identity.name,
+        0,
+        assets,
+      );
+      const png = (await d.raster()).png(frame.svg, frame.width);
+      return reply
+        .header("content-type", "image/png")
+        .header("x-content-type-options", "nosniff")
+        .header(
+          "content-disposition",
+          `attachment; filename="krevstudio-${projectId.slice(0, 8)}-cover.png"`,
+        )
+        .send(png);
+    },
+  );
+
+  app.get(
+    "/api/sites/:id/motion/projects/:projectId/captions",
+    async (req, reply) => {
+      const site = await siteFor(req);
+      const { projectId } = projectParams.parse(req.params);
+      const project = await motionProjects.get(site.id, projectId);
+      if (!project) throw notFound();
+      return reply
+        .header("content-type", "application/x-subrip; charset=utf-8")
+        .header("x-content-type-options", "nosniff")
+        .header(
+          "content-disposition",
+          `attachment; filename="krevstudio-${projectId.slice(0, 8)}-captions.srt"`,
+        )
+        .send(motionTimelineCaptionsSrt(project.timeline));
     },
   );
 
