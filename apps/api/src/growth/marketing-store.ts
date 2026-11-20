@@ -10,6 +10,8 @@ import type {
 type Row = Record<string, unknown>;
 const iso = (v: unknown) =>
   v ? new Date(v as string | Date).toISOString() : null;
+const nullableString = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
 
 export interface RecommendationRecord {
   id: string;
@@ -282,17 +284,13 @@ export class MarketingStore {
         SELECT * FROM campaign_assets
         WHERE site_id=${siteId} AND campaign_id=${campaignId}
         ORDER BY created_at`
-    ).map((row) => ({
+    ).map((row: Row) => ({
       id: String(row.id),
       kind: String(row.kind),
-      creativeDocumentId: row.creative_document_id
-        ? String(row.creative_document_id)
-        : null,
-      motionProjectId: row.motion_project_id
-        ? String(row.motion_project_id)
-        : null,
-      mediaAssetId: row.media_asset_id ? String(row.media_asset_id) : null,
-      href: row.href ? String(row.href) : null,
+      creativeDocumentId: nullableString(row.creative_document_id),
+      motionProjectId: nullableString(row.motion_project_id),
+      mediaAssetId: nullableString(row.media_asset_id),
+      href: nullableString(row.href),
       source: row.source,
       status: String(row.status),
     }));
