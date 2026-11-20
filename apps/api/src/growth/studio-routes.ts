@@ -968,6 +968,7 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
           "motion_revision_conflict",
           "Save or reload the latest project revision before exporting.",
         );
+      await billing.assertUsageAvailable(site.orgId, "video_render");
       const timeline = await validateTimeline(site, project.timeline);
       const { graph } = await base(site);
       const user = requireUser(req);

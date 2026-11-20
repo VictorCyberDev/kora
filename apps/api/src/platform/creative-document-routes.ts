@@ -553,11 +553,27 @@ export function registerCreativeDocumentRoutes(
           slide: z.coerce.number().int().nonnegative(),
         })
         .parse(req.params);
-      const { row } = await docFor(req, id, documentId);
+      const { site, row } = await docFor(req, id, documentId);
+      if (billing) await billing.assertUsageAvailable(site.orgId, "export");
       const source = creativeDocumentSchema.parse(row.source);
       const art = source.slides[slide];
       if (!art) throw notFound();
       const svg = renderSlideSvg(art);
+      await platform.recordUsage(site.orgId, site.id, "EXPORT", 1, {
+        kind: source.kind,
+        documentId,
+        revision: Number(row.revision),
+        slide,
+      });
+      await platform.audit({
+        orgId: site.orgId,
+        actorUserId: requireUser(req).userId,
+        action: "creative_document.exported",
+        objectType: "creative_document",
+        objectId: documentId,
+        requestId: req.id,
+        metadata: { revision: Number(row.revision), slide, format: "svg" },
+      });
       reply.header("content-type", "image/svg+xml; charset=utf-8");
       reply.header(
         "content-disposition",

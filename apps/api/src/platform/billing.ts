@@ -18,6 +18,11 @@ export interface PlanCapabilities {
   managedRecovery: boolean;
   advancedProof: boolean;
   teamMembers: number;
+  /** Optional commercial limits. Existing configured plans retain safe fallbacks. */
+  creativeDocuments?: number;
+  videoRendersPerMonth?: number;
+  exportsPerMonth?: number;
+  brands?: number;
 }
 export interface PlanSeed {
   code: string;
@@ -43,6 +48,10 @@ const planSchema = z.object({
     managedRecovery: z.boolean(),
     advancedProof: z.boolean(),
     teamMembers: z.number().int().min(1),
+    creativeDocuments: z.number().int().min(1).optional(),
+    videoRendersPerMonth: z.number().int().min(0).optional(),
+    exportsPerMonth: z.number().int().min(0).optional(),
+    brands: z.number().int().min(1).optional(),
   }),
 });
 /** Development plans only: clearly not production pricing. Production uses KORA_PLANS_JSON. */
@@ -564,6 +573,40 @@ export class BillingService {
         count,
       ),
     };
+  }
+  /** Enforces configured monthly cost-driver limits before expensive work starts. */
+  async assertUsageAvailable(
+    orgId: string,
+    kind: "video_render" | "export",
+    quantity = 1,
+  ) {
+    const sub = await this.current(orgId);
+    if (!sub) throw new HttpError(402, "plan_restriction", "No active plan.");
+    const dimension = kind === "video_render" ? "VIDEO_RENDER" : "EXPORT";
+    const configured =
+      kind === "video_render"
+        ? sub.capabilities.videoRendersPerMonth
+        : sub.capabilities.exportsPerMonth;
+    const fallback =
+      kind === "video_render"
+        ? Math.max(1, Math.floor(sub.capabilities.aiOperationsPerMonth / 10))
+        : Math.max(5, sub.capabilities.aiOperationsPerMonth);
+    const limit = configured ?? fallback;
+    const used = Number(
+      (
+        await this.d.platform
+          .sql`SELECT COALESCE(SUM(quantity),0)::float AS total
+          FROM usage_events WHERE org_id=${orgId} AND dimension=${dimension}
+            AND occurred_at>=date_trunc('month',now())`
+      )[0]?.total ?? 0,
+    );
+    if (used + quantity > limit)
+      throw new HttpError(
+        402,
+        "usage_limit",
+        `${kind === "video_render" ? "Video render" : "Export"} limit reached (${used}/${limit} this month). Manage your plan to continue.`,
+      );
+    return { used, limit, remaining: Math.max(0, limit - used) };
   }
   async checkout(
     orgId: string,

@@ -347,6 +347,79 @@ export function registerRoutes(app: FastifyInstance, d: RouteDeps) {
     requireOrgRole(req, id, "VIEWER");
     return { data: await platform.usageSummary(id) };
   });
+  app.get("/api/orgs/:id/product-analytics", async (req) => {
+    const { id } = idParam.parse(req.params);
+    requireOrgRole(req, id, "VIEWER");
+    const actions = [
+      "auth.signup",
+      "site.created",
+      "site.generated",
+      "creative_document.created",
+      "creative_document.exported",
+      "motion.project_created",
+      "motion.timeline_queued",
+      "site.publish",
+      "campaign.created",
+      "post.published",
+    ];
+    const rows = await platform.sql`SELECT action,COUNT(*)::int AS count,
+      MIN(occurred_at) AS first_at,MAX(occurred_at) AS last_at
+      FROM audit_log WHERE org_id=${id} AND action=ANY(${actions}) GROUP BY action`;
+    const byAction = new Map(rows.map((row) => [String(row.action), row]));
+    const metric = (action: string) => {
+      const row = byAction.get(action);
+      return {
+        count: Number(row?.count ?? 0),
+        firstAt: row?.first_at
+          ? new Date(row.first_at as string).toISOString()
+          : null,
+        lastAt: row?.last_at
+          ? new Date(row.last_at as string).toISOString()
+          : null,
+        evidence: "OBSERVED" as const,
+      };
+    };
+    const activity = (
+      await platform.sql`SELECT COUNT(DISTINCT occurred_at::date)::int AS active_days,
+        MAX(occurred_at) AS last_at FROM audit_log
+        WHERE org_id=${id} AND occurred_at>=now()-interval '30 days'`
+    )[0];
+    const leads = Number(
+      (
+        await platform.sql`SELECT COUNT(*)::int AS count FROM leads WHERE org_id=${id}`
+      )[0]?.count ?? 0,
+    );
+    const subscription = await billing.current(id);
+    return {
+      data: {
+        signup: metric("auth.signup"),
+        firstProject: metric("site.created"),
+        generations: metric("site.generated"),
+        creativeDocuments: metric("creative_document.created"),
+        exports: metric("creative_document.exported"),
+        motionProjects: metric("motion.project_created"),
+        videoExportsQueued: metric("motion.timeline_queued"),
+        websitePublications: metric("site.publish"),
+        campaigns: metric("campaign.created"),
+        publishedPosts: metric("post.published"),
+        customerLeads: { count: leads, evidence: "OBSERVED" },
+        retention: {
+          activeDaysLast30: Number(activity?.active_days ?? 0),
+          lastActivityAt: activity?.last_at
+            ? new Date(activity.last_at as string).toISOString()
+            : null,
+          evidence: "OBSERVED",
+        },
+        subscription: {
+          state: subscription?.state ?? null,
+          planCode: subscription?.planCode ?? null,
+          paidConversionObserved: subscription?.state === "ACTIVE",
+          revenue: null,
+          evidence: "OBSERVED",
+        },
+      },
+    };
+  });
 
   // ---- sites ------------------------------------------------------------------
   app.get("/api/sites", async (req) => {

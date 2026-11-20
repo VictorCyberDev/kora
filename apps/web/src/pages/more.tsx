@@ -594,6 +594,10 @@ export function BillingPage() {
     [orgId],
   );
   const tx = useLoad(() => api("GET", `/api/orgs/${orgId}/billing`), [orgId]);
+  const analytics = useLoad(
+    () => api("GET", `/api/orgs/${orgId}/product-analytics`),
+    [orgId],
+  );
   const [msg, setMsg] = useState<string | null>(null);
   const reference = params.get("reference");
   useEffect(() => {
@@ -682,6 +686,43 @@ export function BillingPage() {
               Server CPU and bandwidth: not available from provider.
             </p>
           </div>
+        )}
+      </Async>
+      <Async state={analytics}>
+        {(a: J) => (
+          <section className="card stack" aria-labelledby="outcomes-h">
+            <h3 id="outcomes-h">Observed product outcomes</h3>
+            <p className="muted small">
+              These counts come from append-only product audit evidence. Missing
+              events are shown as zero; revenue and attribution are never
+              estimated.
+            </p>
+            <ul className="k-checks">
+              {[
+                ["Projects created", a.firstProject.count],
+                ["Website generations", a.generations.count],
+                ["Editable designs", a.creativeDocuments.count],
+                ["Design exports", a.exports.count],
+                ["Motion projects", a.motionProjects.count],
+                ["Campaigns", a.campaigns.count],
+                ["Published posts", a.publishedPosts.count],
+                ["Customer leads", a.customerLeads.count],
+                ["Active days (30d)", a.retention.activeDaysLast30],
+              ].map(([label, value]) => (
+                <li className="k-check row between" key={String(label)}>
+                  <span>{label}</span>
+                  <strong>{value}</strong>
+                </li>
+              ))}
+            </ul>
+            <p>
+              Subscription conversion observed:{" "}
+              <strong>
+                {a.subscription.paidConversionObserved ? "yes" : "no"}
+              </strong>
+              {a.subscription.planCode ? ` · ${a.subscription.planCode}` : ""}
+            </p>
+          </section>
         )}
       </Async>
       <Async state={plans}>
