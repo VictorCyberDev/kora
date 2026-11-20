@@ -33,6 +33,7 @@ import { CampaignsPage, TodayPage } from "./pages/today";
 import { CalendarPage } from "./pages/calendar";
 import { StudioPage } from "./pages/studio";
 import { ChannelsPage } from "./pages/channels";
+import { AgencyPage } from "./pages/agency";
 import { CustomersPage } from "./pages/customers";
 import { BrandPage, PresencePage } from "./pages/presence";
 import {
@@ -332,6 +333,11 @@ function MorePage() {
       "A record of what was changed, by whom, and when",
     ],
     ["/app/settings", "Settings", "Your account, team and notifications"],
+    [
+      "/app/agency",
+      "Agency workspace",
+      "Clients, reviews and controlled delivery",
+    ],
   ];
   return (
     <div className="stack">
@@ -410,6 +416,7 @@ export function App() {
         <Route path="operations" element={<OperationsPage />} />
         <Route path="billing" element={<BillingPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="agency" element={<AgencyPage />} />
         <Route path="audit" element={<AuditPage />} />
       </Route>
       <Route
