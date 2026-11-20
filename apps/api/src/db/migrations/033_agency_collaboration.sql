@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS asset_reviews (
   decided_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id,site_id),
   FOREIGN KEY (site_id,org_id) REFERENCES sites(id,org_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS asset_reviews_site_idx
@@ -42,7 +43,8 @@ CREATE TABLE IF NOT EXISTS review_comments (
   author_id uuid NOT NULL REFERENCES users(id),
   body text NOT NULL CHECK (char_length(body) BETWEEN 1 AND 2000),
   anchor jsonb NOT NULL DEFAULT '{}',
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  FOREIGN KEY (review_id,site_id) REFERENCES asset_reviews(id,site_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS review_comments_review_idx
   ON review_comments(review_id,created_at);
@@ -55,7 +57,8 @@ CREATE TABLE IF NOT EXISTS review_events (
   to_status text NOT NULL,
   actor_id uuid NOT NULL REFERENCES users(id),
   detail jsonb NOT NULL DEFAULT '{}',
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  FOREIGN KEY (review_id,site_id) REFERENCES asset_reviews(id,site_id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS review_events_review_idx
   ON review_events(review_id,created_at);
@@ -68,7 +71,8 @@ CREATE TABLE IF NOT EXISTS review_preview_shares (
   expires_at timestamptz NOT NULL,
   revoked_at timestamptz,
   created_by uuid NOT NULL REFERENCES users(id),
-  created_at timestamptz NOT NULL DEFAULT now()
+  created_at timestamptz NOT NULL DEFAULT now(),
+  FOREIGN KEY (review_id,site_id) REFERENCES asset_reviews(id,site_id) ON DELETE CASCADE
 );
 
 CREATE OR REPLACE TRIGGER review_comments_immutable
