@@ -24,6 +24,7 @@ import {
   type AgentInputs,
   type ChannelProvider,
   type ContentChannel,
+  motionDirectionsFor,
 } from "@kora/growth";
 import { parseAnySiteSpec } from "@kora/site-schema";
 import {
@@ -49,6 +50,13 @@ import type { StudioStore } from "./studio-store.js";
 import { requireFeature } from "./entitlements.js";
 import type { IntelStore } from "./intel-store.js";
 import { recordCampaignOutcomes } from "./intel-routes.js";
+import { BrandOsStore } from "../platform/brand-os-store.js";
+import {
+  buildCreativeDocument,
+  creativeDocumentSchema,
+} from "../platform/creative-documents.js";
+import { MotionProjectStore } from "./motion-project-store.js";
+import type postgres from "postgres";
 
 export interface MarketingDeps {
   platform: PlatformStore;
@@ -68,6 +76,8 @@ export interface MarketingDeps {
 }
 const uuid = z.string().uuid();
 const DAY = 86_400_000;
+const asJson = (value: unknown) =>
+  JSON.parse(JSON.stringify(value)) as postgres.JSONValue;
 type Site = NonNullable<Awaited<ReturnType<PlatformStore["getSite"]>>>;
 
 export function registerMarketingRoutes(
@@ -88,6 +98,8 @@ export function registerMarketingRoutes(
     gather,
   } = d;
   const now = d.now ?? (() => new Date());
+  const brandOs = new BrandOsStore(platform.sql);
+  const motionProjects = new MotionProjectStore(platform.sql);
   const siteFor = async (req: FastifyRequest, min: Role = "VIEWER") => {
     const { id } = z.object({ id: uuid }).parse(req.params);
     const site = await platform.getSite(id);
@@ -441,6 +453,7 @@ export function registerMarketingRoutes(
     await requireFeature(billing, site.orgId, "campaigns");
     const input = CampaignInputSchema.parse(req.body);
     const { graph, kit, ctx } = await need(site);
+    const brand = await brandOs.latest(site.id);
     const offer = graph.offer.activeOffers.find((o) => o.id === input.offerId);
     if (!offer)
       throw new HttpError(
@@ -459,6 +472,12 @@ export function registerMarketingRoutes(
     const raster = await d.raster();
     const contact = graph.contact.whatsapp ?? graph.contact.phone ?? "";
     const a = requireUser(req);
+    const direction = {
+      angle: input.direction ?? "moment",
+      headline: offer.title,
+      message: input.brief ?? `${offer.title}. ${offer.detail ?? ""}`.trim(),
+      audience: input.audience,
+    };
     // Build and validate everything first so a bad campaign creates nothing.
     const drafts = new Map<string, ReturnType<typeof draftContent>>();
     for (const ch of input.channels) {
@@ -524,12 +543,133 @@ export function registerMarketingRoutes(
       startsOn: input.startOn,
       endsOn: input.endOn ?? input.startOn,
       brandVersion: kit.version,
+      brandOsVersion: brand?.version ?? null,
+      audience: input.audience,
+      brief: {
+        text: input.brief ?? null,
+        objective: input.objective,
+        offerId: offer.id,
+        offerTitle: offer.title,
+        startsOn: input.startOn,
+        endsOn: input.endOn ?? input.startOn,
+      },
+      direction,
       userId: a.userId,
       channels: input.channels.map((c) => ({
         provider: c,
         assetId: assetFor[c]!,
       })),
     });
+    // A campaign links to the existing editable studios. The campaign asset
+    // table is an index, never a second document store.
+    const approvedLogoId = brand?.brandOs.visual.logoAssetId;
+    const approvedLogoRow = approvedLogoId
+      ? (
+          await platform.sql`SELECT id,source FROM creative_documents
+            WHERE id=${approvedLogoId} AND site_id=${site.id}
+              AND org_id=${site.orgId} AND kind='logo' AND status='APPROVED'`
+        )[0]
+      : null;
+    const approvedLogo = approvedLogoRow
+      ? {
+          id: String(approvedLogoRow.id),
+          source: creativeDocumentSchema.parse(approvedLogoRow.source),
+        }
+      : null;
+    const documentKinds = [
+      { kind: "flyer" as const, slides: 1 },
+      { kind: "poster" as const, slides: 1 },
+      { kind: "social" as const, slides: 1 },
+      { kind: "carousel" as const, slides: 5 },
+    ];
+    for (const item of documentKinds) {
+      const source = buildCreativeDocument(
+        {
+          kind: item.kind,
+          title: `${input.name} ${item.kind}`,
+          headline: offer.title,
+          description: offer.detail ?? "",
+          cta: graph.contact.whatsapp ? "Order on WhatsApp" : "Contact us",
+          direction:
+            ["product", "moment", "people", "place"].indexOf(direction.angle) %
+            3,
+          slides: item.slides,
+        },
+        {
+          version: kit.version,
+          name: brand?.brandOs.name ?? graph.identity.name,
+          approvedLogo,
+          ...(brand
+            ? {
+                colors: brand.brandOs.visual.palette,
+                typeVoice: brand.brandOs.visual.typeVoice,
+              }
+            : {}),
+        },
+      );
+      const documentId = crypto.randomUUID();
+      await platform.inTransaction(async (tx) => {
+        await tx.sql`INSERT INTO creative_documents
+          (id,site_id,org_id,kind,title,revision,source,brand_version,created_by)
+          VALUES (${documentId},${site.id},${site.orgId},${source.kind},
+            ${source.title},1,${tx.sql.json(asJson(source))},${source.brandVersion},${a.userId})`;
+        await tx.sql`INSERT INTO creative_document_revisions
+          (document_id,revision,source,brand_version,created_by)
+          VALUES (${documentId},1,${tx.sql.json(asJson(source))},
+            ${source.brandVersion},${a.userId})`;
+      });
+      await marketing.addCampaignAsset({
+        campaignId,
+        siteId: site.id,
+        orgId: site.orgId,
+        kind: item.kind,
+        creativeDocumentId: documentId,
+        source: { revision: 1, brandVersion: source.brandVersion },
+        status: "APPROVAL_NEEDED",
+      });
+    }
+    if (site.publicUrl)
+      await marketing.addCampaignAsset({
+        campaignId,
+        siteId: site.id,
+        orgId: site.orgId,
+        kind: "website",
+        href: site.publicUrl,
+        source: { relationship: "campaign-landing-page" },
+        status: "READY",
+      });
+    if (brand) {
+      const motion = motionDirectionsFor({
+        brief: input.brief ?? offer.title,
+        businessName: graph.identity.name,
+        detail: offer.detail ?? offer.price ?? "",
+        cta: graph.contact.whatsapp ? "Order on WhatsApp" : "Contact us",
+        format: "story",
+        brand: {
+          kitVersion: kit.version,
+          brandOsVersion: brand.version,
+          brandOsHash: brand.hash,
+        },
+      })[
+        ["product", "moment", "people", "place"].indexOf(direction.angle) % 3
+      ]!;
+      const project = await motionProjects.create({
+        siteId: site.id,
+        orgId: site.orgId,
+        ownerId: a.userId,
+        name: `${input.name} short video`,
+        timeline: motion.timeline,
+      });
+      await marketing.addCampaignAsset({
+        campaignId,
+        siteId: site.id,
+        orgId: site.orgId,
+        kind: "video",
+        motionProjectId: project.id,
+        source: { revision: project.revision, direction: motion.id },
+        status: "APPROVAL_NEEDED",
+      });
+    }
     // Each channel gets its own tracked link so results can be told apart; the link is part of the approved post.
     const linkFor: Record<string, string> = {};
     if (site.publicUrl)
@@ -611,7 +751,13 @@ export function registerMarketingRoutes(
         calendar.get(site.id, id),
       ),
     );
-    return { data: { campaign: c, items: items.filter(Boolean) } };
+    return {
+      data: {
+        campaign: c,
+        items: items.filter(Boolean),
+        assets: await marketing.campaignAssets(site.id, cid),
+      },
+    };
   });
 
   /** One explicit owner decision approves every post in the bundle; each approval is still recorded per post, bound to its content. */
