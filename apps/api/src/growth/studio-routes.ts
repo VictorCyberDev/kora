@@ -21,6 +21,7 @@ import {
   buildPresenceGraph,
   generateContent,
   motionFrameSvg,
+  motionDirectionsFor,
   motionTimelineCaptionsSrt,
   motionTimelineFrameSvg,
   motionStyleFromGenome,
@@ -726,6 +727,35 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
           ),
         })),
       },
+    };
+  });
+
+  app.post("/api/sites/:id/motion/directions", async (req) => {
+    const site = await siteFor(req, "MEMBER");
+    await requireFeature(billing, site.orgId, "motion.studio");
+    const body = z
+      .object({
+        brief: z.string().trim().min(8).max(240),
+        detail: z.string().trim().max(180).default(""),
+        cta: z.string().trim().min(1).max(40).default("Learn more"),
+        format: z.enum(["story", "square", "portrait", "landscape"]),
+      })
+      .strict()
+      .parse(req.body);
+    const [{ graph, kit }, motionBrand] = await Promise.all([
+      base(site),
+      brandMotion(site.id),
+    ]);
+    return {
+      data: motionDirectionsFor({
+        ...body,
+        businessName: graph.identity.name,
+        brand: {
+          kitVersion: kit.version,
+          brandOsVersion: motionBrand?.brandOs.version ?? null,
+          brandOsHash: motionBrand?.brandOs.hash ?? null,
+        },
+      }),
     };
   });
 

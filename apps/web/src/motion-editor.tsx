@@ -362,20 +362,35 @@ export function MotionTimelineEditor({
             className="btn"
             type="button"
             disabled={!brief.trim() || !options.motion.brand}
-            onClick={() =>
-              setDirections(
-                [0, 1, 2].map((variant) =>
-                  direction(
-                    options.motion.brand,
+            onClick={async () => {
+              try {
+                const generated = await api<J[]>(
+                  "POST",
+                  `/api/sites/${siteId}/motion/directions`,
+                  {
+                    brief: brief.trim(),
+                    detail: facts.description ?? facts.offer?.summary ?? "",
+                    cta: "Order now",
                     format,
-                    brief.trim(),
-                    facts.description ?? facts.offer?.summary ?? "",
-                    "Order now",
-                    variant,
+                  },
+                );
+                setDirections(generated.map((item) => item.timeline));
+              } catch (error) {
+                setMessage({ ok: false, text: errText(error) });
+                setDirections(
+                  [0, 1, 2].map((variant) =>
+                    direction(
+                      options.motion.brand,
+                      format,
+                      brief.trim(),
+                      facts.description ?? facts.offer?.summary ?? "",
+                      "Order now",
+                      variant,
+                    ),
                   ),
-                ),
-              )
-            }
+                );
+              }
+            }}
           >
             Generate directions
           </button>
