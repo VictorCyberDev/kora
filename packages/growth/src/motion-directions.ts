@@ -150,9 +150,7 @@ const variant = (
   return recalculateTimeline(source);
 };
 
-export function motionDirectionsFor(
-  request: MotionDirectionRequest,
-): Array<{
+export function motionDirectionsFor(request: MotionDirectionRequest): Array<{
   id: string;
   name: string;
   rationale: string;
