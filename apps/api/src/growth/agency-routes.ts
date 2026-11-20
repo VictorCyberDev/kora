@@ -218,10 +218,12 @@ export function registerAgencyRoutes(
       .parse(req.body);
     const user = requireUser(req);
     const orgRole = user.memberships.get(site.orgId)!;
-    const collaborator = (
-      await platform.sql`SELECT role FROM site_collaborators
-        WHERE site_id=${site.id} AND user_id=${user.userId}`
-    )[0]?.role;
+    const collaborator = String(
+      (
+        await platform.sql`SELECT role FROM site_collaborators
+          WHERE site_id=${site.id} AND user_id=${user.userId}`
+      )[0]?.role ?? "",
+    );
     const canApprove =
       ROLE_RANK[orgRole] >= ROLE_RANK.ADMIN || collaborator === "APPROVER";
     const canReview =
@@ -290,19 +292,21 @@ export function registerAgencyRoutes(
         WHERE s.token_hash=${sha(token)} AND s.revoked_at IS NULL AND s.expires_at>now()`
     )[0];
     if (!row) throw notFound();
-    const source =
-      String(row.object_type) === "creative_document"
-        ? (
-            await platform.sql`SELECT source FROM creative_documents
-              WHERE id=${String(row.object_id)} AND site_id=${String(row.site_id)}`
-          )[0]?.source
-        : String(row.object_type) === "motion_project"
-          ? (
-              await platform.sql`SELECT source FROM motion_projects
-                WHERE id=${String(row.object_id)} AND site_id=${String(row.site_id)}
-                  AND deleted_at IS NULL`
-            )[0]?.source
-          : null;
+    let source: unknown = null;
+    if (String(row.object_type) === "creative_document") {
+      const sourceRow = (
+        await platform.sql`SELECT source FROM creative_documents
+          WHERE id=${String(row.object_id)} AND site_id=${String(row.site_id)}`
+      )[0] as Record<string, unknown> | undefined;
+      source = sourceRow?.source ?? null;
+    } else if (String(row.object_type) === "motion_project") {
+      const sourceRow = (
+        await platform.sql`SELECT source FROM motion_projects
+          WHERE id=${String(row.object_id)} AND site_id=${String(row.site_id)}
+            AND deleted_at IS NULL`
+      )[0] as Record<string, unknown> | undefined;
+      source = sourceRow?.source ?? null;
+    }
     return {
       data: {
         title: String(row.title),
