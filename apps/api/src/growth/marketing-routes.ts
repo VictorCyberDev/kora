@@ -57,6 +57,7 @@ import {
 } from "../platform/creative-documents.js";
 import { MotionProjectStore } from "./motion-project-store.js";
 import type postgres from "postgres";
+import { RateLimiter } from "../platform/security.js";
 
 export interface MarketingDeps {
   platform: PlatformStore;
@@ -100,6 +101,7 @@ export function registerMarketingRoutes(
   const now = d.now ?? (() => new Date());
   const brandOs = new BrandOsStore(platform.sql);
   const motionProjects = new MotionProjectStore(platform.sql);
+  const campaignLimiter = new RateLimiter(10, 60 * 60_000);
   const siteFor = async (req: FastifyRequest, min: Role = "VIEWER") => {
     const { id } = z.object({ id: uuid }).parse(req.params);
     const site = await platform.getSite(id);
@@ -451,6 +453,31 @@ export function registerMarketingRoutes(
   app.post("/api/sites/:id/campaigns", async (req, reply) => {
     const site = await siteFor(req, "MEMBER");
     await requireFeature(billing, site.orgId, "campaigns");
+    const actor = requireUser(req);
+    if (!campaignLimiter.take(`${site.id}:${actor.userId}`))
+      throw new HttpError(
+        429,
+        "campaign_generation_limit",
+        "This workspace has reached its hourly campaign-generation limit. Try again later.",
+      );
+    const [documents, motion] = await Promise.all([
+      platform.sql`SELECT count(*)::int AS total FROM creative_documents
+        WHERE site_id=${site.id} AND org_id=${site.orgId} AND status<>'ARCHIVED'`,
+      platform.sql`SELECT count(*)::int AS total FROM motion_projects
+        WHERE site_id=${site.id} AND org_id=${site.orgId} AND deleted_at IS NULL`,
+    ]);
+    if (Number(documents[0]?.total ?? 0) > 196)
+      throw new HttpError(
+        429,
+        "creative_library_limit",
+        "Archive old designs before generating a campaign with four new editable assets.",
+      );
+    if (Number(motion[0]?.total ?? 0) >= 100)
+      throw new HttpError(
+        429,
+        "motion_library_limit",
+        "Delete an unused motion project before generating another campaign video.",
+      );
     const input = CampaignInputSchema.parse(req.body);
     const { graph, kit, ctx } = await need(site);
     const brand = await brandOs.latest(site.id);
@@ -471,7 +498,7 @@ export function registerMarketingRoutes(
     }
     const raster = await d.raster();
     const contact = graph.contact.whatsapp ?? graph.contact.phone ?? "";
-    const a = requireUser(req);
+    const a = actor;
     const direction = {
       angle: input.direction ?? "moment",
       headline: offer.title,
@@ -723,6 +750,18 @@ export function registerMarketingRoutes(
       "CAMPAIGN_BUNDLE",
       slots.length,
     );
+    await Promise.all([
+      platform.recordUsage(site.orgId, site.id, "CONTENT_DRAFT", slots.length, {
+        campaignId,
+      }),
+      platform.recordUsage(
+        site.orgId,
+        site.id,
+        "IMAGE_RENDER",
+        Object.keys(assetFor).length,
+        { campaignId, purpose: "channel-assets" },
+      ),
+    ]);
     await platform.audit({
       orgId: site.orgId,
       actorUserId: a.userId,
