@@ -258,6 +258,7 @@ function ProfileForm({
 export function PresencePage() {
   const { id } = useParams();
   const view = useLoad(() => api<J>("GET", `/api/sites/${id}/presence`), [id]);
+  const draftSite = useLoad(() => api<J>("GET", `/api/sites/${id}`), [id]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => setMsg(null), [id]);
@@ -274,29 +275,58 @@ export function PresencePage() {
       setBusy(false);
     }
   };
+  const startWithoutWebsite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const name = String(form.get("name") ?? "").trim();
+    const description = String(form.get("description") ?? "").trim();
+    const industry = String(form.get("industry") ?? "").trim();
+    if (!name || !industry) return;
+    await act("Your business facts were saved without creating a website.", () =>
+      api("PUT", `/api/sites/${id}/presence/profile`, {
+        expectedRevision: 0,
+        facts: {
+          identity: { name, description, industry },
+          contact: {},
+          availability: { hours: [] },
+          offer: { services: [], offers: [] },
+          social: [],
+        },
+      }),
+    );
+  };
   return (
     <Async state={view}>
       {(v) =>
         !v.profile ? (
-          <Empty title="Tell Krevstudio about your business">
-            Krevstudio can read your name, contact details and hours from your
-            website so you do not have to type them again.
-            <p>
-              <button
-                className="btn"
-                disabled={busy || !v.importable}
-                onClick={() =>
-                  act("Details read from your website.", () =>
+          <div className="stack">
+            <section className="card stack">
+              <h2>Tell Krevstudio about your business</h2>
+              <p className="muted">
+                Start with a short factual brief. You do not need to create or publish a website to make a logo, graphic or video.
+              </p>
+              <form className="stack" onSubmit={startWithoutWebsite} aria-label="Start business profile">
+                <label>Business name
+                  <input name="name" defaultValue={draftSite.data?.name ?? ""} required maxLength={100} />
+                </label>
+                <label>Industry
+                  <input name="industry" required maxLength={80} placeholder="e.g. Bakery" />
+                </label>
+                <label>What your business does
+                  <textarea name="description" maxLength={600} rows={3} placeholder="Describe only what you actually offer" />
+                </label>
+                <button className="btn" disabled={busy}>Save business brief</button>
+              </form>
+              {v.importable && (
+                <button className="btn ghost" disabled={busy} onClick={() =>
+                  act("Details read from your existing website.", () =>
                     api("POST", `/api/sites/${id}/presence/import`),
                   )
-                }
-              >
-                Read details from my website
-              </button>
-            </p>
-            {!v.importable && <p>Create a website first.</p>}
-            {msg && !msg.ok && <Notice kind="bad">{msg.text}</Notice>}
-          </Empty>
+                }>Import details from an existing website</button>
+              )}
+              {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
+            </section>
+          </div>
         ) : (
           <div className="stack">
             <section className="card stack" aria-labelledby="presence-h">
