@@ -34,7 +34,7 @@ export function recommendGraphicDirection(
     .sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
   for (const event of usable) {
     const i = GRAPHIC_STYLES.indexOf(event.style);
-    scores[i] += event.outcome === "chosen" ? 1 : -1;
+    scores[i] = (scores[i] ?? 0) + (event.outcome === "chosen" ? 1 : -1);
     if (event.locked) locks[i] = event.outcome;
   }
   const preferred = locks.findIndex((x) => x === "chosen");
