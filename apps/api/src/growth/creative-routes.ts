@@ -484,7 +484,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       requestId: req.id,
     });
     return reply.code(201).send({
-      data: { id: record.id, consented: true, pilot: "ENROLLED" },
+      data: { id: String(record.id), consented: true, pilot: "ENROLLED" },
     });
   });
 
@@ -496,25 +496,27 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         FROM pilot_participants WHERE org_id=${orgId}`
     )[0];
     if (!participation) return { data: { enrolled: false } };
+    const participationId = uuid.parse(String(participation.id));
+    const enrolledAt = z.coerce.date().parse(participation.enrolled_at);
     const events = await sql`SELECT kind, source_id, observed_at
-      FROM pilot_observations WHERE participant_id=${participation.id}
+      FROM pilot_observations WHERE participant_id=${participationId}
       ORDER BY observed_at DESC`;
     // Read actual production tables rather than asking owners to self-assert
     // milestones. Only post-enrollment events qualify for this pilot.
     const [evidence] = await sql`SELECT
       LEAST(
         (SELECT MIN(created_at) FROM site_versions
-          WHERE org_id=${orgId} AND created_at>=${participation.enrolled_at}),
+          WHERE org_id=${orgId} AND created_at>=${enrolledAt}),
         (SELECT MIN(created_at) FROM creative_documents
-          WHERE org_id=${orgId} AND created_at>=${participation.enrolled_at}),
+          WHERE org_id=${orgId} AND created_at>=${enrolledAt}),
         (SELECT MIN(created_at) FROM motion_projects
-          WHERE org_id=${orgId} AND created_at>=${participation.enrolled_at})
+          WHERE org_id=${orgId} AND created_at>=${enrolledAt})
       ) AS first_project_at,
       (SELECT MIN(occurred_at) FROM usage_events
         WHERE org_id=${orgId} AND dimension='EXPORT'
-          AND occurred_at>=${participation.enrolled_at}) AS first_export_at,
+          AND occurred_at>=${enrolledAt}) AS first_export_at,
       (SELECT MIN(published_at) FROM site_versions
-        WHERE org_id=${orgId} AND published_at>=${participation.enrolled_at})
+        WHERE org_id=${orgId} AND published_at>=${enrolledAt})
         AS first_publication_at`;
     return {
       data: {
@@ -522,9 +524,15 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         participant: participation,
         observations: events,
         observedMilestones: {
-          firstProjectAt: evidence?.first_project_at ?? null,
-          firstExportAt: evidence?.first_export_at ?? null,
-          firstPublicationAt: evidence?.first_publication_at ?? null,
+          firstProjectAt: evidence?.first_project_at
+            ? z.coerce.date().parse(evidence.first_project_at).toISOString()
+            : null,
+          firstExportAt: evidence?.first_export_at
+            ? z.coerce.date().parse(evidence.first_export_at).toISOString()
+            : null,
+          firstPublicationAt: evidence?.first_publication_at
+            ? z.coerce.date().parse(evidence.first_publication_at).toISOString()
+            : null,
         },
         paymentsVerified: false,
         note: "Milestones are read from recorded platform events after consent. Pilot enrollment is not evidence of payment, retention or commercial success.",
@@ -563,9 +571,10 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         "pilot_consent_required",
         "Pilot consent must be active before feedback can be recorded.",
       );
+    const participantId = uuid.parse(String(participant.id));
     const count = (
       await sql`SELECT count(*)::int AS n FROM pilot_observations
-        WHERE participant_id=${participant.id} AND kind='feedback'`
+        WHERE participant_id=${participantId} AND kind='feedback'`
     )[0];
     if (Number(count?.n ?? 0) >= 20)
       throw new HttpError(
@@ -576,7 +585,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     const id = randomUUID();
     await sql`INSERT INTO pilot_observations
       (id, participant_id, kind, source_id, recorded_by, metadata)
-      VALUES (${id}, ${participant.id}, 'feedback', ${"owner-report:" + id},
+      VALUES (${id}, ${participantId}, 'feedback', ${"owner-report:" + id},
         ${actor.userId},
         ${sql.json({
           rating: body.rating,
