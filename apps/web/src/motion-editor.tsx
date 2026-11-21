@@ -284,6 +284,12 @@ export function MotionTimelineEditor({
       setMessage({ ok: false, text: errText(error) });
     }
   };
+  useEffect(() => {
+    const target = new URLSearchParams(window.location.search).get("motion");
+    if (target && /^[a-f0-9-]{36}$/i.test(target)) void load(target);
+    // Reopen only for a changed business workspace, not on every editor update.
+  }, [siteId]);
+
   const preview = async () => {
     if (!timeline) return;
     try {
