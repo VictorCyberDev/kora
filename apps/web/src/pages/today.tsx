@@ -422,7 +422,13 @@ export function CampaignsPage() {
           aria-label="New campaign"
         >
           {offers.length === 0 && (
-            <Notice kind="info">Add a current offer in Presence first.</Notice>
+            <Notice kind="info">
+              Add a current offer in your business details before generating
+              campaign assets.{" "}
+              <Link to={`/app/sites/${id}/presence`}>
+                Complete business details
+              </Link>
+            </Notice>
           )}
           <label>
             Name
