@@ -6,7 +6,7 @@ test.use({ baseURL: BASE });
 test("landing creation goals lead to the matching signup intention", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Design a flyer" }).click();
-  await expect(page).toHaveURL(/\\/signup\\?goal=flyer$/);
+  await expect(page).toHaveURL(/\/signup\?goal=flyer$/);
   await expect(page.getByLabel("First creative goal")).toHaveValue("flyer");
 });
 
