@@ -499,13 +499,35 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     const events = await sql`SELECT kind, source_id, observed_at
       FROM pilot_observations WHERE participant_id=${participation.id}
       ORDER BY observed_at DESC`;
+    // Read actual production tables rather than asking owners to self-assert
+    // milestones. Only post-enrollment events qualify for this pilot.
+    const [evidence] = await sql`SELECT
+      LEAST(
+        (SELECT MIN(created_at) FROM site_versions
+          WHERE org_id=${orgId} AND created_at>=${participation.enrolled_at}),
+        (SELECT MIN(created_at) FROM creative_documents
+          WHERE org_id=${orgId} AND created_at>=${participation.enrolled_at}),
+        (SELECT MIN(created_at) FROM motion_projects
+          WHERE org_id=${orgId} AND created_at>=${participation.enrolled_at})
+      ) AS first_project_at,
+      (SELECT MIN(occurred_at) FROM usage_events
+        WHERE org_id=${orgId} AND dimension='EXPORT'
+          AND occurred_at>=${participation.enrolled_at}) AS first_export_at,
+      (SELECT MIN(published_at) FROM site_versions
+        WHERE org_id=${orgId} AND published_at>=${participation.enrolled_at})
+        AS first_publication_at`;
     return {
       data: {
         enrolled: participation.revoked_at === null,
         participant: participation,
         observations: events,
+        observedMilestones: {
+          firstProjectAt: evidence?.first_project_at ?? null,
+          firstExportAt: evidence?.first_export_at ?? null,
+          firstPublicationAt: evidence?.first_publication_at ?? null,
+        },
         paymentsVerified: false,
-        note: "Pilot enrollment is not evidence of payment, retention or commercial success.",
+        note: "Milestones are read from recorded platform events after consent. Pilot enrollment is not evidence of payment, retention or commercial success.",
       },
     };
   });
