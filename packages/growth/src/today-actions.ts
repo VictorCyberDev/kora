@@ -63,7 +63,7 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
   if (i.truthQuestions.length)
     add(
       "truth",
-      "Answer one question so Kora can post",
+      "Answer one question so Krevstudio can post",
       i.truthQuestions[0]!,
       60,
       "identity",
@@ -84,14 +84,14 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
     add(
       "quality",
       "Your website can look stronger",
-      `Kora's review graded it ${i.qualityGrade}.`,
+      `Krevstudio's review graded it ${i.qualityGrade}.`,
       45,
       "build",
     );
   if (i.genomeGaps.length)
     add(
       "brand",
-      "Tell Kora what makes you different",
+      "Tell Krevstudio what makes you different",
       i.genomeGaps[0]!,
       40,
       "identity",
