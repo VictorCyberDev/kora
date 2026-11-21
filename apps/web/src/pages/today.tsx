@@ -665,7 +665,7 @@ export function CampaignsPage() {
                     Open landing page
                   </a>
                 ) : asset.motionProjectId ? (
-                  <Link className="btn sm ghost" to={`/app/sites/${id}/create`}>
+                  <Link className="btn sm ghost" to={`/app/sites/${id}/create?tool=video&motion=${encodeURIComponent(asset.motionProjectId)}`}>
                     Edit video
                   </Link>
                 ) : (
