@@ -34,6 +34,7 @@ export * from "./followup.js";
 export * from "./performance.js";
 export * from "./learning.js";
 export * from "./share.js";
+export * from "./acquisition.js";
 export * from "./pilot.js";
 export * from "./pilot-evaluation.js";
 export * from "./managed.js";
