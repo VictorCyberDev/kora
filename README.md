@@ -1,8 +1,12 @@
-# Kora
+# Krevstudio
 
-**Build your presence. Kora keeps it working — and helps it grow.**
+**One connected business identity. Websites, graphics, logos, motion and campaigns.**
 
-Kora is the presence and marketing execution system for small businesses. It starts where most tools stop: it creates and publishes a website, then stays after launch. It creates and publishes a site, watches the live customer experience, explains failures from evidence, proposes safe typed fixes, asks for approval when a change needs the owner, and counts recovery only after new health observations pass.
+Krevstudio (formerly Kora) is a creative and marketing execution platform for small businesses. The original Kora reliability and presence architecture remains underneath the newer connected Studios. The service URLs still use the historical Kora name; do not interpret those hostnames as a second product.
+
+> **Release distinction (November 2026):** Historical Kora production acceptance below is not acceptance of the unmerged Krevstudio transformation. PR #43 and PR #44 remain staged engineering work until their current-head CI, browser, security, migration, visual and authorized staging gates pass. The authoritative original M1–M16 roadmap is separate from the newer Creative M1–M10 workstream.
+
+Krevstudio It starts where most tools stop: it creates and publishes a website, then stays after launch. It creates and publishes a site, watches the live customer experience, explains failures from evidence, proposes safe typed fixes, asks for approval when a change needs the owner, and counts recovery only after new health observations pass.
 
 **Live product:** https://kora-api.rumptycloud.app  
 **Live customer-site host:** https://kora-site-host.rumptycloud.app  
