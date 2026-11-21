@@ -358,6 +358,7 @@ export function CampaignsPage() {
   const [open, setOpen] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [detail, setDetail] = useState<J | null>(null);
   const offers = (presence.data?.graph?.offer?.activeOffers ?? []) as J[];
   const create = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -366,6 +367,10 @@ export function CampaignsPage() {
     try {
       const r = await api<J>("POST", `/api/sites/${id}/campaigns`, {
         name: String(f.get("name")),
+        objective: String(f.get("objective")),
+        audience: String(f.get("audience")),
+        brief: String(f.get("brief")),
+        direction: String(f.get("direction")),
         offerId: String(f.get("offer")),
         startOn: String(f.get("start")),
         endOn: String(f.get("end") || f.get("start")),
@@ -376,7 +381,9 @@ export function CampaignsPage() {
           "google_business",
         ].filter((c) => f.get(`c-${c}`)),
       });
-      setMsg(`Made ${r.posts} posts. Review and approve them below.`);
+      setMsg(
+        `Built ${r.posts} scheduled posts plus editable campaign graphics and video. Review them before approval.`,
+      );
       setOpen(false);
       list.reload();
     } catch (x) {
@@ -425,6 +432,55 @@ export function CampaignsPage() {
               ))}
             </select>
           </label>
+          <label>
+            Objective
+            <select name="objective" defaultValue="announce">
+              <option value="announce">Announce an offer</option>
+              <option value="fill_slots">Fill available slots</option>
+              <option value="clear_stock">Clear stock</option>
+              <option value="bring_back">Bring customers back</option>
+              <option value="build_awareness">Build awareness</option>
+            </select>
+          </label>
+          <label>
+            Audience
+            <input
+              name="audience"
+              required
+              minLength={3}
+              maxLength={200}
+              defaultValue="Existing and prospective customers"
+            />
+          </label>
+          <label>
+            Campaign brief
+            <textarea
+              name="brief"
+              required
+              minLength={8}
+              maxLength={500}
+              placeholder="State the objective and only confirmed offer details."
+            />
+          </label>
+          <fieldset>
+            <legend>Creative direction</legend>
+            {[
+              ["product", "Product focus"],
+              ["moment", "Occasion and timing"],
+              ["people", "People-led"],
+              ["place", "Place-led"],
+            ].map(([value, label]) => (
+              <label key={value} className="row">
+                <input
+                  type="radio"
+                  name="direction"
+                  value={value}
+                  defaultChecked={value === "product"}
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
           <label>
             Starts
             <input name="start" type="date" required />
@@ -486,6 +542,23 @@ export function CampaignsPage() {
                     {c.problems ? ` · ${c.problems} need attention` : ""}
                   </p>
                   <div className="row">
+                    <button
+                      className="btn sm ghost"
+                      onClick={async () => {
+                        try {
+                          setDetail(
+                            await api<J>(
+                              "GET",
+                              `/api/sites/${id}/campaigns/${c.id}`,
+                            ),
+                          );
+                        } catch (x) {
+                          setErr(errText(x));
+                        }
+                      }}
+                    >
+                      Open campaign
+                    </button>
                     {c.needsApproval > 0 && (
                       <button
                         className="btn sm"
@@ -534,6 +607,77 @@ export function CampaignsPage() {
           )
         }
       </Async>
+      {detail && (
+        <section className="card stack" aria-label="Campaign workspace">
+          <div className="row between">
+            <div>
+              <p className="k-overline">Campaign workspace</p>
+              <h2>{detail.campaign?.name}</h2>
+            </div>
+            <button className="btn sm quiet" onClick={() => setDetail(null)}>
+              Close
+            </button>
+          </div>
+          <p>
+            <strong>Objective:</strong> {detail.campaign?.objective} ·{" "}
+            <strong>Audience:</strong> {detail.campaign?.audience}
+          </p>
+          <nav className="chips" aria-label="Campaign views">
+            {[
+              "Overview",
+              "Content library",
+              "Calendar",
+              "Channels",
+              "Approvals",
+              "Results",
+              "Recommendations",
+            ].map((label) => (
+              <span className="chip" key={label}>
+                {label}
+              </span>
+            ))}
+          </nav>
+          <h3>Editable content library</h3>
+          <ul className="k-checks">
+            {(detail.assets ?? []).map((asset: J) => (
+              <li className="k-check row between" key={asset.id}>
+                <span>
+                  <strong>{String(asset.kind).replace("_", " ")}</strong>
+                  <span className="muted"> · {asset.status}</span>
+                </span>
+                {asset.href ? (
+                  <a className="btn sm ghost" href={asset.href} target="_blank">
+                    Open landing page
+                  </a>
+                ) : asset.motionProjectId ? (
+                  <Link className="btn sm ghost" to={`/app/sites/${id}/create`}>
+                    Edit video
+                  </Link>
+                ) : (
+                  <Link
+                    className="btn sm ghost"
+                    to={`/app/sites/${id}/creative-studio`}
+                  >
+                    Edit design
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="muted">
+            Calendar copy and schedules remain approval-bound. Editing public
+            content requires a new approval before publishing.
+          </p>
+          <div className="row">
+            <Link className="btn sm" to={`/app/sites/${id}/calendar`}>
+              Review calendar
+            </Link>
+            <Link className="btn sm ghost" to={`/app/sites/${id}/channels`}>
+              Channel readiness
+            </Link>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

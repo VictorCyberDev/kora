@@ -137,6 +137,7 @@ export class PublishWorker {
       const r = await adapter.publish(tokens, {
         text,
         media: file ? { bytes: file.bytes, mime: file.mime } : null,
+        accountId: conn?.externalAccountId ?? "",
         idempotencyKey: job.idempotencyKey,
       });
       await calendar.succeed(job, {

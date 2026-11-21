@@ -139,6 +139,16 @@ export function registerChannelRoutes(app: FastifyInstance, d: ChannelDeps) {
           : `${CHANNEL_MATRIX[provider].label} is not set up in Krevstudio yet. Missing: ${[...rt.missing, ...(config.KORA_SECRETS_KEY ? [] : ["KORA_SECRETS_KEY"])].join(", ")}.`,
       );
     }
+    if (
+      adapter.mode === "LIVE" &&
+      ["facebook", "instagram"].includes(provider) &&
+      !body.externalAccountId
+    )
+      throw new HttpError(
+        422,
+        "account_selection_required",
+        "Enter the Page or Instagram professional account ID you want to connect.",
+      );
     const a = requireUser(req);
     const state = await channels.createState({
       siteId: site.id,
@@ -146,7 +156,8 @@ export function registerChannelRoutes(app: FastifyInstance, d: ChannelDeps) {
       userId: a.userId,
       provider,
     });
-    // The WhatsApp phone number the owner names rides in the state row's provider field-free path: it is re-sent at callback.
+    // The provider account the owner selected rides in signed, single-use OAuth
+    // state and is verified against the accounts returned after sign-in.
     const url = adapter.authorizeUrl({
       state: body.externalAccountId
         ? `${state}.${body.externalAccountId}`

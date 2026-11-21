@@ -40,7 +40,7 @@ function ChannelCard({
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [phoneId, setPhoneId] = useState("");
+  const [accountId, setAccountId] = useState("");
   const conn = c.connection;
   const unavailable = c.availability === "planned";
   const notSetUp = !unavailable && c.runtime.state === "NOT_CONFIGURED";
@@ -61,8 +61,8 @@ function ChannelCard({
       const r = await api<J>(
         "POST",
         `/api/sites/${siteId}/channels/${c.provider}/connect`,
-        c.provider === "whatsapp" && phoneId
-          ? { externalAccountId: phoneId }
+        ["whatsapp", "facebook", "instagram"].includes(c.provider) && accountId
+          ? { externalAccountId: accountId }
           : {},
       );
       window.location.assign(r.authorizeUrl);
@@ -116,17 +116,25 @@ function ChannelCard({
           . Nothing is faked: this channel stays unavailable until they do.
         </Notice>
       )}
-      {c.provider === "whatsapp" && !conn && !notSetUp && !unavailable && (
-        <label>
-          WhatsApp phone number ID
-          <input
-            inputMode="numeric"
-            value={phoneId}
-            onChange={(e) => setPhoneId(e.target.value.replace(/\D/g, ""))}
-            placeholder="From Meta Business settings"
-          />
-        </label>
-      )}
+      {["whatsapp", "facebook", "instagram"].includes(c.provider) &&
+        !conn &&
+        !notSetUp &&
+        !unavailable && (
+          <label>
+            {c.provider === "whatsapp"
+              ? "WhatsApp phone number ID"
+              : c.provider === "facebook"
+                ? "Facebook Page ID"
+                : "Instagram professional account ID"}
+            <input
+              inputMode="numeric"
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value.replace(/\D/g, ""))}
+              placeholder="From Meta Business settings"
+              required
+            />
+          </label>
+        )}
       {err && <Notice kind="bad">{err}</Notice>}
       <div className="row">
         {!conn && !unavailable && !notSetUp && (

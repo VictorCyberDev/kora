@@ -244,6 +244,204 @@ d("brand studio", () => {
 });
 
 d("motion studio", () => {
+  it("persists editable timelines with revisions, optimistic concurrency, restore, duplication and tenant isolation", async () => {
+    const { a, s } = await ready("st-motion-projects@example.com");
+    const timeline = {
+      version: 2,
+      format: "square",
+      durationSec: 4,
+      brand: {
+        kitVersion: 1,
+        brandOsVersion: null,
+        brandOsHash: null,
+      },
+      scenes: [
+        {
+          id: "opening",
+          startSec: 0,
+          durationSec: 4,
+          transition: { type: "cut", durationSec: 0 },
+          motion: {
+            preset: "editorial-reveal",
+            easing: "ease-out",
+            travel: 0.15,
+            scaleFrom: 1,
+          },
+          backgroundToken: "background",
+          layers: [
+            {
+              id: "headline",
+              type: "text",
+              x: 0.1,
+              y: 0.15,
+              width: 0.8,
+              height: 0.25,
+              opacity: 1,
+              overflow: "clip",
+              text: "Christmas orders are open",
+              role: "headline",
+              align: "left",
+            },
+          ],
+        },
+      ],
+      captions: [
+        {
+          id: "caption-1",
+          sceneId: "opening",
+          startSec: 0,
+          endSec: 3,
+          text: "Christmas orders are open",
+        },
+      ],
+      audio: null,
+    };
+    const made = await h.call("POST", `/api/sites/${s.id}/motion/projects`, {
+      cookie: a.cookie,
+      body: { name: "Christmas launch", timeline },
+    });
+    expect(made.status).toBe(201);
+    expect(made.json.data.revision).toBe(1);
+    const projectId = made.json.data.id as string;
+    const changed = {
+      ...timeline,
+      scenes: [
+        {
+          ...timeline.scenes[0],
+          layers: [
+            {
+              ...timeline.scenes[0]!.layers[0],
+              text: "Pre-order your Christmas cake",
+            },
+          ],
+        },
+      ],
+    };
+    const saved = await h.call(
+      "PUT",
+      `/api/sites/${s.id}/motion/projects/${projectId}`,
+      {
+        cookie: a.cookie,
+        body: {
+          name: "Christmas launch",
+          timeline: changed,
+          expectedRevision: 1,
+        },
+      },
+    );
+    expect(saved.status).toBe(200);
+    expect(saved.json.data.revision).toBe(2);
+    const preview = await h.call(
+      "POST",
+      `/api/sites/${s.id}/motion/timeline/preview`,
+      { cookie: a.cookie, body: changed },
+    );
+    expect(preview.status).toBe(200);
+    expect(preview.json.data.frames).toHaveLength(3);
+    expect(preview.json.data.frames[0].svg).toContain(
+      "Pre-order your Christmas cake",
+    );
+    const options = await h.call("GET", `/api/sites/${s.id}/studio/options`, {
+      cookie: a.cookie,
+    });
+    if (options.json.data.motion.exportAvailable) {
+      const queued = await h.call(
+        "POST",
+        `/api/sites/${s.id}/motion/projects/${projectId}/render`,
+        { cookie: a.cookie, body: { expectedRevision: 2 } },
+      );
+      expect(queued.status).toBe(202);
+      let render = queued.json.data;
+      for (
+        let attempt = 0;
+        attempt < 60 && !["READY", "FAILED"].includes(render.status);
+        attempt++
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        render = (
+          await h.call("GET", `/api/sites/${s.id}/motion/${render.id}`, {
+            cookie: a.cookie,
+          })
+        ).json.data;
+      }
+      expect(render.status).toBe("READY");
+      const video = Buffer.from(
+        await (
+          await fetch(
+            `${h.base}/api/sites/${s.id}/assets/${render.assetId}/file`,
+            { headers: { cookie: a.cookie } },
+          )
+        ).arrayBuffer(),
+      );
+      expect(video.subarray(4, 8).toString()).toBe("ftyp");
+    }
+    expect(
+      (
+        await h.call("PUT", `/api/sites/${s.id}/motion/projects/${projectId}`, {
+          cookie: a.cookie,
+          body: {
+            name: "stale",
+            timeline,
+            expectedRevision: 1,
+          },
+        })
+      ).status,
+    ).toBe(409);
+    const history = await h.call(
+      "GET",
+      `/api/sites/${s.id}/motion/projects/${projectId}/revisions`,
+      { cookie: a.cookie },
+    );
+    expect(
+      history.json.data.map((row: { revision: number }) => row.revision),
+    ).toEqual([2, 1]);
+    const restored = await h.call(
+      "POST",
+      `/api/sites/${s.id}/motion/projects/${projectId}/restore`,
+      {
+        cookie: a.cookie,
+        body: { revision: 1, expectedRevision: 2 },
+      },
+    );
+    expect(restored.status).toBe(200);
+    expect(restored.json.data.revision).toBe(3);
+    expect(restored.json.data.timeline.scenes[0].layers[0].text).toBe(
+      "Christmas orders are open",
+    );
+    const copy = await h.call(
+      "POST",
+      `/api/sites/${s.id}/motion/projects/${projectId}/duplicate`,
+      { cookie: a.cookie, body: { name: "Campaign cutdown" } },
+    );
+    expect(copy.status).toBe(201);
+    expect(copy.json.data.id).not.toBe(projectId);
+
+    const other = await h.signup("st-motion-other@example.com", "Other");
+    expect(
+      (
+        await h.call("GET", `/api/sites/${s.id}/motion/projects/${projectId}`, {
+          cookie: other.cookie,
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await h.call(
+          "DELETE",
+          `/api/sites/${s.id}/motion/projects/${projectId}`,
+          { cookie: a.cookie },
+        )
+      ).status,
+    ).toBe(200);
+    expect(
+      (
+        await h.call("GET", `/api/sites/${s.id}/motion/projects/${projectId}`, {
+          cookie: a.cookie,
+        })
+      ).status,
+    ).toBe(404);
+  }, 90_000);
+
   it("previews instantly, renders a real MP4 through the queue, and retries failures safely", async () => {
     const { a, s } = await ready("st3@example.com");
     const spec = {

@@ -64,6 +64,26 @@ describe("live OAuth adapter (fake provider)", () => {
       return Promise.resolve(
         Response.json({ access_token: "AT", expires_in: 3600 }),
       );
+    if (u.includes("/me/accounts"))
+      return Promise.resolve(
+        Response.json({
+          data: [
+            {
+              id: "123456",
+              name: "Mama Ngozi Page",
+              access_token: "PAGE_AT",
+              instagram_business_account: {
+                id: "654321",
+                username: "mamangozi",
+              },
+            },
+          ],
+        }),
+      );
+    if (u.includes("/123456/photos"))
+      return Promise.resolve(
+        Response.json({ id: "photo-1", post_id: "123456_99" }),
+      );
     if (u.includes("/me?"))
       return Promise.resolve(Response.json({ id: "42", name: "Mama Ngozi" }));
     if (u.includes("/109900001111"))
@@ -115,6 +135,37 @@ describe("live OAuth adapter (fake provider)", () => {
         code: "c",
         redirectUri: "x",
         externalAccountId: "not-a-number",
+      }),
+    ).rejects.toBeInstanceOf(ProviderError);
+  });
+  it("verifies the selected Page and publishes a real multipart Page photo request", async () => {
+    const adapter = reg.adapter("facebook")!;
+    const exchanged = await adapter.exchange({
+      code: "c",
+      redirectUri: "https://k.example/cb",
+      externalAccountId: "123456",
+    });
+    expect(exchanged.account).toEqual({
+      externalId: "123456",
+      name: "Mama Ngozi Page",
+    });
+    expect(exchanged.tokens.accessToken).toBe("PAGE_AT");
+    expect(exchanged.tokens.accountId).toBe("123456");
+    const result = await adapter.publish!(exchanged.tokens, {
+      text: "A verified owner-approved post",
+      media: { bytes: Buffer.from("image"), mime: "image/png" },
+      accountId: "123456",
+      idempotencyKey: "stable-job-key",
+    });
+    expect(result.externalId).toBe("123456_99");
+    expect(result.url).toContain("facebook.com/123456/posts/99");
+    expect(calls.at(-1)?.url).toContain("/123456/photos");
+    await expect(
+      adapter.publish!(exchanged.tokens, {
+        text: "wrong tenant account",
+        media: { bytes: Buffer.from("image"), mime: "image/png" },
+        accountId: "999999",
+        idempotencyKey: "stable-job-key",
       }),
     ).rejects.toBeInstanceOf(ProviderError);
   });

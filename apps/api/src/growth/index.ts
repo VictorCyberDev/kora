@@ -30,6 +30,7 @@ import { registerOwnerMediaRoutes } from "./owner-media-routes.js";
 import { registerMediaRoutes } from "./media-routes.js";
 import { mediaProvidersFromEnv, type MediaProvider } from "@kora/growth";
 import { Rasterizer, ffmpegAvailable, ffmpegBin } from "./rasterizer.js";
+import { registerAgencyRoutes } from "./agency-routes.js";
 
 export function registerGrowth(
   app: FastifyInstance,
@@ -62,6 +63,7 @@ export function registerGrowth(
   let rasterP: Promise<Rasterizer> | null = null;
   const raster = () => (rasterP ??= Rasterizer.create());
   const intel = new IntelStore(platform.sql);
+  registerAgencyRoutes(app, platform);
   const gather = createGatherer({
     platform,
     ops,
@@ -180,7 +182,9 @@ export function registerGrowth(
       growth,
       raster,
       bin,
-      meter: (o, si, dim, q) => platform.recordUsage(o, si, dim, q),
+      consumeUsage: (id) => billing.consumeUsage(id),
+      releaseUsage: (id) => billing.releaseUsage(id),
+      reconcileUsage: () => billing.reconcileUsageReservations(),
     });
     w.start();
     app.addHook("onClose", () => w.stop());

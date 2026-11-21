@@ -67,7 +67,7 @@ export const BUTTONS: Array<[string, string]> = [
   ["underline", "Underlined"],
 ];
 export const GOALS: Array<[string, string]> = [
-  ["", "Let Kora decide"],
+  ["", "Let Krevstudio decide"],
   ["calls", "Get phone calls"],
   ["bookings", "Get bookings"],
   ["leads", "Get enquiries"],
@@ -76,7 +76,7 @@ export const GOALS: Array<[string, string]> = [
   ["show-work", "Show our work"],
 ];
 export const FEELS: Array<[string, string]> = [
-  ["", "Let Kora decide"],
+  ["", "Let Krevstudio decide"],
   ["calm and minimal", "Calm & minimal"],
   ["warm and friendly", "Warm & friendly"],
   ["bold and confident", "Bold & confident"],
