@@ -359,6 +359,61 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     };
   });
 
+  // ---- Original M15: consented, first-party referral attribution ----------
+  app.post("/api/acquisition/claim", async (req, reply) => {
+    const actor = requireUser(req);
+    const b = z
+      .object({
+        orgId: uuid,
+        token: z.string().min(10).max(1000),
+        consent: z.literal(true),
+      })
+      .strict()
+      .parse(req.body);
+    requireOrgRole(req, b.orgId, "MEMBER");
+    const verified = verifyShare(d.shareSecret, b.token, now().getTime());
+    if (!verified.ok || verified.kind !== "audit") throw notFound();
+    const audit = (
+      await sql`SELECT id FROM public_audits WHERE id=${verified.id}`
+    )[0];
+    if (!audit) throw notFound();
+    await sql`INSERT INTO acquisition_referrals
+      (id, source_audit_id, org_id, user_id, consent_recorded_at)
+      VALUES (${randomUUID()}, ${verified.id}, ${b.orgId}, ${actor.userId}, ${now()})
+      ON CONFLICT (source_audit_id, org_id, user_id)
+      DO UPDATE SET revoked_at=NULL,
+        consent_recorded_at=EXCLUDED.consent_recorded_at`;
+    await platform.audit({
+      orgId: b.orgId,
+      actorUserId: actor.userId,
+      action: "acquisition.referral_consented",
+      objectType: "public_audit",
+      objectId: verified.id,
+      requestId: req.id,
+    });
+    return reply.code(201).send({ data: { recorded: true } });
+  });
+
+  app.post("/api/acquisition/revoke", async (req) => {
+    const actor = requireUser(req);
+    const b = z.object({ orgId: uuid }).strict().parse(req.body);
+    requireOrgRole(req, b.orgId, "MEMBER");
+    const updated = await sql`UPDATE acquisition_referrals
+      SET revoked_at=${now()}
+      WHERE org_id=${b.orgId} AND user_id=${actor.userId}
+        AND revoked_at IS NULL RETURNING id`;
+    await platform.audit({
+      orgId: b.orgId,
+      actorUserId: actor.userId,
+      action: "acquisition.referral_consent_revoked",
+      objectType: "organization",
+      objectId: b.orgId,
+      requestId: req.id,
+      metadata: { count: updated.length },
+    });
+    return { data: { revoked: updated.length } };
+  });
+
   // ---- M25: managed requests ---------------------------------------------
   const OWNER_EVENTS = new Set<RequestEvent>([
     "owner_replied",
