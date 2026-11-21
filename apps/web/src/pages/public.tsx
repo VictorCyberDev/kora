@@ -31,12 +31,18 @@ export function Landing() {
               after launch.
             </p>
             <div className="row">
-              <Link className="btn lg" to="/signup">
+              <Link className="btn lg" to="/signup?goal=website">
                 Build my website
               </Link>
               <a className="btn ghost lg" href="#truth">
                 See how it works
               </a>
+            </div>
+            <div className="row" aria-label="Choose what to create first">
+              <Link to="/signup?goal=logo">Create a logo</Link>
+              <Link to="/signup?goal=flyer">Design a flyer</Link>
+              <Link to="/signup?goal=video">Make a video</Link>
+              <Link to="/signup?goal=campaign">Launch a campaign</Link>
             </div>
             <p className="small muted">
               Two lines about your business is enough to start. Nothing is
@@ -305,7 +311,14 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const { refresh } = useAuth();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [firstGoal, setFirstGoal] = useState("website");
+  const [firstGoal, setFirstGoal] = useState(() => {
+    const requested = new URLSearchParams(loc.search).get("goal");
+    return ["website", "logo", "flyer", "social", "video", "campaign"].includes(
+      requested ?? "",
+    )
+      ? requested!
+      : "website";
+  });
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
