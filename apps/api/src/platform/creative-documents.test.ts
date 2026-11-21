@@ -126,6 +126,43 @@ describe("Krevstudio editable documents", () => {
       expect(text.y + text.height).toBeLessThanOrEqual(doc.slides[0]!.height);
     }
   });
+  it("keeps short-format advertisement headlines clear of the CTA and avoids duplicate copy", () => {
+    const headline =
+      "Artisan sourdough, pastries and celebration cakes";
+    const slide = buildCreativeDocument(
+      {
+        kind: "ad",
+        title: "Meridian bakery advertisement",
+        headline,
+        description: headline,
+        cta: "Contact us",
+        direction: 0,
+      },
+      brand,
+    ).slides[0]!;
+    const headlineLayer = slide.layers.find(
+      (layer) =>
+        layer.type === "text" &&
+        layer.text.replace(/\\n/g, " ") === headline,
+    );
+    const ctaLayer = slide.layers.find(
+      (layer) => layer.type === "text" && layer.text === "Contact us",
+    );
+    expect(headlineLayer?.type).toBe("text");
+    expect(ctaLayer?.type).toBe("text");
+    if (headlineLayer?.type !== "text" || ctaLayer?.type !== "text")
+      return;
+    expect(headlineLayer.y + headlineLayer.height).toBeLessThan(
+      ctaLayer.y - 12,
+    );
+    expect(
+      slide.layers.filter(
+        (layer) =>
+          layer.type === "text" &&
+          layer.text.replace(/\\n/g, " ") === headline,
+      ),
+    ).toHaveLength(1);
+  });
   it("honors approved BrandOS typography across generated artwork", () => {
     const copy = "Custom cakes for celebrations";
     const serif = buildCreativeDocument(
