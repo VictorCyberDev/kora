@@ -13,7 +13,7 @@ const puckOfflineCss = {
   transform(source: string, id: string) {
     if (!id.includes("@puckeditor/core") || !id.endsWith(".css")) return;
     return source.replace(
-      /@import\\s*["']https:\\/\\/rsms\\.me\\/inter\\/inter\\.css["'];?/g,
+      /@import\s*["']https:\/\/rsms\.me\/inter\/inter\.css["'];?/g,
       "",
     );
   },
