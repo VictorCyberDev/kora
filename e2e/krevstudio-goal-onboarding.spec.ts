@@ -1,3 +1,10 @@
+test("landing creation goals lead to the matching signup intention", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Design a flyer" }).click();
+  await expect(page).toHaveURL(/\\/signup\\?goal=flyer$/);
+  await expect(page.getByLabel("First creative goal")).toHaveValue("flyer");
+});
+
 import { expect, test } from "@playwright/test";
 
 const BASE = `http://127.0.0.1:${process.env.E2E_V3_PORT ?? "3212"}`;
