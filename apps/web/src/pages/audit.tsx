@@ -47,9 +47,7 @@ function Result({
         <Link
           className="btn"
           to={
-            referral
-              ? `/signup?ref=${encodeURIComponent(referral)}`
-              : "/signup"
+            referral ? `/signup?ref=${encodeURIComponent(referral)}` : "/signup"
           }
         >
           Let Krevstudio fix these

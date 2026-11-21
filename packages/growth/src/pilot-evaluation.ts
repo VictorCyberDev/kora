@@ -32,7 +32,10 @@ export interface PilotParticipant {
   metrics: PilotBusiness["metrics"];
   satisfaction?: number;
   pricingFeedback?: { statedMonthlyAmount?: number; currency?: string };
-  payment?: { status: "none" | "pending" | "paid" | "refunded"; verifiedReceiptId?: string };
+  payment?: {
+    status: "none" | "pending" | "paid" | "refunded";
+    verifiedReceiptId?: string;
+  };
   exitFeedback?: string;
 }
 
@@ -52,7 +55,9 @@ export interface PilotFinding {
 
 export function evaluatePilotParticipant(p: PilotParticipant): PilotFinding {
   const issues: string[] = [];
-  const consentAt = p.consent.recordedAt ? parseTime(p.consent.recordedAt) : null;
+  const consentAt = p.consent.recordedAt
+    ? parseTime(p.consent.recordedAt)
+    : null;
   const enrolledAt = parseTime(p.enrolledAt);
   const consentValid =
     p.consent.granted &&
@@ -64,19 +69,28 @@ export function evaluatePilotParticipant(p: PilotParticipant): PilotFinding {
   if (!p.id.trim() || !p.industry.trim()) issues.push("PARTICIPANT_INCOMPLETE");
   if (enrolledAt === null) issues.push("ENROLLMENT_DATE_INVALID");
   const ordered = [...p.observations].sort(
-    (a, b) => (parseTime(a.observedAt) ?? Infinity) - (parseTime(b.observedAt) ?? Infinity),
+    (a, b) =>
+      (parseTime(a.observedAt) ?? Infinity) -
+      (parseTime(b.observedAt) ?? Infinity),
   );
   const valid = ordered.filter((event) => {
     const time = parseTime(event.observedAt);
-    const ok = time !== null && enrolledAt !== null &&
-      time >= enrolledAt && !!event.evidenceId.trim() && !!event.id.trim();
+    const ok =
+      time !== null &&
+      enrolledAt !== null &&
+      time >= enrolledAt &&
+      !!event.evidenceId.trim() &&
+      !!event.id.trim();
     if (!ok) issues.push("EVENT_EVIDENCE_INVALID");
     return ok;
   });
-  const firstPublication = valid.find((event) => event.type === "first_publication");
+  const firstPublication = valid.find(
+    (event) => event.type === "first_publication",
+  );
   const activationHours =
     firstPublication && enrolledAt !== null
-      ? ((parseTime(firstPublication.observedAt) ?? enrolledAt) - enrolledAt) / 3_600_000
+      ? ((parseTime(firstPublication.observedAt) ?? enrolledAt) - enrolledAt) /
+        3_600_000
       : null;
   const verifiedPaid =
     consentValid &&
@@ -84,7 +98,12 @@ export function evaluatePilotParticipant(p: PilotParticipant): PilotFinding {
     !!p.payment.verifiedReceiptId?.trim();
   if (p.payment?.status === "paid" && !verifiedPaid)
     issues.push("PAID_STATUS_WITHOUT_VERIFIED_RECEIPT");
-  if (p.satisfaction !== undefined && (!Number.isFinite(p.satisfaction) || p.satisfaction < 1 || p.satisfaction > 5))
+  if (
+    p.satisfaction !== undefined &&
+    (!Number.isFinite(p.satisfaction) ||
+      p.satisfaction < 1 ||
+      p.satisfaction > 5)
+  )
     issues.push("INVALID_SATISFACTION_RATING");
   return {
     participantId: p.id,
@@ -96,19 +115,27 @@ export function evaluatePilotParticipant(p: PilotParticipant): PilotFinding {
   };
 }
 
-export function evaluateCommercialPilot(participants: readonly PilotParticipant[]) {
+export function evaluateCommercialPilot(
+  participants: readonly PilotParticipant[],
+) {
   const findings = participants.map(evaluatePilotParticipant);
   const eligible = participants.filter((_, index) => findings[index]!.eligible);
   const observedPayments = eligible.filter((_, index) => {
     // Use participant IDs instead of positional indexes after filtering.
-    return findings.some((f) => f.participantId === eligible[index]!.id && f.verifiedPaid);
+    return findings.some(
+      (f) => f.participantId === eligible[index]!.id && f.verifiedPaid,
+    );
   }).length;
   const pilot = pilotSummary(
     eligible.map((p) => ({ id: p.id, consented: true, metrics: p.metrics })),
   );
   const eligibleFindings = findings.filter((f) => f.eligible);
-  const published = eligibleFindings.filter((f) => f.events.includes("first_publication")).length;
-  const activated = eligibleFindings.filter((f) => f.events.includes("first_project")).length;
+  const published = eligibleFindings.filter((f) =>
+    f.events.includes("first_publication"),
+  ).length;
+  const activated = eligibleFindings.filter((f) =>
+    f.events.includes("first_project"),
+  ).length;
   const withMeasuredOutcomes = pilot.rows.filter((r) => r.n > 0).length;
   return {
     participantsRecorded: participants.length,
@@ -126,7 +153,10 @@ export function evaluateCommercialPilot(participants: readonly PilotParticipant[
     commerciallyValidated:
       eligible.length >= 10 &&
       withMeasuredOutcomes === pilot.rows.length &&
-      eligible.some((p) => p.payment?.status === "paid" && !!p.payment.verifiedReceiptId?.trim()) &&
+      eligible.some(
+        (p) =>
+          p.payment?.status === "paid" && !!p.payment.verifiedReceiptId?.trim(),
+      ) &&
       pilot.rows.every((r) => r.met === true),
   };
 }

@@ -327,10 +327,7 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
       await refresh();
       const referral = new URLSearchParams(loc.search).get("ref");
       if (mode === "signup" && referral && f.get("referralConsent") === "yes") {
-        const me = await api<{ orgs: { id: string }[] }>(
-          "GET",
-          "/api/auth/me",
-        );
+        const me = await api<{ orgs: { id: string }[] }>("GET", "/api/auth/me");
         const orgId = me.orgs?.[0]?.id;
         if (orgId) {
           try {
@@ -353,10 +350,7 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
       } else {
         // Creative work starts from a draft business workspace. No website is
         // generated or published merely to make a flyer, logo or video.
-        const me = await api<{ orgs: { id: string }[] }>(
-          "GET",
-          "/api/auth/me",
-        );
+        const me = await api<{ orgs: { id: string }[] }>("GET", "/api/auth/me");
         const orgId = me.orgs?.[0]?.id;
         if (!orgId) throw new Error("Business workspace is not ready.");
         const workspace = await api<{ id: string }>("POST", "/api/sites", {

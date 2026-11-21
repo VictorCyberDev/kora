@@ -365,29 +365,52 @@ d("creative loop over the API", () => {
     expect(audit.status).toBe(201);
     const token = audit.json.data.shareToken as string;
     const owner = await h.signup("referral-owner@example.com", "Referral Org");
-    const outsider = await h.signup("referral-outsider@example.com", "Other Org");
+    const outsider = await h.signup(
+      "referral-outsider@example.com",
+      "Other Org",
+    );
     const url = "/api/acquisition/claim";
     const validBody = { orgId: owner.orgId, token, consent: true };
-    expect((await h.call("POST", url, {
-      cookie: owner.cookie,
-      body: { ...validBody, consent: false },
-    })).status).toBe(400);
-    expect((await h.call("POST", url, {
-      cookie: outsider.cookie,
-      body: validBody,
-    })).status).toBeGreaterThanOrEqual(403);
-    expect((await h.call("POST", url, {
-      cookie: owner.cookie,
-      body: { ...validBody, token: token + "x" },
-    })).status).toBe(404);
-    expect((await h.call("POST", url, {
-      cookie: owner.cookie,
-      body: validBody,
-    })).status).toBe(201);
-    expect((await h.call("POST", url, {
-      cookie: owner.cookie,
-      body: validBody,
-    })).status).toBe(201);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: { ...validBody, consent: false },
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: outsider.cookie,
+          body: validBody,
+        })
+      ).status,
+    ).toBeGreaterThanOrEqual(403);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: { ...validBody, token: token + "x" },
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: validBody,
+        })
+      ).status,
+    ).toBe(201);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: validBody,
+        })
+      ).status,
+    ).toBe(201);
     const rows = await h.sql`SELECT id, revoked_at FROM acquisition_referrals
       WHERE org_id=${owner.orgId}`;
     expect(rows).toHaveLength(1);
@@ -402,5 +425,4 @@ d("creative loop over the API", () => {
       WHERE org_id=${owner.orgId}`;
     expect(after[0]?.revoked_at).not.toBeNull();
   });
-
 });

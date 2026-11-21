@@ -53,10 +53,9 @@ export function acquisitionFunnel(
 ): AcquisitionFunnel {
   if (!tenantId.trim()) throw new Error("Tenant scope is required");
   const stages = [...ACQUISITION_STAGES];
-  const byStage = Object.fromEntries(stages.map((stage) => [stage, 0])) as Record<
-    AcquisitionStage,
-    number
-  >;
+  const byStage = Object.fromEntries(
+    stages.map((stage) => [stage, 0]),
+  ) as Record<AcquisitionStage, number>;
   const seenJourneys = Object.fromEntries(
     stages.map((stage) => [stage, new Set<string>()]),
   ) as Record<AcquisitionStage, Set<string>>;

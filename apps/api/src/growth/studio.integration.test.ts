@@ -340,7 +340,11 @@ d("motion studio", () => {
     expect(preview.json.data.frames).toHaveLength(3);
     // Text layout can wrap a headline into separate SVG text elements.
     // Preserve the full wording assertion independent of visual line breaks.
-    const renderedText = [...preview.json.data.frames[0].svg.matchAll(/<text\b[^>]*>(.*?)<\/text>/gs)]
+    const renderedText = [
+      ...preview.json.data.frames[0].svg.matchAll(
+        /<text\b[^>]*>(.*?)<\/text>/gs,
+      ),
+    ]
       .map((match: RegExpMatchArray) => match[1])
       .join(" ");
     expect(renderedText).toContain("Pre-order your Christmas cake");

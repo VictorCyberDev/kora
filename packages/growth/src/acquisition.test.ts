@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { acquisitionFunnel, type AcquisitionEvent } from "./acquisition.js";
 
-const make = (stage: AcquisitionEvent["stage"], eventId: string): AcquisitionEvent => ({
+const make = (
+  stage: AcquisitionEvent["stage"],
+  eventId: string,
+): AcquisitionEvent => ({
   eventId,
   sourceId: "audit:one",
   journeyId: "journey:one",
@@ -38,7 +41,11 @@ describe("M15 acquisition funnel", () => {
     otherTenant.tenantId = "owner:two";
     const declined = make("signup", "c");
     declined.consented = false;
-    const result = acquisitionFunnel("owner:one", [unauthorized, otherTenant, declined]);
+    const result = acquisitionFunnel("owner:one", [
+      unauthorized,
+      otherTenant,
+      declined,
+    ]);
     expect(result.acceptedEvents).toBe(0);
     expect(result.rejectedEvents).toBe(3);
     expect(result.conversion.signupToActivation).toBeNull();
