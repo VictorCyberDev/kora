@@ -177,6 +177,7 @@ function fittedHeadline(
   preferredSize: number,
   fill: string,
   weight: "400" | "600" | "700" | "900" = "900",
+  maxHeight = Infinity,
 ): Extract<GraphicLayer, { type: "text" }> {
   const words = copy.trim().split(/\s+/).filter(Boolean);
   const wrap = (size: number) => {
@@ -205,8 +206,11 @@ function fittedHeadline(
   };
   let fontSize = Math.min(100, Math.max(22, preferredSize));
   let lines = wrap(fontSize);
-  while (lines.length > 3 && fontSize > 22) {
-    fontSize = Math.max(22, fontSize - 4);
+  while (
+    (lines.length > 3 || lines.length * fontSize * 1.2 > maxHeight) &&
+    fontSize > 14
+  ) {
+    fontSize = Math.max(14, fontSize - 2);
     lines = wrap(fontSize);
   }
   const layer = textLayer(
@@ -513,29 +517,49 @@ export function buildCreativeDocument(
             highlight,
           ),
         );
+        const headlineTop = Math.round(height * 0.29);
+        const hasSupportingCopy =
+          index === 0 &&
+          !!request.description &&
+          request.description.trim() !== header.trim();
+        const headlineBottom = Math.round(
+          height * (hasSupportingCopy ? 0.56 : request.cta ? 0.77 : 0.93),
+        );
         const headline = fittedHeadline(
           header,
           margin,
-          Math.round(height * 0.29),
+          headlineTop,
           width - margin * 2,
           headlineSize,
           ink,
           "700",
+          headlineBottom - headlineTop,
         );
         headline.fontFamily = displayFamily;
         layers.push(headline);
-        if (request.description && index === 0)
-          layers.push(
-            textLayer(
-              request.description,
-              margin,
-              Math.round(height * 0.57),
-              width - margin * 2,
-              32,
-              ink,
-              "400",
-            ),
+        if (hasSupportingCopy) {
+          const descriptionTop = Math.max(
+            Math.round(height * 0.57),
+            headlineTop + headline.height + 12,
           );
+          const descriptionBottom = Math.round(
+            height * (request.cta ? 0.76 : 0.94),
+          );
+          if (descriptionBottom > descriptionTop + 16) {
+            layers.push(
+              fittedHeadline(
+                request.description,
+                margin,
+                descriptionTop,
+                width - margin * 2,
+                30,
+                ink,
+                "400",
+                descriptionBottom - descriptionTop,
+              ),
+            );
+          }
+        }
         if (request.cta) {
           layers.push(
             rectangle(
