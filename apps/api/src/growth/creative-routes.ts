@@ -532,6 +532,54 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     };
   });
 
+  app.post("/api/pilot/feedback", async (req, reply) => {
+    const actor = requireUser(req);
+    const body = z
+      .object({
+        orgId: uuid,
+        rating: z.number().int().min(1).max(5),
+        comments: z.string().trim().max(1000),
+        pricing: z
+          .object({
+            statedMonthlyAmount: z.number().nonnegative().finite().max(1_000_000),
+            currency: z.string().length(3),
+          })
+          .optional(),
+      })
+      .strict()
+      .parse(req.body);
+    requireOrgRole(req, body.orgId, "OWNER");
+    const participant = (
+      await sql`SELECT id FROM pilot_participants
+        WHERE org_id=${body.orgId} AND revoked_at IS NULL`
+    )[0];
+    if (!participant)
+      throw new HttpError(409, "pilot_consent_required",
+        "Pilot consent must be active before feedback can be recorded.");
+    const count = (
+      await sql`SELECT count(*)::int AS n FROM pilot_observations
+        WHERE participant_id=${participant.id} AND kind='feedback'`
+    )[0];
+    if (Number(count?.n ?? 0) >= 20)
+      throw new HttpError(429, "pilot_feedback_limit",
+        "Feedback limit reached for this pilot enrollment.");
+    const id = randomUUID();
+    await sql`INSERT INTO pilot_observations
+      (id, participant_id, kind, source_id, recorded_by, metadata)
+      VALUES (${id}, ${participant.id}, 'feedback', ${"owner-report:" + id},
+        ${actor.userId},
+        ${sql.json({
+          rating: body.rating,
+          comments: body.comments,
+          pricing: body.pricing ?? null,
+          provenance: "OWNER_REPORTED",
+          paymentVerified: false,
+        })})`;
+    return reply.code(201).send({
+      data: { id, recorded: true, paymentVerified: false },
+    });
+  });
+
   app.post("/api/pilot/withdraw", async (req) => {
     const actor = requireUser(req);
     const { orgId } = z.object({ orgId: uuid }).strict().parse(req.body);
