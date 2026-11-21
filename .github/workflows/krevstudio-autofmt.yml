@@ -1,0 +1,29 @@
+name: Temporary Krevstudio integration formatter
+on:
+  push:
+    branches:
+      - feature/krevstudio-creative-m5-motion-editor
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write apps/api/src/creative-documents.integration.test.ts apps/api/src/growth/creative-routes.ts apps/api/src/growth/creative.integration.test.ts apps/api/src/platform/creative-document-routes.ts apps/web/src/App.tsx apps/web/src/pages/pilot.tsx apps/web/src/pages/more.tsx apps/web/src/pages/krev-creative-studio.tsx e2e/krevstudio-design-memory.spec.ts e2e/krevstudio-pilot.spec.ts packages/creative/src/graphic-taste.ts packages/creative/test/graphic-taste.test.ts
+      - name: Commit source formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/api/src/creative-documents.integration.test.ts apps/api/src/growth/creative-routes.ts apps/api/src/growth/creative.integration.test.ts apps/api/src/platform/creative-document-routes.ts apps/web/src/App.tsx apps/web/src/pages/pilot.tsx apps/web/src/pages/more.tsx apps/web/src/pages/krev-creative-studio.tsx e2e/krevstudio-design-memory.spec.ts e2e/krevstudio-pilot.spec.ts packages/creative/src/graphic-taste.ts packages/creative/test/graphic-taste.test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "style: format integrated original milestones"
+            git push origin HEAD:feature/krevstudio-creative-m5-motion-editor
+          fi
