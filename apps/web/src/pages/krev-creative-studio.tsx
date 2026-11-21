@@ -189,7 +189,10 @@ export function KrevCreativeStudio() {
     () => api<J[]>("GET", `/api/sites/${id}/creative-documents`),
     [id],
   );
-  const [documentId, setDocumentId] = useState<string | null>(null);
+  const [documentId, setDocumentId] = useState<string | null>(() => {
+    const target = new URLSearchParams(window.location.search).get("document");
+    return target && /^[a-f0-9-]{36}$/i.test(target) ? target : null;
+  });
   const doc = useLoad(
     () =>
       documentId
