@@ -144,10 +144,15 @@ export function auditHtml(
     "Write a title of 10–70 characters that names the business and what it does.",
     3,
   );
-  const desc =
-    /<meta[^>]+name=["']description["'][^>]*content=["']([^"']*)/i.exec(
-      html,
-    )?.[1] ?? "";
+  // The order of HTML attributes is immaterial. Only inspect the actual
+  // description tag, never claim search-engine visibility from its presence.
+  const metaTags = [...html.matchAll(/<meta\\b[^>]*>/gi)].map((m) => m[0]);
+  const descriptionTag = metaTags.find((tag) =>
+    /\\bname\\s*=\\s*(["'])description\\1/i.test(tag),
+  );
+  const desc = descriptionTag
+    ? /\\bcontent\\s*=\\s*(["'])(.*?)\\1/i.exec(descriptionTag)?.[2] ?? ""
+    : "";
   add(
     "description",
     desc.length >= 50 && desc.length <= 170,
@@ -212,8 +217,8 @@ export function auditHtml(
   );
   add(
     "lang",
-    /<html[^>]+lang=/i.test(html),
-    /<html[^>]+lang=/i.test(html)
+    /<html[^>]+lang\\s*=\\s*["'][a-z]{2}(?:-[a-z0-9]+)*["']/i.test(html),
+    /<html[^>]+lang\\s*=\\s*["'][a-z]{2}(?:-[a-z0-9]+)*["']/i.test(html)
       ? "Page language declared"
       : "No page language",
     "Declare the page language.",
