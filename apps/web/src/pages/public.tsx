@@ -373,7 +373,9 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
         nav(
           firstGoal === "campaign"
             ? `/app/sites/${workspace.id}/campaigns`
-            : ["logo", "flyer", "social"].includes(firstGoal)
+            : firstGoal === "video"
+              ? `/app/sites/${workspace.id}/presence?goal=video`
+              : ["logo", "flyer", "social"].includes(firstGoal)
               ? `/app/sites/${workspace.id}/creative-studio`
               : `/app/sites/${workspace.id}/create`,
         );
