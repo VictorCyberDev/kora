@@ -48,5 +48,5 @@ test("Meridian Bakes remembers a rejected style and changes the next design dire
   await expect(
     page.getByText("Why this direction: An owner-locked rejected visual direction was avoided."),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Concept 2 — Selected" })).toBeVisible();
+  await expect(choices.getByRole("button", { name: /Concept 2.*Selected/ })).toBeVisible();
 });
