@@ -20,6 +20,30 @@ describe("Krevstudio creative source quality", () => {
       assessCreativeSource(doc).filter((x) => x.severity === "BLOCKER"),
     ).toEqual([]);
   });
+  it("blocks overlapping editable headline and CTA blocks", () => {
+    const doc = buildCreativeDocument(
+      {
+        kind: "ad",
+        title: "Advertisement",
+        headline: "Artisan sourdough and pastries",
+        cta: "Contact us",
+        direction: 0,
+      },
+      brand,
+    );
+    const text = doc.slides[0]!.layers.filter((l) => l.type === "text");
+    const headline = text.find((l) => l.type === "text" && l.text.includes("sourdough"));
+    const cta = text.find((l) => l.type === "text" && l.text === "Contact us");
+    if (!headline || !cta) throw new Error("Expected both editable text layers");
+    expect(assessCreativeSource(doc).some((x) => x.code === "TEXT_COLLISION")).toBe(false);
+    cta.x = headline.x;
+    cta.y = headline.y;
+    expect(
+      assessCreativeSource(doc).some(
+        (x) => x.code === "TEXT_COLLISION" && x.severity === "BLOCKER",
+      ),
+    ).toBe(true);
+  });
   it("does not permit invisible objects to pass the owner approval gate", () => {
     const doc = buildCreativeDocument(
       { kind: "poster", title: "Poster", headline: "New opening" },
