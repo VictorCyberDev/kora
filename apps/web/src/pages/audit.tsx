@@ -3,7 +3,15 @@ import { Link, useSearchParams } from "react-router-dom";
 import { api, type J } from "../api";
 import { Async, Notice, Status, errText, useLoad } from "../ui";
 
-function Result({ r, share }: { r: J; share?: string }) {
+function Result({
+  r,
+  share,
+  referral,
+}: {
+  r: J;
+  share?: string;
+  referral?: string;
+}) {
   const link = share
     ? `${window.location.origin}/audit/shared?t=${encodeURIComponent(share)}`
     : null;
@@ -36,7 +44,14 @@ function Result({ r, share }: { r: J; share?: string }) {
         </p>
       )}
       <p>
-        <Link className="btn" to="/signup">
+        <Link
+          className="btn"
+          to={
+            referral
+              ? `/signup?ref=${encodeURIComponent(referral)}`
+              : "/signup"
+          }
+        >
           Let Krevstudio fix these
         </Link>
       </p>
@@ -83,7 +98,9 @@ export function PublicAuditPage() {
         </button>
       </form>
       {err && <Notice kind="bad">{err}</Notice>}
-      {res && <Result r={res} share={res.shareToken} />}
+      {res && (
+        <Result r={res} share={res.shareToken} referral={res.shareToken} />
+      )}
     </div>
   );
 }
@@ -97,7 +114,7 @@ export function SharedAuditPage() {
   );
   return (
     <div className="wrap stack" style={{ padding: "40px 20px", maxWidth: 760 }}>
-      <Async state={r}>{(x) => <Result r={x} />}</Async>
+      <Async state={r}>{(x) => <Result r={x} referral={t} />}</Async>
     </div>
   );
 }
