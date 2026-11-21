@@ -16,7 +16,15 @@ test("Meridian Bakes edits, persists, restores and exports a real motion timelin
   await page.getByLabel("Email").fill(`motion-${token}@example.com`);
   await page.getByLabel("Password").fill("correct horse battery");
   await page.getByRole("button", { name: "Create account" }).click();
-  const me = (await (await context.request.get("/api/auth/me")).json()).data;
+  // Wait for signup to finish and the browser session to be established
+  // before making authenticated API requests from the same context.
+  await expect(
+    page.getByRole("heading", { name: /Tell Krevstudio about your business/ }),
+  ).toBeVisible();
+  const session = await context.request.get("/api/auth/me");
+  expect(session.status()).toBe(200);
+  const me = (await session.json()).data;
+  expect(me?.orgs?.length).toBeGreaterThan(0);
   const created = await context.request.post("/api/sites", {
     headers: { "x-requested-with": "kora" },
     data: { orgId: me.orgs[0].id, name: "Meridian Bakes" },
