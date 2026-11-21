@@ -25,7 +25,7 @@ test("flyer-first signup opens a creative workspace without generating a website
   await page.getByLabel("Password").fill("correct horse battery");
   await page.getByRole("button", { name: "Create account" }).click();
 
-  await expect(page).toHaveURL(/\/app\/sites\/[^/]+\/create$/, {
+  await expect(page).toHaveURL(/\/app\/sites\/[^/]+\/creative-studio$/, {
     timeout: 20000,
   });
   const siteId = new URL(page.url()).pathname.split("/")[3];
