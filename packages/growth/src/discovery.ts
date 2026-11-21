@@ -146,12 +146,12 @@ export function auditHtml(
   );
   // The order of HTML attributes is immaterial. Only inspect the actual
   // description tag, never claim search-engine visibility from its presence.
-  const metaTags = [...html.matchAll(/<meta\\b[^>]*>/gi)].map((m) => m[0]);
+  const metaTags = [...html.matchAll(/<meta\b[^>]*>/gi)].map((m) => m[0]);
   const descriptionTag = metaTags.find((tag) =>
-    /\\bname\\s*=\\s*(["'])description\\1/i.test(tag),
+    /\bname\s*=\s*(["'])description\1/i.test(tag),
   );
   const desc = descriptionTag
-    ? (/\\bcontent\\s*=\\s*(["'])(.*?)\\1/i.exec(descriptionTag)?.[2] ?? "")
+    ? (/\bcontent\s*=\s*(["'])(.*?)\1/i.exec(descriptionTag)?.[2] ?? "")
     : "";
   add(
     "description",
@@ -217,8 +217,8 @@ export function auditHtml(
   );
   add(
     "lang",
-    /<html[^>]+lang\\s*=\\s*["'][a-z]{2}(?:-[a-z0-9]+)*["']/i.test(html),
-    /<html[^>]+lang\\s*=\\s*["'][a-z]{2}(?:-[a-z0-9]+)*["']/i.test(html)
+    /<html[^>]+lang\s*=\s*["'][a-z]{2}(?:-[a-z0-9]+)*["']/i.test(html),
+    /<html[^>]+lang\s*=\s*["'][a-z]{2}(?:-[a-z0-9]+)*["']/i.test(html)
       ? "Page language declared"
       : "No page language",
     "Declare the page language.",
