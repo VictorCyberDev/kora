@@ -358,4 +358,49 @@ d("creative loop over the API", () => {
     ).toEqual(["open", "detail", "close"]);
     expect(sb.json.data.storyboard.reducedMotion).toBe("still-frames");
   });
+  it("records an audit referral only with consent, valid signature and same-org authorization", async () => {
+    const audit = await h.call("POST", "/api/public/audit", {
+      body: { url: targetUrl },
+    });
+    expect(audit.status).toBe(201);
+    const token = audit.json.data.shareToken as string;
+    const owner = await h.signup("referral-owner@example.com", "Referral Org");
+    const outsider = await h.signup("referral-outsider@example.com", "Other Org");
+    const url = "/api/acquisition/claim";
+    const validBody = { orgId: owner.orgId, token, consent: true };
+    expect((await h.call("POST", url, {
+      cookie: owner.cookie,
+      body: { ...validBody, consent: false },
+    })).status).toBe(400);
+    expect((await h.call("POST", url, {
+      cookie: outsider.cookie,
+      body: validBody,
+    })).status).toBeGreaterThanOrEqual(403);
+    expect((await h.call("POST", url, {
+      cookie: owner.cookie,
+      body: { ...validBody, token: token + "x" },
+    })).status).toBe(404);
+    expect((await h.call("POST", url, {
+      cookie: owner.cookie,
+      body: validBody,
+    })).status).toBe(201);
+    expect((await h.call("POST", url, {
+      cookie: owner.cookie,
+      body: validBody,
+    })).status).toBe(201);
+    const rows = await h.sql`SELECT id, revoked_at FROM acquisition_referrals
+      WHERE org_id=${owner.orgId}`;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.revoked_at).toBeNull();
+    const revoked = await h.call("POST", "/api/acquisition/revoke", {
+      cookie: owner.cookie,
+      body: { orgId: owner.orgId },
+    });
+    expect(revoked.status).toBe(200);
+    expect(revoked.json.data.revoked).toBe(1);
+    const after = await h.sql`SELECT revoked_at FROM acquisition_referrals
+      WHERE org_id=${owner.orgId}`;
+    expect(after[0]?.revoked_at).not.toBeNull();
+  });
+
 });
