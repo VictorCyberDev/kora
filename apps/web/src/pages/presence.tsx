@@ -386,6 +386,10 @@ export function PresencePage() {
               </ul>
             </section>
             <ProfileForm id={id!} profile={v.profile} onSaved={view.reload} />
+            <div className="row">
+              <Link className="btn" to={`/app/sites/${id}/brand`}>Continue to Brand Kit</Link>
+              <Link className="btn ghost" to={`/app/sites/${id}/creative-studio`}>Create graphic instead</Link>
+            </div>
             <p className="muted">
               Details last saved {when(v.profile.updatedAt)}. Revision{" "}
               {v.profile.revision}.
@@ -529,6 +533,12 @@ export function BrandPage() {
               )}
               {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
             </section>
+            {cur && (
+              <div className="row">
+                <Link className="btn" to={`/app/sites/${id}/create?tool=video`}>Create my first video</Link>
+                <Link className="btn ghost" to={`/app/sites/${id}/creative-studio`}>Create graphics or logo</Link>
+              </div>
+            )}
             {cur && (
               <form
                 className="card stack"
