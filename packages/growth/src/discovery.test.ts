@@ -16,7 +16,10 @@ describe("public discovery audit evidence", () => {
   });
   it("does not treat unrelated meta content or an empty language as verified", () => {
     const page = auditHtml(
-      html('<meta name="author" content="description and search optimization">', 'lang=""'),
+      html(
+        '<meta name="author" content="description and search optimization">',
+        'lang=""',
+      ),
       "https://meridian.example",
     );
     expect(page.findings.find((f) => f.id === "description")?.ok).toBe(false);

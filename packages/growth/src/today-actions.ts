@@ -35,8 +35,10 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
       health: "Review the incident and choose an authorized recovery action.",
       customers: "Open the waiting enquiries and prepare a response.",
       calendar: "Review and approve only the content you intend to publish.",
-      presence: "Correct outdated business information before further promotion.",
-      identity: "Confirm missing details and improve factual creative guidance.",
+      presence:
+        "Correct outdated business information before further promotion.",
+      identity:
+        "Confirm missing details and improve factual creative guidance.",
       campaigns: "Prepare a campaign draft for owner review.",
       build: "Review website quality findings and edit the draft.",
     };
@@ -46,7 +48,9 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
       why,
       weight,
       to,
-      expectedOutcome: expected[to] ?? "Open the relevant workflow and review the next action.",
+      expectedOutcome:
+        expected[to] ??
+        "Open the relevant workflow and review the next action.",
       state: "RECOMMENDED",
       evidence: to === "build" || to === "identity" ? "DERIVED" : "OBSERVED",
     });

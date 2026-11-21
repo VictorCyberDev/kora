@@ -39,10 +39,10 @@ export function assessCreativeSource(
             b.height,
             b.fontSize * 1.2 * b.text.split("\\n").length,
           );
-          const horizontal = Math.min(a.x + a.width, b.x + b.width) -
-            Math.max(a.x, b.x);
-          const vertical = Math.min(a.y + aHeight, b.y + bHeight) -
-            Math.max(a.y, b.y);
+          const horizontal =
+            Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+          const vertical =
+            Math.min(a.y + aHeight, b.y + bHeight) - Math.max(a.y, b.y);
           if (
             horizontal > Math.min(a.width, b.width) * 0.15 &&
             vertical > Math.min(aHeight, bHeight) * 0.2
@@ -52,7 +52,8 @@ export function assessCreativeSource(
               code: "TEXT_COLLISION",
               slide: slideNum,
               layerId: b.id,
-              message: "Two visible text blocks overlap; adjust their layout before export.",
+              message:
+                "Two visible text blocks overlap; adjust their layout before export.",
             });
           }
         }

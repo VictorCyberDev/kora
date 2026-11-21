@@ -32,10 +32,15 @@ describe("Krevstudio creative source quality", () => {
       brand,
     );
     const text = doc.slides[0]!.layers.filter((l) => l.type === "text");
-    const headline = text.find((l) => l.type === "text" && l.text.includes("sourdough"));
+    const headline = text.find(
+      (l) => l.type === "text" && l.text.includes("sourdough"),
+    );
     const cta = text.find((l) => l.type === "text" && l.text === "Contact us");
-    if (!headline || !cta) throw new Error("Expected both editable text layers");
-    expect(assessCreativeSource(doc).some((x) => x.code === "TEXT_COLLISION")).toBe(false);
+    if (!headline || !cta)
+      throw new Error("Expected both editable text layers");
+    expect(
+      assessCreativeSource(doc).some((x) => x.code === "TEXT_COLLISION"),
+    ).toBe(false);
     cta.x = headline.x;
     cta.y = headline.y;
     expect(

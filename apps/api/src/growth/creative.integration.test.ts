@@ -434,9 +434,13 @@ d("creative loop over the API", () => {
       industry: "bakery",
       consent: true,
     };
-    const absent = await h.call("GET", `/api/pilot/status?orgId=${owner.orgId}`, {
-      cookie: owner.cookie,
-    });
+    const absent = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      {
+        cookie: owner.cookie,
+      },
+    );
     expect(absent.status).toBe(200);
     expect(absent.json.data.enrolled).toBe(false);
     expect(
@@ -467,7 +471,8 @@ d("creative loop over the API", () => {
     );
     expect(status.json.data.enrolled).toBe(true);
     expect(status.json.data.paymentsVerified).toBe(false);
-    const rows = await h.sql`SELECT id FROM pilot_participants WHERE org_id=${owner.orgId}`;
+    const rows =
+      await h.sql`SELECT id FROM pilot_participants WHERE org_id=${owner.orgId}`;
     expect(rows).toHaveLength(1);
     expect(
       (
@@ -490,5 +495,4 @@ d("creative loop over the API", () => {
     );
     expect(after.json.data.enrolled).toBe(false);
   });
-
 });

@@ -216,7 +216,9 @@ export function TodayPage() {
                       <span className="muted">{x.why}</span>
                       <span className="small muted">{x.expectedOutcome}</span>
                       <span className="small muted">
-                        {x.evidence === "OBSERVED" ? "Observed signal" : "Derived recommendation"}
+                        {x.evidence === "OBSERVED"
+                          ? "Observed signal"
+                          : "Derived recommendation"}
                         {" · "}
                         Action pending your review
                       </span>

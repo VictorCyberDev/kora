@@ -151,7 +151,7 @@ export function auditHtml(
     /\\bname\\s*=\\s*(["'])description\\1/i.test(tag),
   );
   const desc = descriptionTag
-    ? /\\bcontent\\s*=\\s*(["'])(.*?)\\1/i.exec(descriptionTag)?.[2] ?? ""
+    ? (/\\bcontent\\s*=\\s*(["'])(.*?)\\1/i.exec(descriptionTag)?.[2] ?? "")
     : "";
   add(
     "description",

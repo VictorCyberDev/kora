@@ -142,8 +142,7 @@ describe("Krevstudio editable documents", () => {
       ).slides[0]!;
       const headlineLayer = slide.layers.find(
         (layer) =>
-          layer.type === "text" &&
-          layer.text.replace(/\\n/g, " ") === headline,
+          layer.type === "text" && layer.text.replace(/\\n/g, " ") === headline,
       );
       const ctaLayer = slide.layers.find(
         (layer) => layer.type === "text" && layer.text === "Contact us",

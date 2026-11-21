@@ -608,7 +608,7 @@ export function buildCreativeDocument(
           request.description.trim() !== header.trim();
         const headlineStart = Math.round(height * 0.32);
         const headlineEnd = Math.round(
-          height * (hasDescription ? 0.57 : request.cta ? 0.80 : 0.95),
+          height * (hasDescription ? 0.57 : request.cta ? 0.8 : 0.95),
         );
         const headline = fittedHeadline(
           header,
