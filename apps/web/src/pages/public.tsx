@@ -305,6 +305,7 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const { refresh } = useAuth();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [firstGoal, setFirstGoal] = useState("website");
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
@@ -324,11 +325,31 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             },
       );
       await refresh();
-      nav(
-        mode === "signup"
-          ? "/app/sites/new"
-          : ((loc.state as { from?: string } | null)?.from ?? "/app"),
-      );
+      if (mode === "login") {
+        nav((loc.state as { from?: string } | null)?.from ?? "/app");
+      } else if (firstGoal === "website") {
+        nav("/app/sites/new");
+      } else {
+        // Creative work starts from a draft business workspace. No website is
+        // generated or published merely to make a flyer, logo or video.
+        const me = await api<{ orgs: { id: string }[] }>(
+          "GET",
+          "/api/auth/me",
+        );
+        const orgId = me.orgs?.[0]?.id;
+        if (!orgId) throw new Error("Business workspace is not ready.");
+        const workspace = await api<{ id: string }>("POST", "/api/sites", {
+          orgId,
+          name: String(f.get("orgName") ?? "").trim(),
+        });
+        nav(
+          firstGoal === "campaign"
+            ? `/app/sites/${workspace.id}/campaigns`
+            : firstGoal === "logo"
+              ? `/app/sites/${workspace.id}/creative-studio`
+              : `/app/sites/${workspace.id}/create`,
+        );
+      }
     } catch (x) {
       setErr(errText(x));
     } finally {
@@ -360,6 +381,21 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 maxLength={120}
                 autoComplete="organization"
               />
+            </label>
+            <label>
+              What would you like to create first?
+              <select
+                aria-label="First creative goal"
+                value={firstGoal}
+                onChange={(event) => setFirstGoal(event.target.value)}
+              >
+                <option value="website">Website</option>
+                <option value="logo">Logo or brand</option>
+                <option value="flyer">Flyer or poster</option>
+                <option value="social">Social design</option>
+                <option value="video">Video</option>
+                <option value="campaign">Campaign</option>
+              </select>
             </label>
           </>
         )}
