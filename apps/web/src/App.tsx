@@ -54,6 +54,7 @@ const ResultsPage = lazyPage(() => import("./pages/intel"), "ResultsPage");
 const ReviewsPage = lazyPage(() => import("./pages/intel"), "ReviewsPage");
 const CampaignsPage = lazyPage(() => import("./pages/today"), "CampaignsPage");
 const TodayPage = lazyPage(() => import("./pages/today"), "TodayPage");
+const PilotPage = lazyPage(() => import("./pages/pilot"), "PilotPage");
 const CalendarPage = lazyPage(() => import("./pages/calendar"), "CalendarPage");
 const StudioPage = lazyPage(() => import("./pages/studio"), "StudioPage");
 const ChannelsPage = lazyPage(() => import("./pages/channels"), "ChannelsPage");
@@ -450,6 +451,7 @@ export function App() {
             <Route path="reviews" element={<ReviewsPage />} />
             <Route path="memory" element={<MemoryPage />} />
             <Route path="today" element={<TodayPage />} />
+            <Route path="pilot" element={<PilotPage />} />
             <Route path="campaigns" element={<CampaignsPage />} />
             <Route path="create" element={<StudioPage />} />
             <Route path="images" element={<ImagesPage />} />
