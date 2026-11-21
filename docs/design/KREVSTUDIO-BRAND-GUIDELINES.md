@@ -17,13 +17,13 @@ Current implemented symbol: an angular geometric **K** inside a rounded ink squa
 
 ## Palette (current actual tokens)
 
-| Token | Hex | Role |
-| --- | --- | --- |
-| `--krev-ink` | `#17242a` | Primary type, navigation, primary action, K symbol ground |
-| `--krev-stone` | `#f5f1e9` | Editorial section background |
-| `--krev-coral` | `#e37c5c` | Distinctive accent, selective emphasis |
-| `--krev-paper` | `#fffdf8` | Main canvas and light section background |
-| `--krev-rule` | `#b9c1bb` | Borders and dividers |
+| Token          | Hex       | Role                                                      |
+| -------------- | --------- | --------------------------------------------------------- |
+| `--krev-ink`   | `#17242a` | Primary type, navigation, primary action, K symbol ground |
+| `--krev-stone` | `#f5f1e9` | Editorial section background                              |
+| `--krev-coral` | `#e37c5c` | Distinctive accent, selective emphasis                    |
+| `--krev-paper` | `#fffdf8` | Main canvas and light section background                  |
+| `--krev-rule`  | `#b9c1bb` | Borders and dividers                                      |
 
 Extended tones in current CSS include `#24353b` for the dark explainer section and `#b9513b` for editorial headline accents. Never treat a customer brand palette as the Krevstudio corporate palette; exported customer designs derive their own approved BrandOS version.
 
