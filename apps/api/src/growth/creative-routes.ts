@@ -414,6 +414,90 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     return { data: { revoked: updated.length } };
   });
 
+  // ---- Original M16: opt-in commercial pilot enrollment ------------------
+  app.post("/api/pilot/enroll", async (req, reply) => {
+    const actor = requireUser(req);
+    const body = z
+      .object({
+        orgId: uuid,
+        segment: z.enum([
+          "small_business",
+          "freelancer",
+          "creative_professional",
+          "agency",
+        ]),
+        industry: z.string().trim().min(2).max(120),
+        consent: z.literal(true),
+      })
+      .strict()
+      .parse(req.body);
+    requireOrgRole(req, body.orgId, "OWNER");
+    const record = (
+      await sql`INSERT INTO pilot_participants
+        (id, org_id, enrolled_by, segment, industry, consented_at)
+        VALUES (${randomUUID()}, ${body.orgId}, ${actor.userId},
+          ${body.segment}, ${body.industry}, ${now()})
+        ON CONFLICT (org_id) DO NOTHING RETURNING id`
+    )[0];
+    if (!record)
+      throw new HttpError(
+        409,
+        "pilot_enrollment_exists",
+        "Pilot enrollment already exists. Contact support to re-enroll after withdrawing.",
+      );
+    await platform.audit({
+      orgId: body.orgId,
+      actorUserId: actor.userId,
+      action: "pilot.enrolled_with_consent",
+      objectType: "pilot_participant",
+      objectId: String(record.id),
+      requestId: req.id,
+    });
+    return reply.code(201).send({
+      data: { id: record.id, consented: true, pilot: "ENROLLED" },
+    });
+  });
+
+  app.get("/api/pilot/status", async (req) => {
+    const { orgId } = z.object({ orgId: uuid }).parse(req.query);
+    requireOrgRole(req, orgId, "MEMBER");
+    const participation = (
+      await sql`SELECT id, segment, industry, enrolled_at, consented_at, revoked_at
+        FROM pilot_participants WHERE org_id=${orgId}`
+    )[0];
+    if (!participation) return { data: { enrolled: false } };
+    const events = await sql`SELECT kind, source_id, observed_at
+      FROM pilot_observations WHERE participant_id=${participation.id}
+      ORDER BY observed_at DESC`;
+    return {
+      data: {
+        enrolled: participation.revoked_at === null,
+        participant: participation,
+        observations: events,
+        paymentsVerified: false,
+        note: "Pilot enrollment is not evidence of payment, retention or commercial success.",
+      },
+    };
+  });
+
+  app.post("/api/pilot/withdraw", async (req) => {
+    const actor = requireUser(req);
+    const { orgId } = z.object({ orgId: uuid }).strict().parse(req.body);
+    requireOrgRole(req, orgId, "OWNER");
+    const changed = await sql`UPDATE pilot_participants SET revoked_at=${now()}
+      WHERE org_id=${orgId} AND revoked_at IS NULL RETURNING id`;
+    if (changed.length)
+      await platform.audit({
+        orgId,
+        actorUserId: actor.userId,
+        action: "pilot.consent_withdrawn",
+        objectType: "pilot_participant",
+        objectId: String(changed[0]!.id),
+        requestId: req.id,
+      });
+    return { data: { withdrawn: changed.length > 0 } };
+  });
+
   // ---- M25: managed requests ---------------------------------------------
   const OWNER_EVENTS = new Set<RequestEvent>([
     "owner_replied",
