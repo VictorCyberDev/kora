@@ -482,6 +482,25 @@ d("creative loop over the API", () => {
         })
       ).status,
     ).toBe(409);
+    const feedback = await h.call("POST", "/api/pilot/feedback", {
+      cookie: owner.cookie,
+      body: {
+        orgId: owner.orgId,
+        rating: 4,
+        comments: "The flyer editor helped me prepare a campaign.",
+        pricing: { statedMonthlyAmount: 1500, currency: "NGN" },
+      },
+    });
+    expect(feedback.status).toBe(201);
+    expect(feedback.json.data.paymentVerified).toBe(false);
+    const reported = await h.sql`SELECT metadata FROM pilot_observations
+      WHERE participant_id=${rows[0]!.id} AND kind='feedback'`;
+    expect(reported).toHaveLength(1);
+    expect(reported[0]?.metadata).toMatchObject({
+      provenance: "OWNER_REPORTED",
+      paymentVerified: false,
+      rating: 4,
+    });
     const withdrawn = await h.call("POST", "/api/pilot/withdraw", {
       cookie: owner.cookie,
       body: { orgId: owner.orgId },
@@ -494,5 +513,17 @@ d("creative loop over the API", () => {
       { cookie: owner.cookie },
     );
     expect(after.json.data.enrolled).toBe(false);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/feedback", {
+          cookie: owner.cookie,
+          body: {
+            orgId: owner.orgId,
+            rating: 5,
+            comments: "Should no longer accept reports after withdrawal.",
+          },
+        })
+      ).status,
+    ).toBe(409);
   });
 });
