@@ -414,6 +414,36 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     return { data: { revoked: updated.length } };
   });
 
+  // Observe real post-signup milestones from durable platform records.
+  // The public report is intentionally null for unobserved referral visits:
+  // a signed link by itself does not establish a consenting visitor.
+  app.get("/api/acquisition/progress", async (req) => {
+    const { orgId } = z.object({ orgId: uuid }).parse(req.query);
+    requireOrgRole(req, orgId, "MEMBER");
+    const [claims, projects, exports] = await Promise.all([
+      sql`SELECT count(*)::int AS n FROM acquisition_referrals
+        WHERE org_id=${orgId} AND revoked_at IS NULL`,
+      sql`SELECT (
+        (SELECT count(*) FROM site_versions WHERE org_id=${orgId}) +
+        (SELECT count(*) FROM creative_documents WHERE org_id=${orgId}) +
+        (SELECT count(*) FROM motion_projects WHERE org_id=${orgId})
+        )::int AS n`,
+      sql`SELECT count(*)::int AS n FROM usage_events
+        WHERE org_id=${orgId} AND dimension='EXPORT'`,
+    ]);
+    const consented = Number(claims[0]?.n ?? 0) > 0;
+    return {
+      data: {
+        consentedAuditReferrals: Number(claims[0]?.n ?? 0),
+        referralVisits: null,
+        verifiedSignup: consented,
+        observedProjectCount: consented ? Number(projects[0]?.n ?? 0) : null,
+        observedExports: consented ? Number(exports[0]?.n ?? 0) : null,
+        note: "These are account-level observed events after consent; they do not establish that the shared audit caused creation, export or a sale.",
+      },
+    };
+  });
+
   // ---- Original M16: opt-in commercial pilot enrollment ------------------
   app.post("/api/pilot/enroll", async (req, reply) => {
     const actor = requireUser(req);
