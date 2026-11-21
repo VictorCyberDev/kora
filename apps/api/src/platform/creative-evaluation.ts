@@ -21,6 +21,43 @@ export function assessCreativeSource(
         slide: slideNum,
         message: "This slide has no editable message.",
       });
+    // Deterministic typographic collision gate. Use glyph-height estimates,
+    // not the larger editable layer handle rectangles. Ignore logos because
+    // geometric letter overlays may intentionally intersect in a monogram.
+    if (source.kind !== "logo") {
+      for (let i = 0; i < texts.length; i++) {
+        const a = texts[i]!;
+        if (a.rotation !== 0 || !a.text.trim()) continue;
+        const aHeight = Math.min(
+          a.height,
+          a.fontSize * 1.2 * a.text.split("\\n").length,
+        );
+        for (let j = i + 1; j < texts.length; j++) {
+          const b = texts[j]!;
+          if (b.rotation !== 0 || !b.text.trim()) continue;
+          const bHeight = Math.min(
+            b.height,
+            b.fontSize * 1.2 * b.text.split("\\n").length,
+          );
+          const horizontal = Math.min(a.x + a.width, b.x + b.width) -
+            Math.max(a.x, b.x);
+          const vertical = Math.min(a.y + aHeight, b.y + bHeight) -
+            Math.max(a.y, b.y);
+          if (
+            horizontal > Math.min(a.width, b.width) * 0.15 &&
+            vertical > Math.min(aHeight, bHeight) * 0.2
+          ) {
+            findings.push({
+              severity: "BLOCKER",
+              code: "TEXT_COLLISION",
+              slide: slideNum,
+              layerId: b.id,
+              message: "Two visible text blocks overlap; adjust their layout before export.",
+            });
+          }
+        }
+      }
+    }
     for (const layer of slide.layers) {
       if (
         layer.x + layer.width < 0 ||
