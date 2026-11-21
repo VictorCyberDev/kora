@@ -282,17 +282,19 @@ export function PresencePage() {
     const description = String(form.get("description") ?? "").trim();
     const industry = String(form.get("industry") ?? "").trim();
     if (!name || !industry) return;
-    await act("Your business facts were saved without creating a website.", () =>
-      api("PUT", `/api/sites/${id}/presence/profile`, {
-        expectedRevision: 0,
-        facts: {
-          identity: { name, description, industry },
-          contact: {},
-          availability: { hours: [] },
-          offer: { services: [], offers: [] },
-          social: [],
-        },
-      }),
+    await act(
+      "Your business facts were saved without creating a website.",
+      () =>
+        api("PUT", `/api/sites/${id}/presence/profile`, {
+          expectedRevision: 0,
+          facts: {
+            identity: { name, description, industry },
+            contact: {},
+            availability: { hours: [] },
+            offer: { services: [], offers: [] },
+            social: [],
+          },
+        }),
     );
   };
   return (
@@ -303,26 +305,57 @@ export function PresencePage() {
             <section className="card stack">
               <h2>Tell Krevstudio about your business</h2>
               <p className="muted">
-                Start with a short factual brief. You do not need to create or publish a website to make a logo, graphic or video.
+                Start with a short factual brief. You do not need to create or
+                publish a website to make a logo, graphic or video.
               </p>
-              <form className="stack" onSubmit={startWithoutWebsite} aria-label="Start business profile">
-                <label>Business name
-                  <input name="name" defaultValue={draftSite.data?.name ?? ""} required maxLength={100} />
+              <form
+                className="stack"
+                onSubmit={startWithoutWebsite}
+                aria-label="Start business profile"
+              >
+                <label>
+                  Business name
+                  <input
+                    name="name"
+                    defaultValue={draftSite.data?.name ?? ""}
+                    required
+                    maxLength={100}
+                  />
                 </label>
-                <label>Industry
-                  <input name="industry" required maxLength={80} placeholder="e.g. Bakery" />
+                <label>
+                  Industry
+                  <input
+                    name="industry"
+                    required
+                    maxLength={80}
+                    placeholder="e.g. Bakery"
+                  />
                 </label>
-                <label>What your business does
-                  <textarea name="description" maxLength={600} rows={3} placeholder="Describe only what you actually offer" />
+                <label>
+                  What your business does
+                  <textarea
+                    name="description"
+                    maxLength={600}
+                    rows={3}
+                    placeholder="Describe only what you actually offer"
+                  />
                 </label>
-                <button className="btn" disabled={busy}>Save business brief</button>
+                <button className="btn" disabled={busy}>
+                  Save business brief
+                </button>
               </form>
               {v.importable && (
-                <button className="btn ghost" disabled={busy} onClick={() =>
-                  act("Details read from your existing website.", () =>
-                    api("POST", `/api/sites/${id}/presence/import`),
-                  )
-                }>Import details from an existing website</button>
+                <button
+                  className="btn ghost"
+                  disabled={busy}
+                  onClick={() =>
+                    act("Details read from your existing website.", () =>
+                      api("POST", `/api/sites/${id}/presence/import`),
+                    )
+                  }
+                >
+                  Import details from an existing website
+                </button>
               )}
               {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
             </section>
@@ -387,8 +420,15 @@ export function PresencePage() {
             </section>
             <ProfileForm id={id!} profile={v.profile} onSaved={view.reload} />
             <div className="row">
-              <Link className="btn" to={`/app/sites/${id}/brand`}>Continue to Brand Kit</Link>
-              <Link className="btn ghost" to={`/app/sites/${id}/creative-studio`}>Create graphic instead</Link>
+              <Link className="btn" to={`/app/sites/${id}/brand`}>
+                Continue to Brand Kit
+              </Link>
+              <Link
+                className="btn ghost"
+                to={`/app/sites/${id}/creative-studio`}
+              >
+                Create graphic instead
+              </Link>
             </div>
             <p className="muted">
               Details last saved {when(v.profile.updatedAt)}. Revision{" "}
@@ -447,22 +487,46 @@ export function BrandPage() {
                   <option value="direct">Direct</option>
                 </select>
               </label>
-              <button className="btn" disabled={busy} onClick={() => {
-                const el = document.getElementById("starter-voice") as HTMLSelectElement | null;
-                const voice = el?.value ?? "warm";
-                void save({ kit: {
-                  logoAssetId: null,
-                  colors: {
-                    ink: "#17242a", canvas: "#fffdf8",
-                    primary: "#17242a", primaryText: "#fffdf8",
-                    accent: "#873f34", accentText: "#ffffff", muted: "#46545b",
-                  },
-                  typography: { pairing: "starter", displayFamily: "Georgia", bodyFamily: "system-ui" },
-                  shape: "soft",
-                  voice: { tone: voice, use: [], avoid: [], language: "en" },
-                  imagery: { style: "minimal", seed: 1 },
-                } }, "Starter Brand Kit saved as an editable owner-approved version.");
-              }}>
+              <button
+                className="btn"
+                disabled={busy}
+                onClick={() => {
+                  const el = document.getElementById(
+                    "starter-voice",
+                  ) as HTMLSelectElement | null;
+                  const voice = el?.value ?? "warm";
+                  void save(
+                    {
+                      kit: {
+                        logoAssetId: null,
+                        colors: {
+                          ink: "#17242a",
+                          canvas: "#fffdf8",
+                          primary: "#17242a",
+                          primaryText: "#fffdf8",
+                          accent: "#873f34",
+                          accentText: "#ffffff",
+                          muted: "#46545b",
+                        },
+                        typography: {
+                          pairing: "starter",
+                          displayFamily: "Georgia",
+                          bodyFamily: "system-ui",
+                        },
+                        shape: "soft",
+                        voice: {
+                          tone: voice,
+                          use: [],
+                          avoid: [],
+                          language: "en",
+                        },
+                        imagery: { style: "minimal", seed: 1 },
+                      },
+                    },
+                    "Starter Brand Kit saved as an editable owner-approved version.",
+                  );
+                }}
+              >
                 Create editable Brand Kit
               </button>
               {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
@@ -535,8 +599,15 @@ export function BrandPage() {
             </section>
             {cur && (
               <div className="row">
-                <Link className="btn" to={`/app/sites/${id}/create?tool=video`}>Create my first video</Link>
-                <Link className="btn ghost" to={`/app/sites/${id}/creative-studio`}>Create graphics or logo</Link>
+                <Link className="btn" to={`/app/sites/${id}/create?tool=video`}>
+                  Create my first video
+                </Link>
+                <Link
+                  className="btn ghost"
+                  to={`/app/sites/${id}/creative-studio`}
+                >
+                  Create graphics or logo
+                </Link>
               </div>
             )}
             {cur && (

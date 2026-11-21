@@ -18,19 +18,36 @@ test("video-first business creates facts and Brand Kit without creating a websit
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/app\/sites\/[^/]+\/presence\?goal=video$/);
   const siteId = new URL(page.url()).pathname.split("/")[3];
-  await expect(page.getByRole("form", { name: "Start business profile" })).toBeVisible();
+  await expect(
+    page.getByRole("form", { name: "Start business profile" }),
+  ).toBeVisible();
   await page.getByLabel("Industry").fill("Bakery");
-  await page.getByLabel("What your business does").fill("We bake celebration cakes.");
+  await page
+    .getByLabel("What your business does")
+    .fill("We bake celebration cakes.");
   await page.getByRole("button", { name: "Save business brief" }).click();
-  await expect(page.getByRole("link", { name: "Continue to Brand Kit" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Continue to Brand Kit" }),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Continue to Brand Kit" }).click();
-  await expect(page.getByRole("heading", { name: "Start with your own brand preferences" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Start with your own brand preferences",
+    }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Create editable Brand Kit" }).click();
-  await expect(page.getByRole("link", { name: "Create my first video" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Create my first video" }),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Create my first video" }).click();
   await expect(page).toHaveURL(/\/create\?tool=video$/);
-  await expect(page.getByRole("button", { name: "Video" })).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByRole("heading", { name: "From brief to editable timeline" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Video" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(
+    page.getByRole("heading", { name: "From brief to editable timeline" }),
+  ).toBeVisible();
 
   const site = await context.request.get(`/api/sites/${siteId}`);
   expect(site.status()).toBe(200);

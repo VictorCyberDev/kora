@@ -355,7 +355,8 @@ d("Meridian seven-day campaign acceptance", () => {
         name: "Meridian Bakes seven-day campaign",
         objective: "announce",
         audience: "Local bakery customers",
-        brief: "Introduce the bakery's existing weekday lunch special without inventing discounts.",
+        brief:
+          "Introduce the bakery's existing weekday lunch special without inventing discounts.",
         direction: "moment",
         offerId: "lunch",
         channels: ["facebook", "whatsapp"],
@@ -371,7 +372,11 @@ d("Meridian seven-day campaign acceptance", () => {
       })
     ).json.data;
     expect(detail.items).toHaveLength(6);
-    expect(detail.items.every((x: { state: string }) => x.state === "APPROVAL_NEEDED")).toBe(true);
+    expect(
+      detail.items.every(
+        (x: { state: string }) => x.state === "APPROVAL_NEEDED",
+      ),
+    ).toBe(true);
     const creative = detail.assets.filter(
       (x: { creativeDocumentId?: string }) => !!x.creativeDocumentId,
     ) as Array<{ creativeDocumentId: string }>;
@@ -385,10 +390,12 @@ d("Meridian seven-day campaign acceptance", () => {
       expect(opened.status).toBe(200);
       expect(opened.json.data.source.slides.length).toBeGreaterThan(0);
     }
-    const jobs = await h.sql`SELECT count(*)::int AS n FROM publish_jobs WHERE site_id=${s.id}`;
+    const jobs =
+      await h.sql`SELECT count(*)::int AS n FROM publish_jobs WHERE site_id=${s.id}`;
     expect(Number(jobs[0]?.n ?? 0)).toBe(0);
     const approval = await h.call(
-      "POST", `/api/sites/${s.id}/campaigns/${id}/approve-all`,
+      "POST",
+      `/api/sites/${s.id}/campaigns/${id}/approve-all`,
       { cookie: a.cookie },
     );
     expect(approval.status).toBe(200);

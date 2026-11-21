@@ -376,8 +376,8 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             : firstGoal === "video"
               ? `/app/sites/${workspace.id}/presence?goal=video`
               : ["logo", "flyer", "social"].includes(firstGoal)
-              ? `/app/sites/${workspace.id}/creative-studio`
-              : `/app/sites/${workspace.id}/create`,
+                ? `/app/sites/${workspace.id}/creative-studio`
+                : `/app/sites/${workspace.id}/create`,
         );
       }
     } catch (x) {

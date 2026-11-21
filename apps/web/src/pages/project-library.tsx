@@ -74,7 +74,11 @@ export function ProjectLibrary({ siteId }: { siteId: string }) {
             <ul className="k-checks">
               {items.slice(0, 10).map((item) => (
                 <li key={item.id} className="k-check">
-                  <Link to={`${root}/create?tool=video&motion=${encodeURIComponent(item.id)}`}>{item.name}</Link>
+                  <Link
+                    to={`${root}/create?tool=video&motion=${encodeURIComponent(item.id)}`}
+                  >
+                    {item.name}
+                  </Link>
                   <span className="small muted">
                     {" "}
                     — motion · revision {item.revision} · {item.renderStatus}
