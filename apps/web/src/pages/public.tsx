@@ -325,6 +325,27 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             },
       );
       await refresh();
+      const referral = new URLSearchParams(loc.search).get("ref");
+      if (mode === "signup" && referral && f.get("referralConsent") === "yes") {
+        const me = await api<{ orgs: { id: string }[] }>(
+          "GET",
+          "/api/auth/me",
+        );
+        const orgId = me.orgs?.[0]?.id;
+        if (orgId) {
+          try {
+            await api("POST", "/api/acquisition/claim", {
+              orgId,
+              token: referral,
+              consent: true,
+            });
+          } catch (cause) {
+            // Attribution failure cannot undo a successful account signup.
+            // The server records no conversion unless the claim was verified.
+            console.warn("Audit referral attribution unavailable", cause);
+          }
+        }
+      }
       if (mode === "login") {
         nav((loc.state as { from?: string } | null)?.from ?? "/app");
       } else if (firstGoal === "website") {
@@ -418,6 +439,20 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             <span className="field-hint">At least 10 characters.</span>
           )}
         </label>
+        {mode === "signup" && new URLSearchParams(loc.search).has("ref") && (
+          <label className="row" style={{ gap: 8 }}>
+            <input
+              type="checkbox"
+              name="referralConsent"
+              value="yes"
+              style={{ width: 20, minHeight: 20 }}
+            />
+            <span className="small">
+              Optional: link this signup to the shared website audit that
+              brought me here, to help measure whether audits are useful.
+            </span>
+          </label>
+        )}
         {err && <Notice kind="bad">{err}</Notice>}
         <button className="btn" disabled={busy}>
           {busy
