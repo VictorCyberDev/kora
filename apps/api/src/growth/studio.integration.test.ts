@@ -338,9 +338,12 @@ d("motion studio", () => {
     );
     expect(preview.status).toBe(200);
     expect(preview.json.data.frames).toHaveLength(3);
-    expect(preview.json.data.frames[0].svg).toContain(
-      "Pre-order your Christmas cake",
-    );
+    // Text layout can wrap a headline into separate SVG text elements.
+    // Preserve the full wording assertion independent of visual line breaks.
+    const renderedText = [...preview.json.data.frames[0].svg.matchAll(/<text\b[^>]*>(.*?)<\/text>/gs)]
+      .map((match: RegExpMatchArray) => match[1])
+      .join(" ");
+    expect(renderedText).toContain("Pre-order your Christmas cake");
     const options = await h.call("GET", `/api/sites/${s.id}/studio/options`, {
       cookie: a.cookie,
     });
