@@ -12,7 +12,7 @@ export interface MemoryEntry {
   value: string;
 }
 
-/** Words the owner told Kora to avoid or prefer, folded into the Brand Kit voice for every future draft. */
+/** Words the owner told Krevstudio to avoid or prefer, folded into the Brand Kit voice for every future draft. */
 export function voiceFromMemory(entries: MemoryEntry[]): {
   avoid: string[];
   use: string[];
@@ -49,7 +49,7 @@ export function outcomeEntry(
   const t = o.tracked;
   const measured = t.visits + t.whatsappTaps + t.callTaps + t.enquiries;
   const value = measured
-    ? `“${o.name}” (${o.offerTitle}) ended ${o.endedOn}: ${o.posts.published} of ${o.posts.planned} posts went out on ${o.channels.join(", ")}. Links Kora created brought ${t.visits} visits, ${t.whatsappTaps} WhatsApp taps, ${t.callTaps} call taps and ${t.enquiries} enquiries.`
+    ? `“${o.name}” (${o.offerTitle}) ended ${o.endedOn}: ${o.posts.published} of ${o.posts.planned} posts went out on ${o.channels.join(", ")}. Links Krevstudio created brought ${t.visits} visits, ${t.whatsappTaps} WhatsApp taps, ${t.callTaps} call taps and ${t.enquiries} enquiries.`
     : `“${o.name}” (${o.offerTitle}) ended ${o.endedOn}: ${o.posts.published} of ${o.posts.planned} posts went out on ${o.channels.join(", ")}. No activity from its tracked links was recorded.`;
   return {
     kind: "OUTCOME",
