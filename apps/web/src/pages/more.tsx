@@ -19,6 +19,7 @@ import {
 } from "../ui";
 import { PlanCard } from "./public";
 import { SiteStatusCard } from "./sites";
+import { ProjectLibrary } from "./project-library";
 
 export function SiteShell() {
   const { id } = useParams();
@@ -129,6 +130,7 @@ export function SiteOverview() {
   return (
     <div className="stack">
       <SiteStatusCard siteId={id!} />
+      <ProjectLibrary siteId={id!} />
       <div className="card">
         <h3>Recent incidents</h3>
         <Async state={inc}>
