@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, when, type J } from "../api";
 import { Async, Empty, Notice, Status, errText, useLoad } from "../ui";
+import { todayActionPath } from "../today-action-path";
 
 const CONF: Record<string, string> = {
   high: "Strong evidence",
@@ -210,7 +211,7 @@ export function TodayPage() {
               <ul className="k-checks">
                 {a.actions.map((x: J) => (
                   <li key={x.id} className="k-check">
-                    <Link className="k-lead" to={`/app/sites/${id}/${x.to}`}>
+                    <Link className="k-lead" to={todayActionPath(id!, x.to)}>
                       <strong>{x.title}</strong>
                       <span className="muted">{x.why}</span>
                     </Link>
