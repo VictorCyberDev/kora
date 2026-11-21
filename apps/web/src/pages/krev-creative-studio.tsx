@@ -1074,13 +1074,31 @@ export function KrevCreativeStudio() {
                     </strong>
                   </button>
                   <div className="row">
-                    <button type="button" disabled={busy} onClick={() => void rateDirection(p.direction, "chosen", false)}>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void rateDirection(p.direction, "chosen", false)
+                      }
+                    >
                       Prefer
                     </button>
-                    <button type="button" disabled={busy} onClick={() => void rateDirection(p.direction, "rejected", false)}>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void rateDirection(p.direction, "rejected", false)
+                      }
+                    >
                       Not my style
                     </button>
-                    <button type="button" disabled={busy} onClick={() => void rateDirection(p.direction, "rejected", true)}>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void rateDirection(p.direction, "rejected", true)
+                      }
+                    >
                       Always avoid
                     </button>
                   </div>

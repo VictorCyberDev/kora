@@ -1,9 +1,5 @@
 /** Remembered graphic preferences, separate from verifiable business facts. */
-export const GRAPHIC_STYLES = [
-  "editorial",
-  "cinematic",
-  "asymmetric",
-] as const;
+export const GRAPHIC_STYLES = ["editorial", "cinematic", "asymmetric"] as const;
 export type GraphicStyle = (typeof GRAPHIC_STYLES)[number];
 
 export interface GraphicJudgement {
@@ -52,12 +48,14 @@ export function recommendGraphicDirection(
     return {
       direction: 0,
       applied: false,
-      reason: "All directions are rejected; the owner must resolve conflicting locks.",
+      reason:
+        "All directions are rejected; the owner must resolve conflicting locks.",
       judgements: usable.length,
     };
   if (locks.some((x) => x === "rejected")) {
-    const direction = allowed
-      .sort((a, b) => scores[b]! - scores[a]! || a - b)[0]! as 0 | 1 | 2;
+    const direction = allowed.sort(
+      (a, b) => scores[b]! - scores[a]! || a - b,
+    )[0]! as 0 | 1 | 2;
     return {
       direction,
       applied: true,
@@ -67,15 +65,23 @@ export function recommendGraphicDirection(
   }
   // Do not infer stable taste from a single subjective reaction.
   if (usable.length < 3)
-    return { direction: 0, applied: false, reason: null, judgements: usable.length };
-  const ranked = GRAPHIC_STYLES.map((_, i) => i)
-    .sort((a, b) => scores[b]! - scores[a]! || a - b);
+    return {
+      direction: 0,
+      applied: false,
+      reason: null,
+      judgements: usable.length,
+    };
+  const ranked = GRAPHIC_STYLES.map((_, i) => i).sort(
+    (a, b) => scores[b]! - scores[a]! || a - b,
+  );
   const direction = ranked[0]! as 0 | 1 | 2;
   const applied = scores[direction] !== 0 && direction !== 0;
   return {
     direction,
     applied,
-    reason: applied ? "Recommendation reflects repeated owner design feedback." : null,
+    reason: applied
+      ? "Recommendation reflects repeated owner design feedback."
+      : null,
     judgements: usable.length,
   };
 }

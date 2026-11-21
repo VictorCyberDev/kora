@@ -197,11 +197,16 @@ export function registerCreativeDocumentRoutes(
       .strict()
       .parse(req.body);
     if (body.locked) requireOrgRole(req, site.orgId, "OWNER");
-    const current = await platform.sql`SELECT count(*)::int AS n FROM creative_feedback
+    const current =
+      await platform.sql`SELECT count(*)::int AS n FROM creative_feedback
       WHERE org_id=${site.orgId} AND kind='GRAPHIC_STYLE_FEEDBACK'
         AND created_at > now() - interval '1 day'`;
     if (Number(current[0]?.n ?? 0) >= 30)
-      throw new HttpError(429, "design_feedback_limit", "Too many design ratings today.");
+      throw new HttpError(
+        429,
+        "design_feedback_limit",
+        "Too many design ratings today.",
+      );
     await brandStore.feedback(
       site,
       "GRAPHIC_STYLE_FEEDBACK",
@@ -258,17 +263,20 @@ export function registerCreativeDocumentRoutes(
       (req.body as Record<string, unknown> | null)?.direction === undefined
         ? (await graphicMemory(site.orgId)).direction
         : request.direction;
-    const source = buildCreativeDocument({ ...request, direction: chosenDirection }, {
-      version,
-      approvedLogo,
-      name: brand?.brandOs.name ?? site.name,
-      ...(brand
-        ? {
-            colors: brand.brandOs.visual.palette,
-            typeVoice: brand.brandOs.visual.typeVoice,
-          }
-        : {}),
-    });
+    const source = buildCreativeDocument(
+      { ...request, direction: chosenDirection },
+      {
+        version,
+        approvedLogo,
+        name: brand?.brandOs.name ?? site.name,
+        ...(brand
+          ? {
+              colors: brand.brandOs.visual.palette,
+              typeVoice: brand.brandOs.visual.typeVoice,
+            }
+          : {}),
+      },
+    );
     const documentId = randomUUID();
     await platform.inTransaction(async (tx) => {
       await tx.sql`INSERT INTO creative_documents(id,site_id,org_id,kind,title,revision,source,brand_version,created_by)

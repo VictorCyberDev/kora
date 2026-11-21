@@ -29,20 +29,30 @@ test("consenting business enrolls, records feedback and withdraws from pilot", a
   const siteId = (await created.json()).data.id;
 
   await page.goto(`/app/sites/${siteId}/pilot`);
-  await expect(page.getByRole("heading", { name: "Commercial pilot" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Join the optional product pilot" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Commercial pilot" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Join the optional product pilot" }),
+  ).toBeVisible();
   await page.getByLabel("Industry").fill("bakery");
   await page.getByLabel(/I consent to taking part/).check();
   await page.getByRole("button", { name: "Enroll this business" }).click();
   await expect(page.getByText(/Participation consent recorded/)).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Pilot participation" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Pilot participation" }),
+  ).toBeVisible();
   await expect(page.getByText("Not verified by this pilot")).toBeVisible();
 
   await page.getByLabel(/What worked/).fill("I could create my bakery flyer.");
   await page.getByRole("button", { name: "Submit feedback" }).click();
-  await expect(page.getByText(/Feedback recorded as owner-reported/)).toBeVisible();
+  await expect(
+    page.getByText(/Feedback recorded as owner-reported/),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Withdraw pilot consent" }).click();
   await expect(page.getByText(/Participation withdrawn/)).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Join the optional product pilot" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Join the optional product pilot" }),
+  ).toBeVisible();
 });

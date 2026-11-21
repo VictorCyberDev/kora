@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { recommendGraphicDirection, type GraphicJudgement } from "../src/graphic-taste.js";
+import {
+  recommendGraphicDirection,
+  type GraphicJudgement,
+} from "../src/graphic-taste.js";
 
 const event = (
   style: GraphicJudgement["style"],
@@ -10,7 +13,9 @@ const event = (
 
 describe("graphic style memory", () => {
   it("does not infer taste from one subjective reaction", () => {
-    expect(recommendGraphicDirection([event("editorial", "rejected")])).toMatchObject({
+    expect(
+      recommendGraphicDirection([event("editorial", "rejected")]),
+    ).toMatchObject({
       direction: 0,
       applied: false,
       judgements: 1,

@@ -541,7 +541,11 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         comments: z.string().trim().max(1000),
         pricing: z
           .object({
-            statedMonthlyAmount: z.number().nonnegative().finite().max(1_000_000),
+            statedMonthlyAmount: z
+              .number()
+              .nonnegative()
+              .finite()
+              .max(1_000_000),
             currency: z.string().length(3),
           })
           .optional(),
@@ -554,15 +558,21 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         WHERE org_id=${body.orgId} AND revoked_at IS NULL`
     )[0];
     if (!participant)
-      throw new HttpError(409, "pilot_consent_required",
-        "Pilot consent must be active before feedback can be recorded.");
+      throw new HttpError(
+        409,
+        "pilot_consent_required",
+        "Pilot consent must be active before feedback can be recorded.",
+      );
     const count = (
       await sql`SELECT count(*)::int AS n FROM pilot_observations
         WHERE participant_id=${participant.id} AND kind='feedback'`
     )[0];
     if (Number(count?.n ?? 0) >= 20)
-      throw new HttpError(429, "pilot_feedback_limit",
-        "Feedback limit reached for this pilot enrollment.");
+      throw new HttpError(
+        429,
+        "pilot_feedback_limit",
+        "Feedback limit reached for this pilot enrollment.",
+      );
     const id = randomUUID();
     await sql`INSERT INTO pilot_observations
       (id, participant_id, kind, source_id, recorded_by, metadata)

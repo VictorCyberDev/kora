@@ -207,8 +207,7 @@ suite("M3/M4 real authenticated creative document lifecycle", () => {
       cta: "Contact us",
     };
     const previewUrl = `/api/sites/${site.id}/creative-documents/preview`;
-    const feedbackUrl =
-      `/api/sites/${site.id}/creative-documents/style-feedback`;
+    const feedbackUrl = `/api/sites/${site.id}/creative-documents/style-feedback`;
     const baseline = await h.call("POST", previewUrl, {
       cookie: owner.cookie,
       body: request,
@@ -279,5 +278,4 @@ suite("M3/M4 real authenticated creative document lifecycle", () => {
     });
     expect(refetched.json.data.memory.direction).toBe(0);
   });
-
 });

@@ -101,13 +101,20 @@ function PilotWorkspace({ orgId }: { orgId: string }) {
                   <select name="segment" required defaultValue="small_business">
                     <option value="small_business">Small business</option>
                     <option value="freelancer">Freelancer</option>
-                    <option value="creative_professional">Creative professional</option>
+                    <option value="creative_professional">
+                      Creative professional
+                    </option>
                     <option value="agency">Small agency</option>
                   </select>
                 </label>
                 <label>
                   Industry
-                  <input name="industry" minLength={2} maxLength={120} required />
+                  <input
+                    name="industry"
+                    minLength={2}
+                    maxLength={120}
+                    required
+                  />
                 </label>
                 <label className="row">
                   <input
@@ -130,7 +137,8 @@ function PilotWorkspace({ orgId }: { orgId: string }) {
               <section className="card stack">
                 <h2>Pilot participation</h2>
                 <p>
-                  Consenting business: <strong>{p.participant?.industry}</strong>
+                  Consenting business:{" "}
+                  <strong>{p.participant?.industry}</strong>
                 </p>
                 <p className="small muted">
                   Milestones come from actual system records after enrollment.
@@ -138,9 +146,13 @@ function PilotWorkspace({ orgId }: { orgId: string }) {
                 </p>
                 <dl>
                   <dt>First creative project</dt>
-                  <dd>{p.observedMilestones?.firstProjectAt ?? "Not observed"}</dd>
+                  <dd>
+                    {p.observedMilestones?.firstProjectAt ?? "Not observed"}
+                  </dd>
                   <dt>First export</dt>
-                  <dd>{p.observedMilestones?.firstExportAt ?? "Not observed"}</dd>
+                  <dd>
+                    {p.observedMilestones?.firstExportAt ?? "Not observed"}
+                  </dd>
                   <dt>First website publication</dt>
                   <dd>
                     {p.observedMilestones?.firstPublicationAt ?? "Not observed"}
@@ -196,9 +208,7 @@ function PilotWorkspace({ orgId }: { orgId: string }) {
                 <button
                   className="btn ghost"
                   disabled={busy}
-                  onClick={() =>
-                    void submit("/api/pilot/withdraw", { orgId })
-                  }
+                  onClick={() => void submit("/api/pilot/withdraw", { orgId })}
                 >
                   Withdraw pilot consent
                 </button>
@@ -220,9 +230,7 @@ export function PilotPage() {
   return (
     <div className="stack">
       <h1>Commercial pilot</h1>
-      <Async state={site}>
-        {(s) => <PilotWorkspace orgId={s.orgId} />}
-      </Async>
+      <Async state={site}>{(s) => <PilotWorkspace orgId={s.orgId} />}</Async>
     </div>
   );
 }

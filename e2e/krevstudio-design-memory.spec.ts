@@ -29,24 +29,40 @@ test("Meridian Bakes remembers a rejected style and changes the next design dire
   const siteId = (await created.json()).data.id;
 
   await page.goto(`/app/sites/${siteId}/creative-studio`);
-  await expect(page.getByRole("heading", { name: "Creative workspace" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Creative workspace" }),
+  ).toBeVisible();
   await page.getByLabel("Format").selectOption("flyer");
   await page.getByLabel("Project title").fill("Christmas bakery launch");
-  await page.getByLabel("Headline or wordmark").fill("Christmas cakes baked to order");
-  await page.getByRole("button", { name: "Explore three real directions" }).click();
+  await page
+    .getByLabel("Headline or wordmark")
+    .fill("Christmas cakes baked to order");
+  await page
+    .getByRole("button", { name: "Explore three real directions" })
+    .click();
   const choices = page.getByRole("group", {
     name: "Real creative direction previews",
   });
-  await expect(choices.getByRole("button", { name: "Always avoid" })).toHaveCount(3);
+  await expect(
+    choices.getByRole("button", { name: "Always avoid" }),
+  ).toHaveCount(3);
   await choices.getByRole("button", { name: "Always avoid" }).first().click();
   await expect(page.getByText(/visual restriction was saved/)).toBeVisible();
   await page.reload();
   await page.getByLabel("Format").selectOption("flyer");
   await page.getByLabel("Project title").fill("Second bakery campaign");
-  await page.getByLabel("Headline or wordmark").fill("New pastries every morning");
-  await page.getByRole("button", { name: "Explore three real directions" }).click();
+  await page
+    .getByLabel("Headline or wordmark")
+    .fill("New pastries every morning");
+  await page
+    .getByRole("button", { name: "Explore three real directions" })
+    .click();
   await expect(
-    page.getByText("Why this direction: An owner-locked rejected visual direction was avoided."),
+    page.getByText(
+      "Why this direction: An owner-locked rejected visual direction was avoided.",
+    ),
   ).toBeVisible();
-  await expect(choices.getByRole("button", { name: /Concept 2.*Selected/ })).toBeVisible();
+  await expect(
+    choices.getByRole("button", { name: /Concept 2.*Selected/ }),
+  ).toBeVisible();
 });
