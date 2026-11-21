@@ -5,10 +5,12 @@ on:
       - main
       - feature/krevstudio-m3-m4-transformation
       - feature/krevstudio-creative-professionalization
+      - feature/krevstudio-creative-m5-motion-editor
   pull_request:
     # PR #44 is intentionally stacked on the M1-M4 integration branch. Run
-    # the same checks there without also adding a push trigger (which would
-    # spend the Actions allowance twice for every stacked-PR update).
+    # the same checks there when this workflow has reached its base branch.
+    # Until then, the explicit M5 push trigger above commissions the stacked
+    # head without changing PR #44's required dependency on PR #43.
     branches:
       - main
       - feature/krevstudio-graphics-acceptance
