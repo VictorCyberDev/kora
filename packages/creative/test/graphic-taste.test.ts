@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { recommendGraphicDirection, type GraphicJudgement } from "./graphic-taste.js";
+import { recommendGraphicDirection, type GraphicJudgement } from "../src/graphic-taste.js";
 
 const event = (
   style: GraphicJudgement["style"],
