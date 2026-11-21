@@ -426,10 +426,43 @@ export function BrandPage() {
         const kit = cur?.kit ?? b.suggestion;
         if (!kit)
           return (
-            <Empty title="No brand yet">
-              Create a website first. Krevstudio builds your Brand Kit from its
-              design.
-            </Empty>
+            <section className="card stack">
+              <h2>Start with your own brand preferences</h2>
+              <p className="muted">
+                Choose an editable starter identity for this business without
+                first making a website. These are suggestions, not confirmed
+                facts or a final approved brand.
+              </p>
+              <label>
+                Visual personality
+                <select id="starter-voice" defaultValue="warm">
+                  <option value="warm">Warm and approachable</option>
+                  <option value="professional">Professional</option>
+                  <option value="premium">Premium</option>
+                  <option value="playful">Playful</option>
+                  <option value="direct">Direct</option>
+                </select>
+              </label>
+              <button className="btn" disabled={busy} onClick={() => {
+                const el = document.getElementById("starter-voice") as HTMLSelectElement | null;
+                const voice = el?.value ?? "warm";
+                void save({ kit: {
+                  logoAssetId: null,
+                  colors: {
+                    ink: "#17242a", canvas: "#fffdf8",
+                    primary: "#17242a", primaryText: "#fffdf8",
+                    accent: "#873f34", accentText: "#ffffff", muted: "#46545b",
+                  },
+                  typography: { pairing: "starter", displayFamily: "Georgia", bodyFamily: "system-ui" },
+                  shape: "soft",
+                  voice: { tone: voice, use: [], avoid: [], language: "en" },
+                  imagery: { style: "minimal", seed: 1 },
+                } }, "Starter Brand Kit saved as an editable owner-approved version.");
+              }}>
+                Create editable Brand Kit
+              </button>
+              {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
+            </section>
           );
         const onSubmit = (e: FormEvent<HTMLFormElement>) => {
           e.preventDefault();
