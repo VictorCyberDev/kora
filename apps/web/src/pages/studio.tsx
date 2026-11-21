@@ -40,7 +40,11 @@ const TABS = [
 
 export function StudioPage() {
   const { id } = useParams();
-  const [tab, setTab] = useState<(typeof TABS)[number][0]>("write");
+  const [tab, setTab] = useState<(typeof TABS)[number][0]>(() =>
+    new URLSearchParams(window.location.search).get("tool") === "video"
+      ? "video"
+      : "write",
+  );
   const presence = useLoad(
     () => api<J>("GET", `/api/sites/${id}/presence`),
     [id],
