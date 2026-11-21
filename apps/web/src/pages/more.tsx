@@ -77,6 +77,7 @@ export function SiteShell() {
               [`${base}/campaigns`, "Campaigns"],
               [`${base}/calendar`, "Calendar"],
               [`${base}/results`, "Results"],
+              [`${base}/pilot`, "Pilot"],
             ],
           },
           {
