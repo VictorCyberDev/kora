@@ -425,4 +425,70 @@ d("creative loop over the API", () => {
       WHERE org_id=${owner.orgId}`;
     expect(after[0]?.revoked_at).not.toBeNull();
   });
+  it("enrolls pilot participants only after explicit owner consent and supports withdrawal", async () => {
+    const owner = await h.signup("pilot-owner@example.com", "Pilot Org");
+    const other = await h.signup("pilot-outside@example.com", "Outside");
+    const enrollment = {
+      orgId: owner.orgId,
+      segment: "small_business",
+      industry: "bakery",
+      consent: true,
+    };
+    const absent = await h.call("GET", `/api/pilot/status?orgId=${owner.orgId}`, {
+      cookie: owner.cookie,
+    });
+    expect(absent.status).toBe(200);
+    expect(absent.json.data.enrolled).toBe(false);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/enroll", {
+          cookie: owner.cookie,
+          body: { ...enrollment, consent: false },
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/enroll", {
+          cookie: other.cookie,
+          body: enrollment,
+        })
+      ).status,
+    ).toBeGreaterThanOrEqual(403);
+    const enrolled = await h.call("POST", "/api/pilot/enroll", {
+      cookie: owner.cookie,
+      body: enrollment,
+    });
+    expect(enrolled.status).toBe(201);
+    const status = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(status.json.data.enrolled).toBe(true);
+    expect(status.json.data.paymentsVerified).toBe(false);
+    const rows = await h.sql`SELECT id FROM pilot_participants WHERE org_id=${owner.orgId}`;
+    expect(rows).toHaveLength(1);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/enroll", {
+          cookie: owner.cookie,
+          body: enrollment,
+        })
+      ).status,
+    ).toBe(409);
+    const withdrawn = await h.call("POST", "/api/pilot/withdraw", {
+      cookie: owner.cookie,
+      body: { orgId: owner.orgId },
+    });
+    expect(withdrawn.status).toBe(200);
+    expect(withdrawn.json.data.withdrawn).toBe(true);
+    const after = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(after.json.data.enrolled).toBe(false);
+  });
+
 });
