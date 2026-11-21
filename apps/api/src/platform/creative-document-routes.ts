@@ -4,7 +4,12 @@ import {
 } from "./creative-evaluation.js";
 import type { BillingService } from "./billing.js";
 import { mediaBase, loadOwnerMedia } from "./owner-media-loader.js";
-import { brandOsHash } from "@kora/creative";
+import {
+  brandOsHash,
+  recommendGraphicDirection,
+  GRAPHIC_STYLES,
+  type GraphicJudgement,
+} from "@kora/creative";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -41,6 +46,33 @@ export function registerCreativeDocumentRoutes(
   billing?: BillingService,
 ) {
   const brandStore = new BrandOsStore(platform.sql);
+  // Reuse the existing append-only creative_feedback store. This is not a
+  // second identity or preference system; facts remain in Business Facts.
+  async function graphicMemory(orgId: string) {
+    const rows = await platform.sql`SELECT subject, detail, created_at
+      FROM creative_feedback
+      WHERE org_id=${orgId} AND kind='GRAPHIC_STYLE_FEEDBACK'
+      ORDER BY created_at ASC LIMIT 200`;
+    const history: GraphicJudgement[] = [];
+    for (const row of rows) {
+      const style = String(row.subject);
+      const detail = row.detail as Record<string, unknown> | null;
+      if (
+        !GRAPHIC_STYLES.includes(style as GraphicJudgement["style"]) ||
+        !detail ||
+        (detail.outcome !== "chosen" && detail.outcome !== "rejected")
+      )
+        continue;
+      history.push({
+        style: style as GraphicJudgement["style"],
+        outcome: detail.outcome,
+        locked: detail.locked === true,
+        at: new Date(row.created_at as string).toISOString(),
+      });
+    }
+    return recommendGraphicDirection(history);
+  }
+
   async function validateDocumentMedia(
     siteId: string,
     source: import("./creative-documents.js").CreativeDocument,
@@ -147,8 +179,39 @@ export function registerCreativeDocumentRoutes(
       const source = buildCreativeDocument({ ...request, direction }, identity);
       return { direction, source, svg: renderSlideSvg(source.slides[0]!) };
     });
-    return { data: { directions, brandVersion: identity.version } };
+    const memory = await graphicMemory(site.orgId);
+    return { data: { directions, brandVersion: identity.version, memory } };
   });
+  app.post("/api/sites/:id/creative-documents/style-feedback", async (req) => {
+    const site = await siteFor(
+      req,
+      z.object({ id: uuid }).parse(req.params).id,
+      "MEMBER",
+    );
+    const body = z
+      .object({
+        direction: z.number().int().min(0).max(2),
+        outcome: z.enum(["chosen", "rejected"]),
+        locked: z.boolean().default(false),
+      })
+      .strict()
+      .parse(req.body);
+    if (body.locked) requireOrgRole(req, site.orgId, "OWNER");
+    const current = await platform.sql`SELECT count(*)::int AS n FROM creative_feedback
+      WHERE org_id=${site.orgId} AND kind='GRAPHIC_STYLE_FEEDBACK'
+        AND created_at > now() - interval '1 day'`;
+    if (Number(current[0]?.n ?? 0) >= 30)
+      throw new HttpError(429, "design_feedback_limit", "Too many design ratings today.");
+    await brandStore.feedback(
+      site,
+      "GRAPHIC_STYLE_FEEDBACK",
+      GRAPHIC_STYLES[body.direction]!,
+      { outcome: body.outcome, locked: body.locked, source: "OWNER" },
+      requireUser(req).userId,
+    );
+    return { data: { memory: await graphicMemory(site.orgId) } };
+  });
+
   app.post("/api/sites/:id/creative-documents", async (req, reply) => {
     const site = await siteFor(
       req,
@@ -191,7 +254,11 @@ export function registerCreativeDocumentRoutes(
           source: creativeDocumentSchema.parse(logoRow.source),
         }
       : null;
-    const source = buildCreativeDocument(request, {
+    const chosenDirection =
+      (req.body as Record<string, unknown> | null)?.direction === undefined
+        ? (await graphicMemory(site.orgId)).direction
+        : request.direction;
+    const source = buildCreativeDocument({ ...request, direction: chosenDirection }, {
       version,
       approvedLogo,
       name: brand?.brandOs.name ?? site.name,
