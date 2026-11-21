@@ -158,7 +158,7 @@ export function registerAgencyRoutes(
     return { data: { userId, role } };
   });
 
-  app.get("/api/sites/:id/reviews", async (req) => {
+  app.get("/api/sites/:id/asset-reviews", async (req) => {
     const site = await siteFor(req, "VIEWER");
     const rows = await platform.sql`SELECT r.*,
       (SELECT count(*)::int FROM review_comments c WHERE c.review_id=r.id) AS comments
@@ -167,7 +167,7 @@ export function registerAgencyRoutes(
     return { data: rows };
   });
 
-  app.post("/api/sites/:id/reviews", async (req, reply) => {
+  app.post("/api/sites/:id/asset-reviews", async (req, reply) => {
     const site = await siteFor(req, "MEMBER");
     const body = z
       .object({
@@ -210,7 +210,7 @@ export function registerAgencyRoutes(
     return reply.code(201).send({ data: { id, status: "IN_REVIEW" } });
   });
 
-  app.get("/api/sites/:id/reviews/:reviewId", async (req) => {
+  app.get("/api/sites/:id/asset-reviews/:reviewId", async (req) => {
     const { review } = await reviewFor(req);
     const comments =
       await platform.sql`SELECT c.id,c.body,c.anchor,c.created_at,
@@ -222,31 +222,34 @@ export function registerAgencyRoutes(
     return { data: { review, comments, events } };
   });
 
-  app.post("/api/sites/:id/reviews/:reviewId/comments", async (req, reply) => {
-    const { site, review } = await reviewFor(req);
-    const body = z
-      .object({
-        body: z.string().trim().min(1).max(2000),
-        anchor: z
-          .object({
-            sceneId: z.string().max(80).optional(),
-            slide: z.number().int().min(0).max(20).optional(),
-          })
-          .strict()
-          .default({}),
-      })
-      .strict()
-      .parse(req.body);
-    const user = requireUser(req);
-    const id = randomUUID();
-    await platform.sql`INSERT INTO review_comments
+  app.post(
+    "/api/sites/:id/asset-reviews/:reviewId/comments",
+    async (req, reply) => {
+      const { site, review } = await reviewFor(req);
+      const body = z
+        .object({
+          body: z.string().trim().min(1).max(2000),
+          anchor: z
+            .object({
+              sceneId: z.string().max(80).optional(),
+              slide: z.number().int().min(0).max(20).optional(),
+            })
+            .strict()
+            .default({}),
+        })
+        .strict()
+        .parse(req.body);
+      const user = requireUser(req);
+      const id = randomUUID();
+      await platform.sql`INSERT INTO review_comments
       (id,review_id,site_id,author_id,body,anchor)
       VALUES (${id},${String(review.id)},${site.id},${user.userId},${body.body},
         ${platform.sql.json(body.anchor)})`;
-    return reply.code(201).send({ data: { id } });
-  });
+      return reply.code(201).send({ data: { id } });
+    },
+  );
 
-  app.post("/api/sites/:id/reviews/:reviewId/decision", async (req) => {
+  app.post("/api/sites/:id/asset-reviews/:reviewId/decision", async (req) => {
     const { site, review } = await reviewFor(req);
     const body = z
       .object({
@@ -313,23 +316,26 @@ export function registerAgencyRoutes(
     return { data: { id: String(review.id), status: body.decision } };
   });
 
-  app.post("/api/sites/:id/reviews/:reviewId/share", async (req, reply) => {
-    const { site, review } = await reviewFor(req, "MEMBER");
-    const { days } = z
-      .object({ days: z.number().int().min(1).max(30).default(7) })
-      .parse(req.body ?? {});
-    const token = randomBytes(32).toString("base64url");
-    const expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
-    const shareId = randomUUID();
-    await platform.sql`INSERT INTO review_preview_shares
+  app.post(
+    "/api/sites/:id/asset-reviews/:reviewId/share",
+    async (req, reply) => {
+      const { site, review } = await reviewFor(req, "MEMBER");
+      const { days } = z
+        .object({ days: z.number().int().min(1).max(30).default(7) })
+        .parse(req.body ?? {});
+      const token = randomBytes(32).toString("base64url");
+      const expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
+      const shareId = randomUUID();
+      await platform.sql`INSERT INTO review_preview_shares
       (id,review_id,site_id,token_hash,expires_at,created_by)
       VALUES (${shareId},${String(review.id)},${site.id},${sha(token)},
         ${expiresAt},${requireUser(req).userId})`;
-    return reply.code(201).send({ data: { id: shareId, token, expiresAt } });
-  });
+      return reply.code(201).send({ data: { id: shareId, token, expiresAt } });
+    },
+  );
 
   app.delete(
-    "/api/sites/:id/reviews/:reviewId/shares/:shareId",
+    "/api/sites/:id/asset-reviews/:reviewId/shares/:shareId",
     async (req) => {
       const { site, review } = await reviewFor(req, "MEMBER");
       const { shareId } = z.object({ shareId: uuid }).parse(req.params);

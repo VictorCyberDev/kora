@@ -13,7 +13,7 @@ function ClientWorkspace({ site, close }: { site: J; close: () => void }) {
     [site.id],
   );
   const reviews = useLoad(
-    () => api<J[]>("GET", `/api/sites/${site.id}/reviews`),
+    () => api<J[]>("GET", `/api/sites/${site.id}/asset-reviews`),
     [site.id],
   );
   const [message, setMessage] = useState<string | null>(null);
@@ -24,7 +24,7 @@ function ClientWorkspace({ site, close }: { site: J; close: () => void }) {
       ":",
     );
     try {
-      await api("POST", `/api/sites/${site.id}/reviews`, {
+      await api("POST", `/api/sites/${site.id}/asset-reviews`, {
         objectType,
         objectId,
         version: Number(version),
@@ -39,10 +39,14 @@ function ClientWorkspace({ site, close }: { site: J; close: () => void }) {
   };
   const decide = async (review: J, decision: string) => {
     try {
-      await api("POST", `/api/sites/${site.id}/reviews/${review.id}/decision`, {
-        decision,
-        note: "Decision recorded from the agency workspace.",
-      });
+      await api(
+        "POST",
+        `/api/sites/${site.id}/asset-reviews/${review.id}/decision`,
+        {
+          decision,
+          note: "Decision recorded from the agency workspace.",
+        },
+      );
       reviews.reload();
     } catch (error) {
       setMessage(errText(error));
@@ -52,7 +56,7 @@ function ClientWorkspace({ site, close }: { site: J; close: () => void }) {
     try {
       const result = await api<J>(
         "POST",
-        `/api/sites/${site.id}/reviews/${review.id}/share`,
+        `/api/sites/${site.id}/asset-reviews/${review.id}/share`,
         { days: 7 },
       );
       await navigator.clipboard.writeText(

@@ -61,7 +61,7 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
       `/api/sites/${site.id}/collaborators/${approver.userId}`,
       { cookie: owner.cookie, body: { role: "APPROVER" } },
     );
-    const review = await h.call("POST", `/api/sites/${site.id}/reviews`, {
+    const review = await h.call("POST", `/api/sites/${site.id}/asset-reviews`, {
       cookie: owner.cookie,
       body: {
         objectType: "creative_document",
@@ -87,7 +87,7 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
     expect(revisionTwo.json.data.revision).toBe(2);
     const comment = await h.call(
       "POST",
-      `/api/sites/${site.id}/reviews/${reviewId}/comments`,
+      `/api/sites/${site.id}/asset-reviews/${reviewId}/comments`,
       {
         cookie: approver.cookie,
         body: {
@@ -99,13 +99,13 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
     expect(comment.status).toBe(201);
     const hidden = await h.call(
       "GET",
-      `/api/sites/${site.id}/reviews/${reviewId}`,
+      `/api/sites/${site.id}/asset-reviews/${reviewId}`,
       { cookie: outsider.cookie },
     );
     expect([403, 404]).toContain(hidden.status);
     const approved = await h.call(
       "POST",
-      `/api/sites/${site.id}/reviews/${reviewId}/decision`,
+      `/api/sites/${site.id}/asset-reviews/${reviewId}/decision`,
       {
         cookie: approver.cookie,
         body: {
@@ -118,7 +118,7 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
     expect(approved.json.data.status).toBe("APPROVED");
     const duplicate = await h.call(
       "POST",
-      `/api/sites/${site.id}/reviews/${reviewId}/decision`,
+      `/api/sites/${site.id}/asset-reviews/${reviewId}/decision`,
       {
         cookie: approver.cookie,
         body: { decision: "APPROVED", note: "again" },
@@ -127,7 +127,7 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
     expect(duplicate.status).toBe(409);
     const share = await h.call(
       "POST",
-      `/api/sites/${site.id}/reviews/${reviewId}/share`,
+      `/api/sites/${site.id}/asset-reviews/${reviewId}/share`,
       { cookie: owner.cookie, body: { days: 7 } },
     );
     expect(share.status).toBe(201);
@@ -148,20 +148,24 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
     );
     expect(current.json.data.revision).toBe(2);
 
-    const secondReview = await h.call("POST", `/api/sites/${site.id}/reviews`, {
-      cookie: owner.cookie,
-      body: {
-        objectType: "creative_document",
-        objectId: design.json.data.id,
-        version: 2,
-        title: "Approve revision two",
+    const secondReview = await h.call(
+      "POST",
+      `/api/sites/${site.id}/asset-reviews`,
+      {
+        cookie: owner.cookie,
+        body: {
+          objectType: "creative_document",
+          objectId: design.json.data.id,
+          version: 2,
+          title: "Approve revision two",
+        },
       },
-    });
+    );
     expect(secondReview.status).toBe(201);
     const decisions = await Promise.all([
       h.call(
         "POST",
-        `/api/sites/${site.id}/reviews/${secondReview.json.data.id}/decision`,
+        `/api/sites/${site.id}/asset-reviews/${secondReview.json.data.id}/decision`,
         {
           cookie: approver.cookie,
           body: { decision: "APPROVED", note: "first" },
@@ -169,7 +173,7 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
       ),
       h.call(
         "POST",
-        `/api/sites/${site.id}/reviews/${secondReview.json.data.id}/decision`,
+        `/api/sites/${site.id}/asset-reviews/${secondReview.json.data.id}/decision`,
         {
           cookie: approver.cookie,
           body: { decision: "REJECTED", note: "racing decision" },
@@ -180,7 +184,7 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
 
     const revoked = await h.call(
       "DELETE",
-      `/api/sites/${site.id}/reviews/${reviewId}/shares/${share.json.data.id}`,
+      `/api/sites/${site.id}/asset-reviews/${reviewId}/shares/${share.json.data.id}`,
       { cookie: owner.cookie },
     );
     expect(revoked.status).toBe(200);
