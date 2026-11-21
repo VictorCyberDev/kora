@@ -5,6 +5,8 @@ import type { ContentChannel, ContentDraft, DraftIssue } from "@kora/growth";
 type Row = Record<string, unknown>;
 const iso = (v: unknown) =>
   v ? new Date(v as string | Date).toISOString() : null;
+const nullableString = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
 
 export interface DraftRecord {
   id: string;
@@ -69,6 +71,8 @@ export interface RenderJob {
   assetId: string | null;
   projectId: string | null;
   projectRevision: number | null;
+  usageReservationId: string | null;
+  idempotencyKey: string | null;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -88,6 +92,8 @@ const mapJob = (r: Row): RenderJob => ({
     r.project_revision === null || r.project_revision === undefined
       ? null
       : Number(r.project_revision),
+  usageReservationId: nullableString(r.usage_reservation_id),
+  idempotencyKey: nullableString(r.idempotency_key),
   createdAt: iso(r.created_at),
   updatedAt: iso(r.updated_at),
 });
@@ -205,10 +211,19 @@ export class StudioStore {
     userId: string;
     projectId?: string;
     projectRevision?: number;
+    usageReservationId: string;
+    idempotencyKey: string;
   }) {
     const r = (
       await this
-        .sql`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,business_name,created_by,project_id,project_revision) VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},${this.sql.json(i.spec as postgres.JSONValue)},${i.brandVersion},${i.businessName},${i.userId},${i.projectId ?? null},${i.projectRevision ?? null}) RETURNING *`
+        .sql`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,business_name,
+          created_by,project_id,project_revision,usage_reservation_id,idempotency_key)
+        VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},
+          ${this.sql.json(i.spec as postgres.JSONValue)},${i.brandVersion},
+          ${i.businessName},${i.userId},${i.projectId ?? null},
+          ${i.projectRevision ?? null},${i.usageReservationId},${i.idempotencyKey})
+        ON CONFLICT(org_id,idempotency_key) WHERE idempotency_key IS NOT NULL
+        DO UPDATE SET idempotency_key=EXCLUDED.idempotency_key RETURNING *`
     )[0]!;
     return mapJob(r);
   }
@@ -221,15 +236,25 @@ export class StudioStore {
     brandVersion: number;
     businessName: string;
     userId: string;
+    usageReservationId: string;
+    idempotencyKey: string;
   }) {
     return this.sql.begin(async (tx) => {
       const job = (
-        await tx`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,business_name,created_by,project_id,project_revision)
-          VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},${tx.json(i.spec as postgres.JSONValue)},${i.brandVersion},${i.businessName},${i.userId},${i.projectId},${i.projectRevision}) RETURNING *`
+        await tx`INSERT INTO motion_renders(id,site_id,org_id,spec,brand_version,
+          business_name,created_by,project_id,project_revision,
+          usage_reservation_id,idempotency_key)
+          VALUES(${crypto.randomUUID()},${i.siteId},${i.orgId},
+            ${tx.json(i.spec as postgres.JSONValue)},${i.brandVersion},
+            ${i.businessName},${i.userId},${i.projectId},${i.projectRevision},
+            ${i.usageReservationId},${i.idempotencyKey})
+          ON CONFLICT(org_id,idempotency_key) WHERE idempotency_key IS NOT NULL
+          DO UPDATE SET idempotency_key=EXCLUDED.idempotency_key RETURNING *`
       )[0]!;
       const jobId = String(job.id);
       await tx`INSERT INTO motion_exports(id,project_id,site_id,org_id,project_revision,render_id,status,created_by)
-        VALUES(${crypto.randomUUID()},${i.projectId},${i.siteId},${i.orgId},${i.projectRevision},${jobId},'QUEUED',${i.userId})`;
+        VALUES(${crypto.randomUUID()},${i.projectId},${i.siteId},${i.orgId},${i.projectRevision},${jobId},'QUEUED',${i.userId})
+        ON CONFLICT(render_id) DO NOTHING`;
       await tx`UPDATE motion_projects SET render_status='QUEUED',updated_at=now()
         WHERE id=${i.projectId} AND site_id=${i.siteId}`;
       return mapJob(job);
@@ -350,5 +375,6 @@ export class StudioStore {
       await tx`UPDATE motion_exports SET status=${status},error=${message.slice(0, 300)},updated_at=now() WHERE render_id=${id}`;
       await tx`UPDATE motion_projects SET render_status=${status},updated_at=now() WHERE id=${projectId} AND site_id=${siteId}`;
     });
+    return status === "FAILED";
   }
 }

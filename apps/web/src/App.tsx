@@ -1,14 +1,11 @@
-import { KrevWorkspaceEntry } from "./pages/krev-workspace-entry";
 import {
   KrevLanding as Landing,
   KrevMarketingPage,
   KrevMarketingNav,
 } from "./pages/krev-marketing";
-import { KrevCreativeStudio } from "./pages/krev-creative-studio";
-import { IdentityPage } from "./pages/identity";
-import { ImagesPage } from "./pages/creative";
 import { PublicAuditPage, SharedAuditPage } from "./pages/audit";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import type { ComponentType } from "react";
 import {
   Link,
   NavLink,
@@ -23,39 +20,88 @@ import { api } from "./api";
 import { useAuth } from "./auth";
 import { Logo, Spinner, useLoad } from "./ui";
 import { Login, Pricing, Privacy, Signup, Terms } from "./pages/public";
-import { SitesList } from "./pages/sites";
-import { NewSiteV6 } from "./pages/new-site-v6";
-import { Dashboard } from "./pages/dashboard-v3";
-import { Build } from "./pages/build";
-import { WebsiteStudio } from "./pages/website-studio";
-import { MemoryPage, ResultsPage, ReviewsPage } from "./pages/intel";
-import { CampaignsPage, TodayPage } from "./pages/today";
-import { CalendarPage } from "./pages/calendar";
-import { StudioPage } from "./pages/studio";
-import { ChannelsPage } from "./pages/channels";
-import { AgencyPage } from "./pages/agency";
-import { CustomersPage } from "./pages/customers";
-import { BrandPage, PresencePage } from "./pages/presence";
-import {
-  CampaignsEntryV6,
-  CustomersEntryV6,
-  ImagesEntryV6,
-  MarketingEntryV6,
-  PresenceEntryV6,
-} from "./pages/site-entry-v6";
-import { IncidentPage, IncidentsList } from "./pages/incident";
-import {
-  AuditPage,
-  BillingPage,
-  DeploymentsPage,
-  DomainsPage,
-  FormsPage,
-  OperationsPage,
-  SettingsPage,
-  SiteSettings,
-  SiteShell,
-  SiteOverview,
-} from "./pages/more";
+
+function lazyPage<T extends Record<string, unknown>, K extends keyof T>(
+  loader: () => Promise<T>,
+  name: K,
+) {
+  return lazy(async () => ({
+    default: (await loader())[name] as ComponentType,
+  }));
+}
+
+const KrevWorkspaceEntry = lazy(() =>
+  import("./pages/krev-workspace-entry").then((module) => ({
+    default: module.KrevWorkspaceEntry,
+  })),
+);
+const KrevCreativeStudio = lazyPage(
+  () => import("./pages/krev-creative-studio"),
+  "KrevCreativeStudio",
+);
+const IdentityPage = lazyPage(() => import("./pages/identity"), "IdentityPage");
+const ImagesPage = lazyPage(() => import("./pages/creative"), "ImagesPage");
+const SitesList = lazyPage(() => import("./pages/sites"), "SitesList");
+const NewSiteV6 = lazyPage(() => import("./pages/new-site-v6"), "NewSiteV6");
+const Dashboard = lazyPage(() => import("./pages/dashboard-v3"), "Dashboard");
+const Build = lazyPage(() => import("./pages/build"), "Build");
+const WebsiteStudio = lazyPage(
+  () => import("./pages/website-studio"),
+  "WebsiteStudio",
+);
+const MemoryPage = lazyPage(() => import("./pages/intel"), "MemoryPage");
+const ResultsPage = lazyPage(() => import("./pages/intel"), "ResultsPage");
+const ReviewsPage = lazyPage(() => import("./pages/intel"), "ReviewsPage");
+const CampaignsPage = lazyPage(() => import("./pages/today"), "CampaignsPage");
+const TodayPage = lazyPage(() => import("./pages/today"), "TodayPage");
+const CalendarPage = lazyPage(() => import("./pages/calendar"), "CalendarPage");
+const StudioPage = lazyPage(() => import("./pages/studio"), "StudioPage");
+const ChannelsPage = lazyPage(() => import("./pages/channels"), "ChannelsPage");
+const AgencyPage = lazyPage(() => import("./pages/agency"), "AgencyPage");
+const CustomersPage = lazyPage(
+  () => import("./pages/customers"),
+  "CustomersPage",
+);
+const BrandPage = lazyPage(() => import("./pages/presence"), "BrandPage");
+const PresencePage = lazyPage(() => import("./pages/presence"), "PresencePage");
+const CampaignsEntryV6 = lazyPage(
+  () => import("./pages/site-entry-v6"),
+  "CampaignsEntryV6",
+);
+const CustomersEntryV6 = lazyPage(
+  () => import("./pages/site-entry-v6"),
+  "CustomersEntryV6",
+);
+const ImagesEntryV6 = lazyPage(
+  () => import("./pages/site-entry-v6"),
+  "ImagesEntryV6",
+);
+const MarketingEntryV6 = lazyPage(
+  () => import("./pages/site-entry-v6"),
+  "MarketingEntryV6",
+);
+const PresenceEntryV6 = lazyPage(
+  () => import("./pages/site-entry-v6"),
+  "PresenceEntryV6",
+);
+const IncidentPage = lazyPage(() => import("./pages/incident"), "IncidentPage");
+const IncidentsList = lazyPage(
+  () => import("./pages/incident"),
+  "IncidentsList",
+);
+const AuditPage = lazyPage(() => import("./pages/more"), "AuditPage");
+const BillingPage = lazyPage(() => import("./pages/more"), "BillingPage");
+const DeploymentsPage = lazyPage(
+  () => import("./pages/more"),
+  "DeploymentsPage",
+);
+const DomainsPage = lazyPage(() => import("./pages/more"), "DomainsPage");
+const FormsPage = lazyPage(() => import("./pages/more"), "FormsPage");
+const OperationsPage = lazyPage(() => import("./pages/more"), "OperationsPage");
+const SettingsPage = lazyPage(() => import("./pages/more"), "SettingsPage");
+const SiteSettings = lazyPage(() => import("./pages/more"), "SiteSettings");
+const SiteShell = lazyPage(() => import("./pages/more"), "SiteShell");
+const SiteOverview = lazyPage(() => import("./pages/more"), "SiteOverview");
 
 function PublicLayout() {
   const { user } = useAuth();
@@ -361,73 +407,87 @@ function MorePage() {
 
 export function App() {
   return (
-    <Routes>
-      <Route element={<PublicLayout />}>
-        <Route path="/" element={<Landing />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/product/:topic" element={<KrevMarketingPage />} />
-        <Route path="/audit" element={<PublicAuditPage />} />
-        <Route path="/audit/shared" element={<SharedAuditPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-      </Route>
-      <Route path="/app" element={<AppLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="create" element={<KrevWorkspaceEntry mode="create" />} />
-        <Route path="designs" element={<KrevWorkspaceEntry mode="designs" />} />
-        <Route path="brand" element={<KrevWorkspaceEntry mode="brand" />} />
-        <Route path="assets" element={<KrevWorkspaceEntry mode="assets" />} />
-        <Route path="publish" element={<KrevWorkspaceEntry mode="publish" />} />
-        <Route path="sites" element={<SitesList />} />
-        <Route path="sites/new" element={<NewSiteV6 />} />
-        <Route path="sites/:id" element={<SiteShell />}>
-          <Route index element={<SiteOverview />} />
-          <Route path="presence" element={<PresencePage />} />
-          <Route path="brand" element={<BrandPage />} />
-          <Route path="identity" element={<IdentityPage />} />
-          <Route path="results" element={<ResultsPage />} />
-          <Route path="reviews" element={<ReviewsPage />} />
-          <Route path="memory" element={<MemoryPage />} />
-          <Route path="today" element={<TodayPage />} />
-          <Route path="campaigns" element={<CampaignsPage />} />
-          <Route path="create" element={<StudioPage />} />
-          <Route path="images" element={<ImagesPage />} />
-          <Route path="calendar" element={<CalendarPage />} />
-          <Route path="channels" element={<ChannelsPage />} />
-          <Route path="customers" element={<CustomersPage />} />
-          <Route path="build" element={<Build />} />
-          <Route path="website-studio" element={<WebsiteStudio />} />
-          <Route path="creative-studio" element={<KrevCreativeStudio />} />
-          <Route path="deployments" element={<DeploymentsPage />} />
-          <Route path="incidents" element={<IncidentsList />} />
-          <Route path="incidents/:incidentId" element={<IncidentPage />} />
-          <Route path="domains" element={<DomainsPage />} />
-          <Route path="forms" element={<FormsPage />} />
-          <Route path="settings" element={<SiteSettings />} />
+    <Suspense
+      fallback={
+        <div className="wrap" style={{ padding: 40 }} role="status">
+          <Spinner /> Loading workspace…
+        </div>
+      }
+    >
+      <Routes>
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Landing />} />
+          <Route path="/pricing" element={<Pricing />} />
+          <Route path="/product/:topic" element={<KrevMarketingPage />} />
+          <Route path="/audit" element={<PublicAuditPage />} />
+          <Route path="/audit/shared" element={<SharedAuditPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
         </Route>
-        <Route path="presence" element={<PresenceEntryV6 />} />
-        <Route path="customers" element={<CustomersEntryV6 />} />
-        <Route path="marketing" element={<MarketingEntryV6 />} />
-        <Route path="campaigns" element={<CampaignsEntryV6 />} />
-        <Route path="images" element={<ImagesEntryV6 />} />
-        <Route path="more" element={<MorePage />} />
-        <Route path="operations" element={<OperationsPage />} />
-        <Route path="billing" element={<BillingPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="agency" element={<AgencyPage />} />
-        <Route path="audit" element={<AuditPage />} />
-      </Route>
-      <Route
-        path="*"
-        element={
-          <div className="wrap" style={{ padding: 60 }}>
-            <h1>Page not found</h1>
-            <Link to="/">Go home</Link>
-          </div>
-        }
-      />
-    </Routes>
+        <Route path="/app" element={<AppLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="create" element={<KrevWorkspaceEntry mode="create" />} />
+          <Route
+            path="designs"
+            element={<KrevWorkspaceEntry mode="designs" />}
+          />
+          <Route path="brand" element={<KrevWorkspaceEntry mode="brand" />} />
+          <Route path="assets" element={<KrevWorkspaceEntry mode="assets" />} />
+          <Route
+            path="publish"
+            element={<KrevWorkspaceEntry mode="publish" />}
+          />
+          <Route path="sites" element={<SitesList />} />
+          <Route path="sites/new" element={<NewSiteV6 />} />
+          <Route path="sites/:id" element={<SiteShell />}>
+            <Route index element={<SiteOverview />} />
+            <Route path="presence" element={<PresencePage />} />
+            <Route path="brand" element={<BrandPage />} />
+            <Route path="identity" element={<IdentityPage />} />
+            <Route path="results" element={<ResultsPage />} />
+            <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="memory" element={<MemoryPage />} />
+            <Route path="today" element={<TodayPage />} />
+            <Route path="campaigns" element={<CampaignsPage />} />
+            <Route path="create" element={<StudioPage />} />
+            <Route path="images" element={<ImagesPage />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="channels" element={<ChannelsPage />} />
+            <Route path="customers" element={<CustomersPage />} />
+            <Route path="build" element={<Build />} />
+            <Route path="website-studio" element={<WebsiteStudio />} />
+            <Route path="creative-studio" element={<KrevCreativeStudio />} />
+            <Route path="deployments" element={<DeploymentsPage />} />
+            <Route path="incidents" element={<IncidentsList />} />
+            <Route path="incidents/:incidentId" element={<IncidentPage />} />
+            <Route path="domains" element={<DomainsPage />} />
+            <Route path="forms" element={<FormsPage />} />
+            <Route path="settings" element={<SiteSettings />} />
+          </Route>
+          <Route path="presence" element={<PresenceEntryV6 />} />
+          <Route path="customers" element={<CustomersEntryV6 />} />
+          <Route path="marketing" element={<MarketingEntryV6 />} />
+          <Route path="campaigns" element={<CampaignsEntryV6 />} />
+          <Route path="images" element={<ImagesEntryV6 />} />
+          <Route path="more" element={<MorePage />} />
+          <Route path="operations" element={<OperationsPage />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="agency" element={<AgencyPage />} />
+          <Route path="audit" element={<AuditPage />} />
+        </Route>
+        <Route
+          path="*"
+          element={
+            <div className="wrap" style={{ padding: 60 }}>
+              <h1>Page not found</h1>
+              <Link to="/">Go home</Link>
+            </div>
+          }
+        />
+      </Routes>
+    </Suspense>
   );
 }

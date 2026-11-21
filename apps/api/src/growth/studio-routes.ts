@@ -65,6 +65,18 @@ export interface StudioDeps {
   contentModel: ContentModel | null;
 }
 const uuid = z.string().uuid();
+const usageKey = (req: FastifyRequest, fallback: string) => {
+  const supplied =
+    req.headers["idempotency-key"] ?? req.headers["x-idempotency-key"];
+  if (Array.isArray(supplied))
+    throw new HttpError(400, "invalid_idempotency_key");
+  return z
+    .string()
+    .min(8)
+    .max(200)
+    .regex(/^[A-Za-z0-9_.:-]+$/)
+    .parse(supplied ?? fallback);
+};
 const MAX_MOTION_AUDIO_BYTES = 20 * 1024 * 1024;
 const audioMime = (bytes: Buffer) => {
   if (
@@ -968,25 +980,44 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
           "motion_revision_conflict",
           "Save or reload the latest project revision before exporting.",
         );
-      await billing.assertUsageAvailable(site.orgId, "video_render");
       const timeline = await validateTimeline(site, project.timeline);
       const { graph } = await base(site);
       const user = requireUser(req);
-      const job = await studio.enqueueTimeline({
-        siteId: site.id,
+      const idempotencyKey = usageKey(
+        req,
+        `motion:${projectId}:${project.revision}`,
+      );
+      const reservation = await billing.reserveUsage({
         orgId: site.orgId,
-        projectId,
-        projectRevision: project.revision,
-        spec: {
-          kind: "timeline-v2",
+        siteId: site.id,
+        kind: "video_render",
+        idempotencyKey,
+        metadata: { projectId, projectRevision: project.revision },
+      });
+      let job;
+      try {
+        job = await studio.enqueueTimeline({
+          siteId: site.id,
+          orgId: site.orgId,
           projectId,
           projectRevision: project.revision,
-          timeline,
-        },
-        brandVersion: timeline.brand.kitVersion,
-        businessName: graph.identity.name,
-        userId: user.userId,
-      });
+          spec: {
+            kind: "timeline-v2",
+            projectId,
+            projectRevision: project.revision,
+            timeline,
+          },
+          brandVersion: timeline.brand.kitVersion,
+          businessName: graph.identity.name,
+          userId: user.userId,
+          usageReservationId: reservation.id,
+          idempotencyKey,
+        });
+      } catch (error) {
+        if (reservation.state === "RESERVED")
+          await billing.releaseUsage(reservation.id);
+        throw error;
+      }
       await platform.audit({
         orgId: site.orgId,
         actorUserId: user.userId,
@@ -1052,14 +1083,31 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
         "Video export is not available on this server yet. You can still preview and use the still images.",
       );
     const { kit, graph } = await base(site);
-    const job = await studio.enqueue({
-      siteId: site.id,
+    const idempotencyKey = usageKey(req, `motion-request:${req.id}`);
+    const reservation = await billing.reserveUsage({
       orgId: site.orgId,
-      spec,
-      brandVersion: kit.version,
-      businessName: graph.identity.name,
-      userId: requireUser(req).userId,
+      siteId: site.id,
+      kind: "video_render",
+      idempotencyKey,
+      metadata: { template: spec.template, format: spec.format },
     });
+    let job;
+    try {
+      job = await studio.enqueue({
+        siteId: site.id,
+        orgId: site.orgId,
+        spec,
+        brandVersion: kit.version,
+        businessName: graph.identity.name,
+        userId: requireUser(req).userId,
+        usageReservationId: reservation.id,
+        idempotencyKey,
+      });
+    } catch (error) {
+      if (reservation.state === "RESERVED")
+        await billing.releaseUsage(reservation.id);
+      throw error;
+    }
     await platform.audit({
       orgId: site.orgId,
       actorUserId: requireUser(req).userId,
@@ -1084,12 +1132,26 @@ export function registerStudioRoutes(app: FastifyInstance, d: StudioDeps) {
   app.post("/api/sites/:id/motion/:renderId/retry", async (req) => {
     const site = await siteFor(req, "MEMBER");
     const { renderId } = z.object({ renderId: uuid }).parse(req.params);
-    if (!(await studio.retry(site.id, renderId)))
+    const job = await studio.getJob(site.id, renderId);
+    if (!job || job.status !== "FAILED")
       throw new HttpError(
         409,
         "not_retryable",
         "Only a failed render can be retried.",
       );
+    if (job.usageReservationId && job.idempotencyKey)
+      await billing.reserveUsage({
+        orgId: site.orgId,
+        siteId: site.id,
+        kind: "video_render",
+        idempotencyKey: job.idempotencyKey,
+        metadata: { retryOf: renderId },
+      });
+    if (!(await studio.retry(site.id, renderId))) {
+      if (job.usageReservationId)
+        await billing.releaseUsage(job.usageReservationId);
+      throw new HttpError(409, "not_retryable");
+    }
     return { data: { status: "QUEUED" } };
   });
   void growth;

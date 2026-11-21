@@ -19,6 +19,14 @@ const objectType = z.enum([
   "site_version",
 ]);
 const sha = (token: string) => createHash("sha256").update(token).digest("hex");
+const sourceHash = (source: unknown) =>
+  createHash("sha256").update(JSON.stringify(source)).digest("hex");
+const asRow = (value: unknown): Record<string, unknown> | undefined =>
+  value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : undefined;
+const firstRow = (rows: unknown): Record<string, unknown> | undefined =>
+  Array.isArray(rows) ? asRow(rows[0]) : undefined;
 
 export function registerAgencyRoutes(
   app: FastifyInstance,
@@ -52,22 +60,46 @@ export function registerAgencyRoutes(
     if (!review) throw notFound();
     return { site, review };
   };
-  const objectExists = async (
+  const reviewSource = async (
     siteId: string,
+    orgId: string,
     type: z.infer<typeof objectType>,
     objectId: string,
+    version: number,
   ) => {
-    const table = {
-      creative_document: "creative_documents",
-      motion_project: "motion_projects",
-      campaign: "campaigns",
-      site_version: "site_versions",
-    }[type];
-    const rows = await platform.sql.unsafe(
-      `SELECT 1 FROM ${table} WHERE id=$1 AND site_id=$2 LIMIT 1`,
-      [objectId, siteId],
-    );
-    return rows.length > 0;
+    let row: Record<string, unknown> | undefined;
+    if (type === "creative_document")
+      row = firstRow(
+        await platform.sql`SELECT r.source
+          FROM creative_document_revisions r
+          JOIN creative_documents d ON d.id=r.document_id
+          WHERE d.id=${objectId} AND d.site_id=${siteId} AND d.org_id=${orgId}
+            AND r.revision=${version}`,
+      );
+    else if (type === "motion_project")
+      row = firstRow(
+        await platform.sql`SELECT r.source
+          FROM motion_project_revisions r
+          JOIN motion_projects p ON p.id=r.project_id
+          WHERE p.id=${objectId} AND p.site_id=${siteId} AND p.org_id=${orgId}
+            AND p.deleted_at IS NULL AND r.revision=${version}`,
+      );
+    else if (type === "site_version")
+      row = firstRow(
+        await platform.sql`SELECT jsonb_build_object(
+          'spec',v.spec,'artifact',v.artifact,'specHash',v.spec_hash,
+          'artifactHash',v.artifact_hash,'state',v.state
+        ) AS source FROM site_versions v
+        WHERE v.id=${objectId} AND v.site_id=${siteId} AND v.org_id=${orgId}
+          AND v.number=${version}`,
+      );
+    else if (version === 1)
+      row = firstRow(
+        await platform.sql`SELECT to_jsonb(c) AS source FROM campaigns c
+          WHERE c.id=${objectId} AND c.site_id=${siteId} AND c.org_id=${orgId}`,
+      );
+    if (!row?.source) throw notFound();
+    return row.source;
   };
 
   app.get("/api/agency/workspaces", async (req) => {
@@ -146,15 +178,22 @@ export function registerAgencyRoutes(
       })
       .strict()
       .parse(req.body);
-    if (!(await objectExists(site.id, body.objectType, body.objectId)))
-      throw notFound();
+    const pinnedSource = await reviewSource(
+      site.id,
+      site.orgId,
+      body.objectType,
+      body.objectId,
+      body.version,
+    );
     const user = requireUser(req);
     const id = randomUUID();
     await platform.inTransaction(async (tx) => {
       await tx.sql`INSERT INTO asset_reviews
-        (id,site_id,org_id,object_type,object_id,version,title,created_by)
+        (id,site_id,org_id,object_type,object_id,version,title,created_by,
+          review_source,review_source_hash)
         VALUES (${id},${site.id},${site.orgId},${body.objectType},${body.objectId},
-          ${body.version},${body.title},${user.userId})`;
+          ${body.version},${body.title},${user.userId},
+          ${tx.sql.json(pinnedSource as never)},${sourceHash(pinnedSource)})`;
       await tx.sql`INSERT INTO review_events
         (id,review_id,site_id,from_status,to_status,actor_id,detail)
         VALUES (${randomUUID()},${id},${site.id},NULL,'IN_REVIEW',${user.userId},'{}')`;
@@ -243,9 +282,17 @@ export function registerAgencyRoutes(
         "Start a new review for a new revision.",
       );
     await platform.inTransaction(async (tx) => {
-      await tx.sql`UPDATE asset_reviews SET status=${body.decision},
+      const decided =
+        await tx.sql`UPDATE asset_reviews SET status=${body.decision},
         decided_by=${user.userId},decided_at=now(),updated_at=now()
-        WHERE id=${String(review.id)} AND status='IN_REVIEW'`;
+        WHERE id=${String(review.id)} AND site_id=${site.id}
+          AND status='IN_REVIEW' RETURNING id`;
+      if (!decided.length)
+        throw new HttpError(
+          409,
+          "review_already_decided",
+          "Another reviewer already completed this decision.",
+        );
       await tx.sql`INSERT INTO review_events
         (id,review_id,site_id,from_status,to_status,actor_id,detail)
         VALUES (${randomUUID()},${String(review.id)},${site.id},'IN_REVIEW',
@@ -273,12 +320,27 @@ export function registerAgencyRoutes(
       .parse(req.body ?? {});
     const token = randomBytes(32).toString("base64url");
     const expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
+    const shareId = randomUUID();
     await platform.sql`INSERT INTO review_preview_shares
       (id,review_id,site_id,token_hash,expires_at,created_by)
-      VALUES (${randomUUID()},${String(review.id)},${site.id},${sha(token)},
+      VALUES (${shareId},${String(review.id)},${site.id},${sha(token)},
         ${expiresAt},${requireUser(req).userId})`;
-    return reply.code(201).send({ data: { token, expiresAt } });
+    return reply.code(201).send({ data: { id: shareId, token, expiresAt } });
   });
+
+  app.delete(
+    "/api/sites/:id/reviews/:reviewId/shares/:shareId",
+    async (req) => {
+      const { site, review } = await reviewFor(req, "MEMBER");
+      const { shareId } = z.object({ shareId: uuid }).parse(req.params);
+      const revoked = await platform.sql`UPDATE review_preview_shares
+        SET revoked_at=COALESCE(revoked_at,now())
+        WHERE id=${shareId} AND review_id=${String(review.id)}
+          AND site_id=${site.id} AND revoked_at IS NULL RETURNING id`;
+      if (!revoked.length) throw notFound();
+      return { data: { id: shareId, revoked: true } };
+    },
+  );
 
   app.get("/api/public/review-preview/:token", async (req) => {
     if (!shareLimiter.take(req.ip))
@@ -286,27 +348,14 @@ export function registerAgencyRoutes(
     const { token } = z
       .object({ token: z.string().min(40).max(100) })
       .parse(req.params);
-    const row = (
+    const row = firstRow(
       await platform.sql`SELECT r.* FROM review_preview_shares s
         JOIN asset_reviews r ON r.id=s.review_id AND r.site_id=s.site_id
-        WHERE s.token_hash=${sha(token)} AND s.revoked_at IS NULL AND s.expires_at>now()`
-    )[0];
+        WHERE s.token_hash=${sha(token)} AND s.revoked_at IS NULL AND s.expires_at>now()`,
+    );
     if (!row) throw notFound();
-    let source: unknown = null;
-    if (String(row.object_type) === "creative_document") {
-      const sourceRow = (
-        await platform.sql`SELECT source FROM creative_documents
-          WHERE id=${String(row.object_id)} AND site_id=${String(row.site_id)}`
-      )[0] as Record<string, unknown> | undefined;
-      source = sourceRow?.source ?? null;
-    } else if (String(row.object_type) === "motion_project") {
-      const sourceRow = (
-        await platform.sql`SELECT source FROM motion_projects
-          WHERE id=${String(row.object_id)} AND site_id=${String(row.site_id)}
-            AND deleted_at IS NULL`
-      )[0] as Record<string, unknown> | undefined;
-      source = sourceRow?.source ?? null;
-    }
+    const source = row.review_source;
+    if (!source) throw notFound();
     return {
       data: {
         title: String(row.title),

@@ -24,16 +24,14 @@ export class StudioWorker {
       raster: () => Promise<Rasterizer>;
       bin: string;
       log?: { warn: (o: object, m: string) => void };
-      meter?: (
-        orgId: string,
-        siteId: string,
-        dimension: string,
-        quantity: number,
-      ) => Promise<void>;
+      consumeUsage?: (reservationId: string) => Promise<unknown>;
+      releaseUsage?: (reservationId: string) => Promise<unknown>;
+      reconcileUsage?: () => Promise<unknown>;
     },
   ) {}
   /** Renders at most one job. Returns whether a job was processed. */
   async tick(): Promise<boolean> {
+    await this.d.reconcileUsage?.();
     const job = await this.d.studio.claim();
     if (!job) return false;
     try {
@@ -133,14 +131,17 @@ export class StudioWorker {
         userId: null,
       });
       await this.d.studio.finish(job.id, asset.id);
-      await this.d.meter?.(job.orgId, job.siteId, "VIDEO_RENDER", 1);
+      if (job.usageReservationId)
+        await this.d.consumeUsage?.(job.usageReservationId);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "render failed";
       this.d.log?.warn(
         { jobId: job.id, attempt: job.attempts },
         `motion render failed: ${msg}`,
       );
-      await this.d.studio.fail(job.id, job.attempts, msg);
+      const terminal = await this.d.studio.fail(job.id, job.attempts, msg);
+      if (terminal && job.usageReservationId)
+        await this.d.releaseUsage?.(job.usageReservationId);
     }
     return true;
   }

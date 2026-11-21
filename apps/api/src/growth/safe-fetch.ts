@@ -82,26 +82,28 @@ function once(
   return new Promise((resolve, reject) => {
     const mod = u.protocol === "https:" ? https : http;
     const lookup: net.LookupFunction = (hostname, opts, cb) => {
+      let completed = false;
+      const finish = (...args: unknown[]) => {
+        if (completed) return;
+        completed = true;
+        clearTimeout(timer);
+        (cb as (...values: unknown[]) => void)(...args);
+      };
+      const timer = setTimeout(
+        () =>
+          finish(new UnsafeUrl("The website name took too long to resolve.")),
+        o.timeoutMs,
+      );
       dns.lookup(hostname, { ...opts, all: true }, (err, addrs) => {
-        if (err) return (cb as (e: Error) => void)(err);
+        if (err) return finish(err);
         const list = addrs;
         const ok = o.allowPrivate
           ? list
           : list.filter((a) => !isPrivateAddress(a.address));
         if (ok.length === 0)
-          return (cb as (e: Error) => void)(
-            new UnsafeUrl("That address is not a public website."),
-          );
-        if ((opts as { all?: boolean }).all)
-          return (cb as unknown as (e: null, a: dns.LookupAddress[]) => void)(
-            null,
-            ok,
-          );
-        return (cb as unknown as (e: null, a: string, f: number) => void)(
-          null,
-          ok[0]!.address,
-          ok[0]!.family,
-        );
+          return finish(new UnsafeUrl("That address is not a public website."));
+        if ((opts as { all?: boolean }).all) return finish(null, ok);
+        return finish(null, ok[0]!.address, ok[0]!.family);
       });
     };
     const req = mod.request(

@@ -6,8 +6,17 @@ ALTER TABLE campaigns ADD COLUMN IF NOT EXISTS brand_os_version integer;
 
 -- Composite references below make it impossible to attach another tenant's
 -- editable source even if a caller learns its UUID.
-ALTER TABLE creative_documents
-  ADD CONSTRAINT creative_documents_id_site_unique UNIQUE (id,site_id);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'creative_documents_id_site_unique'
+      AND conrelid = 'creative_documents'::regclass
+  ) THEN
+    ALTER TABLE creative_documents
+      ADD CONSTRAINT creative_documents_id_site_unique UNIQUE (id,site_id);
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS campaign_assets (
   id uuid PRIMARY KEY,

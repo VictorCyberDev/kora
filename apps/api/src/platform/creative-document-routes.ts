@@ -20,6 +20,18 @@ import {
 } from "./creative-documents.js";
 
 const uuid = z.string().uuid();
+const exportUsageKey = (req: FastifyRequest) => {
+  const supplied =
+    req.headers["idempotency-key"] ?? req.headers["x-idempotency-key"];
+  if (Array.isArray(supplied))
+    throw new HttpError(400, "invalid_idempotency_key");
+  return z
+    .string()
+    .min(8)
+    .max(200)
+    .regex(/^[A-Za-z0-9_.:-]+$/)
+    .parse(supplied ?? `export-request:${req.id}`);
+};
 const json = (value: unknown) =>
   JSON.parse(JSON.stringify(value)) as import("postgres").JSONValue;
 export function registerCreativeDocumentRoutes(
@@ -554,26 +566,43 @@ export function registerCreativeDocumentRoutes(
         })
         .parse(req.params);
       const { site, row } = await docFor(req, id, documentId);
-      if (billing) await billing.assertUsageAvailable(site.orgId, "export");
       const source = creativeDocumentSchema.parse(row.source);
       const art = source.slides[slide];
       if (!art) throw notFound();
-      const svg = renderSlideSvg(art);
-      await platform.recordUsage(site.orgId, site.id, "EXPORT", 1, {
+      const usageMetadata = {
         kind: source.kind,
         documentId,
         revision: Number(row.revision),
         slide,
-      });
-      await platform.audit({
-        orgId: site.orgId,
-        actorUserId: requireUser(req).userId,
-        action: "creative_document.exported",
-        objectType: "creative_document",
-        objectId: documentId,
-        requestId: req.id,
-        metadata: { revision: Number(row.revision), slide, format: "svg" },
-      });
+      };
+      const reservation = billing
+        ? await billing.reserveUsage({
+            orgId: site.orgId,
+            siteId: site.id,
+            kind: "export",
+            idempotencyKey: exportUsageKey(req),
+            metadata: usageMetadata,
+          })
+        : null;
+      let svg: string;
+      try {
+        svg = renderSlideSvg(art);
+        await platform.audit({
+          orgId: site.orgId,
+          actorUserId: requireUser(req).userId,
+          action: "creative_document.exported",
+          objectType: "creative_document",
+          objectId: documentId,
+          requestId: req.id,
+          metadata: { revision: Number(row.revision), slide, format: "svg" },
+        });
+        if (reservation?.state === "RESERVED")
+          await billing?.consumeUsage(reservation.id);
+      } catch (error) {
+        if (reservation?.state === "RESERVED")
+          await billing?.releaseUsage(reservation.id);
+        throw error;
+      }
       reply.header("content-type", "image/svg+xml; charset=utf-8");
       reply.header(
         "content-disposition",

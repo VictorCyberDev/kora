@@ -72,6 +72,19 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
     });
     expect(review.status).toBe(201);
     const reviewId = review.json.data.id as string;
+    const revisionOneSource = structuredClone(design.json.data.source);
+    const revisionTwoSource = structuredClone(revisionOneSource);
+    revisionTwoSource.title = "Christmas orders — revised";
+    const revisionTwo = await h.call(
+      "PUT",
+      `/api/sites/${site.id}/creative-documents/${design.json.data.id}`,
+      {
+        cookie: owner.cookie,
+        body: { revision: 1, source: revisionTwoSource },
+      },
+    );
+    expect(revisionTwo.status).toBe(200);
+    expect(revisionTwo.json.data.revision).toBe(2);
     const comment = await h.call(
       "POST",
       `/api/sites/${site.id}/reviews/${reviewId}/comments`,
@@ -126,6 +139,54 @@ suite("CREATIVE-M9 agency review and client isolation", () => {
       data: { source: unknown; version: number };
     };
     expect(payload.data.version).toBe(1);
-    expect(payload.data.source).toBeTruthy();
+    expect(payload.data.source).toEqual(revisionOneSource);
+    expect(payload.data.source).not.toEqual(revisionTwoSource);
+    const current = await h.call(
+      "GET",
+      `/api/sites/${site.id}/creative-documents/${design.json.data.id}`,
+      { cookie: owner.cookie },
+    );
+    expect(current.json.data.revision).toBe(2);
+
+    const secondReview = await h.call("POST", `/api/sites/${site.id}/reviews`, {
+      cookie: owner.cookie,
+      body: {
+        objectType: "creative_document",
+        objectId: design.json.data.id,
+        version: 2,
+        title: "Approve revision two",
+      },
+    });
+    expect(secondReview.status).toBe(201);
+    const decisions = await Promise.all([
+      h.call(
+        "POST",
+        `/api/sites/${site.id}/reviews/${secondReview.json.data.id}/decision`,
+        {
+          cookie: approver.cookie,
+          body: { decision: "APPROVED", note: "first" },
+        },
+      ),
+      h.call(
+        "POST",
+        `/api/sites/${site.id}/reviews/${secondReview.json.data.id}/decision`,
+        {
+          cookie: approver.cookie,
+          body: { decision: "REJECTED", note: "racing decision" },
+        },
+      ),
+    ]);
+    expect(decisions.map((result) => result.status).sort()).toEqual([200, 409]);
+
+    const revoked = await h.call(
+      "DELETE",
+      `/api/sites/${site.id}/reviews/${reviewId}/shares/${share.json.data.id}`,
+      { cookie: owner.cookie },
+    );
+    expect(revoked.status).toBe(200);
+    const afterRevoke = await fetch(
+      `${h.base}/api/public/review-preview/${share.json.data.token}`,
+    );
+    expect(afterRevoke.status).toBe(404);
   });
 });

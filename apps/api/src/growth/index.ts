@@ -182,7 +182,9 @@ export function registerGrowth(
       growth,
       raster,
       bin,
-      meter: (o, si, dim, q) => platform.recordUsage(o, si, dim, q),
+      consumeUsage: (id) => billing.consumeUsage(id),
+      releaseUsage: (id) => billing.releaseUsage(id),
+      reconcileUsage: () => billing.reconcileUsageReservations(),
     });
     w.start();
     app.addHook("onClose", () => w.stop());
