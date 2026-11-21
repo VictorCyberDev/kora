@@ -671,7 +671,7 @@ export function CampaignsPage() {
                 ) : (
                   <Link
                     className="btn sm ghost"
-                    to={`/app/sites/${id}/creative-studio`}
+                    to={`/app/sites/${id}/creative-studio${asset.creativeDocumentId ? `?document=${encodeURIComponent(asset.creativeDocumentId)}` : ""}`}
                   >
                     Edit design
                   </Link>
