@@ -46,7 +46,7 @@ test("Meridian Bakes creates a seven-day editable campaign with approval and man
       headers: { "x-requested-with": "kora" },
     },
   );
-  expect(imp.status()).toBe(200);
+  expect(imp.status()).toBe(201);
   const facts = (await imp.json()).data.facts;
   const saved = await context.request.put(
     `/api/sites/${siteId}/presence/profile`,
