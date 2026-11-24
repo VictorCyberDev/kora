@@ -45,6 +45,18 @@ const TLS_CODE =
   /^(CERT_|DEPTH_ZERO_SELF_SIGNED_CERT$|UNABLE_TO_\w*CERT|UNABLE_TO_VERIFY_LEAF_SIGNATURE$|ERR_TLS_|ERR_SSL_)/;
 const MAX_CHAIN = 16;
 
+/** RFC 6761 reserves .invalid for names that must never resolve. Classify it
+ * locally so resolver interception or a captive DNS service cannot turn a
+ * deterministic DNS failure into a misleading timeout. */
+function assertResolvableMonitorTarget(rawUrl: string): void {
+  const hostname = new URL(rawUrl).hostname.toLowerCase();
+  if (hostname === "invalid" || hostname.endsWith(".invalid")) {
+    throw Object.assign(new Error(`getaddrinfo ENOTFOUND ${hostname}`), {
+      code: "ENOTFOUND",
+    });
+  }
+}
+
 /** The error, then its cause chain and AggregateError members, depth first. */
 function errorChain(root: unknown): Array<Record<string, unknown>> {
   const out: Array<Record<string, unknown>> = [];
@@ -194,6 +206,7 @@ export class HealthMonitor {
     const started = performance.now();
     let observation: TelemetryObservation;
     try {
+      assertResolvableMonitorTarget(this.config.MONITOR_HEALTH_URL);
       const response = await fetch(this.config.MONITOR_HEALTH_URL, {
         signal: AbortSignal.timeout(this.config.MONITOR_TIMEOUT_MS),
       });

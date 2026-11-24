@@ -10,6 +10,8 @@ import type {
 type Row = Record<string, unknown>;
 const iso = (v: unknown) =>
   v ? new Date(v as string | Date).toISOString() : null;
+const nullableString = (value: unknown): string | null =>
+  typeof value === "string" ? value : null;
 
 export interface RecommendationRecord {
   id: string;
@@ -192,17 +194,21 @@ export class MarketingStore {
     orgId: string;
     name: string;
     objective: string;
+    audience: string;
+    brief: unknown;
+    direction: unknown;
     offerId: string;
     offerTitle: string;
     startsOn: string;
     endsOn: string;
     brandVersion: number;
+    brandOsVersion: number | null;
     userId: string;
     channels: Array<{ provider: string; assetId: string }>;
   }) {
     return this.tx(async (sql) => {
       const id = crypto.randomUUID();
-      await sql`INSERT INTO campaigns(id,site_id,org_id,name,objective,offer_id,offer_title,starts_on,ends_on,brand_version,created_by) VALUES(${id},${i.siteId},${i.orgId},${i.name},${i.objective},${i.offerId},${i.offerTitle},${i.startsOn},${i.endsOn},${i.brandVersion},${i.userId})`;
+      await sql`INSERT INTO campaigns(id,site_id,org_id,name,objective,audience,brief,direction,offer_id,offer_title,starts_on,ends_on,brand_version,brand_os_version,created_by) VALUES(${id},${i.siteId},${i.orgId},${i.name},${i.objective},${i.audience},${sql.json(i.brief as never)},${sql.json(i.direction as never)},${i.offerId},${i.offerTitle},${i.startsOn},${i.endsOn},${i.brandVersion},${i.brandOsVersion},${i.userId})`;
       for (const c of i.channels)
         await sql`INSERT INTO campaign_channels(campaign_id,site_id,provider,asset_id) VALUES(${id},${i.siteId},${c.provider},${c.assetId})`;
       return id;
@@ -220,6 +226,7 @@ export class MarketingStore {
       id: String(r.id),
       name: String(r.name),
       objective: String(r.objective),
+      audience: String(r.audience ?? ""),
       offerId: String(r.offer_id),
       offerTitle: String(r.offer_title),
       startsOn: String(r.starts_s),
@@ -237,6 +244,56 @@ export class MarketingStore {
       await this
         .sql`SELECT id FROM calendar_items WHERE site_id=${siteId} AND campaign_id=${campaignId} ORDER BY scheduled_for`
     ).map((r) => String(r.id));
+  }
+  async addCampaignAsset(input: {
+    campaignId: string;
+    siteId: string;
+    orgId: string;
+    kind:
+      | "website"
+      | "flyer"
+      | "poster"
+      | "social"
+      | "carousel"
+      | "video"
+      | "caption"
+      | "manual_package";
+    creativeDocumentId?: string;
+    motionProjectId?: string;
+    mediaAssetId?: string;
+    href?: string;
+    source?: unknown;
+    status?: "DRAFT" | "APPROVAL_NEEDED" | "APPROVED" | "READY" | "FAILED";
+  }) {
+    const id = crypto.randomUUID();
+    await this.sql`
+      INSERT INTO campaign_assets
+        (id,campaign_id,site_id,org_id,kind,creative_document_id,
+         motion_project_id,media_asset_id,href,source,status)
+      VALUES
+        (${id},${input.campaignId},${input.siteId},${input.orgId},${input.kind},
+         ${input.creativeDocumentId ?? null},${input.motionProjectId ?? null},
+         ${input.mediaAssetId ?? null},${input.href ?? null},
+         ${this.sql.json((input.source ?? {}) as never)},
+         ${input.status ?? "DRAFT"})`;
+    return id;
+  }
+  async campaignAssets(siteId: string, campaignId: string) {
+    return (
+      await this.sql`
+        SELECT * FROM campaign_assets
+        WHERE site_id=${siteId} AND campaign_id=${campaignId}
+        ORDER BY created_at`
+    ).map((row: Row) => ({
+      id: String(row.id),
+      kind: String(row.kind),
+      creativeDocumentId: nullableString(row.creative_document_id),
+      motionProjectId: nullableString(row.motion_project_id),
+      mediaAssetId: nullableString(row.media_asset_id),
+      href: nullableString(row.href),
+      source: row.source,
+      status: String(row.status),
+    }));
   }
   async setCampaignStatus(siteId: string, id: string, status: string) {
     return (

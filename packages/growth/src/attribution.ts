@@ -59,7 +59,7 @@ export interface AttributionSummary {
   note: string;
 }
 export const ATTRIBUTION_NOTE =
-  "Counts only people who arrived through a link Kora created. Other visitors are not measured, and Kora does not see sales.";
+  "Counts only people who arrived through a link Krevstudio created. Other visitors are not measured, and Krevstudio does not see sales.";
 
 export function summarizeAttribution(
   results: LinkResult[],

@@ -14,8 +14,17 @@ export const CampaignInputSchema = z
   .object({
     name: z.string().trim().min(1).max(100),
     objective: z
-      .enum(["announce", "fill_slots", "clear_stock", "bring_back"])
+      .enum([
+        "announce",
+        "fill_slots",
+        "clear_stock",
+        "bring_back",
+        "build_awareness",
+      ])
       .default("announce"),
+    audience: z.string().trim().min(3).max(200).default("Existing customers"),
+    brief: z.string().trim().min(8).max(500).optional(),
+    direction: z.enum(["product", "moment", "people", "place"]).optional(),
     offerId: z.string().max(41),
     channels: z.array(z.enum(BUNDLE_CHANNELS)).min(1).max(4),
     startOn: z.string().date(),

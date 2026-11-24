@@ -189,7 +189,10 @@ export function KrevCreativeStudio() {
     () => api<J[]>("GET", `/api/sites/${id}/creative-documents`),
     [id],
   );
-  const [documentId, setDocumentId] = useState<string | null>(null);
+  const [documentId, setDocumentId] = useState<string | null>(() => {
+    const target = new URLSearchParams(window.location.search).get("document");
+    return target && /^[a-f0-9-]{36}$/i.test(target) ? target : null;
+  });
   const doc = useLoad(
     () =>
       documentId
@@ -221,6 +224,8 @@ export function KrevCreativeStudio() {
   const [description, setDescription] = useState("");
   const [cta, setCta] = useState("");
   const [direction, setDirection] = useState(0);
+  const [directionTouched, setDirectionTouched] = useState(false);
+  const [memoryNote, setMemoryNote] = useState<string | null>(null);
   const [slideCount, setSlideCount] = useState(4);
   const [logoForm, setLogoForm] = useState("combination");
   const [customWidth, setCustomWidth] = useState(0);
@@ -322,6 +327,37 @@ export function KrevCreativeStudio() {
         },
       );
       setPreviews(r.directions as Array<{ direction: number; svg: string }>);
+      const memory = r.memory as
+        | { direction: number; applied: boolean; reason: string | null }
+        | undefined;
+      setMemoryNote(memory?.reason ?? null);
+      if (memory?.applied && !directionTouched) setDirection(memory.direction);
+    } catch (e) {
+      setError(errText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const rateDirection = async (
+    chosen: number,
+    outcome: "chosen" | "rejected",
+    locked: boolean,
+  ) => {
+    setBusy(true);
+    setError("");
+    try {
+      const r = await api<J>(
+        "POST",
+        `/api/sites/${id}/creative-documents/style-feedback`,
+        { direction: chosen, outcome, locked },
+      );
+      const memory = r.memory as { reason: string | null; direction: number };
+      setMemoryNote(memory.reason);
+      setNotice(
+        locked
+          ? "Your visual restriction was saved and can be corrected with a new preference."
+          : "Design feedback saved. One reaction alone will not define your taste.",
+      );
     } catch (e) {
       setError(errText(e));
     } finally {
@@ -885,7 +921,10 @@ export function KrevCreativeStudio() {
               Direction{" "}
               <select
                 value={direction}
-                onChange={(e) => setDirection(Number(e.target.value))}
+                onChange={(e) => {
+                  setDirection(Number(e.target.value));
+                  setDirectionTouched(true);
+                }}
               >
                 {[0, 1, 2].map((n) => (
                   <option key={n} value={n}>
@@ -1001,6 +1040,11 @@ export function KrevCreativeStudio() {
           >
             Explore three real directions
           </button>
+          {memoryNote && (
+            <p className="small muted" role="status">
+              Why this direction: {memoryNote}
+            </p>
+          )}
           {previews.length > 0 && (
             <div
               className="grid"
@@ -1008,28 +1052,60 @@ export function KrevCreativeStudio() {
               aria-label="Real creative direction previews"
             >
               {previews.map((p) => (
-                <button
-                  type="button"
-                  className="card stack"
-                  key={p.direction}
-                  aria-pressed={direction === p.direction}
-                  onClick={() => setDirection(p.direction)}
-                >
-                  <img
-                    alt={`Rendered concept ${p.direction + 1}`}
-                    loading="lazy"
-                    style={{
-                      width: "100%",
-                      maxHeight: 260,
-                      objectFit: "contain",
+                <div className="card stack" key={p.direction}>
+                  <button
+                    type="button"
+                    aria-pressed={direction === p.direction}
+                    onClick={() => {
+                      setDirection(p.direction);
+                      setDirectionTouched(true);
                     }}
-                    src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(p.svg)}`}
-                  />
-                  <strong>
-                    Concept {p.direction + 1}{" "}
-                    {direction === p.direction ? "— Selected" : ""}
-                  </strong>
-                </button>
+                  >
+                    <img
+                      alt={`Rendered concept ${p.direction + 1}`}
+                      loading="lazy"
+                      style={{
+                        width: "100%",
+                        maxHeight: 260,
+                        objectFit: "contain",
+                      }}
+                      src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(p.svg)}`}
+                    />
+                    <strong>
+                      Concept {p.direction + 1}{" "}
+                      {direction === p.direction ? "— Selected" : ""}
+                    </strong>
+                  </button>
+                  <div className="row">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void rateDirection(p.direction, "chosen", false)
+                      }
+                    >
+                      Prefer
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void rateDirection(p.direction, "rejected", false)
+                      }
+                    >
+                      Not my style
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        void rateDirection(p.direction, "rejected", true)
+                      }
+                    >
+                      Always avoid
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           )}

@@ -17,6 +17,9 @@ export interface TodayAction {
   why: string;
   weight: number;
   to: string;
+  expectedOutcome: string;
+  state: "RECOMMENDED";
+  evidence: "OBSERVED" | "DERIVED";
 }
 
 export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
@@ -27,7 +30,31 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
     why: string,
     weight: number,
     to: string,
-  ) => a.push({ id, title, why, weight, to });
+  ) => {
+    const expected: Record<string, string> = {
+      health: "Review the incident and choose an authorized recovery action.",
+      customers: "Open the waiting enquiries and prepare a response.",
+      calendar: "Review and approve only the content you intend to publish.",
+      presence:
+        "Correct outdated business information before further promotion.",
+      identity:
+        "Confirm missing details and improve factual creative guidance.",
+      campaigns: "Prepare a campaign draft for owner review.",
+      build: "Review website quality findings and edit the draft.",
+    };
+    a.push({
+      id,
+      title,
+      why,
+      weight,
+      to,
+      expectedOutcome:
+        expected[to] ??
+        "Open the relevant workflow and review the next action.",
+      state: "RECOMMENDED",
+      evidence: to === "build" || to === "identity" ? "DERIVED" : "OBSERVED",
+    });
+  };
   if (i.openIncidents > 0)
     add(
       "incident",
@@ -63,7 +90,7 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
   if (i.truthQuestions.length)
     add(
       "truth",
-      "Answer one question so Kora can post",
+      "Answer one question so Krevstudio can post",
       i.truthQuestions[0]!,
       60,
       "identity",
@@ -84,14 +111,14 @@ export function todayActions(i: TodayInput, limit = 5): TodayAction[] {
     add(
       "quality",
       "Your website can look stronger",
-      `Kora's review graded it ${i.qualityGrade}.`,
+      `Krevstudio's review graded it ${i.qualityGrade}.`,
       45,
       "build",
     );
   if (i.genomeGaps.length)
     add(
       "brand",
-      "Tell Kora what makes you different",
+      "Tell Krevstudio what makes you different",
       i.genomeGaps[0]!,
       40,
       "identity",

@@ -52,7 +52,7 @@ describe("safe fetch", () => {
   });
   it("refuses a name that resolves to a private address", async () => {
     await expect(
-      safeFetchHtml("http://localhost.localdomain/"),
+      safeFetchHtml("http://localhost.localdomain/", { timeoutMs: 500 }),
     ).rejects.toThrow();
   });
 

@@ -359,6 +359,264 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     };
   });
 
+  // ---- Original M15: consented, first-party referral attribution ----------
+  app.post("/api/acquisition/claim", async (req, reply) => {
+    const actor = requireUser(req);
+    const b = z
+      .object({
+        orgId: uuid,
+        token: z.string().min(10).max(1000),
+        consent: z.literal(true),
+      })
+      .strict()
+      .parse(req.body);
+    requireOrgRole(req, b.orgId, "MEMBER");
+    const verified = verifyShare(d.shareSecret, b.token, now().getTime());
+    if (!verified.ok || verified.kind !== "audit") throw notFound();
+    const audit = (
+      await sql`SELECT id FROM public_audits WHERE id=${verified.id}`
+    )[0];
+    if (!audit) throw notFound();
+    await sql`INSERT INTO acquisition_referrals
+      (id, source_audit_id, org_id, user_id, consent_recorded_at)
+      VALUES (${randomUUID()}, ${verified.id}, ${b.orgId}, ${actor.userId}, ${now()})
+      ON CONFLICT (source_audit_id, org_id, user_id)
+      DO UPDATE SET revoked_at=NULL,
+        consent_recorded_at=EXCLUDED.consent_recorded_at`;
+    await platform.audit({
+      orgId: b.orgId,
+      actorUserId: actor.userId,
+      action: "acquisition.referral_consented",
+      objectType: "public_audit",
+      objectId: verified.id,
+      requestId: req.id,
+    });
+    return reply.code(201).send({ data: { recorded: true } });
+  });
+
+  app.post("/api/acquisition/revoke", async (req) => {
+    const actor = requireUser(req);
+    const b = z.object({ orgId: uuid }).strict().parse(req.body);
+    requireOrgRole(req, b.orgId, "MEMBER");
+    const updated = await sql`UPDATE acquisition_referrals
+      SET revoked_at=${now()}
+      WHERE org_id=${b.orgId} AND user_id=${actor.userId}
+        AND revoked_at IS NULL RETURNING id`;
+    await platform.audit({
+      orgId: b.orgId,
+      actorUserId: actor.userId,
+      action: "acquisition.referral_consent_revoked",
+      objectType: "organization",
+      objectId: b.orgId,
+      requestId: req.id,
+      metadata: { count: updated.length },
+    });
+    return { data: { revoked: updated.length } };
+  });
+
+  // Observe real post-signup milestones from durable platform records.
+  // The public report is intentionally null for unobserved referral visits:
+  // a signed link by itself does not establish a consenting visitor.
+  app.get("/api/acquisition/progress", async (req) => {
+    const { orgId } = z.object({ orgId: uuid }).parse(req.query);
+    requireOrgRole(req, orgId, "MEMBER");
+    const [claims, projects, exports] = await Promise.all([
+      sql`SELECT count(*)::int AS n FROM acquisition_referrals
+        WHERE org_id=${orgId} AND revoked_at IS NULL`,
+      sql`SELECT (
+        (SELECT count(*) FROM site_versions WHERE org_id=${orgId}) +
+        (SELECT count(*) FROM creative_documents WHERE org_id=${orgId}) +
+        (SELECT count(*) FROM motion_projects WHERE org_id=${orgId})
+        )::int AS n`,
+      sql`SELECT count(*)::int AS n FROM usage_events
+        WHERE org_id=${orgId} AND dimension='EXPORT'`,
+    ]);
+    const consented = Number(claims[0]?.n ?? 0) > 0;
+    return {
+      data: {
+        consentedAuditReferrals: Number(claims[0]?.n ?? 0),
+        referralVisits: null,
+        verifiedSignup: consented,
+        observedProjectCount: consented ? Number(projects[0]?.n ?? 0) : null,
+        observedExports: consented ? Number(exports[0]?.n ?? 0) : null,
+        note: "These are account-level observed events after consent; they do not establish that the shared audit caused creation, export or a sale.",
+      },
+    };
+  });
+
+  // ---- Original M16: opt-in commercial pilot enrollment ------------------
+  app.post("/api/pilot/enroll", async (req, reply) => {
+    const actor = requireUser(req);
+    const body = z
+      .object({
+        orgId: uuid,
+        segment: z.enum([
+          "small_business",
+          "freelancer",
+          "creative_professional",
+          "agency",
+        ]),
+        industry: z.string().trim().min(2).max(120),
+        consent: z.literal(true),
+      })
+      .strict()
+      .parse(req.body);
+    requireOrgRole(req, body.orgId, "OWNER");
+    const record = (
+      await sql`INSERT INTO pilot_participants
+        (id, org_id, enrolled_by, segment, industry, consented_at)
+        VALUES (${randomUUID()}, ${body.orgId}, ${actor.userId},
+          ${body.segment}, ${body.industry}, ${now()})
+        ON CONFLICT (org_id) DO NOTHING RETURNING id`
+    )[0];
+    if (!record)
+      throw new HttpError(
+        409,
+        "pilot_enrollment_exists",
+        "Pilot enrollment already exists. Contact support to re-enroll after withdrawing.",
+      );
+    await platform.audit({
+      orgId: body.orgId,
+      actorUserId: actor.userId,
+      action: "pilot.enrolled_with_consent",
+      objectType: "pilot_participant",
+      objectId: String(record.id),
+      requestId: req.id,
+    });
+    return reply.code(201).send({
+      data: { id: String(record.id), consented: true, pilot: "ENROLLED" },
+    });
+  });
+
+  app.get("/api/pilot/status", async (req) => {
+    const { orgId } = z.object({ orgId: uuid }).parse(req.query);
+    requireOrgRole(req, orgId, "MEMBER");
+    const participation = (
+      await sql`SELECT id, segment, industry, enrolled_at, consented_at, revoked_at
+        FROM pilot_participants WHERE org_id=${orgId}`
+    )[0];
+    if (!participation) return { data: { enrolled: false } };
+    const participationId = uuid.parse(String(participation.id));
+    const enrolledAt = z.coerce.date().parse(participation.enrolled_at);
+    const events = await sql`SELECT kind, source_id, observed_at
+      FROM pilot_observations WHERE participant_id=${participationId}
+      ORDER BY observed_at DESC`;
+    // Read actual production tables rather than asking owners to self-assert
+    // milestones. Only post-enrollment events qualify for this pilot.
+    const [evidence] = await sql`SELECT
+      LEAST(
+        (SELECT MIN(created_at) FROM site_versions
+          WHERE org_id=${orgId} AND created_at>=${enrolledAt}),
+        (SELECT MIN(created_at) FROM creative_documents
+          WHERE org_id=${orgId} AND created_at>=${enrolledAt}),
+        (SELECT MIN(created_at) FROM motion_projects
+          WHERE org_id=${orgId} AND created_at>=${enrolledAt})
+      ) AS first_project_at,
+      (SELECT MIN(occurred_at) FROM usage_events
+        WHERE org_id=${orgId} AND dimension='EXPORT'
+          AND occurred_at>=${enrolledAt}) AS first_export_at,
+      (SELECT MIN(published_at) FROM site_versions
+        WHERE org_id=${orgId} AND published_at>=${enrolledAt})
+        AS first_publication_at`;
+    return {
+      data: {
+        enrolled: participation.revoked_at === null,
+        participant: participation,
+        observations: events,
+        observedMilestones: {
+          firstProjectAt: evidence?.first_project_at
+            ? z.coerce.date().parse(evidence.first_project_at).toISOString()
+            : null,
+          firstExportAt: evidence?.first_export_at
+            ? z.coerce.date().parse(evidence.first_export_at).toISOString()
+            : null,
+          firstPublicationAt: evidence?.first_publication_at
+            ? z.coerce.date().parse(evidence.first_publication_at).toISOString()
+            : null,
+        },
+        paymentsVerified: false,
+        note: "Milestones are read from recorded platform events after consent. Pilot enrollment is not evidence of payment, retention or commercial success.",
+      },
+    };
+  });
+
+  app.post("/api/pilot/feedback", async (req, reply) => {
+    const actor = requireUser(req);
+    const body = z
+      .object({
+        orgId: uuid,
+        rating: z.number().int().min(1).max(5),
+        comments: z.string().trim().max(1000),
+        pricing: z
+          .object({
+            statedMonthlyAmount: z
+              .number()
+              .nonnegative()
+              .finite()
+              .max(1_000_000),
+            currency: z.string().length(3),
+          })
+          .optional(),
+      })
+      .strict()
+      .parse(req.body);
+    requireOrgRole(req, body.orgId, "OWNER");
+    const participant = (
+      await sql`SELECT id FROM pilot_participants
+        WHERE org_id=${body.orgId} AND revoked_at IS NULL`
+    )[0];
+    if (!participant)
+      throw new HttpError(
+        409,
+        "pilot_consent_required",
+        "Pilot consent must be active before feedback can be recorded.",
+      );
+    const participantId = uuid.parse(String(participant.id));
+    const count = (
+      await sql`SELECT count(*)::int AS n FROM pilot_observations
+        WHERE participant_id=${participantId} AND kind='feedback'`
+    )[0];
+    if (Number(count?.n ?? 0) >= 20)
+      throw new HttpError(
+        429,
+        "pilot_feedback_limit",
+        "Feedback limit reached for this pilot enrollment.",
+      );
+    const id = randomUUID();
+    await sql`INSERT INTO pilot_observations
+      (id, participant_id, kind, source_id, recorded_by, metadata)
+      VALUES (${id}, ${participantId}, 'feedback', ${"owner-report:" + id},
+        ${actor.userId},
+        ${sql.json({
+          rating: body.rating,
+          comments: body.comments,
+          pricing: body.pricing ?? null,
+          provenance: "OWNER_REPORTED",
+          paymentVerified: false,
+        })})`;
+    return reply.code(201).send({
+      data: { id, recorded: true, paymentVerified: false },
+    });
+  });
+
+  app.post("/api/pilot/withdraw", async (req) => {
+    const actor = requireUser(req);
+    const { orgId } = z.object({ orgId: uuid }).strict().parse(req.body);
+    requireOrgRole(req, orgId, "OWNER");
+    const changed = await sql`UPDATE pilot_participants SET revoked_at=${now()}
+      WHERE org_id=${orgId} AND revoked_at IS NULL RETURNING id`;
+    if (changed.length)
+      await platform.audit({
+        orgId,
+        actorUserId: actor.userId,
+        action: "pilot.consent_withdrawn",
+        objectType: "pilot_participant",
+        objectId: String(changed[0]!.id),
+        requestId: req.id,
+      });
+    return { data: { withdrawn: changed.length > 0 } };
+  });
+
   // ---- M25: managed requests ---------------------------------------------
   const OWNER_EVENTS = new Set<RequestEvent>([
     "owner_replied",

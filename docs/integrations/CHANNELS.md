@@ -48,8 +48,24 @@ scheduling (Kora holds and publishes at the chosen time), TikTok public posting 
 secret) before anything is read. Every message id is stored once; a replay changes nothing. Messages for a phone
 number id no connected business owns are stored and marked `IGNORED`.
 
+## Live publishing status
+
+- **Facebook Pages:** implemented for an owner-selected Page using a verified Page access token and Meta's Page Photos endpoint. PNG/JPEG images are validated before upload. App review, live credentials and a controlled owner-approved Page test are still required before production commissioning.
+- **Instagram professional accounts:** OAuth account verification is implemented, but media publishing remains manual handoff. Meta requires a publicly reachable media URL and approved `instagram_content_publish` access; Krevstudio does not expose private tenant assets merely to make this pass.
+- **TikTok:** connect and health contracts exist. Direct Post remains handoff-only until the application passes TikTok's audit and implements its creator-info/consent/upload flow.
+- **Google Business Profile:** connect and health contracts exist. Posting remains handoff-only until API access is approved and a location-selection flow is commissioned.
+- **WhatsApp:** Status posting is not supported. Messaging follows the existing opt-in/template boundary.
+
+All unsupported publishing uses the calendar handoff package. A prepared package is never recorded as published; the owner must explicitly confirm a manual post.
+
+## Provider references checked for this implementation
+
+- Meta Graph API Page Photos and Page Feed, v27.0.
+- Meta Instagram professional-account content publishing.
+- TikTok Content Posting API Direct Post and Upload flows.
+- Google Business Profile `accounts.locations.localPosts`.
+
 ## Known limitations
 
-- Live adapters are tested against a fake provider, not the real APIs.
-- Sending messages and posting content arrive with the publishing engine (M27).
+- Live provider calls are covered by deterministic provider fixtures. Real commissioning remains externally blocked until credentials, provider review and controlled test accounts are supplied.
 - Instagram/Facebook inbound messages are not ingested yet (WhatsApp is).

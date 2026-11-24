@@ -358,4 +358,172 @@ d("creative loop over the API", () => {
     ).toEqual(["open", "detail", "close"]);
     expect(sb.json.data.storyboard.reducedMotion).toBe("still-frames");
   });
+  it("records an audit referral only with consent, valid signature and same-org authorization", async () => {
+    const audit = await h.call("POST", "/api/public/audit", {
+      body: { url: targetUrl },
+    });
+    expect(audit.status).toBe(201);
+    const token = audit.json.data.shareToken as string;
+    const owner = await h.signup("referral-owner@example.com", "Referral Org");
+    const outsider = await h.signup(
+      "referral-outsider@example.com",
+      "Other Org",
+    );
+    const url = "/api/acquisition/claim";
+    const validBody = { orgId: owner.orgId, token, consent: true };
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: { ...validBody, consent: false },
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: outsider.cookie,
+          body: validBody,
+        })
+      ).status,
+    ).toBeGreaterThanOrEqual(403);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: { ...validBody, token: token + "x" },
+        })
+      ).status,
+    ).toBe(404);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: validBody,
+        })
+      ).status,
+    ).toBe(201);
+    expect(
+      (
+        await h.call("POST", url, {
+          cookie: owner.cookie,
+          body: validBody,
+        })
+      ).status,
+    ).toBe(201);
+    const rows = await h.sql`SELECT id, revoked_at FROM acquisition_referrals
+      WHERE org_id=${owner.orgId}`;
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.revoked_at).toBeNull();
+    const revoked = await h.call("POST", "/api/acquisition/revoke", {
+      cookie: owner.cookie,
+      body: { orgId: owner.orgId },
+    });
+    expect(revoked.status).toBe(200);
+    expect(revoked.json.data.revoked).toBe(1);
+    const after = await h.sql`SELECT revoked_at FROM acquisition_referrals
+      WHERE org_id=${owner.orgId}`;
+    expect(after[0]?.revoked_at).not.toBeNull();
+  });
+  it("enrolls pilot participants only after explicit owner consent and supports withdrawal", async () => {
+    const owner = await h.signup("pilot-owner@example.com", "Pilot Org");
+    const other = await h.signup("pilot-outside@example.com", "Outside");
+    const enrollment = {
+      orgId: owner.orgId,
+      segment: "small_business",
+      industry: "bakery",
+      consent: true,
+    };
+    const absent = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      {
+        cookie: owner.cookie,
+      },
+    );
+    expect(absent.status).toBe(200);
+    expect(absent.json.data.enrolled).toBe(false);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/enroll", {
+          cookie: owner.cookie,
+          body: { ...enrollment, consent: false },
+        })
+      ).status,
+    ).toBe(400);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/enroll", {
+          cookie: other.cookie,
+          body: enrollment,
+        })
+      ).status,
+    ).toBeGreaterThanOrEqual(403);
+    const enrolled = await h.call("POST", "/api/pilot/enroll", {
+      cookie: owner.cookie,
+      body: enrollment,
+    });
+    expect(enrolled.status).toBe(201);
+    const status = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(status.json.data.enrolled).toBe(true);
+    expect(status.json.data.paymentsVerified).toBe(false);
+    const rows =
+      await h.sql`SELECT id FROM pilot_participants WHERE org_id=${owner.orgId}`;
+    expect(rows).toHaveLength(1);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/enroll", {
+          cookie: owner.cookie,
+          body: enrollment,
+        })
+      ).status,
+    ).toBe(409);
+    const feedback = await h.call("POST", "/api/pilot/feedback", {
+      cookie: owner.cookie,
+      body: {
+        orgId: owner.orgId,
+        rating: 4,
+        comments: "The flyer editor helped me prepare a campaign.",
+        pricing: { statedMonthlyAmount: 1500, currency: "NGN" },
+      },
+    });
+    expect(feedback.status).toBe(201);
+    expect(feedback.json.data.paymentVerified).toBe(false);
+    const reported = await h.sql`SELECT metadata FROM pilot_observations
+      WHERE participant_id=${rows[0]!.id} AND kind='feedback'`;
+    expect(reported).toHaveLength(1);
+    expect(reported[0]?.metadata).toMatchObject({
+      provenance: "OWNER_REPORTED",
+      paymentVerified: false,
+      rating: 4,
+    });
+    const withdrawn = await h.call("POST", "/api/pilot/withdraw", {
+      cookie: owner.cookie,
+      body: { orgId: owner.orgId },
+    });
+    expect(withdrawn.status).toBe(200);
+    expect(withdrawn.json.data.withdrawn).toBe(true);
+    const after = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(after.json.data.enrolled).toBe(false);
+    expect(
+      (
+        await h.call("POST", "/api/pilot/feedback", {
+          cookie: owner.cookie,
+          body: {
+            orgId: owner.orgId,
+            rating: 5,
+            comments: "Should no longer accept reports after withdrawal.",
+          },
+        })
+      ).status,
+    ).toBe(409);
+  });
 });

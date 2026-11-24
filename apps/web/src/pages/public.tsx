@@ -31,12 +31,18 @@ export function Landing() {
               after launch.
             </p>
             <div className="row">
-              <Link className="btn lg" to="/signup">
+              <Link className="btn lg" to="/signup?goal=website">
                 Build my website
               </Link>
               <a className="btn ghost lg" href="#truth">
                 See how it works
               </a>
+            </div>
+            <div className="row" aria-label="Choose what to create first">
+              <Link to="/signup?goal=logo">Create a logo</Link>
+              <Link to="/signup?goal=flyer">Design a flyer</Link>
+              <Link to="/signup?goal=video">Make a video</Link>
+              <Link to="/signup?goal=campaign">Launch a campaign</Link>
             </div>
             <p className="small muted">
               Two lines about your business is enough to start. Nothing is
@@ -305,6 +311,14 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const { refresh } = useAuth();
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [firstGoal, setFirstGoal] = useState(() => {
+    const requested = new URLSearchParams(loc.search).get("goal");
+    return ["website", "logo", "flyer", "social", "video", "campaign"].includes(
+      requested ?? "",
+    )
+      ? requested!
+      : "website";
+  });
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
@@ -324,11 +338,48 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             },
       );
       await refresh();
-      nav(
-        mode === "signup"
-          ? "/app/sites/new"
-          : ((loc.state as { from?: string } | null)?.from ?? "/app"),
-      );
+      const referral = new URLSearchParams(loc.search).get("ref");
+      if (mode === "signup" && referral && f.get("referralConsent") === "yes") {
+        const me = await api<{ orgs: { id: string }[] }>("GET", "/api/auth/me");
+        const orgId = me.orgs?.[0]?.id;
+        if (orgId) {
+          try {
+            await api("POST", "/api/acquisition/claim", {
+              orgId,
+              token: referral,
+              consent: true,
+            });
+          } catch (cause) {
+            // Attribution failure cannot undo a successful account signup.
+            // The server records no conversion unless the claim was verified.
+            console.warn("Audit referral attribution unavailable", cause);
+          }
+        }
+      }
+      if (mode === "login") {
+        nav((loc.state as { from?: string } | null)?.from ?? "/app");
+      } else if (firstGoal === "website") {
+        nav("/app/sites/new");
+      } else {
+        // Creative work starts from a draft business workspace. No website is
+        // generated or published merely to make a flyer, logo or video.
+        const me = await api<{ orgs: { id: string }[] }>("GET", "/api/auth/me");
+        const orgId = me.orgs?.[0]?.id;
+        if (!orgId) throw new Error("Business workspace is not ready.");
+        const workspace = await api<{ id: string }>("POST", "/api/sites", {
+          orgId,
+          name: String(f.get("orgName") ?? "").trim(),
+        });
+        nav(
+          firstGoal === "campaign"
+            ? `/app/sites/${workspace.id}/campaigns`
+            : firstGoal === "video"
+              ? `/app/sites/${workspace.id}/presence?goal=video`
+              : ["logo", "flyer", "social"].includes(firstGoal)
+                ? `/app/sites/${workspace.id}/creative-studio`
+                : `/app/sites/${workspace.id}/create`,
+        );
+      }
     } catch (x) {
       setErr(errText(x));
     } finally {
@@ -361,6 +412,21 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
                 autoComplete="organization"
               />
             </label>
+            <label>
+              What would you like to create first?
+              <select
+                aria-label="First creative goal"
+                value={firstGoal}
+                onChange={(event) => setFirstGoal(event.target.value)}
+              >
+                <option value="website">Website</option>
+                <option value="logo">Logo or brand</option>
+                <option value="flyer">Flyer or poster</option>
+                <option value="social">Social design</option>
+                <option value="video">Video</option>
+                <option value="campaign">Campaign</option>
+              </select>
+            </label>
           </>
         )}
         <label>
@@ -382,6 +448,20 @@ function AuthForm({ mode }: { mode: "login" | "signup" }) {
             <span className="field-hint">At least 10 characters.</span>
           )}
         </label>
+        {mode === "signup" && new URLSearchParams(loc.search).has("ref") && (
+          <label className="row" style={{ gap: 8 }}>
+            <input
+              type="checkbox"
+              name="referralConsent"
+              value="yes"
+              style={{ width: 20, minHeight: 20 }}
+            />
+            <span className="small">
+              Optional: link this signup to the shared website audit that
+              brought me here, to help measure whether audits are useful.
+            </span>
+          </label>
+        )}
         {err && <Notice kind="bad">{err}</Notice>}
         <button className="btn" disabled={busy}>
           {busy

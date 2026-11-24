@@ -351,7 +351,8 @@ describe("M20 performance", () => {
     expect(
       r.lines.find((l) => l.label.startsWith("New customers"))!.evidence,
     ).toBe("ESTIMATED");
-    expect(r.headline).toMatch(/rose from 4 to 11.*cannot say/);
+    expect(r.headline).toMatch(/fell from 4 to 3/);
+    expect(r.headline).not.toMatch(/caused|generated (?:sales|customers)/i);
     expect(r.caveats.join(" ")).toMatch(/not connected/);
     expect(
       performanceReport({

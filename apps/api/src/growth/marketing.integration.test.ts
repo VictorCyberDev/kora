@@ -344,6 +344,68 @@ d("campaign bundles", () => {
   });
 });
 
+d("Meridian seven-day campaign acceptance", () => {
+  it("persists editable creative sources, separates channel handoff and never publishes drafts", async () => {
+    const { a, s } = await ready("meridian-campaign-week@example.com", []);
+    const day = (n: number) =>
+      new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+    const made = await h.call("POST", `/api/sites/${s.id}/campaigns`, {
+      cookie: a.cookie,
+      body: {
+        name: "Meridian Bakes seven-day campaign",
+        objective: "announce",
+        audience: "Local bakery customers",
+        brief:
+          "Introduce the bakery's existing weekday lunch special without inventing discounts.",
+        direction: "moment",
+        offerId: "lunch",
+        channels: ["facebook", "whatsapp"],
+        startOn: day(1),
+        endOn: day(7),
+      },
+    });
+    expect(made.status).toBe(201);
+    const id = made.json.data.id as string;
+    const detail = (
+      await h.call("GET", `/api/sites/${s.id}/campaigns/${id}`, {
+        cookie: a.cookie,
+      })
+    ).json.data;
+    expect(detail.items).toHaveLength(6);
+    expect(
+      detail.items.every(
+        (x: { state: string }) => x.state === "APPROVAL_NEEDED",
+      ),
+    ).toBe(true);
+    const creative = detail.assets.filter(
+      (x: { creativeDocumentId?: string }) => !!x.creativeDocumentId,
+    ) as Array<{ creativeDocumentId: string }>;
+    expect(creative.length).toBeGreaterThanOrEqual(3);
+    for (const x of creative) {
+      const opened = await h.call(
+        "GET",
+        `/api/sites/${s.id}/creative-documents/${x.creativeDocumentId}`,
+        { cookie: a.cookie },
+      );
+      expect(opened.status).toBe(200);
+      expect(opened.json.data.source.slides.length).toBeGreaterThan(0);
+    }
+    const jobs =
+      await h.sql`SELECT count(*)::int AS n FROM publish_jobs WHERE site_id=${s.id}`;
+    expect(Number(jobs[0]?.n ?? 0)).toBe(0);
+    const approval = await h.call(
+      "POST",
+      `/api/sites/${s.id}/campaigns/${id}/approve-all`,
+      { cookie: a.cookie },
+    );
+    expect(approval.status).toBe(200);
+    expect(approval.json.data.approved).toBe(6);
+    // Neither channel is configured: never claim a published post.
+    expect(approval.json.data.scheduled).toBe(0);
+    expect(approval.json.data.needsYou).toHaveLength(6);
+  });
+});
+
 d("voice-first intent and one-truth checks", () => {
   it("interprets text into a confirmable route and flags queued posts about an ended offer", async () => {
     const { a, s } = await ready("mk4@example.com");

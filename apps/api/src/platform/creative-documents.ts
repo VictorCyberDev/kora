@@ -177,6 +177,7 @@ function fittedHeadline(
   preferredSize: number,
   fill: string,
   weight: "400" | "600" | "700" | "900" = "900",
+  maxHeight = Infinity,
 ): Extract<GraphicLayer, { type: "text" }> {
   const words = copy.trim().split(/\s+/).filter(Boolean);
   const wrap = (size: number) => {
@@ -205,8 +206,11 @@ function fittedHeadline(
   };
   let fontSize = Math.min(100, Math.max(22, preferredSize));
   let lines = wrap(fontSize);
-  while (lines.length > 3 && fontSize > 22) {
-    fontSize = Math.max(22, fontSize - 4);
+  while (
+    (lines.length > 3 || lines.length * fontSize * 1.2 > maxHeight) &&
+    fontSize > 14
+  ) {
+    fontSize = Math.max(14, fontSize - 2);
     lines = wrap(fontSize);
   }
   const layer = textLayer(
@@ -513,29 +517,49 @@ export function buildCreativeDocument(
             highlight,
           ),
         );
+        const headlineTop = Math.round(height * 0.29);
+        const hasSupportingCopy =
+          index === 0 &&
+          !!request.description &&
+          request.description.trim() !== header.trim();
+        const headlineBottom = Math.round(
+          height * (hasSupportingCopy ? 0.56 : request.cta ? 0.77 : 0.93),
+        );
         const headline = fittedHeadline(
           header,
           margin,
-          Math.round(height * 0.29),
+          headlineTop,
           width - margin * 2,
           headlineSize,
           ink,
           "700",
+          headlineBottom - headlineTop,
         );
         headline.fontFamily = displayFamily;
         layers.push(headline);
-        if (request.description && index === 0)
-          layers.push(
-            textLayer(
-              request.description,
-              margin,
-              Math.round(height * 0.57),
-              width - margin * 2,
-              32,
-              ink,
-              "400",
-            ),
+        if (hasSupportingCopy) {
+          const descriptionTop = Math.max(
+            Math.round(height * 0.57),
+            headlineTop + headline.height + 12,
           );
+          const descriptionBottom = Math.round(
+            height * (request.cta ? 0.76 : 0.94),
+          );
+          if (descriptionBottom > descriptionTop + 16) {
+            layers.push(
+              fittedHeadline(
+                request.description,
+                margin,
+                descriptionTop,
+                width - margin * 2,
+                30,
+                ink,
+                "400",
+                descriptionBottom - descriptionTop,
+              ),
+            );
+          }
+        }
         if (request.cta) {
           layers.push(
             rectangle(
@@ -578,30 +602,49 @@ export function buildCreativeDocument(
         );
         identity.align = "center";
         layers.push(identity);
+        const hasDescription =
+          index === 0 &&
+          !!request.description &&
+          request.description.trim() !== header.trim();
+        const headlineStart = Math.round(height * 0.32);
+        const headlineEnd = Math.round(
+          height * (hasDescription ? 0.57 : request.cta ? 0.8 : 0.95),
+        );
         const headline = fittedHeadline(
           header,
           margin,
-          Math.round(height * 0.32),
+          headlineStart,
           width - margin * 2,
           Math.round(headlineSize * 0.92),
           ink,
           "900",
+          headlineEnd - headlineStart,
         );
         headline.align = "center";
         headline.fontFamily = displayFamily;
         layers.push(headline);
-        if (request.description && index === 0) {
-          const description = textLayer(
-            request.description,
-            margin * 1.5,
+        if (hasDescription) {
+          const descriptionTop = Math.max(
             Math.round(height * 0.59),
-            width - margin * 3,
-            32,
-            ink,
-            "400",
+            headlineStart + headline.height + 12,
           );
-          description.align = "center";
-          layers.push(description);
+          const descriptionBottom = Math.round(
+            height * (request.cta ? 0.79 : 0.95),
+          );
+          if (descriptionBottom > descriptionTop + 16) {
+            const description = fittedHeadline(
+              request.description,
+              margin * 1.5,
+              descriptionTop,
+              width - margin * 3,
+              30,
+              ink,
+              "400",
+              descriptionBottom - descriptionTop,
+            );
+            description.align = "center";
+            layers.push(description);
+          }
         }
         if (request.cta) {
           const action = textLayer(
@@ -642,29 +685,49 @@ export function buildCreativeDocument(
           "700",
         );
         layers.push(identity);
+        const hasDescription =
+          index === 0 &&
+          !!request.description &&
+          request.description.trim() !== header.trim();
+        const headlineStart = Math.round(height * 0.32);
+        const headlineEnd = Math.round(
+          height * (hasDescription ? 0.58 : request.cta ? 0.79 : 0.94),
+        );
         const headline = fittedHeadline(
           header,
           left,
-          Math.round(height * 0.32),
+          headlineStart,
           available,
           Math.round(headlineSize * 0.72),
           ink,
           "900",
+          headlineEnd - headlineStart,
         );
         headline.fontFamily = displayFamily;
         layers.push(headline);
-        if (request.description && index === 0)
-          layers.push(
-            textLayer(
-              request.description,
-              left,
-              Math.round(height * 0.6),
-              available,
-              30,
-              ink,
-              "400",
-            ),
+        if (hasDescription) {
+          const descriptionTop = Math.max(
+            Math.round(height * 0.6),
+            headlineStart + headline.height + 12,
           );
+          const descriptionBottom = Math.round(
+            height * (request.cta ? 0.78 : 0.94),
+          );
+          if (descriptionBottom > descriptionTop + 16) {
+            layers.push(
+              fittedHeadline(
+                request.description,
+                left,
+                descriptionTop,
+                available,
+                28,
+                ink,
+                "400",
+                descriptionBottom - descriptionTop,
+              ),
+            );
+          }
+        }
         if (request.cta) {
           layers.push(
             rectangle(left, Math.round(height * 0.81), available, 88, ink, 8),

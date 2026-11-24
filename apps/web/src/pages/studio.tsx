@@ -8,6 +8,7 @@ import {
 } from "../campaign-atlas";
 import { api, when, type J } from "../api";
 import { Async, Empty, Notice, Status, errText, useLoad } from "../ui";
+import { MotionTimelineEditor } from "../motion-editor";
 
 export function MarketingEntry() {
   const sites = useLoad(() => api<J[]>("GET", "/api/sites"), []);
@@ -39,7 +40,11 @@ const TABS = [
 
 export function StudioPage() {
   const { id } = useParams();
-  const [tab, setTab] = useState<(typeof TABS)[number][0]>("write");
+  const [tab, setTab] = useState<(typeof TABS)[number][0]>(() =>
+    new URLSearchParams(window.location.search).get("tool") === "video"
+      ? "video"
+      : "write",
+  );
   const presence = useLoad(
     () => api<J>("GET", `/api/sites/${id}/presence`),
     [id],
@@ -676,6 +681,7 @@ function VideoTab({ id, facts, o }: { id: string; facts: J; o: J }) {
   }, [key]);
   return (
     <div className="stack">
+      <MotionTimelineEditor siteId={id} facts={facts} options={o} />
       {!o.motion.exportAvailable && (
         <Notice kind="info">
           Video export is not set up on this server yet. You can still preview

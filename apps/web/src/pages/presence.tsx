@@ -258,6 +258,7 @@ function ProfileForm({
 export function PresencePage() {
   const { id } = useParams();
   const view = useLoad(() => api<J>("GET", `/api/sites/${id}/presence`), [id]);
+  const draftSite = useLoad(() => api<J>("GET", `/api/sites/${id}`), [id]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => setMsg(null), [id]);
@@ -274,29 +275,91 @@ export function PresencePage() {
       setBusy(false);
     }
   };
+  const startWithoutWebsite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const name = String(form.get("name") ?? "").trim();
+    const description = String(form.get("description") ?? "").trim();
+    const industry = String(form.get("industry") ?? "").trim();
+    if (!name || !industry) return;
+    await act(
+      "Your business facts were saved without creating a website.",
+      () =>
+        api("PUT", `/api/sites/${id}/presence/profile`, {
+          expectedRevision: 0,
+          facts: {
+            identity: { name, description, industry },
+            contact: {},
+            availability: { hours: [] },
+            offer: { services: [], offers: [] },
+            social: [],
+          },
+        }),
+    );
+  };
   return (
     <Async state={view}>
       {(v) =>
         !v.profile ? (
-          <Empty title="Tell Krevstudio about your business">
-            Krevstudio can read your name, contact details and hours from your
-            website so you do not have to type them again.
-            <p>
-              <button
-                className="btn"
-                disabled={busy || !v.importable}
-                onClick={() =>
-                  act("Details read from your website.", () =>
-                    api("POST", `/api/sites/${id}/presence/import`),
-                  )
-                }
+          <div className="stack">
+            <section className="card stack">
+              <h2>Tell Krevstudio about your business</h2>
+              <p className="muted">
+                Start with a short factual brief. You do not need to create or
+                publish a website to make a logo, graphic or video.
+              </p>
+              <form
+                className="stack"
+                onSubmit={startWithoutWebsite}
+                aria-label="Start business profile"
               >
-                Read details from my website
-              </button>
-            </p>
-            {!v.importable && <p>Create a website first.</p>}
-            {msg && !msg.ok && <Notice kind="bad">{msg.text}</Notice>}
-          </Empty>
+                <label>
+                  Business name
+                  <input
+                    name="name"
+                    defaultValue={draftSite.data?.name ?? ""}
+                    required
+                    maxLength={100}
+                  />
+                </label>
+                <label>
+                  Industry
+                  <input
+                    name="industry"
+                    required
+                    maxLength={80}
+                    placeholder="e.g. Bakery"
+                  />
+                </label>
+                <label>
+                  What your business does
+                  <textarea
+                    name="description"
+                    maxLength={600}
+                    rows={3}
+                    placeholder="Describe only what you actually offer"
+                  />
+                </label>
+                <button className="btn" disabled={busy}>
+                  Save business brief
+                </button>
+              </form>
+              {v.importable && (
+                <button
+                  className="btn ghost"
+                  disabled={busy}
+                  onClick={() =>
+                    act("Details read from your existing website.", () =>
+                      api("POST", `/api/sites/${id}/presence/import`),
+                    )
+                  }
+                >
+                  Import details from an existing website
+                </button>
+              )}
+              {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
+            </section>
+          </div>
         ) : (
           <div className="stack">
             <section className="card stack" aria-labelledby="presence-h">
@@ -356,6 +419,17 @@ export function PresencePage() {
               </ul>
             </section>
             <ProfileForm id={id!} profile={v.profile} onSaved={view.reload} />
+            <div className="row">
+              <Link className="btn" to={`/app/sites/${id}/brand`}>
+                Continue to Brand Kit
+              </Link>
+              <Link
+                className="btn ghost"
+                to={`/app/sites/${id}/creative-studio`}
+              >
+                Create graphic instead
+              </Link>
+            </div>
             <p className="muted">
               Details last saved {when(v.profile.updatedAt)}. Revision{" "}
               {v.profile.revision}.
@@ -396,10 +470,67 @@ export function BrandPage() {
         const kit = cur?.kit ?? b.suggestion;
         if (!kit)
           return (
-            <Empty title="No brand yet">
-              Create a website first. Krevstudio builds your Brand Kit from its
-              design.
-            </Empty>
+            <section className="card stack">
+              <h2>Start with your own brand preferences</h2>
+              <p className="muted">
+                Choose an editable starter identity for this business without
+                first making a website. These are suggestions, not confirmed
+                facts or a final approved brand.
+              </p>
+              <label>
+                Visual personality
+                <select id="starter-voice" defaultValue="warm">
+                  <option value="warm">Warm and approachable</option>
+                  <option value="professional">Professional</option>
+                  <option value="premium">Premium</option>
+                  <option value="playful">Playful</option>
+                  <option value="direct">Direct</option>
+                </select>
+              </label>
+              <button
+                className="btn"
+                disabled={busy}
+                onClick={() => {
+                  const el = document.getElementById(
+                    "starter-voice",
+                  ) as HTMLSelectElement | null;
+                  const voice = el?.value ?? "warm";
+                  void save(
+                    {
+                      kit: {
+                        logoAssetId: null,
+                        colors: {
+                          ink: "#17242a",
+                          canvas: "#fffdf8",
+                          primary: "#17242a",
+                          primaryText: "#fffdf8",
+                          accent: "#873f34",
+                          accentText: "#ffffff",
+                          muted: "#46545b",
+                        },
+                        typography: {
+                          pairing: "starter",
+                          displayFamily: "Georgia",
+                          bodyFamily: "system-ui",
+                        },
+                        shape: "soft",
+                        voice: {
+                          tone: voice,
+                          use: [],
+                          avoid: [],
+                          language: "en",
+                        },
+                        imagery: { style: "minimal", seed: 1 },
+                      },
+                    },
+                    "Starter Brand Kit saved as an editable owner-approved version.",
+                  );
+                }}
+              >
+                Create editable Brand Kit
+              </button>
+              {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
+            </section>
           );
         const onSubmit = (e: FormEvent<HTMLFormElement>) => {
           e.preventDefault();
@@ -466,6 +597,19 @@ export function BrandPage() {
               )}
               {msg && <Notice kind={msg.ok ? "ok" : "bad"}>{msg.text}</Notice>}
             </section>
+            {cur && (
+              <div className="row">
+                <Link className="btn" to={`/app/sites/${id}/create?tool=video`}>
+                  Create my first video
+                </Link>
+                <Link
+                  className="btn ghost"
+                  to={`/app/sites/${id}/creative-studio`}
+                >
+                  Create graphics or logo
+                </Link>
+              </div>
+            )}
             {cur && (
               <form
                 className="card stack"

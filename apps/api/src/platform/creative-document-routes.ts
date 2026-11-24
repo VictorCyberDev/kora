@@ -4,7 +4,12 @@ import {
 } from "./creative-evaluation.js";
 import type { BillingService } from "./billing.js";
 import { mediaBase, loadOwnerMedia } from "./owner-media-loader.js";
-import { brandOsHash } from "@kora/creative";
+import {
+  brandOsHash,
+  recommendGraphicDirection,
+  GRAPHIC_STYLES,
+  type GraphicJudgement,
+} from "@kora/creative";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -20,6 +25,18 @@ import {
 } from "./creative-documents.js";
 
 const uuid = z.string().uuid();
+const exportUsageKey = (req: FastifyRequest) => {
+  const supplied =
+    req.headers["idempotency-key"] ?? req.headers["x-idempotency-key"];
+  if (Array.isArray(supplied))
+    throw new HttpError(400, "invalid_idempotency_key");
+  return z
+    .string()
+    .min(8)
+    .max(200)
+    .regex(/^[A-Za-z0-9_.:-]+$/)
+    .parse(supplied ?? `export-request:${req.id}`);
+};
 const json = (value: unknown) =>
   JSON.parse(JSON.stringify(value)) as import("postgres").JSONValue;
 export function registerCreativeDocumentRoutes(
@@ -29,6 +46,33 @@ export function registerCreativeDocumentRoutes(
   billing?: BillingService,
 ) {
   const brandStore = new BrandOsStore(platform.sql);
+  // Reuse the existing append-only creative_feedback store. This is not a
+  // second identity or preference system; facts remain in Business Facts.
+  async function graphicMemory(orgId: string) {
+    const rows = await platform.sql`SELECT subject, detail, created_at
+      FROM creative_feedback
+      WHERE org_id=${orgId} AND kind='GRAPHIC_STYLE_FEEDBACK'
+      ORDER BY created_at ASC LIMIT 200`;
+    const history: GraphicJudgement[] = [];
+    for (const row of rows) {
+      const style = String(row.subject);
+      const detail = row.detail as Record<string, unknown> | null;
+      if (
+        !GRAPHIC_STYLES.includes(style as GraphicJudgement["style"]) ||
+        !detail ||
+        (detail.outcome !== "chosen" && detail.outcome !== "rejected")
+      )
+        continue;
+      history.push({
+        style: style as GraphicJudgement["style"],
+        outcome: detail.outcome,
+        locked: detail.locked === true,
+        at: new Date(row.created_at as string).toISOString(),
+      });
+    }
+    return recommendGraphicDirection(history);
+  }
+
   async function validateDocumentMedia(
     siteId: string,
     source: import("./creative-documents.js").CreativeDocument,
@@ -135,8 +179,44 @@ export function registerCreativeDocumentRoutes(
       const source = buildCreativeDocument({ ...request, direction }, identity);
       return { direction, source, svg: renderSlideSvg(source.slides[0]!) };
     });
-    return { data: { directions, brandVersion: identity.version } };
+    const memory = await graphicMemory(site.orgId);
+    return { data: { directions, brandVersion: identity.version, memory } };
   });
+  app.post("/api/sites/:id/creative-documents/style-feedback", async (req) => {
+    const site = await siteFor(
+      req,
+      z.object({ id: uuid }).parse(req.params).id,
+      "MEMBER",
+    );
+    const body = z
+      .object({
+        direction: z.number().int().min(0).max(2),
+        outcome: z.enum(["chosen", "rejected"]),
+        locked: z.boolean().default(false),
+      })
+      .strict()
+      .parse(req.body);
+    if (body.locked) requireOrgRole(req, site.orgId, "OWNER");
+    const current =
+      await platform.sql`SELECT count(*)::int AS n FROM creative_feedback
+      WHERE org_id=${site.orgId} AND kind='GRAPHIC_STYLE_FEEDBACK'
+        AND created_at > now() - interval '1 day'`;
+    if (Number(current[0]?.n ?? 0) >= 30)
+      throw new HttpError(
+        429,
+        "design_feedback_limit",
+        "Too many design ratings today.",
+      );
+    await brandStore.feedback(
+      site,
+      "GRAPHIC_STYLE_FEEDBACK",
+      GRAPHIC_STYLES[body.direction]!,
+      { outcome: body.outcome, locked: body.locked, source: "OWNER" },
+      requireUser(req).userId,
+    );
+    return { data: { memory: await graphicMemory(site.orgId) } };
+  });
+
   app.post("/api/sites/:id/creative-documents", async (req, reply) => {
     const site = await siteFor(
       req,
@@ -179,17 +259,24 @@ export function registerCreativeDocumentRoutes(
           source: creativeDocumentSchema.parse(logoRow.source),
         }
       : null;
-    const source = buildCreativeDocument(request, {
-      version,
-      approvedLogo,
-      name: brand?.brandOs.name ?? site.name,
-      ...(brand
-        ? {
-            colors: brand.brandOs.visual.palette,
-            typeVoice: brand.brandOs.visual.typeVoice,
-          }
-        : {}),
-    });
+    const chosenDirection =
+      (req.body as Record<string, unknown> | null)?.direction === undefined
+        ? (await graphicMemory(site.orgId)).direction
+        : request.direction;
+    const source = buildCreativeDocument(
+      { ...request, direction: chosenDirection },
+      {
+        version,
+        approvedLogo,
+        name: brand?.brandOs.name ?? site.name,
+        ...(brand
+          ? {
+              colors: brand.brandOs.visual.palette,
+              typeVoice: brand.brandOs.visual.typeVoice,
+            }
+          : {}),
+      },
+    );
     const documentId = randomUUID();
     await platform.inTransaction(async (tx) => {
       await tx.sql`INSERT INTO creative_documents(id,site_id,org_id,kind,title,revision,source,brand_version,created_by)
@@ -553,11 +640,44 @@ export function registerCreativeDocumentRoutes(
           slide: z.coerce.number().int().nonnegative(),
         })
         .parse(req.params);
-      const { row } = await docFor(req, id, documentId);
+      const { site, row } = await docFor(req, id, documentId);
       const source = creativeDocumentSchema.parse(row.source);
       const art = source.slides[slide];
       if (!art) throw notFound();
-      const svg = renderSlideSvg(art);
+      const usageMetadata = {
+        kind: source.kind,
+        documentId,
+        revision: Number(row.revision),
+        slide,
+      };
+      const reservation = billing
+        ? await billing.reserveUsage({
+            orgId: site.orgId,
+            siteId: site.id,
+            kind: "export",
+            idempotencyKey: exportUsageKey(req),
+            metadata: usageMetadata,
+          })
+        : null;
+      let svg: string;
+      try {
+        svg = renderSlideSvg(art);
+        await platform.audit({
+          orgId: site.orgId,
+          actorUserId: requireUser(req).userId,
+          action: "creative_document.exported",
+          objectType: "creative_document",
+          objectId: documentId,
+          requestId: req.id,
+          metadata: { revision: Number(row.revision), slide, format: "svg" },
+        });
+        if (reservation?.state === "RESERVED")
+          await billing?.consumeUsage(reservation.id);
+      } catch (error) {
+        if (reservation?.state === "RESERVED")
+          await billing?.releaseUsage(reservation.id);
+        throw error;
+      }
       reply.header("content-type", "image/svg+xml; charset=utf-8");
       reply.header(
         "content-disposition",

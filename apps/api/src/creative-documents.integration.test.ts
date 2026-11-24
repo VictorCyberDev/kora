@@ -190,4 +190,92 @@ suite("M3/M4 real authenticated creative document lifecycle", () => {
     );
     expect(illegal.status).toBe(409);
   });
+  it("persists owner graphic style corrections and changes future generated designs across requests", async () => {
+    const owner = await h.signup("krev-graphic-memory-owner@example.com");
+    const outsider = await h.signup("krev-graphic-memory-other@example.com");
+    const site = (
+      await h.call("POST", "/api/sites", {
+        cookie: owner.cookie,
+        body: { orgId: owner.orgId, name: "Meridian Bakes" },
+      })
+    ).json.data;
+    const request = {
+      kind: "flyer",
+      title: "Bakery launch",
+      headline: "Celebration cakes baked to order",
+      description: "Order in advance",
+      cta: "Contact us",
+    };
+    const previewUrl = `/api/sites/${site.id}/creative-documents/preview`;
+    const feedbackUrl = `/api/sites/${site.id}/creative-documents/style-feedback`;
+    const baseline = await h.call("POST", previewUrl, {
+      cookie: owner.cookie,
+      body: request,
+    });
+    expect(baseline.status).toBe(200);
+    expect(baseline.json.data.directions).toHaveLength(3);
+    expect(baseline.json.data.memory).toMatchObject({
+      direction: 0,
+      applied: false,
+    });
+    const forbidden = await h.call("POST", feedbackUrl, {
+      cookie: outsider.cookie,
+      body: { direction: 0, outcome: "rejected", locked: true },
+    });
+    expect([403, 404]).toContain(forbidden.status);
+    const rejected = await h.call("POST", feedbackUrl, {
+      cookie: owner.cookie,
+      body: { direction: 0, outcome: "rejected", locked: true },
+    });
+    expect(rejected.status).toBe(200);
+    expect(rejected.json.data.memory).toMatchObject({
+      direction: 1,
+      applied: true,
+    });
+    const memoryAfterFetch = await h.call("POST", previewUrl, {
+      cookie: owner.cookie,
+      body: request,
+    });
+    expect(memoryAfterFetch.json.data.memory.direction).toBe(1);
+    const made = await h.call(
+      "POST",
+      `/api/sites/${site.id}/creative-documents`,
+      {
+        cookie: owner.cookie,
+        body: request,
+      },
+    );
+    expect(made.status).toBe(201);
+    const source = made.json.data.source;
+    const background = source.slides[0].background;
+    expect(background).toBe(
+      memoryAfterFetch.json.data.directions[1].source.slides[0].background,
+    );
+    expect(background).not.toBe(
+      memoryAfterFetch.json.data.directions[0].source.slides[0].background,
+    );
+    const explicit = await h.call(
+      "POST",
+      `/api/sites/${site.id}/creative-documents`,
+      {
+        cookie: owner.cookie,
+        body: { ...request, direction: 2 },
+      },
+    );
+    expect(explicit.status).toBe(201);
+    expect(explicit.json.data.source.slides[0].background).toBe(
+      memoryAfterFetch.json.data.directions[2].source.slides[0].background,
+    );
+    const corrected = await h.call("POST", feedbackUrl, {
+      cookie: owner.cookie,
+      body: { direction: 0, outcome: "chosen", locked: true },
+    });
+    expect(corrected.status).toBe(200);
+    expect(corrected.json.data.memory.direction).toBe(0);
+    const refetched = await h.call("POST", previewUrl, {
+      cookie: owner.cookie,
+      body: request,
+    });
+    expect(refetched.json.data.memory.direction).toBe(0);
+  });
 });

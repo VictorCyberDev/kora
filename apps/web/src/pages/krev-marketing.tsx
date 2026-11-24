@@ -125,12 +125,19 @@ export function KrevLanding() {
               together.
             </p>
             <div className="krev-actions">
-              <Link className="krev-button" to="/signup">
+              <Link className="krev-button" to="/signup?goal=website">
                 Start creating <span aria-hidden="true">↗</span>
               </Link>
               <a href="#real-work" className="krev-outline">
                 Explore real work
               </a>
+            </div>
+            <div className="krev-actions" aria-label="Choose what to create">
+              <Link to="/signup?goal=logo">Create a logo</Link>
+              <Link to="/signup?goal=flyer">Design a flyer</Link>
+              <Link to="/signup?goal=social">Social designs</Link>
+              <Link to="/signup?goal=video">Make a video</Link>
+              <Link to="/signup?goal=campaign">Start a campaign</Link>
             </div>
             <p className="krev-fine">
               Nothing is published without approval. Every creative starts with

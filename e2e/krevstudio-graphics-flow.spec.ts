@@ -217,6 +217,15 @@ test("Meridian Bakes creates a brand logo, flyer, poster, social post and editab
       ).json()
     ).data;
     expect(flyerDetail.source.approvedLogoId).toBe(logo.id);
+    await page.goto(`/app/sites/${siteId}`);
+    await expect(
+      page.getByRole("heading", { name: "Recent creative projects" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Bakery launch flyer" }).click();
+    await expect(page).toHaveURL(/\/creative-studio\?document=/);
+    await expect(
+      page.getByRole("img", { name: "Editable design canvas" }),
+    ).toBeVisible();
   } finally {
     await ctx.close();
   }

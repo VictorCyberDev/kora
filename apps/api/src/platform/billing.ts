@@ -18,6 +18,11 @@ export interface PlanCapabilities {
   managedRecovery: boolean;
   advancedProof: boolean;
   teamMembers: number;
+  /** Optional commercial limits. Existing configured plans retain safe fallbacks. */
+  creativeDocuments?: number;
+  videoRendersPerMonth?: number;
+  exportsPerMonth?: number;
+  brands?: number;
 }
 export interface PlanSeed {
   code: string;
@@ -43,6 +48,10 @@ const planSchema = z.object({
     managedRecovery: z.boolean(),
     advancedProof: z.boolean(),
     teamMembers: z.number().int().min(1),
+    creativeDocuments: z.number().int().min(1).optional(),
+    videoRendersPerMonth: z.number().int().min(0).optional(),
+    exportsPerMonth: z.number().int().min(0).optional(),
+    brands: z.number().int().min(1).optional(),
   }),
 });
 /** Development plans only: clearly not production pricing. Production uses KORA_PLANS_JSON. */
@@ -565,6 +574,186 @@ export class BillingService {
       ),
     };
   }
+  private usagePolicy(
+    capabilities: PlanCapabilities,
+    kind: "video_render" | "export",
+  ) {
+    const dimension = kind === "video_render" ? "VIDEO_RENDER" : "EXPORT";
+    const configured =
+      kind === "video_render"
+        ? capabilities.videoRendersPerMonth
+        : capabilities.exportsPerMonth;
+    const fallback =
+      kind === "video_render"
+        ? Math.max(1, Math.floor(capabilities.aiOperationsPerMonth / 10))
+        : Math.max(5, capabilities.aiOperationsPerMonth);
+    return { dimension, limit: configured ?? fallback } as const;
+  }
+  /**
+   * Atomically reserves quota before work starts. The transaction-scoped
+   * advisory lock serializes all reservations for one org/dimension, while
+   * the idempotency key makes network retries and process restarts safe.
+   */
+  async reserveUsage(input: {
+    orgId: string;
+    siteId: string | null;
+    kind: "video_render" | "export";
+    idempotencyKey: string;
+    quantity?: number;
+    metadata?: Record<string, unknown>;
+  }) {
+    const quantity = input.quantity ?? 1;
+    if (!Number.isFinite(quantity) || quantity <= 0)
+      throw new HttpError(400, "invalid_usage_quantity");
+    const sub = await this.current(input.orgId);
+    if (!sub) throw new HttpError(402, "plan_restriction", "No active plan.");
+    if (sub.state === "EXPIRED" || sub.state === "CANCELED")
+      throw new HttpError(
+        402,
+        "plan_restriction",
+        "Your plan has ended. Choose a plan to continue.",
+      );
+    const { dimension, limit } = this.usagePolicy(sub.capabilities, input.kind);
+    const periodStart = new Date(
+      Date.UTC(this.now().getUTCFullYear(), this.now().getUTCMonth(), 1),
+    )
+      .toISOString()
+      .slice(0, 10);
+    return this.d.platform.inTransaction(async (tx) => {
+      await tx.sql`SELECT pg_advisory_xact_lock(hashtextextended(${`${input.orgId}:${dimension}`},0))`;
+      const existing = (
+        await tx.sql`SELECT * FROM usage_reservations
+          WHERE org_id=${input.orgId} AND dimension=${dimension}
+            AND idempotency_key=${input.idempotencyKey} FOR UPDATE`
+      )[0];
+      if (existing && existing.state !== "RELEASED")
+        return {
+          id: String(existing.id),
+          state: String(existing.state) as "RESERVED" | "CONSUMED",
+          created: false,
+          limit,
+          remaining: await this.remainingWithin(
+            tx,
+            input.orgId,
+            dimension,
+            limit,
+          ),
+        };
+      const remaining = await this.remainingWithin(
+        tx,
+        input.orgId,
+        dimension,
+        limit,
+      );
+      if (quantity > remaining)
+        throw new HttpError(
+          402,
+          "usage_limit",
+          `${input.kind === "video_render" ? "Video render" : "Export"} limit reached (${limit - remaining}/${limit} this month). Manage your plan to continue.`,
+        );
+      const id = existing ? String(existing.id) : crypto.randomUUID();
+      if (existing)
+        await tx.sql`UPDATE usage_reservations SET state='RESERVED',quantity=${quantity},
+          site_id=${input.siteId},metadata=${tx.sql.json((input.metadata ?? {}) as never)},
+          period_start=${periodStart},released_at=NULL,updated_at=now()
+          WHERE id=${id}`;
+      else
+        await tx.sql`INSERT INTO usage_reservations
+          (id,org_id,site_id,dimension,idempotency_key,quantity,metadata,period_start)
+          VALUES (${id},${input.orgId},${input.siteId},${dimension},
+            ${input.idempotencyKey},${quantity},
+            ${tx.sql.json((input.metadata ?? {}) as never)},${periodStart})`;
+      return {
+        id,
+        state: "RESERVED" as const,
+        created: !existing,
+        limit,
+        remaining: remaining - quantity,
+      };
+    });
+  }
+  private async remainingWithin(
+    platform: PlatformStore,
+    orgId: string,
+    dimension: "VIDEO_RENDER" | "EXPORT",
+    limit: number,
+  ) {
+    const totals = (
+      await platform.sql`SELECT
+        COALESCE((SELECT SUM(quantity) FROM usage_events
+          WHERE org_id=${orgId} AND dimension=${dimension}
+            AND occurred_at>=date_trunc('month',now())),0)::float AS used,
+        COALESCE((SELECT SUM(quantity) FROM usage_reservations
+          WHERE org_id=${orgId} AND dimension=${dimension}
+            AND period_start=date_trunc('month',now())::date
+            AND state='RESERVED'),0)::float AS reserved`
+    )[0];
+    return Math.max(
+      0,
+      limit - Number(totals?.used ?? 0) - Number(totals?.reserved ?? 0),
+    );
+  }
+  async consumeUsage(reservationId: string) {
+    return this.d.platform.inTransaction(async (tx) => {
+      const reservation = (
+        await tx.sql`SELECT * FROM usage_reservations WHERE id=${reservationId} FOR UPDATE`
+      )[0];
+      if (!reservation) throw notFound();
+      if (reservation.state === "CONSUMED") return { consumed: false };
+      if (reservation.state !== "RESERVED")
+        throw new HttpError(409, "usage_reservation_released");
+      await tx.sql`UPDATE usage_reservations SET state='CONSUMED',consumed_at=now(),
+        updated_at=now() WHERE id=${reservationId}`;
+      await tx.sql`INSERT INTO usage_events
+        (id,org_id,site_id,dimension,quantity,metadata,usage_reservation_id)
+        VALUES (${crypto.randomUUID()},${String(reservation.org_id)},
+          ${reservation.site_id ? String(reservation.site_id) : null},
+          ${String(reservation.dimension)},${Number(reservation.quantity)},
+          ${tx.sql.json(reservation.metadata as never)},${reservationId})
+        ON CONFLICT DO NOTHING`;
+      return { consumed: true };
+    });
+  }
+  async releaseUsage(reservationId: string) {
+    const rows = await this.d.platform.sql`UPDATE usage_reservations
+      SET state='RELEASED',released_at=now(),updated_at=now()
+      WHERE id=${reservationId} AND state='RESERVED' RETURNING id`;
+    return rows.length > 0;
+  }
+  async reconcileUsageReservations() {
+    const rows = await this.d.platform.sql`SELECT r.id,r.state,m.status
+      FROM usage_reservations r JOIN motion_renders m
+        ON m.usage_reservation_id=r.id
+      WHERE r.state='RESERVED' AND m.status IN ('READY','FAILED')
+      ORDER BY r.created_at LIMIT 100`;
+    for (const row of rows) {
+      if (row.status === "READY") await this.consumeUsage(String(row.id));
+      else await this.releaseUsage(String(row.id));
+    }
+    return rows.length;
+  }
+  async usageLimits(orgId: string) {
+    const sub = await this.current(orgId);
+    if (!sub) return [];
+    return Promise.all(
+      (["video_render", "export"] as const).map(async (kind) => {
+        const { dimension, limit } = this.usagePolicy(sub.capabilities, kind);
+        const remaining = await this.remainingWithin(
+          this.d.platform,
+          orgId,
+          dimension,
+          limit,
+        );
+        return {
+          kind,
+          dimension,
+          limit,
+          remaining,
+          committed: limit - remaining,
+        };
+      }),
+    );
+  }
   async checkout(
     orgId: string,
     planCode: string,
@@ -758,6 +947,7 @@ export function registerBillingRoutes(
         ...e,
         paymentsConfigured: d.billing.paymentsConfigured,
         usage: await d.platform.usageSummary(id),
+        usageLimits: await d.billing.usageLimits(id),
       },
     };
   });
