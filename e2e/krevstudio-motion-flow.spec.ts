@@ -51,7 +51,7 @@ test("Meridian Bakes edits, persists, restores and exports a real motion timelin
         headers: { "x-requested-with": "kora" },
       })
     ).status(),
-  ).toBe(200);
+  ).toBe(201);
   expect(
     (
       await context.request.post(`/api/sites/${siteId}/brand-kit`, {
