@@ -84,7 +84,7 @@ test("Meridian Bakes creates a seven-day editable campaign with approval and man
   await page.getByRole("button", { name: "New campaign" }).click();
   const form = page.getByRole("form", { name: "New campaign" });
   await form.getByLabel("Name").fill("Meridian seven-day launch");
-  await form.getByLabel("Offer").selectOption("christmas-cakes");
+  await form.getByLabel("Offer", { exact: true }).selectOption("christmas-cakes");
   await form.getByLabel("Audience").fill("Local cake and bakery customers");
   await form
     .getByLabel("Campaign brief")
