@@ -364,7 +364,7 @@ describe("M20 performance", () => {
         priorEnquiries: null,
         newCustomersEstimate: null,
       }).headline,
-    ).toMatch(/not counted any/);
+    ).toBe("No tracked-link activity or website-form enquiries recorded yet.");
   });
 });
 
