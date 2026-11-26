@@ -207,7 +207,7 @@ function fittedHeadline(
   let fontSize = Math.min(100, Math.max(22, preferredSize));
   let lines = wrap(fontSize);
   while (
-    (lines.length > 3 || lines.length * fontSize * 1.2 > maxHeight) &&
+    (lines.length > 3 || lines.length * fontSize * 1.28 > maxHeight) &&
     fontSize > 14
   ) {
     fontSize = Math.max(14, fontSize - 2);
@@ -522,8 +522,9 @@ export function buildCreativeDocument(
           index === 0 &&
           !!request.description &&
           request.description.trim() !== header.trim();
+        const ctaTextTop = Math.round(height * 0.805);
         const headlineBottom = Math.round(
-          height * (hasSupportingCopy ? 0.56 : request.cta ? 0.77 : 0.93),
+          height * (hasSupportingCopy ? 0.56 : request.cta ? 0.805 : 0.93),
         );
         const headline = fittedHeadline(
           header,
@@ -533,7 +534,9 @@ export function buildCreativeDocument(
           headlineSize,
           ink,
           "700",
-          headlineBottom - headlineTop,
+          (request.cta && !hasSupportingCopy
+            ? ctaTextTop - 12
+            : headlineBottom) - headlineTop,
         );
         headline.fontFamily = displayFamily;
         layers.push(headline);
@@ -575,7 +578,7 @@ export function buildCreativeDocument(
             textLayer(
               request.cta,
               margin + 24,
-              Math.round(height * 0.805),
+              ctaTextTop,
               width * 0.5,
               30,
               background,
