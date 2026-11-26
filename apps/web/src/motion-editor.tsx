@@ -492,11 +492,11 @@ export function MotionTimelineEditor({
                 </button>
               </div>
             </div>
-            <div className="k-frames" role="list" aria-label="Scenes">
+            <div className="k-frames" role="group" aria-label="Scenes">
               {timeline.scenes.map((scene: J, index: number) => (
                 <button
                   type="button"
-                  role="listitem"
+                  aria-pressed={scene.id === selectedScene}
                   className={
                     scene.id === selectedScene ? "chip active" : "chip"
                   }
