@@ -72,8 +72,9 @@ test("Meridian Bakes edits, persists, restores and exports a real motion timelin
   await page.getByLabel("Video format").selectOption("square");
   await page.getByRole("button", { name: "Generate directions" }).click();
   await page.getByRole("button", { name: /Editorial reveal/ }).click();
-  await expect(page.getByRole("group", { name: "Scenes" })).toBeVisible();
-  await page.getByRole("button", { name: "1. 2s" }).click();
+  const scenes = page.getByRole("group", { name: "Scenes" });
+  await expect(scenes).toBeVisible();
+  await scenes.getByRole("button", { name: /^1\\./ }).click();
   await page.getByRole("button", { name: /1. text/ }).click();
   await page
     .getByLabel("Text", { exact: true })
