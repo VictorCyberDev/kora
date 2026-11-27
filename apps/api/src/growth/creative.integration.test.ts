@@ -419,7 +419,7 @@ d("creative loop over the API", () => {
       (
         await h.sql`SELECT stage FROM acquisition_events
           WHERE org_id=${owner.orgId} ORDER BY stage`
-      ).map((row) => row.stage),
+      ).map((row) => String(row.stage)),
     ).toEqual(["audit_created", "referral_visit", "share_created", "signup"]);
 
     const site = (
@@ -448,7 +448,7 @@ d("creative loop over the API", () => {
       VALUES (gen_random_uuid(), ${owner.orgId}, ${site.id}, 'EXPORT', 1)`;
     const durable = await h.sql`SELECT stage FROM acquisition_events
       WHERE org_id=${owner.orgId} ORDER BY stage`;
-    expect(durable.map((row) => row.stage)).toEqual([
+    expect(durable.map((row) => String(row.stage))).toEqual([
       "activation",
       "audit_created",
       "first_export",
@@ -509,7 +509,7 @@ d("creative loop over the API", () => {
     expect(claimed.status).toBe(201);
     const stages = await h.sql`SELECT stage FROM acquisition_events
       WHERE org_id=${existing.orgId} ORDER BY stage`;
-    expect(stages.map((row) => row.stage)).toEqual([
+    expect(stages.map((row) => String(row.stage))).toEqual([
       "audit_created",
       "referral_visit",
       "share_created",
@@ -568,6 +568,27 @@ d("creative loop over the API", () => {
     );
     expect(status.json.data.enrolled).toBe(true);
     expect(status.json.data.paymentsVerified).toBe(false);
+    expect(status.json.data.verifiedPaymentCount).toBe(0);
+    expect(status.json.data.verifiedPaymentAmountMinorByCurrency).toEqual({});
+    const plan = (await h.sql`SELECT id FROM plans ORDER BY code LIMIT 1`)[0]!;
+    await h.sql`INSERT INTO billing_transactions
+      (id, org_id, plan_id, provider, reference, status, amount_minor,
+        currency, verified_at)
+      VALUES (gen_random_uuid(), ${owner.orgId}, ${plan.id}, 'paystack',
+        ${"pilot-verified-" + owner.orgId}, 'VERIFIED', 750000, 'NGN', now())`;
+    const paidStatus = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(paidStatus.json.data.paymentsVerified).toBe(true);
+    expect(paidStatus.json.data.verifiedPaymentCount).toBe(1);
+    expect(paidStatus.json.data.verifiedPaymentAmountMinorByCurrency).toEqual({
+      NGN: 750000,
+    });
+    expect(paidStatus.json.data.firstVerifiedPaymentAt).toMatch(
+      /^\d{4}-\d{2}-\d{2}T/,
+    );
     const rows =
       await h.sql`SELECT id FROM pilot_participants WHERE org_id=${owner.orgId}`;
     expect(rows).toHaveLength(1);

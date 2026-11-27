@@ -386,22 +386,23 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         consent_recorded_at=EXCLUDED.consent_recorded_at
       RETURNING id`
     )[0]!;
+    const referralId = uuid.parse(referral.id);
     const claimedAt = now();
     await sql`INSERT INTO acquisition_events
       (id, referral_id, org_id, stage, source_type, source_id, occurred_at)
       VALUES
-        (${randomUUID()}, ${referral.id}, ${b.orgId}, 'audit_created',
+        (${randomUUID()}, ${referralId}, ${b.orgId}, 'audit_created',
           'public_audit', ${verified.id}, ${audit.created_at as Date}),
-        (${randomUUID()}, ${referral.id}, ${b.orgId}, 'share_created',
+        (${randomUUID()}, ${referralId}, ${b.orgId}, 'share_created',
           'signed_audit_share', ${verified.id}, ${audit.created_at as Date}),
-        (${randomUUID()}, ${referral.id}, ${b.orgId}, 'referral_visit',
+        (${randomUUID()}, ${referralId}, ${b.orgId}, 'referral_visit',
           'consented_referral_claim', ${verified.id}, ${claimedAt})
       ON CONFLICT (referral_id, stage) DO NOTHING`;
     // Authentication proves identity, not acquisition. Count signup only from
     // the immutable user creation row, and only when it follows this audit.
     await sql`INSERT INTO acquisition_events
       (id, referral_id, org_id, stage, source_type, source_id, occurred_at)
-      SELECT ${randomUUID()}, ${referral.id}, ${b.orgId}, 'signup',
+      SELECT ${randomUUID()}, ${referralId}, ${b.orgId}, 'signup',
         'user_creation', u.id::text, u.created_at
       FROM users u
       WHERE u.id=${actor.userId} AND u.created_at >= ${audit.created_at as Date}
@@ -550,6 +551,28 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
       (SELECT MIN(published_at) FROM site_versions
         WHERE org_id=${orgId} AND published_at>=${enrolledAt})
         AS first_publication_at`;
+    const payments = await sql`SELECT currency,
+        count(*)::int AS verified_count,
+        sum(amount_minor)::bigint AS verified_amount_minor,
+        min(verified_at) AS first_verified_at
+      FROM billing_transactions
+      WHERE org_id=${orgId} AND status='VERIFIED'
+        AND amount_minor>0 AND verified_at IS NOT NULL
+        AND verified_at>=${enrolledAt}
+      GROUP BY currency ORDER BY currency`;
+    const verifiedPaymentAmountMinorByCurrency = Object.fromEntries(
+      payments.map((payment) => [
+        String(payment.currency),
+        Number(payment.verified_amount_minor),
+      ]),
+    );
+    const verifiedPaymentCount = payments.reduce(
+      (total, payment) => total + Number(payment.verified_count),
+      0,
+    );
+    const firstVerifiedPaymentAt = payments
+      .map((payment) => z.coerce.date().parse(payment.first_verified_at))
+      .sort((left, right) => left.getTime() - right.getTime())[0];
     return {
       data: {
         enrolled: participation.revoked_at === null,
@@ -566,8 +589,11 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
             ? z.coerce.date().parse(evidence.first_publication_at).toISOString()
             : null,
         },
-        paymentsVerified: false,
-        note: "Milestones are read from recorded platform events after consent. Pilot enrollment is not evidence of payment, retention or commercial success.",
+        paymentsVerified: verifiedPaymentCount > 0,
+        verifiedPaymentCount,
+        verifiedPaymentAmountMinorByCurrency,
+        firstVerifiedPaymentAt: firstVerifiedPaymentAt?.toISOString() ?? null,
+        note: "Milestones are read from recorded platform events after consent. Payment totals include only provider-verified billing transactions after enrollment; enrollment and owner-stated pricing are not payment evidence.",
       },
     };
   });
