@@ -275,6 +275,52 @@ describe("Krevstudio editable documents", () => {
     });
     expect(new Set(designs).size).toBe(3);
   });
+  it("gives different businesses distinct deterministic logo compositions", () => {
+    const create = (
+      name: string,
+      logoForm: "wordmark" | "lettermark" | "icon",
+    ) =>
+      buildCreativeDocument(
+        {
+          kind: "logo",
+          title: `${name} identity`,
+          headline: name,
+          logoForm,
+          direction: 1,
+        },
+        { ...brand, name },
+      ).slides[0]!;
+    for (const form of ["wordmark", "lettermark", "icon"] as const) {
+      const first = create("Meridian Bakes", form);
+      const second = create("Luma Portraits", form);
+      expect(
+        JSON.stringify(
+          first.layers.map((layer) => [
+            layer.type,
+            layer.x,
+            layer.y,
+            layer.width,
+            layer.height,
+            layer.type === "path" ? layer.d : null,
+          ]),
+        ),
+      ).not.toBe(
+        JSON.stringify(
+          second.layers.map((layer) => [
+            layer.type,
+            layer.x,
+            layer.y,
+            layer.width,
+            layer.height,
+            layer.type === "path" ? layer.d : null,
+          ]),
+        ),
+      );
+      expect(renderSlideSvg(first)).toBe(
+        renderSlideSvg(create("Meridian Bakes", form)),
+      );
+    }
+  });
   it("scales approved vector path coordinates to a small campaign logo", () => {
     const logo = buildCreativeDocument(
       {
