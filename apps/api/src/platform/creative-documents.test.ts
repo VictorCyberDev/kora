@@ -142,7 +142,7 @@ describe("Krevstudio editable documents", () => {
       ).slides[0]!;
       const headlineLayer = slide.layers.find(
         (layer) =>
-          layer.type === "text" && layer.text.replace(/\\n/g, " ") === headline,
+          layer.type === "text" && layer.text.replace(/\n/g, " ") === headline,
       );
       const ctaLayer = slide.layers.find(
         (layer) => layer.type === "text" && layer.text === "Contact us",
@@ -158,7 +158,7 @@ describe("Krevstudio editable documents", () => {
         slide.layers.filter(
           (layer) =>
             layer.type === "text" &&
-            layer.text.replace(/\\n/g, " ") === headline,
+            layer.text.replace(/\n/g, " ") === headline,
         ),
       ).toHaveLength(1);
     }
@@ -274,6 +274,52 @@ describe("Krevstudio editable documents", () => {
       return paths.map((layer) => layer.d).join(" ");
     });
     expect(new Set(designs).size).toBe(3);
+  });
+  it("gives different businesses distinct deterministic logo compositions", () => {
+    const create = (
+      name: string,
+      logoForm: "wordmark" | "lettermark" | "icon",
+    ) =>
+      buildCreativeDocument(
+        {
+          kind: "logo",
+          title: `${name} identity`,
+          headline: name,
+          logoForm,
+          direction: 1,
+        },
+        { ...brand, name },
+      ).slides[0]!;
+    for (const form of ["wordmark", "lettermark", "icon"] as const) {
+      const first = create("Meridian Bakes", form);
+      const second = create("Luma Portraits", form);
+      expect(
+        JSON.stringify(
+          first.layers.map((layer) => [
+            layer.type,
+            layer.x,
+            layer.y,
+            layer.width,
+            layer.height,
+            layer.type === "path" ? layer.d : null,
+          ]),
+        ),
+      ).not.toBe(
+        JSON.stringify(
+          second.layers.map((layer) => [
+            layer.type,
+            layer.x,
+            layer.y,
+            layer.width,
+            layer.height,
+            layer.type === "path" ? layer.d : null,
+          ]),
+        ),
+      );
+      expect(renderSlideSvg(first)).toBe(
+        renderSlideSvg(create("Meridian Bakes", form)),
+      );
+    }
   });
   it("scales approved vector path coordinates to a small campaign logo", () => {
     const logo = buildCreativeDocument(

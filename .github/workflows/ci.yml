@@ -1,16 +1,13 @@
 name: CI
 on:
+  # Validate every Krevstudio integration branch and every pull request,
+  # including stacks whose base is another feature branch.
   push:
     branches:
       - main
-      - feature/krevstudio-m3-m4-transformation
-      - feature/krevstudio-creative-professionalization
+      - "feature/krevstudio-*"
   pull_request:
-    # PR #44 is intentionally stacked on the M1-M4 integration branch. Run
-    # the same checks there without changing its dependency on PR #43.
-    branches:
-      - main
-      - feature/krevstudio-graphics-acceptance
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: krevstudio-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -72,6 +69,7 @@ jobs:
           test -f apps/api/dist/db/migrations/034_commercial_usage.sql
           test -f apps/api/dist/db/migrations/035_review_revision_snapshots.sql
           test -f apps/api/dist/db/migrations/036_usage_reservations.sql
+          test -f apps/api/dist/db/migrations/040_acquisition_events.sql
           test -f packages/site-fonts/dist/index.js
           test -f packages/site-media/dist/index.js
           test -f packages/site-media/files/restaurant-timber-ceiling.webp

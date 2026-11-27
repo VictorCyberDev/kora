@@ -415,6 +415,64 @@ d("creative loop over the API", () => {
       WHERE org_id=${owner.orgId}`;
     expect(rows).toHaveLength(1);
     expect(rows[0]?.revoked_at).toBeNull();
+    expect(
+      (
+        await h.sql`SELECT stage FROM acquisition_events
+          WHERE org_id=${owner.orgId} ORDER BY stage`
+      ).map((row) => String(row.stage)),
+    ).toEqual(["audit_created", "referral_visit", "share_created", "signup"]);
+
+    const site = (
+      await h.call("POST", "/api/sites", {
+        cookie: owner.cookie,
+        body: { orgId: owner.orgId, name: "Referral Journey" },
+      })
+    ).json.data;
+    expect(
+      (
+        await h.call("POST", `/api/sites/${site.id}/generate`, {
+          cookie: owner.cookie,
+          body: brief,
+        })
+      ).status,
+    ).toBe(201);
+    expect(
+      (
+        await h.call("POST", `/api/sites/${site.id}/presence/import`, {
+          cookie: owner.cookie,
+        })
+      ).status,
+    ).toBe(201);
+    await h.sql`INSERT INTO usage_events
+      (id, org_id, site_id, dimension, quantity)
+      VALUES (gen_random_uuid(), ${owner.orgId}, ${site.id}, 'EXPORT', 1)`;
+    const durable = await h.sql`SELECT stage FROM acquisition_events
+      WHERE org_id=${owner.orgId} ORDER BY stage`;
+    expect(durable.map((row) => String(row.stage))).toEqual([
+      "activation",
+      "audit_created",
+      "first_export",
+      "first_project",
+      "referral_visit",
+      "share_created",
+      "signup",
+    ]);
+    const progress = await h.call(
+      "GET",
+      `/api/acquisition/progress?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(progress.status).toBe(200);
+    expect(progress.json.data.durableStages).toMatchObject({
+      signup: 1,
+      activation: 1,
+      first_project: 1,
+      first_export: 1,
+    });
+    await expect(
+      h.sql`UPDATE acquisition_events SET source_id='tampered'
+        WHERE org_id=${owner.orgId}`,
+    ).rejects.toThrow(/append-only/);
     const revoked = await h.call("POST", "/api/acquisition/revoke", {
       cookie: owner.cookie,
       body: { orgId: owner.orgId },
@@ -424,6 +482,45 @@ d("creative loop over the API", () => {
     const after = await h.sql`SELECT revoked_at FROM acquisition_referrals
       WHERE org_id=${owner.orgId}`;
     expect(after[0]?.revoked_at).not.toBeNull();
+    const afterProgress = await h.call(
+      "GET",
+      `/api/acquisition/progress?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(afterProgress.json.data.durableStages).toEqual({});
+  });
+  it("does not relabel an existing account as a referral signup", async () => {
+    const existing = await h.signup(
+      "existing-referral-owner@example.com",
+      "Existing Referral Org",
+    );
+    const audit = await h.call("POST", "/api/public/audit", {
+      body: { url: targetUrl },
+    });
+    expect(audit.status).toBe(201);
+    const claimed = await h.call("POST", "/api/acquisition/claim", {
+      cookie: existing.cookie,
+      body: {
+        orgId: existing.orgId,
+        token: audit.json.data.shareToken,
+        consent: true,
+      },
+    });
+    expect(claimed.status).toBe(201);
+    const stages = await h.sql`SELECT stage FROM acquisition_events
+      WHERE org_id=${existing.orgId} ORDER BY stage`;
+    expect(stages.map((row) => String(row.stage))).toEqual([
+      "audit_created",
+      "referral_visit",
+      "share_created",
+    ]);
+    const progress = await h.call(
+      "GET",
+      `/api/acquisition/progress?orgId=${existing.orgId}`,
+      { cookie: existing.cookie },
+    );
+    expect(progress.status).toBe(200);
+    expect(progress.json.data.verifiedSignup).toBe(false);
   });
   it("enrolls pilot participants only after explicit owner consent and supports withdrawal", async () => {
     const owner = await h.signup("pilot-owner@example.com", "Pilot Org");
@@ -471,6 +568,27 @@ d("creative loop over the API", () => {
     );
     expect(status.json.data.enrolled).toBe(true);
     expect(status.json.data.paymentsVerified).toBe(false);
+    expect(status.json.data.verifiedPaymentCount).toBe(0);
+    expect(status.json.data.verifiedPaymentAmountMinorByCurrency).toEqual({});
+    const plan = (await h.sql`SELECT id FROM plans ORDER BY code LIMIT 1`)[0]!;
+    await h.sql`INSERT INTO billing_transactions
+      (id, org_id, plan_id, provider, reference, status, amount_minor,
+        currency, verified_at)
+      VALUES (gen_random_uuid(), ${owner.orgId}, ${plan.id}, 'paystack',
+        ${"pilot-verified-" + owner.orgId}, 'VERIFIED', 750000, 'NGN', now())`;
+    const paidStatus = await h.call(
+      "GET",
+      `/api/pilot/status?orgId=${owner.orgId}`,
+      { cookie: owner.cookie },
+    );
+    expect(paidStatus.json.data.paymentsVerified).toBe(true);
+    expect(paidStatus.json.data.verifiedPaymentCount).toBe(1);
+    expect(paidStatus.json.data.verifiedPaymentAmountMinorByCurrency).toEqual({
+      NGN: 750000,
+    });
+    expect(paidStatus.json.data.firstVerifiedPaymentAt).toMatch(
+      /^\d{4}-\d{2}-\d{2}T/,
+    );
     const rows =
       await h.sql`SELECT id FROM pilot_participants WHERE org_id=${owner.orgId}`;
     expect(rows).toHaveLength(1);

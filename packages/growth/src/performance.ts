@@ -62,7 +62,7 @@ export function performanceReport(i: {
   let headline: string;
   if (trackedActivity === 0 && i.enquiries === 0)
     headline =
-      "No tracked-link activity or website-form enquiries recorded yet.";
+      "No tracked-link activity or website-form enquiries counted yet.";
   else if (i.priorEnquiries === null)
     headline = `${interactions} tracked contact-button interaction${interactions === 1 ? "" : "s"}; ${i.enquiries} website-form enquir${i.enquiries === 1 ? "y" : "ies"}. These events may overlap.`;
   else if (i.enquiries > i.priorEnquiries)

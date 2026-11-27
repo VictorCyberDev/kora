@@ -207,7 +207,7 @@ function fittedHeadline(
   let fontSize = Math.min(100, Math.max(22, preferredSize));
   let lines = wrap(fontSize);
   while (
-    (lines.length > 3 || lines.length * fontSize * 1.2 > maxHeight) &&
+    (lines.length > 3 || lines.length * fontSize * 1.28 > maxHeight) &&
     fontSize > 14
   ) {
     fontSize = Math.max(14, fontSize - 2);
@@ -351,6 +351,17 @@ export function buildCreativeDocument(
     }
     if (request.kind === "logo") {
       const form = request.logoForm;
+      // Direction remains owner-selected, while a stable name signature keeps
+      // two businesses choosing the same form from receiving the same mark.
+      // This is deterministic layout variation, never trademark clearance.
+      const brandSignature = Array.from(brandName).reduce(
+        (total, character, position) =>
+          (total + character.codePointAt(0)! * (position + 1)) % 997,
+        0,
+      );
+      const logoVariant = (variant + brandSignature) % 3;
+      const signatureOffset = (brandSignature % 37) - 18;
+      const signatureSpan = 70 + (brandSignature % 91);
       const words = brandName.match(/[A-Za-z0-9]+/g) ?? [];
       const initials = (
         words.length > 1
@@ -364,8 +375,8 @@ export function buildCreativeDocument(
       const vectorMark = (d: string, fill: string): GraphicLayer => ({
         id: uid(),
         type: "path",
-        x: 0,
-        y: 0,
+        x: signatureOffset,
+        y: -Math.round(signatureOffset / 2),
         width: 1000,
         height: 1000,
         rotation: 0,
@@ -377,7 +388,7 @@ export function buildCreativeDocument(
         strokeWidth: 0,
       });
       const symbol = () => {
-        if (variant === 0) {
+        if (logoVariant === 0) {
           // Twin directional ribbons with a purposeful negative-space channel.
           layers.push(
             vectorMark(
@@ -392,7 +403,7 @@ export function buildCreativeDocument(
             ),
           );
           layers.push(rectangle(320, 723, 415, 12, ink, 6));
-        } else if (variant === 1) {
+        } else if (logoVariant === 1) {
           // Open arch with a cut-through opening; reads at monochrome size.
           layers.push(
             vectorMark(
@@ -417,32 +428,119 @@ export function buildCreativeDocument(
           );
         }
       };
-      const wordmark = (y: number, size = 84) => {
+      const wordmark = (y: number, size = 84, x = 90, boxWidth = 820) => {
         const fit = Math.max(
           30,
-          Math.min(size, 820 / (brandName.length * 0.58)),
+          Math.min(size, boxWidth / (brandName.length * 0.58)),
         );
-        const mark = textLayer(brandName, 90, y, 820, fit, ink, "700");
+        const mark = textLayer(brandName, x, y, boxWidth, fit, ink, "700");
         mark.fontFamily = displayFamily;
         layers.push(mark);
       };
       if (form === "wordmark") {
-        wordmark(360, 115);
-        layers.push(
-          rectangle(
-            92,
-            545,
-            Math.min(800, brandName.length * 18),
-            8,
-            highlight,
-            4,
-          ),
-        );
+        if (logoVariant === 0) {
+          wordmark(360, 115);
+          layers.push(
+            rectangle(
+              92,
+              545,
+              Math.min(800, brandName.length * 18 + signatureSpan),
+              8,
+              highlight,
+              4,
+            ),
+          );
+        } else if (logoVariant === 1) {
+          layers.push(rectangle(90, 315, 14, 205, highlight, 7));
+          wordmark(355, 108, 135, 745);
+          layers.push(
+            rectangle(125 + signatureOffset, 545, signatureSpan, 10, ink, 5),
+          );
+        } else {
+          layers.push({
+            id: uid(),
+            type: "ellipse",
+            x: 88,
+            y: 350,
+            width: 28,
+            height: 28,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            fill: highlight,
+          });
+          wordmark(390, 108);
+          layers.push(
+            rectangle(90, 548, 720 + (brandSignature % 71), 3, ink, 2),
+          );
+        }
       } else if (form === "lettermark") {
         layers.push(textLayer(initials, 220, 190, 570, 290, highlight, "900"));
-        layers.push(rectangle(210, 640, 570, 12, ink, 5));
+        if (logoVariant === 0)
+          layers.push(
+            rectangle(
+              210 + signatureOffset,
+              640,
+              520 + signatureSpan,
+              12,
+              ink,
+              5,
+            ),
+          );
+        else if (logoVariant === 1)
+          layers.push(
+            rectangle(
+              178,
+              178 + signatureOffset,
+              16,
+              500 + signatureSpan,
+              ink,
+              8,
+            ),
+          );
+        else {
+          layers.push({
+            id: uid(),
+            type: "ellipse",
+            x: 710 + signatureOffset,
+            y: 590,
+            width: 54,
+            height: 54,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            fill: ink,
+          });
+          layers.push(
+            rectangle(220, 670, 230 + signatureSpan, 7, highlight, 4),
+          );
+        }
       } else if (form === "monogram") {
-        layers.push(rectangle(170, 140, 660, 660, highlight, 95));
+        if (logoVariant === 1) {
+          layers.push({
+            id: uid(),
+            type: "ellipse",
+            x: 170,
+            y: 140,
+            width: 660,
+            height: 660,
+            rotation: 0,
+            opacity: 1,
+            locked: false,
+            fill: highlight,
+          });
+        } else {
+          layers.push(
+            rectangle(
+              170,
+              140,
+              660,
+              660,
+              highlight,
+              logoVariant === 0 ? 95 : 0,
+            ),
+          );
+        }
         layers.push(textLayer(initials, 260, 260, 520, 250, background, "900"));
       } else if (form === "emblem") {
         layers.push({
@@ -475,19 +573,21 @@ export function buildCreativeDocument(
         symbol();
         if (form === "combination" || form === "geometric") wordmark(825, 70);
         if (form === "abstract") {
-          // Interlocking geometric negative space is editable and distinct.
+          // A deliberately offset counterform prevents the abstract option
+          // from collapsing into the same silhouette as the clean icon form.
           layers.push({
             id: uid(),
             type: "ellipse",
-            x: 390,
-            y: 335,
-            width: 210,
-            height: 210,
+            x: 555 + signatureOffset,
+            y: 410 - Math.round(signatureOffset / 2),
+            width: 135,
+            height: 135,
             rotation: 0,
             opacity: 1,
             locked: false,
-            fill: background,
+            fill: ink,
           });
+          layers.push(rectangle(300 + signatureOffset, 735, 230, 12, ink, 6));
         }
       }
     } else {
@@ -522,8 +622,9 @@ export function buildCreativeDocument(
           index === 0 &&
           !!request.description &&
           request.description.trim() !== header.trim();
+        const ctaTextTop = Math.round(height * 0.805);
         const headlineBottom = Math.round(
-          height * (hasSupportingCopy ? 0.56 : request.cta ? 0.77 : 0.93),
+          height * (hasSupportingCopy ? 0.56 : request.cta ? 0.805 : 0.93),
         );
         const headline = fittedHeadline(
           header,
@@ -533,7 +634,9 @@ export function buildCreativeDocument(
           headlineSize,
           ink,
           "700",
-          headlineBottom - headlineTop,
+          (request.cta && !hasSupportingCopy
+            ? ctaTextTop - 12
+            : headlineBottom) - headlineTop,
         );
         headline.fontFamily = displayFamily;
         layers.push(headline);
@@ -575,7 +678,7 @@ export function buildCreativeDocument(
             textLayer(
               request.cta,
               margin + 24,
-              Math.round(height * 0.805),
+              ctaTextTop,
               width * 0.5,
               30,
               background,
