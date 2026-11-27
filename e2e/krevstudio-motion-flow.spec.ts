@@ -74,7 +74,7 @@ test("Meridian Bakes edits, persists, restores and exports a real motion timelin
   await page.getByRole("button", { name: /Editorial reveal/ }).click();
   const scenes = page.getByRole("group", { name: "Scenes" });
   await expect(scenes).toBeVisible();
-  await scenes.getByRole("button", { name: /^1\\./ }).click();
+  await scenes.getByRole("button", { name: /^1\./ }).click();
   await page.getByRole("button", { name: /1. text/ }).click();
   await page
     .getByLabel("Text", { exact: true })

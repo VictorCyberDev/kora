@@ -374,15 +374,38 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
     const verified = verifyShare(d.shareSecret, b.token, now().getTime());
     if (!verified.ok || verified.kind !== "audit") throw notFound();
     const audit = (
-      await sql`SELECT id FROM public_audits WHERE id=${verified.id}`
+      await sql`SELECT id, created_at FROM public_audits WHERE id=${verified.id}`
     )[0];
     if (!audit) throw notFound();
-    await sql`INSERT INTO acquisition_referrals
+    const referral = (
+      await sql`INSERT INTO acquisition_referrals
       (id, source_audit_id, org_id, user_id, consent_recorded_at)
       VALUES (${randomUUID()}, ${verified.id}, ${b.orgId}, ${actor.userId}, ${now()})
       ON CONFLICT (source_audit_id, org_id, user_id)
       DO UPDATE SET revoked_at=NULL,
-        consent_recorded_at=EXCLUDED.consent_recorded_at`;
+        consent_recorded_at=EXCLUDED.consent_recorded_at
+      RETURNING id`
+    )[0]!;
+    const claimedAt = now();
+    await sql`INSERT INTO acquisition_events
+      (id, referral_id, org_id, stage, source_type, source_id, occurred_at)
+      VALUES
+        (${randomUUID()}, ${referral.id}, ${b.orgId}, 'audit_created',
+          'public_audit', ${verified.id}, ${audit.created_at as Date}),
+        (${randomUUID()}, ${referral.id}, ${b.orgId}, 'share_created',
+          'signed_audit_share', ${verified.id}, ${audit.created_at as Date}),
+        (${randomUUID()}, ${referral.id}, ${b.orgId}, 'referral_visit',
+          'consented_referral_claim', ${verified.id}, ${claimedAt})
+      ON CONFLICT (referral_id, stage) DO NOTHING`;
+    // Authentication proves identity, not acquisition. Count signup only from
+    // the immutable user creation row, and only when it follows this audit.
+    await sql`INSERT INTO acquisition_events
+      (id, referral_id, org_id, stage, source_type, source_id, occurred_at)
+      SELECT ${randomUUID()}, ${referral.id}, ${b.orgId}, 'signup',
+        'user_creation', u.id::text, u.created_at
+      FROM users u
+      WHERE u.id=${actor.userId} AND u.created_at >= ${audit.created_at as Date}
+      ON CONFLICT (referral_id, stage) DO NOTHING`;
     await platform.audit({
       orgId: b.orgId,
       actorUserId: actor.userId,
@@ -420,7 +443,7 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
   app.get("/api/acquisition/progress", async (req) => {
     const { orgId } = z.object({ orgId: uuid }).parse(req.query);
     requireOrgRole(req, orgId, "MEMBER");
-    const [claims, projects, exports] = await Promise.all([
+    const [claims, projects, exports, stages] = await Promise.all([
       sql`SELECT count(*)::int AS n FROM acquisition_referrals
         WHERE org_id=${orgId} AND revoked_at IS NULL`,
       sql`SELECT (
@@ -430,16 +453,25 @@ export function registerCreativeRoutes(app: FastifyInstance, d: CreativeDeps) {
         )::int AS n`,
       sql`SELECT count(*)::int AS n FROM usage_events
         WHERE org_id=${orgId} AND dimension='EXPORT'`,
+      sql`SELECT e.stage, count(*)::int AS n
+        FROM acquisition_events e
+        JOIN acquisition_referrals r ON r.id=e.referral_id AND r.org_id=e.org_id
+        WHERE e.org_id=${orgId} AND r.revoked_at IS NULL
+        GROUP BY e.stage`,
     ]);
     const consented = Number(claims[0]?.n ?? 0) > 0;
+    const durableStages = Object.fromEntries(
+      stages.map((row) => [String(row.stage), Number(row.n)]),
+    );
     return {
       data: {
         consentedAuditReferrals: Number(claims[0]?.n ?? 0),
         referralVisits: null,
-        verifiedSignup: consented,
+        verifiedSignup: Number(durableStages.signup ?? 0) > 0,
         observedProjectCount: consented ? Number(projects[0]?.n ?? 0) : null,
         observedExports: consented ? Number(exports[0]?.n ?? 0) : null,
-        note: "These are account-level observed events after consent; they do not establish that the shared audit caused creation, export or a sale.",
+        durableStages,
+        note: "These are consent-scoped account events from authoritative rows; they do not establish that the shared audit caused creation, export or a sale.",
       },
     };
   });
